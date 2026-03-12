@@ -1,4 +1,7 @@
 
+using media_vault_app.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+
 namespace media_vault_app.Server
 {
     public class Program
@@ -8,6 +11,13 @@ namespace media_vault_app.Server
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            var connectionString = builder.Configuration
+                .GetConnectionString("Default") ??
+                throw new InvalidOperationException("Connection string 'Default' not found.");
+
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(connectionString));
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
