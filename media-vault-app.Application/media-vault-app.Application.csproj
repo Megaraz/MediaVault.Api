@@ -11,4 +11,11 @@
     <ProjectReference Include="..\media-vault-app.Domain\media-vault-app.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\" />
+    <Folder Include="Interfaces\Repos\" />
+    <Folder Include="Mappers\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

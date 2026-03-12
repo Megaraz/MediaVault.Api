@@ -1,5 +1,7 @@
 <Solution>
-  <Folder Name="/Backend/" />
+  <Folder Name="/Backend/">
+    <Project Path="Rasmus.SharedKernel/Rasmus.SharedKernel.csproj" Id="597f4edd-c42f-413f-8502-6721b66cc147" />
+  </Folder>
   <Folder Name="/Backend/1. Domain/">
     <Project Path="media-vault-app.Domain/media-vault-app.Domain.csproj" Id="3f4bd811-b65c-464e-b7ff-e41624a5b086" />
   </Folder>

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using media_vault_app.Domain.Entities;
+﻿using media_vault_app.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace media_vault_app.Infrastructure
@@ -32,7 +29,7 @@ namespace media_vault_app.Infrastructure
 
             modelBuilder.Entity<MediaEntry>()
                 .ToTable(t =>
-                t.HasCheckConstraint("CK_MediaEntry_Rating", 
+                t.HasCheckConstraint("CK_MediaEntry_Rating",
                 "Rating >= 0.5 AND Rating <= 10 AND Rating * 2 = FLOOR(Rating * 2)"));
         }
     }

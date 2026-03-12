@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace media_vault_app.Domain.Interfaces
+﻿namespace Rasmus.SharedKernel.Interfaces
 {
     public interface ICreatedAtUtc
     {
