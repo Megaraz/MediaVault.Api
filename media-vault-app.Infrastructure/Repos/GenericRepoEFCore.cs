@@ -80,19 +80,21 @@ namespace media_vault_app.Infrastructure.Repos
                     .AsNoTracking()
                     .ToListAsync(ct);
 
-                return Result<IReadOnlyList<TEntity>>.Success(entities);
+                return new SuccessResult<IReadOnlyList<TEntity>>(entities);
             }
             catch (Exception ex)
             {
-                return Result<IReadOnlyList<TEntity>>.Error("An error occurred while retrieving the entities.", ex);
+                return new ErrorResult<IReadOnlyList<TEntity>>("An error occurred while retrieving the entities.", new List<Error> { new Error("Entity.GetAll", ex.Message) });
             }
         }
 
-        public virtual async Task<Result> DeleteAsync<TKey>(TKey id, CancellationToken ct = default)
+        public virtual async Task<Result> DeleteAsync(TKey id, CancellationToken ct = default)
         {
             if (id is null || id.Equals(default(TKey)))
             {
-                return Result.InvalidValue("Id");
+                return new ValidationErrorResult<TEntity>(
+                    "Invalid value for Id",
+                    new List<Error> { new Error("Entity.GetById", "Id cannot be null or default") });
             }
 
             try
@@ -100,15 +102,17 @@ namespace media_vault_app.Infrastructure.Repos
                 var entity = await _dbSet.FindAsync(new object[] { id }, ct);
 
                 if (entity is null)
-                    return Result.NotFound(nameof(TEntity));
+                {
+                    return new ErrorResult<TEntity>("Entity not found", new List<Error> { new Error("Entity.Delete", "Entity not found") });
+                }
 
                 _dbSet.Remove(entity);
                 await _appDbContext.SaveChangesAsync(ct);
-                return Result.Success();
+                return new SuccessResult();
             }
             catch (Exception ex)
             {
-                return Result.Error("An error occurred while deleting the entity.", ex);
+                return new ErrorResult<TEntity>("An error occurred while deleting the entity.", new List<Error> { new Error("Entity.Delete", ex.Message) });
 
             }
         }
@@ -119,6 +123,12 @@ namespace media_vault_app.Infrastructure.Repos
             CancellationToken ct = default)
         {
 
+            if (updatedEntity.Id is null || updatedEntity.Id.Equals(default(TKey)))
+            {
+                return new ValidationErrorResult<TEntity>(
+                    "Invalid value for Id",
+                    new List<Error> { new Error("Entity.Update", "Id cannot be null or default") });
+            }
             try
             {
 
@@ -126,27 +136,26 @@ namespace media_vault_app.Infrastructure.Repos
 
                 if (oldEntity is null)
                 {
-                    return Result.NotFound(nameof(TEntity));
+                    return new ErrorResult<TEntity>("Entity not found", new List<Error> { new Error("Entity.Update", "Entity not found") });
                 }
 
                 if (!shouldUpdate(oldEntity, updatedEntity))
                 {
-                    return Result.Success();
+                    return new SuccessResult();
                 }
 
                 _appDbContext.Entry(oldEntity).CurrentValues.SetValues(updatedEntity);
                 await _appDbContext.SaveChangesAsync(ct);
 
-                return Result.Success();
+                return new SuccessResult();
 
             }
             catch (Exception ex)
             {
-                return Result.Error("An error occurred while updating the entity.", ex);
+                return new ErrorResult<TEntity>("An error occurred while updating the entity.", new List<Error> { new Error("Entity.Update", ex.Message) });
 
             }
 
         }
     }
-}
 }
