@@ -7,9 +7,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         NotFound,
         Conflict,
         Unauthorized,
-        Forbidden,
-        None
-
+        Forbidden
     }
 
     public static class ErrorCodes
@@ -49,6 +47,12 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         }
 
+        public static class DatabaseError
+        {
+            public const string DbException = "DbException";
+        }
+
+
         public static class GeneralError
         {
             public const string InvalidInput = "InvalidInput";
@@ -71,8 +75,6 @@ namespace Rasmus.SharedKernel.ResultPattern
             Code = $"{Operation}.{NameOfEntity}.{Error}";
         }
 
-        public static readonly ErrorCode None = new ErrorCode(string.Empty, string.Empty, string.Empty);
-
         public string Operation { get; }
         public string NameOfEntity { get; }
         public string Error { get; }
@@ -89,8 +91,6 @@ namespace Rasmus.SharedKernel.ResultPattern
 
     public sealed record Error(ErrorCode Code, string Description, ErrorType ErrorType)
     {
-        public static readonly Error None = new(ErrorCode.None, string.Empty, ErrorType.None);
-
         public static Error Validation(ErrorCode code, string description) =>
             new(code, description, ErrorType.Validation);
 
