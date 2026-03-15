@@ -49,7 +49,11 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         public static class DatabaseError
         {
-            public const string DbException = "DbException";
+            public const string DbCreateException = "DbCreateException";
+            public const string DbGetException = "DbGetException";
+            public const string DbListException = "DbListException";
+            public const string DbUpdateException = "DbUpdateException";
+            public const string DbDeleteException = "DbDeleteException";
         }
 
 
@@ -66,7 +70,13 @@ namespace Rasmus.SharedKernel.ResultPattern
 
     public sealed record ErrorCode
     {
-        public ErrorCode(string operation, string nameOfEntity, string error)
+        public string Operation { get; }
+        public string NameOfEntity { get; }
+        public string Error { get; }
+
+        public string Code { get; }
+
+        private ErrorCode(string operation, string nameOfEntity, string error)
         {
             Operation = operation;
             NameOfEntity = nameOfEntity;
@@ -75,11 +85,24 @@ namespace Rasmus.SharedKernel.ResultPattern
             Code = $"{Operation}.{NameOfEntity}.{Error}";
         }
 
-        public string Operation { get; }
-        public string NameOfEntity { get; }
-        public string Error { get; }
+        public static ErrorCode Create<T>(string error) =>
+            new(ErrorCodes.Operation.Create, typeof(T).Name, error);
 
-        public string Code { get; }
+        public static ErrorCode Get<T>(string error, out string entityName) =>
+            new(ErrorCodes.Operation.Get, entityName = typeof(T).Name, error);
+
+        public static ErrorCode List<T>(string error, out string entityName) =>
+            new(ErrorCodes.Operation.List, entityName = typeof(T).Name, error);
+
+        public static ErrorCode Delete<T>(string error, out string entityName) =>
+            new(ErrorCodes.Operation.Delete, entityName = typeof(T).Name, error);
+
+        public static ErrorCode Update<T>(string error, out string entityName) =>
+            new(ErrorCodes.Operation.Update, entityName = typeof(T).Name, error);
+
+        public static ErrorCode NullValue<T>(string currentOperation, out string entityName) =>
+            new(currentOperation, entityName = typeof(T).Name, ErrorCodes.ValidationError.Required);
+
 
         public override string ToString()
         {
@@ -87,27 +110,78 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         }
 
+
+
     }
 
-    public sealed record Error(ErrorCode Code, string Description, ErrorType ErrorType)
+    public sealed record Error(string Code, string Description, ErrorType ErrorType)
     {
-        public static Error Validation(ErrorCode code, string description) =>
-            new(code, description, ErrorType.Validation);
+        public static Error DbCreateException<T>(string errorDescriptionPrefix, Exception? exception)
+            => new Error(
+                ErrorCode.Create<T>(ErrorCodes.DatabaseError.DbCreateException).Code,
+                $"{errorDescriptionPrefix}: A Database-Exception occurred while creating the entity in the database: {exception?.Message}",
+                ErrorType.Failure);
 
-        public static Error NotFound(ErrorCode code, string description) =>
-            new(code, description, ErrorType.NotFound);
+        public static Error DbGetException<T>(string errorDescriptionPrefix, Exception? exception)
+            => new Error(
+                ErrorCode.Get<T>(ErrorCodes.DatabaseError.DbGetException, out string entityName).Code,
+                $"{errorDescriptionPrefix}: A Database-Exception occurred while getting the entity {entityName} from the database: {exception?.Message}",
+                ErrorType.Failure);
+
+        public static Error DbListException<T>(string errorDescriptionPrefix, Exception? exception)
+            => new Error(
+                    ErrorCode.List<T>(ErrorCodes.DatabaseError.DbListException, out string entityName).Code,
+                $"{errorDescriptionPrefix}: A Database-Exception occurred while getting the list of entities {entityName} from the database: {exception?.Message}",
+                ErrorType.Failure);
+
+        public static Error DbDeleteException<T>(string errorDescriptionPrefix, Exception? exception)
+            => new Error(
+                ErrorCode.Delete<T>(ErrorCodes.DatabaseError.DbDeleteException, out string entityName).Code,
+                $"{errorDescriptionPrefix}: A Database-Exception occurred while deleting the entity {entityName} from the database: {exception?.Message}",
+                ErrorType.Failure);
+
+        public static Error DbUpdateException<T>(string errorDescriptionPrefix, Exception? exception)
+            => new Error(
+                ErrorCode.Update<T>(ErrorCodes.DatabaseError.DbUpdateException, out string entityName).Code,
+                $"{errorDescriptionPrefix}: A Database-Exception occurred while updating the entity {entityName} in the database: {exception?.Message}",
+                ErrorType.Failure);
+
+
+        public static Error NullValue<T>(string currentOperation, string errorDescriptionPrefix, out string errorMessageReason)
+        {
+            var errorCode = ErrorCode.NullValue<T>(currentOperation, out string entityName);
+
+            errorMessageReason = $"{entityName} cannot be null or default";
+
+            // Create full error of ErrorType.Validation, with ErrorCode from above, and return it
+            return new Error(
+                errorCode.Code,
+                $"{errorDescriptionPrefix}: {errorMessageReason}",
+                ErrorType.Validation);
+
+        }
+        public static Error Validation(ErrorCode code, string description) =>
+            new(code.Code, description, ErrorType.Validation);
+
+        public static Error NotFound<T>(string errorDescriptionPrefix)
+        {
+            var errorCode = ErrorCode.Get<T>(ErrorCodes.GeneralError.NotFound, out string entityName);
+
+            return new Error(errorCode.Code, $"{errorDescriptionPrefix}: {entityName} not found", ErrorType.NotFound);
+
+        }
 
         public static Error Conflict(ErrorCode code, string description) =>
-            new(code, description, ErrorType.Conflict);
+            new(code.Code, description, ErrorType.Conflict);
 
         public static Error Unauthorized(ErrorCode code, string description) =>
-            new(code, description, ErrorType.Unauthorized);
+            new(code.Code, description, ErrorType.Unauthorized);
 
         public static Error Forbidden(ErrorCode code, string description) =>
-            new(code, description, ErrorType.Forbidden);
+            new(code.Code, description, ErrorType.Forbidden);
 
         public static Error Failure(ErrorCode code, string description) =>
-            new(code, description, ErrorType.Failure);
+            new(code.Code, description, ErrorType.Failure);
 
     }
 

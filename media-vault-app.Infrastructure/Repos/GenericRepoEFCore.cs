@@ -14,56 +14,43 @@ namespace media_vault_app.Infrastructure.Repos
     {
         protected readonly AppDbContext _appDbContext;
         protected readonly DbSet<TEntity> _dbSet;
-        private readonly string _entityName;
+        //private readonly string _entityName;
 
         public GenericRepoEFCore(AppDbContext appDbContext)
         {
             _appDbContext = appDbContext;
             _dbSet = _appDbContext.Set<TEntity>();
-            _entityName = typeof(TEntity).Name;
+            //_entityName = typeof(TEntity).Name;
         }
         public virtual async Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default)
         {
             // Define error handling context
             string currentOperation = ErrorCodes.Operation.Create;
             string errorDescriptionPrefix = "An error occurred when trying to create the entity in Infrastructure layer, CreateAsync";
-            string errorMessageReason = string.Empty;
 
-            if (entity is null)
+            if (entity is null || entity.Equals(default(TEntity)))
             {
-                var errorCode = new ErrorCode(
+                Error nullValueError = Error.NullValue<TEntity>(
                     currentOperation,
-                    _entityName,
-                    ErrorCodes.ValidationError.Required);
+                    errorDescriptionPrefix,
+                    out string errorMessageReason);
 
-                errorMessageReason = "Entity cannot be null";
-
-                return Result<TEntity>.Failure(
-                    new Error(errorCode,
-                        $"{errorDescriptionPrefix}: {errorMessageReason}",
-                        ErrorType.Validation),
-                     errorMessageReason);
+                return Result<TEntity>.Failure(nullValueError, errorMessageReason);
             }
 
             try
             {
-
                 _dbSet.Add(entity);
                 await _appDbContext.SaveChangesAsync(ct);
                 return Result<TEntity>.Success(entity);
             }
             catch (Exception ex)
             {
-                var errorCode = new ErrorCode(
-                    currentOperation,
-                    _entityName,
-                    ErrorCodes.DatabaseError.DbException);
+                Error dbCreateExceptionError = Error.DbCreateException<TEntity>(
+                    errorDescriptionPrefix,
+                    ex);
 
-                return Result<TEntity>.Failure(
-                    new Error(errorCode,
-                        $"{errorDescriptionPrefix}: {ex.Message}",
-                        ErrorType.Failure),
-                    "An error occurred while creating the entity.");
+                return Result<TEntity>.Failure(dbCreateExceptionError, "An error occurred while creating the entity.");
             }
 
         }
@@ -74,22 +61,15 @@ namespace media_vault_app.Infrastructure.Repos
             // Define error handling context
             string currentOperation = ErrorCodes.Operation.Get;
             string errorDescriptionPrefix = "An error occurred when trying to get the entity by Id in Infrastructure layer, GetByIdAsync";
-            string errorMessageReason = string.Empty;
 
             if (id is null || id.Equals(default(TKey)))
             {
-                var errorCode = new ErrorCode(
+                Error nullValueError = Error.NullValue<TEntity>(
                     currentOperation,
-                    _entityName,
-                    ErrorCodes.ValidationError.Required);
+                    errorDescriptionPrefix,
+                    out string errorMessageReason);
 
-                errorMessageReason = "Id cannot be null or default";
-
-                return Result<TEntity>.Failure(
-                    new Error(errorCode,
-                    $"{errorDescriptionPrefix}: {errorMessageReason}",
-                        ErrorType.Validation),
-                    errorMessageReason);
+                return Result<TEntity>.Failure(nullValueError, errorMessageReason);
             }
 
             try
@@ -97,32 +77,16 @@ namespace media_vault_app.Infrastructure.Repos
                 var entity = await _dbSet.FindAsync(new object[] { id }, ct);
                 if (entity is null)
                 {
-                    var errorCode = new ErrorCode(
-                        currentOperation,
-                        _entityName,
-                        ErrorCodes.GeneralError.NotFound);
+                    Error notFoundError = Error.NotFound<TEntity>(errorDescriptionPrefix);
 
-                    errorMessageReason = "Entity not found";
-
-                    return Result<TEntity>.Failure(
-                        new Error(errorCode,
-                                $"{errorDescriptionPrefix}: {errorMessageReason}",
-                            ErrorType.NotFound),
-                        errorMessageReason);
+                    return Result<TEntity>.Failure(notFoundError, "Entity not found");
                 }
                 return Result<TEntity>.Success(entity);
             }
             catch (Exception ex)
             {
-                var errorCode = new ErrorCode(
-                    currentOperation,
-                    _entityName,
-                    ErrorCodes.DatabaseError.DbException);
-
                 return Result<TEntity>.Failure(
-                    new Error(errorCode,
-                        $"{errorDescriptionPrefix}: {ex.Message}",
-                        ErrorType.Failure),
+                    Error.DbGetException<TEntity>(errorDescriptionPrefix, ex),
                     "An error occurred while retrieving the entity.");
             }
 
@@ -130,11 +94,8 @@ namespace media_vault_app.Infrastructure.Repos
 
         public virtual async Task<Result<IReadOnlyList<TEntity>>> GetAllAsync(CancellationToken ct = default)
         {
-
             // Define error handling context
-            string currentOperation = ErrorCodes.Operation.List;
             string errorDescriptionPrefix = "An error occurred when trying to get all entities in Infrastructure layer, GetAllAsync";
-            string errorMessageReason = string.Empty;
 
             try
             {
@@ -146,41 +107,26 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                var errorCode = new ErrorCode(
-                    operation,
-                    _entityName,
-                    ErrorCodes.DatabaseError.DbException);
-
                 return Result<IReadOnlyList<TEntity>>.Failure(
-                    new Error(errorCode,
-                        $"An error occurred when trying to get all entities in Infrastructure layer, GetAllAsync: {ex.Message}",
-                        ErrorType.Failure),
+                    Error.DbListException<TEntity>(errorDescriptionPrefix, ex),
                     "An error occurred while retrieving the entities.");
             }
         }
 
         public virtual async Task<Result> DeleteAsync(TKey id, CancellationToken ct = default)
         {
-
             // Define error handling context
             string currentOperation = ErrorCodes.Operation.Delete;
             string errorDescriptionPrefix = "An error occurred when trying to delete the entity in Infrastructure layer, DeleteAsync";
-            string errorMessageReason = string.Empty;
 
             if (id is null || id.Equals(default(TKey)))
             {
-                var errorCode = new ErrorCode(
+                var nullValueError = Error.NullValue<TEntity>(
                     currentOperation,
-                    _entityName,
-                    ErrorCodes.ValidationError.Required);
+                    errorDescriptionPrefix,
+                    out string errorMessageReason);
 
-                errorMessageReason = "Id cannot be null or default";
-
-                return Result.Failure(
-                    new Error(errorCode,
-                        $"{errorDescriptionPrefix}: {errorMessageReason}",
-                        ErrorType.Validation),
-                    errorMessageReason);
+                return Result.Failure(nullValueError, errorMessageReason);
             }
 
             try
@@ -189,18 +135,9 @@ namespace media_vault_app.Infrastructure.Repos
 
                 if (entity is null)
                 {
-                    var errorCode = new ErrorCode(
-                        currentOperation,
-                        _entityName,
-                        ErrorCodes.GeneralError.NotFound);
-
-                    errorMessageReason = "Entity not found";
-
                     return Result.Failure(
-                        new Error(errorCode,
-                            $"{errorDescriptionPrefix}: {errorMessageReason}",
-                            ErrorType.NotFound),
-                        errorMessageReason);
+                        Error.NotFound<TEntity>(errorDescriptionPrefix),
+                        "Entity not found");
                 }
 
                 _dbSet.Remove(entity);
@@ -209,15 +146,8 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                var errorCode = new ErrorCode(
-                    currentOperation,
-                    _entityName,
-                    ErrorCodes.DatabaseError.DbException);
-
                 return Result.Failure(
-                    new Error(errorCode,
-                        $"{errorDescriptionPrefix}: {ex.Message}",
-                        ErrorType.Failure),
+                    Error.DbDeleteException<TEntity>(errorDescriptionPrefix, ex),
                     "An error occurred while deleting the entity.");
             }
         }
@@ -228,11 +158,18 @@ namespace media_vault_app.Infrastructure.Repos
             CancellationToken ct = default)
         {
 
+            // Define error handling context
+            string currentOperation = ErrorCodes.Operation.Update;
+            string errorDescriptionPrefix = "An error occurred when trying to update the entity in Infrastructure layer, UpdateAsync";
+
             if (updatedEntity.Id is null || updatedEntity.Id.Equals(default(TKey)))
             {
-                return new ValidationErrorResult<TEntity>(
-                    "Invalid value for Id",
-                    new List<Error> { new Error("Entity.Update", "Id cannot be null or default") });
+                var nullValueError = Error.NullValue<TEntity>(
+                    currentOperation,
+                    errorDescriptionPrefix,
+                    out string errorMessageReason);
+
+                return Result.Failure(nullValueError, errorMessageReason);
             }
             try
             {
@@ -241,24 +178,27 @@ namespace media_vault_app.Infrastructure.Repos
 
                 if (oldEntity is null)
                 {
-                    return new ErrorResult<TEntity>("Entity not found", new List<Error> { new Error("Entity.Update", "Entity not found") });
+                    return Result.Failure(
+                        Error.NotFound<TEntity>(errorDescriptionPrefix),
+                        "Entity not found");
                 }
 
                 if (!shouldUpdate(oldEntity, updatedEntity))
                 {
-                    return new SuccessResult();
+                    return Result.Success();
                 }
 
                 _appDbContext.Entry(oldEntity).CurrentValues.SetValues(updatedEntity);
                 await _appDbContext.SaveChangesAsync(ct);
 
-                return new SuccessResult();
+                return Result.Success();
 
             }
             catch (Exception ex)
             {
-                return new ErrorResult<TEntity>("An error occurred while updating the entity.", new List<Error> { new Error("Entity.Update", ex.Message) });
-
+                return Result.Failure(
+                    Error.DbUpdateException<TEntity>(errorDescriptionPrefix, ex),
+                    "An error occurred while updating the entity.");
             }
 
         }
