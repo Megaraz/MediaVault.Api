@@ -25,17 +25,18 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default)
         {
             // Define error handling context
+            string methodName = nameof(CreateAsync);
             string currentOperation = ErrorCodes.Operation.Create;
-            string errorDescriptionPrefix = "An error occurred when trying to create the entity in Infrastructure layer, CreateAsync";
+            string errorDescriptionPrefix = $"An error occurred when trying to create the entity in Infrastructure Layer: {this.GetType().Name}.{methodName}()";
 
             if (entity is null || entity.Equals(default(TEntity)))
             {
-                Error nullValueError = Error.NullValue<TEntity>(
+                ValidationError nullValueError = ValidationError.NullValue<TEntity>(
                     currentOperation,
                     errorDescriptionPrefix,
                     out string errorMessageReason);
 
-                return Result<TEntity>.Failure(nullValueError, errorMessageReason);
+                return Result<TEntity>.ValidationFailure([nullValueError], errorMessageReason);
             }
 
             try
@@ -46,11 +47,11 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                Error dbCreateExceptionError = Error.DbCreateException<TEntity>(
+                Error dbCreateFailure = Error.DbCreateFailure<TEntity>(
                     errorDescriptionPrefix,
                     ex);
 
-                return Result<TEntity>.Failure(dbCreateExceptionError, "An error occurred while creating the entity.");
+                return Result<TEntity>.Failure(dbCreateFailure, "An error occurred while creating the entity.");
             }
 
         }
@@ -59,17 +60,15 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken ct = default)
         {
             // Define error handling context
+            string methodName = nameof(GetByIdAsync);
             string currentOperation = ErrorCodes.Operation.Get;
-            string errorDescriptionPrefix = "An error occurred when trying to get the entity by Id in Infrastructure layer, GetByIdAsync";
+            string errorDescriptionPrefix = $"An error occurred when trying to get the entity by Id in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
-            if (id is null || id.Equals(default(TKey)))
+            Result idValidationResult = RepoHelpers.ValidateId(id, currentOperation, errorDescriptionPrefix);
+
+            if (idValidationResult.IsFailure)
             {
-                Error nullValueError = Error.NullValue<TEntity>(
-                    currentOperation,
-                    errorDescriptionPrefix,
-                    out string errorMessageReason);
-
-                return Result<TEntity>.Failure(nullValueError, errorMessageReason);
+                return idValidationResult;
             }
 
             try
@@ -86,7 +85,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 return Result<TEntity>.Failure(
-                    Error.DbGetException<TEntity>(errorDescriptionPrefix, ex),
+                    Error.DbGetFailure<TEntity>(errorDescriptionPrefix, ex),
                     "An error occurred while retrieving the entity.");
             }
 
@@ -95,7 +94,8 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result<IReadOnlyList<TEntity>>> GetAllAsync(CancellationToken ct = default)
         {
             // Define error handling context
-            string errorDescriptionPrefix = "An error occurred when trying to get all entities in Infrastructure layer, GetAllAsync";
+            string methodName = nameof(GetAllAsync);
+            string errorDescriptionPrefix = $"An error occurred when trying to get all entities in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
             try
             {
@@ -108,7 +108,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 return Result<IReadOnlyList<TEntity>>.Failure(
-                    Error.DbListException<TEntity>(errorDescriptionPrefix, ex),
+                    Error.DbGetCollectionFailure<TEntity>(errorDescriptionPrefix, ex),
                     "An error occurred while retrieving the entities.");
             }
         }
@@ -116,18 +116,14 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result> DeleteAsync(TKey id, CancellationToken ct = default)
         {
             // Define error handling context
+            string methodName = nameof(DeleteAsync);
             string currentOperation = ErrorCodes.Operation.Delete;
-            string errorDescriptionPrefix = "An error occurred when trying to delete the entity in Infrastructure layer, DeleteAsync";
+            string errorDescriptionPrefix = $"An error occurred when trying to delete the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
-            if (id is null || id.Equals(default(TKey)))
-            {
-                var nullValueError = Error.NullValue<TEntity>(
-                    currentOperation,
-                    errorDescriptionPrefix,
-                    out string errorMessageReason);
+            Result idValidationResult = RepoHelpers.ValidateId(id, currentOperation, errorDescriptionPrefix);
 
-                return Result.Failure(nullValueError, errorMessageReason);
-            }
+            if (idValidationResult.IsFailure)
+                return idValidationResult;
 
             try
             {
@@ -147,7 +143,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 return Result.Failure(
-                    Error.DbDeleteException<TEntity>(errorDescriptionPrefix, ex),
+                    Error.DbDeleteFailure<TEntity>(errorDescriptionPrefix, ex),
                     "An error occurred while deleting the entity.");
             }
         }
@@ -159,17 +155,18 @@ namespace media_vault_app.Infrastructure.Repos
         {
 
             // Define error handling context
+            string methodName = nameof(UpdateAsync);
             string currentOperation = ErrorCodes.Operation.Update;
-            string errorDescriptionPrefix = "An error occurred when trying to update the entity in Infrastructure layer, UpdateAsync";
+            string errorDescriptionPrefix = $"An error occurred when trying to update the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
             if (updatedEntity.Id is null || updatedEntity.Id.Equals(default(TKey)))
             {
-                var nullValueError = Error.NullValue<TEntity>(
+                var nullValueError = ValidationError.NullValue<TEntity>(
                     currentOperation,
                     errorDescriptionPrefix,
                     out string errorMessageReason);
 
-                return Result.Failure(nullValueError, errorMessageReason);
+                return Result.ValidationFailure([nullValueError], errorMessageReason);
             }
             try
             {
@@ -197,7 +194,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 return Result.Failure(
-                    Error.DbUpdateException<TEntity>(errorDescriptionPrefix, ex),
+                    Error.DbUpdateFailure<TEntity>(errorDescriptionPrefix, ex),
                     "An error occurred while updating the entity.");
             }
 

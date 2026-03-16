@@ -35,14 +35,20 @@ namespace media_vault_app.Server.Controllers
             {
                 return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc));
             }
-            else if (result is ErrorResult<User> errorResult)
-            {
-                return BadRequest(errorResult.Errors);
-            }
             else
             {
-                return BadRequest("An unexpected error occurred.");
+                return BadRequest(result.ValidationErrors);
+
             }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<UserDetailedDto>>> GetAllUsers(CancellationToken ct)
+        {
+            var result = await _userRepo.GetAllAsync(ct);
+            return result switch
+            {
+            };
         }
 
         [HttpGet("{id:Guid}")]
@@ -51,15 +57,15 @@ namespace media_vault_app.Server.Controllers
 
             var result = await _userRepo.GetByIdAsync(id, ct);
 
-            return result switch
+            if (result.IsSuccess)
             {
-                SuccessResult<User> successResult =>
-                    Ok(new UserDetailedDto(successResult.Data.Id, successResult.Data.Username, successResult.Data.Email, successResult.Data.CreatedAtUtc)),
-                ErrorResult<User> errorResult => BadRequest(errorResult.Errors),
-                _ => BadRequest("An unexpected error occurred.")
-            };
-
-
+                var user = result.Value;
+                return Ok(new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc));
+            }
+            else
+            {
+                return result.Error 
+            }
         }
     }
 }
