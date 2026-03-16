@@ -8,18 +8,23 @@ namespace media_vault_app.Infrastructure.Repos
     internal static class RepoHelpers
     {
 
-        public static Result ValidateId<TKey>(TKey id, string currentOperation, string errorDescriptionPrefix)
+        public static Result GenerateNullValueResult<TKey>(string currentOperation, string errorDescriptionPrefix)
         {
-            if (id is null || id.Equals(default(TKey)))
-            {
-                var nullValueError = ValidationError.NullValue<TKey>(
-                    currentOperation,
-                    errorDescriptionPrefix,
-                    out string errorMessageReason);
+            var nullValueError = ValidationError.NullValue<TKey>(
+                currentOperation,
+                errorDescriptionPrefix,
+                out string errorMessageReason);
 
-                return Result.ValidationFailure([nullValueError], errorMessageReason);
-            }
-            return Result.Success();
+            return Result.ValidationFailure([nullValueError], errorMessageReason);
+        }
+        public static Result<TValue> GenerateNullValueResult<TValue, TKey>(string currentOperation, string errorDescriptionPrefix)
+        {
+            var nullValueError = ValidationError.NullValue<TKey>(
+                currentOperation,
+                errorDescriptionPrefix,
+                out string errorMessageReason);
+
+            return Result<TValue>.ValidationFailure([nullValueError], errorMessageReason);
         }
     }
 }

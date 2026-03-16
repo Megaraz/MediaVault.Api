@@ -64,11 +64,14 @@ namespace media_vault_app.Infrastructure.Repos
             string currentOperation = ErrorCodes.Operation.Get;
             string errorDescriptionPrefix = $"An error occurred when trying to get the entity by Id in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
-            Result idValidationResult = RepoHelpers.ValidateId(id, currentOperation, errorDescriptionPrefix);
-
-            if (idValidationResult.IsFailure)
+            if (!Validator.IsValidId(id))
             {
-                return idValidationResult;
+                var nullValueError = ValidationError.NullValue<TKey>(
+                    currentOperation,
+                    errorDescriptionPrefix,
+                    out string errorMessageReason);
+
+                return Result<TEntity>.ValidationFailure([nullValueError], errorMessageReason);
             }
 
             try
@@ -120,14 +123,19 @@ namespace media_vault_app.Infrastructure.Repos
             string currentOperation = ErrorCodes.Operation.Delete;
             string errorDescriptionPrefix = $"An error occurred when trying to delete the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
-            Result idValidationResult = RepoHelpers.ValidateId(id, currentOperation, errorDescriptionPrefix);
+            if (!Validator.IsValidId(id))
+            {
+                var nullValueError = ValidationError.NullValue<TKey>(
+                    currentOperation,
+                    errorDescriptionPrefix,
+                    out string errorMessageReason);
 
-            if (idValidationResult.IsFailure)
-                return idValidationResult;
+                return Result.ValidationFailure([nullValueError], errorMessageReason);
+            }
 
             try
             {
-                var entity = await _dbSet.FindAsync(new object[] { id }, ct);
+                var entity = await _dbSet.FindAsync(new object[] { id! }, ct);
 
                 if (entity is null)
                 {
@@ -159,9 +167,20 @@ namespace media_vault_app.Infrastructure.Repos
             string currentOperation = ErrorCodes.Operation.Update;
             string errorDescriptionPrefix = $"An error occurred when trying to update the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
-            if (updatedEntity.Id is null || updatedEntity.Id.Equals(default(TKey)))
+            if (updatedEntity is null || updatedEntity.Equals(default(TEntity)))
             {
                 var nullValueError = ValidationError.NullValue<TEntity>(
+                    currentOperation,
+                    errorDescriptionPrefix,
+                    out string errorMessageReason);
+                return Result.ValidationFailure([nullValueError], errorMessageReason);
+            }
+
+
+            if (!Validator.IsValidId(updatedEntity.Id))
+                //if (updatedEntity.Id is null || updatedEntity.Id.Equals(default(TKey)))
+            {
+                var nullValueError = ValidationError.NullValue<TKey>(
                     currentOperation,
                     errorDescriptionPrefix,
                     out string errorMessageReason);
