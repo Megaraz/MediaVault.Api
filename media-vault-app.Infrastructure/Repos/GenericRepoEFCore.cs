@@ -178,7 +178,6 @@ namespace media_vault_app.Infrastructure.Repos
 
 
             if (!Validator.IsValidId(updatedEntity.Id))
-                //if (updatedEntity.Id is null || updatedEntity.Id.Equals(default(TKey)))
             {
                 var nullValueError = ValidationError.NullValue<TKey>(
                     currentOperation,
@@ -190,7 +189,7 @@ namespace media_vault_app.Infrastructure.Repos
             try
             {
 
-                var oldEntity = await _dbSet.FindAsync(new object[] { updatedEntity.Id }, ct);
+                var oldEntity = await _dbSet.FindAsync(new object[] { updatedEntity.Id! }, ct);
 
                 if (oldEntity is null)
                 {

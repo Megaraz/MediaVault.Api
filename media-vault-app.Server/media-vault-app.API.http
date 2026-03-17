@@ -1,0 +1,20 @@
+@media_vault_app.API_HostAddress = https://localhost:7121
+
+POST {{media_vault_app.API_HostAddress}}/Users
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "confirmEmail": "testuser@example.com",
+  "password": "Test123!",
+  "confirmPassword": "Test123!"
+}
+
+###
+
+GET {{media_vault_app.API_HostAddress}}/Users
+Accept: application/json
+
+###

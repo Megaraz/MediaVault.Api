@@ -4,8 +4,9 @@ using media_vault_app.Domain.Entities;
 using Rasmus.SharedKernel.ResultPattern;
 using Microsoft.AspNetCore.Mvc;
 using media_vault_app.Application.DTOs.User.Response;
+using System.Diagnostics;
 
-namespace media_vault_app.Server.Controllers
+namespace media_vault_app.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
@@ -35,19 +36,39 @@ namespace media_vault_app.Server.Controllers
             {
                 return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc));
             }
-            else
-            {
-                return BadRequest(result.ValidationErrors);
 
-            }
+            return result.PrimaryError.Type switch
+            {
+                ErrorType.NotFound => NotFound(result.PrimaryError.Description),
+                ErrorType.Validation => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
+                ErrorType.Unauthorized => Unauthorized(result.PrimaryError.Description),
+                ErrorType.Conflict => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
+                ErrorType.Forbidden => Forbid(result.PrimaryError.Description),
+                ErrorType.Failure => StatusCode(500, result.PrimaryError.Description),
+                _ => StatusCode(500, "An unexpected error occurred.")
+            };
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<UserDetailedDto>>> GetAllUsers(CancellationToken ct)
+        public async Task<ActionResult<IEnumerable<UserDetailedDto>>> GetAllUsers(CancellationToken ct)
         {
             var result = await _userRepo.GetAllAsync(ct);
-            return result switch
+
+            if (result.IsSuccess)
             {
+                var users = result.Value;
+                return Ok(users.Select(user => new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc)));
+            }
+
+            return result.PrimaryError.Type switch
+            {
+                ErrorType.NotFound => NotFound(result.PrimaryError.Description),
+                ErrorType.Validation => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
+                ErrorType.Unauthorized => Unauthorized(result.PrimaryError.Description),
+                ErrorType.Conflict => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
+                ErrorType.Forbidden => Forbid(result.PrimaryError.Description),
+                ErrorType.Failure => StatusCode(500, result.PrimaryError.Description),
+                _ => StatusCode(500, "An unexpected error occurred.")
             };
         }
 
@@ -62,10 +83,20 @@ namespace media_vault_app.Server.Controllers
                 var user = result.Value;
                 return Ok(new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc));
             }
-            else
+
+            Debug.WriteLine($"PrimaryError Description: {result.PrimaryError.Description}");
+
+            return result.PrimaryError.Type switch
             {
-                return result.Error 
-            }
+                //ErrorType.NotFound => NotFound(result.PrimaryError.Description),
+                ErrorType.NotFound => NotFound("TEST TEST TEST"),
+                ErrorType.Validation => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
+                ErrorType.Unauthorized => Unauthorized(result.PrimaryError.Description),
+                ErrorType.Conflict => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
+                ErrorType.Forbidden => Forbid(result.PrimaryError.Description),
+                ErrorType.Failure => StatusCode(500, result.PrimaryError.Description),
+                _ => StatusCode(500, "An unexpected error occurred.")
+            };
         }
     }
 }

@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>media_vault_app.Server</RootNamespace>
+    <RootNamespace>media_vault_app.API</RootNamespace>
     <SpaRoot>..\media-vault-app.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:61366</SpaProxyServerUrl>
