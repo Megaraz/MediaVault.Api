@@ -76,7 +76,7 @@ namespace media_vault_app.Infrastructure.Repos
 
             try
             {
-                var entity = await _dbSet.FindAsync(new object[] { id }, ct);
+                var entity = await _dbSet.FindAsync(new object[] { id! }, ct);
                 if (entity is null)
                 {
                     Error notFoundError = Error.NotFound<TEntity>(errorDescriptionPrefix);
