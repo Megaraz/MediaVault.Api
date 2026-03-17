@@ -14,13 +14,11 @@ namespace media_vault_app.Infrastructure.Repos
     {
         protected readonly AppDbContext _appDbContext;
         protected readonly DbSet<TEntity> _dbSet;
-        //private readonly string _entityName;
 
         public GenericRepoEFCore(AppDbContext appDbContext)
         {
             _appDbContext = appDbContext;
             _dbSet = _appDbContext.Set<TEntity>();
-            //_entityName = typeof(TEntity).Name;
         }
         public virtual async Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default)
         {

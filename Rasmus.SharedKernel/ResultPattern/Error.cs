@@ -85,9 +85,6 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         }
 
-        public static Error Validation(ErrorCode code, string description) =>
-            new(code.Code, description, ErrorType.Validation);
-
         public static Error Conflict(ErrorCode code, string description) =>
             new(code.Code, description, ErrorType.Conflict);
 
