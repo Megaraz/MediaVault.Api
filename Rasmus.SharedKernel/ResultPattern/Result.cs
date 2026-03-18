@@ -42,6 +42,9 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="message">The result message.</param>
         /// <param name="validationErrors">The validation errors for the result.</param>
         /// <param name="primaryError">The main error for the result.</param>
+        /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the result state is inconsistent.</exception>
+
         protected Result(bool isSuccess, string message, IReadOnlyCollection<ValidationError> validationErrors, Error primaryError)
         {
             // **|| GUARD CLAUSES TO ENSURE CONSISTENCY OF THE RESULT STATE ||**
@@ -175,6 +178,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <summary>
         /// Gets the value of a successful result.
         /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the result is a failure.</exception>
         public TValue Value => IsSuccess
             ? _value!
             : throw new InvalidOperationException("Cannot access value of a failed result.");
@@ -187,6 +191,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// Initializes a successful result with a value.
         /// </summary>
         /// <param name="value">The value to store.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the value is null.</exception>
         private Result(TValue value) : base()
         {
             ArgumentNullException.ThrowIfNull(value);
@@ -217,6 +222,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// </summary>
         /// <param name="value">The value to return.</param>
         /// <returns>A successful <see cref="Result{TValue}"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if the value is null.</exception>
         public static Result<TValue> Success(TValue value) => new(value);
 
         // Validation Failure factory method, for creating a failed Validation Result with a collection of validation-errors and a message
@@ -226,6 +232,8 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="validationErrors">The validation errors to include.</param>
         /// <param name="message">The result message.</param>
         /// <returns>A failed <see cref="Result{TValue}"/> with validation errors.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if the validation errors are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the validation errors collection is empty.</exception>
         public new static Result<TValue> ValidationFailure(
             IReadOnlyCollection<ValidationError> validationErrors,
             string message)
@@ -250,6 +258,8 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="primaryError">The main error for the failure.</param>
         /// <param name="message">The result message.</param>
         /// <returns>A failed <see cref="Result{TValue}"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown if the primary error is invalid.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if the message is null.</exception>
         public new static Result<TValue> Failure(Error primaryError, string message)
         {
             if (primaryError.Type == ErrorType.None)

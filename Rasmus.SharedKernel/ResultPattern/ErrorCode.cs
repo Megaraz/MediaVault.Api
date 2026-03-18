@@ -38,11 +38,24 @@ namespace Rasmus.SharedKernel.ResultPattern
     // Code will look like: "Create.User..Required" or "GetCollection.Order.Timeout"
     public sealed record ErrorCode
     {
+        /// <summary>
+        /// Gets the type of operation that caused the error (e.g., Create, Get, Update, Delete).
+        /// </summary>
         public OperationType Operation { get; }
+
+        /// <summary>
+        /// Gets the name of the entity which the error is related to (e.g., User, Order). This is typically the name of the class or entity involved in the operation.
+        /// </summary>
         public string NameOfEntity { get; }
-        //public string ErrorCodeType { get; }
+
+        /// <summary>
+        /// Gets the reason code that indicates the type of error encountered.
+        /// </summary>
         public ErrorReasonCode Reason { get; }
 
+        /// <summary>
+        /// Gets the full error code as a string, which is a combination of the operation, entity name, and reason code. This provides a standardized way to represent errors across the application.
+        /// </summary>
         public string Code => $"{Operation}.{NameOfEntity}.{Reason.ToCodePart()}";
 
         private ErrorCode(OperationType operation, string nameOfEntity, ErrorReasonCode reason)
@@ -52,8 +65,28 @@ namespace Rasmus.SharedKernel.ResultPattern
             Reason = reason;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="ErrorCode"/> instance for the specified operation type and error reason, associating it with the
+        /// type parameter.
+        /// </summary>
+        /// <typeparam name="T">The type to associate with the error code. Typically represents the context or entity related to the error.</typeparam>
+        /// <param name="operation">The operation for which the error code is being generated.</param>
+        /// <param name="reason">The reason code that describes the specific error condition.</param>
+        /// <returns>An ErrorCode instance representing the specified operation and reason, associated with the type parameter.</returns>
         public static ErrorCode For<T>(OperationType operation, ErrorReasonCode reason) =>
             new(operation, typeof(T).Name, reason);
+
+        /// <summary>
+        /// Creates a new <see cref="ErrorCode"/> instance for the specified operation type and error reason, associating it with the
+        /// type parameter.
+        /// </summary>
+        /// <typeparam name="T">The type to associate with the error code. Typically represents the context or entity related to the error.</typeparam>
+        /// <param name="operation">The operation for which the error code is being generated.</param>
+        /// <param name="nameOfFieldOrEntity">The name of the field or entity to associate with the error code.</param>
+        /// <param name="reason">The reason code that describes the specific error condition.</param>
+        /// <returns>An ErrorCode instance representing the specified operation and reason, associated with the type parameter.</returns>
+        public static ErrorCode For(OperationType operation, string nameOfFieldOrEntity, ErrorReasonCode reason) =>
+            new(operation, nameOfFieldOrEntity, reason);
 
     }
 }
