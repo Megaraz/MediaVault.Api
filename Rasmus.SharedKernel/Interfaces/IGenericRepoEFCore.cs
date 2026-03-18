@@ -2,7 +2,7 @@
 
 namespace Rasmus.SharedKernel.Interfaces
 {
-    public interface IGenericRepoEFCore<TEntity, TKey> where TEntity : class, IEntityId<TKey>
+    public interface IGenericRepoEFCore<TEntity, TKey> where TEntity : class, IEntityId<TKey>, new()
     {
         Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default);
         Task<Result<IReadOnlyList<TEntity>>> GetAllAsync(CancellationToken ct = default);

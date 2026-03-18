@@ -31,22 +31,16 @@ namespace media_vault_app.API.Controllers
                 CreatedAtUtc = DateTime.UtcNow
 
             };
-            var result = await _userRepo.CreateAsync(user, ct);
-            if (result.IsSuccess)
-            {
-                return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc));
-            }
 
-            return result.PrimaryError.Type switch
-            {
-                ErrorType.NotFound => NotFound(result.PrimaryError.Description),
-                ErrorType.Validation => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
-                ErrorType.Unauthorized => Unauthorized(result.PrimaryError.Description),
-                ErrorType.Conflict => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
-                ErrorType.Forbidden => Forbid(result.PrimaryError.Description),
-                ErrorType.Failure => StatusCode(500, result.PrimaryError.Description),
-                _ => StatusCode(500, "An unexpected error occurred.")
-            };
+            //return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc));
+            var result = await _userRepo.CreateAsync(user, ct);
+
+            var dto = result.IsSuccess
+                ? new UserDetailedDto(result.Value.Id, result.Value.Username, result.Value.Email, result.Value.CreatedAtUtc)
+                : null;
+
+
+            return this.ToCreated(result, nameof(GetUserById), value => new { id = dto!.Id });
         }
 
         [HttpGet]
