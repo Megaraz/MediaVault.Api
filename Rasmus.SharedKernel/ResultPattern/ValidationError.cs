@@ -20,36 +20,52 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         // Private constructor to enforce the use of static factory methods for creating ValidationError instances
         // Sets the ErrorType of base-class to Validation for all instances of ValidationError
-        private ValidationError(string Code, string Description, ValidationErrorType validationErrorType)
-            : base(Code, Description, ErrorType.Validation)
+        private ValidationError(string code, string description, ValidationErrorType type)
+            : base(code, description, ErrorType.Validation)
         {
-            ValidationErrorType = validationErrorType;
+            ValidationErrorType = type;
         }
 
 
-        public static ValidationError InvalidFormat<T>(string currentOperation, string errorDescriptionPrefix, string fieldName, string expectedFormat) =>
+        public static ValidationError InvalidFormat<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string expectedFormat) =>
             new ValidationError(
                 ErrorCode.InvalidFormat<T>(currentOperation).Code,
                 $"{errorDescriptionPrefix}: The field '{fieldName}' has an invalid format. Expected format: {expectedFormat}.",
                 ValidationErrorType.InvalidFormat);
 
-        //public static ValidationError Required<T>(string currentOperation, string errorDescriptionPrefix, out string errorMessageReason)
-        public static ValidationError Required<T>(string currentOperation, string errorDescriptionPrefix, string fieldName) =>
-            new ValidationError(
+        public static ValidationError Required<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string? errorMessageReason)
+        {
+
+            if (string.IsNullOrWhiteSpace(errorMessageReason))
+                errorMessageReason = $"A value for the field or entity '{fieldName}' is required and cannot be null or empty.";
+
+            string description = $"{errorDescriptionPrefix}: {errorMessageReason}";
+
+            return new ValidationError(
                 ErrorCode.Required<T>(currentOperation).Code,
-                $"{errorDescriptionPrefix}: The field '{fieldName}' is required and cannot be null or empty.",
+                description,
                 ValidationErrorType.Required);
+        }
 
-
-        public static ValidationError OutOfRange<T>(string currentOperation, string errorDescriptionPrefix, string fieldName, string range) =>
+        public static ValidationError TooLong<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string range) =>
+            new ValidationError(
+                ErrorCode.OutOfRange<T>(currentOperation).Code,
+                $"{errorDescriptionPrefix}: The field '{fieldName}' is too long. Expected maximum length: {range}.",
+                ValidationErrorType.TooLong);
+        public static ValidationError OutOfRange<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string range) =>
             new ValidationError(
                 ErrorCode.OutOfRange<T>(currentOperation).Code,
                 $"{errorDescriptionPrefix}: The field '{fieldName}' is out of range. Expected range: {range}.",
                 ValidationErrorType.OutOfRange);
 
-        public static ValidationError Custom<T>(string currentOperation, string errorDescriptionPrefix, string customErrorType, string message) =>
+        public static ValidationError TooShort<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string range) =>
             new ValidationError(
-                ErrorCode.Custom<T>(currentOperation, customErrorType).Code,
+                ErrorCode.OutOfRange<T>(currentOperation).Code,
+                $"{errorDescriptionPrefix}: The field '{fieldName}' is too short. Expected minimum length: {range}.",
+                ValidationErrorType.TooShort);
+        public static ValidationError Custom<T>(OperationType currentOperation, string errorDescriptionPrefix, string message) =>
+            new ValidationError(
+                ErrorCode.Custom<T>(currentOperation).Code,
                 $"{errorDescriptionPrefix}: {message}",
                 ValidationErrorType.Custom);
     }

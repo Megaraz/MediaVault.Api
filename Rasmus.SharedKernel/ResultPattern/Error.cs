@@ -16,17 +16,17 @@ namespace Rasmus.SharedKernel.ResultPattern
     public record Error(string Code, string Description, ErrorType Type)
     {
 
-        public static Error None => new Error(string.Empty, string.Empty, ErrorType.None);
+        public static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
 
         public static Error DbCreateFailure<T>(string errorDescriptionPrefix, Exception? exception)
             => new Error(
-                ErrorCode.Create<T>(ErrorCodeType.Database.DbFailure).Code,
+                ErrorCode.Create<T>(ErrorReasonCode.DatabaseFailure).Code,
                 $"{errorDescriptionPrefix}: A Database-Exception occurred while creating the entity in the database: {exception?.Message}",
                 ErrorType.Database);
 
         public static Error DbGetFailure<T>(string errorDescriptionPrefix, Exception? exception)
         {
-            var errorCode = ErrorCode.Get<T>(ErrorCodeType.Database.DbFailure);
+            var errorCode = ErrorCode.Get<T>(ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
@@ -36,7 +36,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         public static Error DbGetCollectionFailure<T>(string errorDescriptionPrefix, Exception? exception)
         {
-            var errorCode = ErrorCode.GetCollection<T>(ErrorCodeType.Database.DbFailure);
+            var errorCode = ErrorCode.GetCollection<T>(ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
@@ -46,7 +46,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         public static Error DbDeleteFailure<T>(string errorDescriptionPrefix, Exception? exception)
         {
-            var errorCode = ErrorCode.Delete<T>(ErrorCodeType.Database.DbFailure);
+            var errorCode = ErrorCode.Delete<T>(ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
@@ -56,7 +56,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         public static Error DbUpdateFailure<T>(string errorDescriptionPrefix, Exception? exception)
         {
-            var errorCode = ErrorCode.Update<T>(ErrorCodeType.Database.DbFailure);
+            var errorCode = ErrorCode.Update<T>(ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
@@ -64,25 +64,25 @@ namespace Rasmus.SharedKernel.ResultPattern
                 ErrorType.Database);
         }
 
-        public static Error NotFound<T>(string errorDescriptionPrefix)
-        {
-            var errorCode = ErrorCode.Get<T>(ErrorCodeType.General.NotFound);
+        public static Error NotFound<T>(string errorDescriptionPrefix) =>
+            new Error(ErrorCode.Get<T>(
+                    ErrorReasonCode.GeneralNotFound).Code,
+                    $"{errorDescriptionPrefix}: {typeof(T).Name} not found",
+                    ErrorType.NotFound);
 
-            return new Error(errorCode.Code, $"{errorDescriptionPrefix}: {errorCode.NameOfEntity} not found", ErrorType.NotFound);
 
-        }
 
-        public static Error Conflict(ErrorCode code, string description) =>
-            new(code.Code, description, ErrorType.Conflict);
+        //public static Error Conflict(ErrorCode code, string description) =>
+        //    new(code.Code, description, ErrorType.Conflict);
 
-        public static Error Unauthorized(ErrorCode code, string description) =>
-            new(code.Code, description, ErrorType.Unauthorized);
+        //public static Error Unauthorized(ErrorCode code, string description) =>
+        //    new(code.Code, description, ErrorType.Unauthorized);
 
-        public static Error Forbidden(ErrorCode code, string description) =>
-            new(code.Code, description, ErrorType.Forbidden);
+        //public static Error Forbidden(ErrorCode code, string description) =>
+        //    new(code.Code, description, ErrorType.Forbidden);
 
-        public static Error Failure(ErrorCode code, string description) =>
-            new(code.Code, description, ErrorType.Failure);
+        //public static Error Failure(ErrorCode code, string description) =>
+        //    new(code.Code, description, ErrorType.Failure);
 
     }
 

@@ -189,6 +189,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="value">The value to store.</param>
         private Result(TValue value) : base()
         {
+            ArgumentNullException.ThrowIfNull(value);
             _value = value;
         }
 

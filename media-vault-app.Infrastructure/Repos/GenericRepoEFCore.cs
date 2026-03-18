@@ -24,15 +24,18 @@ namespace media_vault_app.Infrastructure.Repos
         {
             // Define error handling context
             string methodName = nameof(CreateAsync);
-            string currentOperation = ErrorCodeType.Operation.Create;
             string errorDescriptionPrefix = $"An error occurred when trying to create the entity in Infrastructure Layer: {this.GetType().Name}.{methodName}()";
+            string entityName = typeof(TEntity).Name;
 
             if (entity is null || entity.Equals(default(TEntity)))
             {
+                string errorMessageReason = $"A value for the entity '{entityName}' is required and cannot be null or empty.";
+
                 ValidationError nullValueError = ValidationError.Required<TEntity>(
-                    currentOperation,
+                    OperationType.Create,
                     errorDescriptionPrefix,
-                    out string errorMessageReason);
+                    entityName,
+                    errorMessageReason);
 
                 return Result<TEntity>.ValidationFailure([nullValueError], errorMessageReason);
             }
@@ -59,15 +62,17 @@ namespace media_vault_app.Infrastructure.Repos
         {
             // Define error handling context
             string methodName = nameof(GetByIdAsync);
-            string currentOperation = ErrorCodeType.Operation.Get;
             string errorDescriptionPrefix = $"An error occurred when trying to get the entity by Id in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
             if (!Validator.IsValidId(id))
             {
+                string errorMessageReason = $"A valid Id is required and cannot be null or empty.";
+
                 var nullValueError = ValidationError.Required<TKey>(
-                    currentOperation,
+                    OperationType.Get,
                     errorDescriptionPrefix,
-                    out string errorMessageReason);
+                    nameof(id),
+                    errorMessageReason);
 
                 return Result<TEntity>.ValidationFailure([nullValueError], errorMessageReason);
             }
@@ -79,7 +84,7 @@ namespace media_vault_app.Infrastructure.Repos
                 {
                     Error notFoundError = Error.NotFound<TEntity>(errorDescriptionPrefix);
 
-                    return Result<TEntity>.Failure(notFoundError, "Entity not found");
+                    return Result<TEntity>.Failure(notFoundError, $"{typeof(TEntity).Name} not found");
                 }
                 return Result<TEntity>.Success(entity);
             }
@@ -87,7 +92,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result<TEntity>.Failure(
                     Error.DbGetFailure<TEntity>(errorDescriptionPrefix, ex),
-                    "An error occurred while retrieving the entity.");
+                    $"An error occurred while retrieving the {typeof(TEntity).Name}.");
             }
 
         }
@@ -110,7 +115,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result<IReadOnlyList<TEntity>>.Failure(
                     Error.DbGetCollectionFailure<TEntity>(errorDescriptionPrefix, ex),
-                    "An error occurred while retrieving the entities.");
+                    $"An error occurred while retrieving the {typeof(TEntity).Name} collection.");
             }
         }
 
@@ -118,15 +123,17 @@ namespace media_vault_app.Infrastructure.Repos
         {
             // Define error handling context
             string methodName = nameof(DeleteAsync);
-            string currentOperation = ErrorCodeType.Operation.Delete;
-            string errorDescriptionPrefix = $"An error occurred when trying to delete the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
+            string errorDescriptionPrefix = $"An error occurred when trying to delete the {typeof(TEntity).Name} in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
             if (!Validator.IsValidId(id))
             {
+                string errorMessageReason = $"A valid Id is required and cannot be null or empty.";
+
                 var nullValueError = ValidationError.Required<TKey>(
-                    currentOperation,
+                    OperationType.Delete,
                     errorDescriptionPrefix,
-                    out string errorMessageReason);
+                    nameof(id),
+                    errorMessageReason);
 
                 return Result.ValidationFailure([nullValueError], errorMessageReason);
             }
@@ -139,7 +146,7 @@ namespace media_vault_app.Infrastructure.Repos
                 {
                     return Result.Failure(
                         Error.NotFound<TEntity>(errorDescriptionPrefix),
-                        "Entity not found");
+                        $"{typeof(TEntity).Name} not found");
                 }
 
                 _dbSet.Remove(entity);
@@ -150,7 +157,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result.Failure(
                     Error.DbDeleteFailure<TEntity>(errorDescriptionPrefix, ex),
-                    "An error occurred while deleting the entity.");
+                    $"An error occurred while deleting the {typeof(TEntity).Name}.");
             }
         }
 
@@ -162,25 +169,33 @@ namespace media_vault_app.Infrastructure.Repos
 
             // Define error handling context
             string methodName = nameof(UpdateAsync);
-            string currentOperation = ErrorCodeType.Operation.Update;
-            string errorDescriptionPrefix = $"An error occurred when trying to update the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
+            string entityName = typeof(TEntity).Name;
+            string errorDescriptionPrefix = $"An error occurred when trying to update the {entityName} in Infrastructure layer: {this.GetType().Name}.{methodName}()";
+            string? errorMessageReason;
 
             if (updatedEntity is null || updatedEntity.Equals(default(TEntity)))
             {
-                var nullValueError = ValidationError.Required<TEntity>(
-                    currentOperation,
+                errorMessageReason = $"A value for the entity '{entityName}' is required and cannot be null or empty.";
+
+                var requiredValueError = ValidationError.Required<TEntity>(
+                    OperationType.Update,
                     errorDescriptionPrefix,
-                    out string errorMessageReason);
-                return Result.ValidationFailure([nullValueError], errorMessageReason);
+                    entityName,
+                    errorMessageReason);
+
+                return Result.ValidationFailure([requiredValueError], errorMessageReason);
             }
 
 
             if (!Validator.IsValidId(updatedEntity.Id))
             {
+                errorMessageReason = $"A valid Id is required and cannot be null or empty.";
+
                 var nullValueError = ValidationError.Required<TKey>(
-                    currentOperation,
+                    OperationType.Update,
                     errorDescriptionPrefix,
-                    out string errorMessageReason);
+                    nameof(updatedEntity.Id),
+                    errorMessageReason);
 
                 return Result.ValidationFailure([nullValueError], errorMessageReason);
             }
@@ -193,7 +208,7 @@ namespace media_vault_app.Infrastructure.Repos
                 {
                     return Result.Failure(
                         Error.NotFound<TEntity>(errorDescriptionPrefix),
-                        "Entity not found");
+                        $"{entityName} not found");
                 }
 
                 if (!shouldUpdate(oldEntity, updatedEntity))
@@ -211,7 +226,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result.Failure(
                     Error.DbUpdateFailure<TEntity>(errorDescriptionPrefix, ex),
-                    "An error occurred while updating the entity.");
+                    $"An error occurred while updating {entityName}.");
             }
 
         }
