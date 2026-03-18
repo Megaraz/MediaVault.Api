@@ -10,7 +10,7 @@ namespace media_vault_app.Infrastructure.Repos
 
         public static Result GenerateNullValueResult<TKey>(string currentOperation, string errorDescriptionPrefix)
         {
-            var nullValueError = ValidationError.NullValue<TKey>(
+            var nullValueError = ValidationError.Required<TKey>(
                 currentOperation,
                 errorDescriptionPrefix,
                 out string errorMessageReason);
@@ -19,7 +19,7 @@ namespace media_vault_app.Infrastructure.Repos
         }
         public static Result<TValue> GenerateNullValueResult<TValue, TKey>(string currentOperation, string errorDescriptionPrefix)
         {
-            var nullValueError = ValidationError.NullValue<TKey>(
+            var nullValueError = ValidationError.Required<TKey>(
                 currentOperation,
                 errorDescriptionPrefix,
                 out string errorMessageReason);

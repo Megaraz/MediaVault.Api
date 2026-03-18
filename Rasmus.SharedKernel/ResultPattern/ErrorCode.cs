@@ -11,56 +11,56 @@ namespace Rasmus.SharedKernel.ResultPattern
     {
         public string Operation { get; }
         public string NameOfEntity { get; }
-        public string ErrorType { get; }
+        public string ErrorReason { get; }
 
         public string Code { get; }
 
-        private ErrorCode(string operation, string nameOfEntity, string errorType)
+        private ErrorCode(string operation, string nameOfEntity, string errorReason)
         {
             Operation = operation;
             NameOfEntity = nameOfEntity;
-            ErrorType = errorType;
-            Code = $"{Operation}.{NameOfEntity}.{ErrorType}";
+            ErrorReason = errorReason;
+            Code = $"{Operation}.{NameOfEntity}.{ErrorReason}";
         }
 
         // Factory methods for common error scenarios
 
         // Generate an error code for a Create-Operation on a specific entity type
         public static ErrorCode Create<T>(string errorType) =>
-            new(ErrorCodes.Operation.Create, typeof(T).Name, errorType);
+            new(ErrorCodeType.Operation.Create, typeof(T).Name, errorType);
 
         // Generate an ErrorCode for a Get-Operation on a specific entity type
         public static ErrorCode Get<T>(string errorType) =>
-            new(ErrorCodes.Operation.Get, typeof(T).Name, errorType);
+            new(ErrorCodeType.Operation.Get, typeof(T).Name, errorType);
 
         // Generate an ErrorCode for a GetCollection-Operation on a specific entity type
         public static ErrorCode GetCollection<T>(string errorType) =>
-            new(ErrorCodes.Operation.GetCollection, typeof(T).Name, errorType);
+            new(ErrorCodeType.Operation.GetCollection, typeof(T).Name, errorType);
 
         // Generate an ErrorCode for an Update-Operation on a specific entity type
         public static ErrorCode Update<T>(string errorType) =>
-            new(ErrorCodes.Operation.Update, typeof(T).Name, errorType);
+            new(ErrorCodeType.Operation.Update, typeof(T).Name, errorType);
 
         // Generate an ErrorCode for a Delete-Operation on a specific entity type
         public static ErrorCode Delete<T>(string errorType) =>
-            new(ErrorCodes.Operation.Delete, typeof(T).Name, errorType);
+            new(ErrorCodeType.Operation.Delete, typeof(T).Name, errorType);
 
-        // Generate an ErrorCode for a NullValue error on a specific entity type and operation
-        public static ErrorCode NullValue<T>(string currentOperation) =>
-            new(currentOperation, typeof(T).Name, ErrorCodes.ValidationError.Required);
+        // Generate an ErrorCode for a Required error on a specific entity type and operation
+        public static ErrorCode Required<T>(string currentOperation) =>
+            new(currentOperation, typeof(T).Name, ErrorCodeType.Validation.Required);
 
         public static ErrorCode InvalidFormat<T>(string currentOperation) =>
-            new(currentOperation, typeof(T).Name, ErrorCodes.ValidationError.InvalidFormat);
+            new(currentOperation, typeof(T).Name, ErrorCodeType.Validation.InvalidFormat);
 
         public static ErrorCode OutOfRange<T>(string currentOperation) =>
-            new(currentOperation, typeof(T).Name, ErrorCodes.ValidationError.OutOfRange);
+            new(currentOperation, typeof(T).Name, ErrorCodeType.Validation.OutOfRange);
 
         public static ErrorCode Custom<T>(string currentOperation, string customErrorType) =>
             new(currentOperation, typeof(T).Name, customErrorType);
 
         public override string ToString()
         {
-            return $"{Operation}.{NameOfEntity}.{ErrorType}";
+            return $"{Operation}.{NameOfEntity}.{ErrorReason}";
 
         }
 

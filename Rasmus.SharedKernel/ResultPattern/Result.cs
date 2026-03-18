@@ -4,7 +4,7 @@ namespace Rasmus.SharedKernel.ResultPattern
     /// <summary>
     /// Represents the outcome of an operation without a return value.
     /// </summary>
-    public record Result
+    public class Result
     {
         /// <summary>
         /// Gets whether the operation completed successfully.
@@ -167,7 +167,7 @@ namespace Rasmus.SharedKernel.ResultPattern
     /// Represents the outcome of an operation with a return value.
     /// </summary>
     /// <typeparam name="TValue">The value type returned on success.</typeparam>
-    public record Result<TValue> : Result
+    public sealed class Result<TValue> : Result
     {
         private readonly TValue? _value;
 

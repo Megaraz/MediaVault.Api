@@ -2,13 +2,14 @@ namespace Rasmus.SharedKernel.ResultPattern
 {
     public enum ErrorType
     {
-        Failure,
-        Validation,
-        NotFound,
-        Conflict,
-        Unauthorized,
-        Forbidden,
-        None
+        None = 0,
+        Failure = 1,
+        Validation = 2,
+        NotFound = 3,
+        Conflict = 4,
+        Unauthorized = 5,
+        Forbidden = 6,
+        Database = 7,
 
     }
 
@@ -19,67 +20,53 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         public static Error DbCreateFailure<T>(string errorDescriptionPrefix, Exception? exception)
             => new Error(
-                ErrorCode.Create<T>(ErrorCodes.DatabaseError.DbFailure).Code,
+                ErrorCode.Create<T>(ErrorCodeType.Database.DbFailure).Code,
                 $"{errorDescriptionPrefix}: A Database-Exception occurred while creating the entity in the database: {exception?.Message}",
-                ErrorType.Failure);
+                ErrorType.Database);
 
         public static Error DbGetFailure<T>(string errorDescriptionPrefix, Exception? exception)
         {
-            var errorCode = ErrorCode.Get<T>(ErrorCodes.DatabaseError.DbFailure);
+            var errorCode = ErrorCode.Get<T>(ErrorCodeType.Database.DbFailure);
 
             return new Error(
                 errorCode.Code,
                 $"{errorDescriptionPrefix}: A Database-Exception occurred while getting the entity {errorCode.NameOfEntity} from the database: {exception?.Message}",
-                ErrorType.Failure);
+                ErrorType.Database);
         }
 
         public static Error DbGetCollectionFailure<T>(string errorDescriptionPrefix, Exception? exception)
         {
-            var errorCode = ErrorCode.GetCollection<T>(ErrorCodes.DatabaseError.DbFailure);
+            var errorCode = ErrorCode.GetCollection<T>(ErrorCodeType.Database.DbFailure);
 
             return new Error(
                 errorCode.Code,
                 $"{errorDescriptionPrefix}: A Database-Exception occurred while getting the list of entities {errorCode.NameOfEntity} from the database: {exception?.Message}",
-                ErrorType.Failure);
+                ErrorType.Database);
         }
 
         public static Error DbDeleteFailure<T>(string errorDescriptionPrefix, Exception? exception)
         {
-            var errorCode = ErrorCode.Delete<T>(ErrorCodes.DatabaseError.DbFailure);
+            var errorCode = ErrorCode.Delete<T>(ErrorCodeType.Database.DbFailure);
 
             return new Error(
                 errorCode.Code,
                 $"{errorDescriptionPrefix}: A Database-Exception occurred while deleting the entity {errorCode.NameOfEntity} from the database: {exception?.Message}",
-                ErrorType.Failure);
+                ErrorType.Database);
         }
 
         public static Error DbUpdateFailure<T>(string errorDescriptionPrefix, Exception? exception)
         {
-            var errorCode = ErrorCode.Update<T>(ErrorCodes.DatabaseError.DbFailure);
+            var errorCode = ErrorCode.Update<T>(ErrorCodeType.Database.DbFailure);
 
             return new Error(
                 errorCode.Code,
                 $"{errorDescriptionPrefix}: A Database-Exception occurred while updating the entity {errorCode.NameOfEntity} in the database: {exception?.Message}",
-                ErrorType.Failure);
-        }
-
-        public static Error NullValue<T>(string currentOperation, string errorDescriptionPrefix, out string errorMessageReason)
-        {
-            var errorCode = ErrorCode.NullValue<T>(currentOperation);
-
-            errorMessageReason = $"{errorCode.NameOfEntity} cannot be null or default";
-
-            // Create full error of ErrorType.Validation, with ErrorCode from above, and return it
-            return new Error(
-                errorCode.Code,
-                $"{errorDescriptionPrefix}: {errorMessageReason}",
-                ErrorType.Validation);
-
+                ErrorType.Database);
         }
 
         public static Error NotFound<T>(string errorDescriptionPrefix)
         {
-            var errorCode = ErrorCode.Get<T>(ErrorCodes.GeneralError.NotFound);
+            var errorCode = ErrorCode.Get<T>(ErrorCodeType.General.NotFound);
 
             return new Error(errorCode.Code, $"{errorDescriptionPrefix}: {errorCode.NameOfEntity} not found", ErrorType.NotFound);
 

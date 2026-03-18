@@ -24,12 +24,12 @@ namespace media_vault_app.Infrastructure.Repos
         {
             // Define error handling context
             string methodName = nameof(CreateAsync);
-            string currentOperation = ErrorCodes.Operation.Create;
+            string currentOperation = ErrorCodeType.Operation.Create;
             string errorDescriptionPrefix = $"An error occurred when trying to create the entity in Infrastructure Layer: {this.GetType().Name}.{methodName}()";
 
             if (entity is null || entity.Equals(default(TEntity)))
             {
-                ValidationError nullValueError = ValidationError.NullValue<TEntity>(
+                ValidationError nullValueError = ValidationError.Required<TEntity>(
                     currentOperation,
                     errorDescriptionPrefix,
                     out string errorMessageReason);
@@ -59,12 +59,12 @@ namespace media_vault_app.Infrastructure.Repos
         {
             // Define error handling context
             string methodName = nameof(GetByIdAsync);
-            string currentOperation = ErrorCodes.Operation.Get;
+            string currentOperation = ErrorCodeType.Operation.Get;
             string errorDescriptionPrefix = $"An error occurred when trying to get the entity by Id in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
             if (!Validator.IsValidId(id))
             {
-                var nullValueError = ValidationError.NullValue<TKey>(
+                var nullValueError = ValidationError.Required<TKey>(
                     currentOperation,
                     errorDescriptionPrefix,
                     out string errorMessageReason);
@@ -118,12 +118,12 @@ namespace media_vault_app.Infrastructure.Repos
         {
             // Define error handling context
             string methodName = nameof(DeleteAsync);
-            string currentOperation = ErrorCodes.Operation.Delete;
+            string currentOperation = ErrorCodeType.Operation.Delete;
             string errorDescriptionPrefix = $"An error occurred when trying to delete the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
             if (!Validator.IsValidId(id))
             {
-                var nullValueError = ValidationError.NullValue<TKey>(
+                var nullValueError = ValidationError.Required<TKey>(
                     currentOperation,
                     errorDescriptionPrefix,
                     out string errorMessageReason);
@@ -162,12 +162,12 @@ namespace media_vault_app.Infrastructure.Repos
 
             // Define error handling context
             string methodName = nameof(UpdateAsync);
-            string currentOperation = ErrorCodes.Operation.Update;
+            string currentOperation = ErrorCodeType.Operation.Update;
             string errorDescriptionPrefix = $"An error occurred when trying to update the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
 
             if (updatedEntity is null || updatedEntity.Equals(default(TEntity)))
             {
-                var nullValueError = ValidationError.NullValue<TEntity>(
+                var nullValueError = ValidationError.Required<TEntity>(
                     currentOperation,
                     errorDescriptionPrefix,
                     out string errorMessageReason);
@@ -177,7 +177,7 @@ namespace media_vault_app.Infrastructure.Repos
 
             if (!Validator.IsValidId(updatedEntity.Id))
             {
-                var nullValueError = ValidationError.NullValue<TKey>(
+                var nullValueError = ValidationError.Required<TKey>(
                     currentOperation,
                     errorDescriptionPrefix,
                     out string errorMessageReason);
