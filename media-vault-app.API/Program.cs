@@ -1,4 +1,6 @@
 using media_vault_app.Application.Interfaces.Repos;
+using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Services.User;
 using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.Repos;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +24,8 @@ namespace media_vault_app.API
                 options.UseSqlServer(connectionString));
 
             builder.Services.AddScoped<IUserRepo, UserRepo>();
+            builder.Services.AddScoped<IUserReadService, UserReadService>();
+            builder.Services.AddScoped<IUserWriteService, UserWriteService>();
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

@@ -1,30 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using media_vault_app.Application.Interfaces.Services;
-using media_vault_app.Application.Mappers;
 using Rasmus.SharedKernel.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services
 {
-    public class GenericService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TMinimalDto>
-        : IGenericService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TMinimalDto>
+    public class ServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TMinimalDto> :
+        IServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TMinimalDto>
         where TEntity : class, IEntityId<TKey>, new()
-        where TDetailedDto : IEntityId<TKey>
+        where TDetailedDto : IDtoID<TKey>, new()
+        where TMinimalDto : IDtoID<TKey>, new()
     {
 
         private readonly IGenericRepo<TEntity, TKey> _repo;
-        private readonly IMapper<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TCollectionDto, TMinimalDto> _mapper;
 
-        public GenericService(
+        private readonly IMapEntityToDto<TEntity, TKey, TDetailedDto, TMinimalDto> _entityToDtoMapper;
+        private readonly IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TKey, TUpdateDto> _dtoToEntityMapper;
+
+        public ServiceBase(
             IGenericRepo<TEntity, TKey> repo,
-            IMapper<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TCollectionDto, TMinimalDto> mapper)
+            IMapEntityToDto<TEntity, TKey, TDetailedDto, TMinimalDto> entityToDtoMapper,
+            IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TKey, TUpdateDto> dtoToEntityMapper)
         {
-            _mapper = mapper;
             _repo = repo;
+            _entityToDtoMapper = entityToDtoMapper;
+            _dtoToEntityMapper = dtoToEntityMapper;
         }
-
 
         public async Task<Result<TDetailedDto>> CreateAsync(TCreateDto createDto, CancellationToken ct)
         {
@@ -45,11 +50,11 @@ namespace media_vault_app.Application.Services
                 return Result<TDetailedDto>.ValidationFailure([nullValueError], errorMessageReason);
             }
 
-            var entity = _mapper.ToEntity(createDto);
+            var entity = _dtoToEntityMapper.ToEntity(createDto);
 
             var repoResult = await _repo.CreateAsync(entity, ct);
 
-            return repoResult.Map(_mapper.ToDetailedDTO);
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
 
         }
 
@@ -68,12 +73,12 @@ namespace media_vault_app.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task<Result<IEnumerable<TDetailedDto>>> SearchAsync(string searchTerm, CancellationToken ct = default)
+        public Task<Result<IEnumerable<TMinimalDto>>> GetMinimalCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Result> UpdateAsync(TKey id, TUpdateDto entity, CancellationToken ct)
+        public Task<Result> UpdateAsync(TKey id, TUpdateDto updateDto, CancellationToken ct)
         {
             throw new NotImplementedException();
         }

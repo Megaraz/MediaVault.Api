@@ -5,6 +5,5 @@ using Rasmus.SharedKernel.Interfaces;
 
 namespace media_vault_app.Application.DTOs.User.Response
 {
-    public record UserDetailedDto(Guid Id, string Username, string Email, DateTime CreatedAtUtc) : IDtoID<Guid>;
-
+    public record UserMinimalDto(Guid Id, string Username, string Email) : IDtoID<Guid>;
 }
