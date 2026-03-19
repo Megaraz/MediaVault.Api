@@ -10,7 +10,7 @@ namespace media_vault_app.Infrastructure.Repos
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TKey"></typeparam>
     /// <remarks> This class implements the generic repository interface <see cref="IGenericRepo{TEntity, TKey}"/></remarks>
-    public class GenericRepoEFCore<TEntity, TKey> : IGenericRepoEFCore<TEntity, TKey> where TEntity : class, IEntityId<TKey>, new()
+    public class GenericRepoEFCore<TEntity, TKey> : IGenericRepo<TEntity, TKey> where TEntity : class, IEntityId<TKey>, new()
     {
         protected readonly AppDbContext _appDbContext;
         protected readonly DbSet<TEntity> _dbSet;

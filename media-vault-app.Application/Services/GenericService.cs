@@ -2,20 +2,26 @@
 using System.Collections.Generic;
 using System.Text;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Mappers;
 using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services
 {
-    public class GenericService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto> : IGenericService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
+    public class GenericService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TMinimalDto>
+        : IGenericService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TMinimalDto>
         where TEntity : class, IEntityId<TKey>, new()
         where TDetailedDto : IEntityId<TKey>
     {
 
-        private readonly IGenericRepoEFCore<TEntity, TKey> _repo;
+        private readonly IGenericRepo<TEntity, TKey> _repo;
+        private readonly IMapper<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TCollectionDto, TMinimalDto> _mapper;
 
-        public GenericService(IGenericRepoEFCore<TEntity, TKey> repo)
+        public GenericService(
+            IGenericRepo<TEntity, TKey> repo,
+            IMapper<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TCollectionDto, TMinimalDto> mapper)
         {
+            _mapper = mapper;
             _repo = repo;
         }
 
@@ -26,7 +32,7 @@ namespace media_vault_app.Application.Services
             string errorDescriptionPrefix = $"An error occurred when trying to create the entity in Service Layer: {this.GetType().Name}.{methodName}()";
             string entityName = typeof(TCreateDto).Name;
 
-            if (createDto is null || createDto.Equals(default(TCreateDto)))
+            if (createDto is null)
             {
                 string errorMessageReason = $"A value for the entity '{entityName}' is required and cannot be null or empty.";
 
@@ -39,8 +45,11 @@ namespace media_vault_app.Application.Services
                 return Result<TDetailedDto>.ValidationFailure([nullValueError], errorMessageReason);
             }
 
-            // TODO : Add a mapper to the project and inject it here, then use it to map the create DTO to the entity
-            // Map the create DTO to the entity
+            var entity = _mapper.ToEntity(createDto);
+
+            var repoResult = await _repo.CreateAsync(entity, ct);
+
+            return repoResult.Map(_mapper.ToDetailedDTO);
 
         }
 
@@ -54,7 +63,7 @@ namespace media_vault_app.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task<Result<IEnumerable<TDetailedDto>>> GetCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+        public Task<Result<IEnumerable<TDetailedDto>>> GetDetailedCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default)
         {
             throw new NotImplementedException();
         }

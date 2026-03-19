@@ -205,7 +205,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="message">The result message.</param>
         /// <param name="validationErrors">The validation errors for the result.</param>
         /// <param name="primaryError">The main error for the result.</param>
-        private Result(
+        internal Result(
             string message,
             IReadOnlyCollection<ValidationError> validationErrors,
             Error primaryError) : base(false, message, validationErrors, primaryError)
@@ -274,6 +274,23 @@ namespace Rasmus.SharedKernel.ResultPattern
                 primaryError: primaryError);
 
         }
+
+        //public static Result<TOut> From<TOut, TIn>(Result<TIn> result)
+        //{
+        //    return new Result<TOut>(
+        //        message: result.Message,
+        //        validationErrors: result.ValidationErrors,
+        //        primaryError: result.PrimaryError);
+
+        //}
+
+        //public Result<TOut> Map<TOut>(Func<TValue, TOut> map)
+        //{
+        //    if (IsFailure)
+        //        return Result<TOut>.From<TOut, TValue>(this);
+
+        //    return Result<TOut>.Success(map(Value));
+        //}
 
         // Implicit conversions for cleaner syntax
         /// <summary>

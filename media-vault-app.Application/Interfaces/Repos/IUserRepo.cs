@@ -7,7 +7,7 @@ using Rasmus.SharedKernel.Interfaces;
 namespace media_vault_app.Application.Interfaces.Repos
 {
     // TODO: If there are any user-specific data access methods needed in the future, they can be added here.
-    public interface IUserRepo : IGenericRepoEFCore<User, Guid>
+    public interface IUserRepo : IGenericRepo<User, Guid>
     {
     }
 }
