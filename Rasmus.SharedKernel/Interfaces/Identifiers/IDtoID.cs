@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rasmus.SharedKernel.Interfaces
+namespace Rasmus.SharedKernel.Interfaces.Identifiers
 {
     public interface IDtoID<TKey>
     {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Rasmus.SharedKernel.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Rasmus.SharedKernel.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces
 {

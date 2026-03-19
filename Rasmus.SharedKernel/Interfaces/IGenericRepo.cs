@@ -1,4 +1,5 @@
-﻿using Rasmus.SharedKernel.ResultPattern;
+﻿using Rasmus.SharedKernel.Interfaces.Identifiers;
+using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Interfaces
 {
