@@ -4,7 +4,7 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Domain.Entities
 {
-    public class MediaEntry : IEntityId<Guid>, ICreatedAtUtc
+    public abstract class MediaEntry : IEntityId<Guid>, ICreatedAtUtc
     {
         public Guid Id { get; set; }
         public string? IdExternal { get; set; }
@@ -34,10 +34,10 @@ namespace media_vault_app.Domain.Entities
         public MediaEntryType MediaType { get; set; }
         public DateTime CreatedAtUtc { get; set; }
 
-        //protected MediaEntry()
-        //{
+        protected MediaEntry()
+        {
 
-        //}
+        }
 
 
     }

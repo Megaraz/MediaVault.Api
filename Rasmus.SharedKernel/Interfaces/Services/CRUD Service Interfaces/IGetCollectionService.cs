@@ -7,7 +7,7 @@ namespace Rasmus.SharedKernel.Interfaces.Services
 {
     public interface IGetCollectionService<TDetailedDto, TMinimalDto>
     {
-        Task<Result<IEnumerable<TDetailedDto>>> GetDetailedCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default);
-        Task<Result<IEnumerable<TMinimalDto>>> GetMinimalCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default);
+        Task<Result<IEnumerable<TDetailedDto>>> GetDetailedCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default);
+        Task<Result<IEnumerable<TMinimalDto>>> GetMinimalCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default);
     }
 }

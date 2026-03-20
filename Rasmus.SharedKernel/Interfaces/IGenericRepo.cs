@@ -3,7 +3,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Interfaces
 {
-    public interface IGenericRepo<TEntity, TKey> where TEntity : class, IEntityId<TKey>, new()
+    public interface IGenericRepo<TEntity, TKey> where TEntity : class, IEntityId<TKey>
     {
         Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default);
         Task<Result<IReadOnlyList<TEntity>>> GetAllAsync(CancellationToken ct = default);

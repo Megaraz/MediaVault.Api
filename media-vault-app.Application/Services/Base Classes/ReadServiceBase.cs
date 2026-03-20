@@ -11,7 +11,7 @@ namespace media_vault_app.Application.Services
 {
     public class ReadServiceBase<TEntity, TKey, TDetailedDto, TMinimalDto>
         : IReadService<TEntity, TKey, TDetailedDto, TMinimalDto>
-            where TEntity : class, IEntityId<TKey>, new()
+            where TEntity : class, IEntityId<TKey>
             where TDetailedDto : IDtoID<TKey>
             where TMinimalDto : IDtoID<TKey>
     {

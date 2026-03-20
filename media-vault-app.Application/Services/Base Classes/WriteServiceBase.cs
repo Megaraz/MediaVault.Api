@@ -12,7 +12,7 @@ namespace media_vault_app.Application.Services
 {
     public class WriteServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
         : IWriteService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
-            where TEntity : class, IEntityId<TKey>, new()
+            where TEntity : class, IEntityId<TKey>
             where TDetailedDto : IDtoID<TKey>
     {
         private readonly IGenericRepo<TEntity, TKey> _repo;

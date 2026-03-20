@@ -12,9 +12,9 @@ namespace media_vault_app.Application.Services
 {
     public class ServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TMinimalDto> :
         IServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TMinimalDto>
-        where TEntity : class, IEntityId<TKey>, new()
-        where TDetailedDto : IDtoID<TKey>, new()
-        where TMinimalDto : IDtoID<TKey>, new()
+        where TEntity : class, IEntityId<TKey>
+        where TDetailedDto : IDtoID<TKey>
+        where TMinimalDto : IDtoID<TKey>
     {
 
         private readonly IGenericRepo<TEntity, TKey> _repo;

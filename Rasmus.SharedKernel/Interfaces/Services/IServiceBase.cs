@@ -9,7 +9,7 @@ namespace Rasmus.SharedKernel.Interfaces.Services
     public interface IServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto, TMinimalDto> :
         IWriteService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>,
         IReadService<TEntity, TKey, TDetailedDto, TMinimalDto>
-        where TEntity : class, IEntityId<TKey>, new()
+        where TEntity : class, IEntityId<TKey>
         where TDetailedDto : IDtoID<TKey>
         where TMinimalDto : IDtoID<TKey>
     {

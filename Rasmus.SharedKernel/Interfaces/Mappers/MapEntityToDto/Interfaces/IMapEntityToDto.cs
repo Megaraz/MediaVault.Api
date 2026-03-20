@@ -10,7 +10,7 @@ namespace Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces
         IMapEntityToMinimalDto<TEntity, TMinimalDto>,
         IMapEntityCollectionToDetailedDtoCollection<TEntity, TDetailedDto>,
         IMapEntityCollectionToMinimalDtoCollection<TEntity, TMinimalDto>
-        where TEntity : class, IEntityId<TKey>, new()
+        where TEntity : class, IEntityId<TKey>
         where TDetailedDto : IDtoID<TKey>
         where TMinimalDto : IDtoID<TKey>
     {

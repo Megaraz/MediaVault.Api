@@ -5,6 +5,7 @@ using Rasmus.SharedKernel.ResultPattern;
 using Microsoft.AspNetCore.Mvc;
 using media_vault_app.Application.DTOs.User.Response;
 using System.Diagnostics;
+using media_vault_app.Application.Interfaces.Services;
 
 namespace media_vault_app.API.Controllers
 {
@@ -13,27 +14,20 @@ namespace media_vault_app.API.Controllers
     public class UsersController : ControllerBase
     {
 
-        private readonly IUserRepo _userRepo;
+        private readonly IUserReadService _userReadService;
+        private readonly IUserWriteService _userWriteService;
 
-        public UsersController(IUserRepo userRepo)
+        public UsersController(IUserReadService userReadService, IUserWriteService userWriteService)
         {
-            _userRepo = userRepo;
+            _userReadService = userReadService;
+            _userWriteService = userWriteService;
         }
 
         [HttpPost]
-        public async Task<ActionResult<UserDetailedDto>> CreateUser([FromBody] UserCreateDto userCreateDto, CancellationToken ct)
+        public async Task<ActionResult<UserDetailedDto>> CreateUser([FromBody] UserCreateDto createDto, CancellationToken ct)
         {
-            var user = new User
-            {
-                Username = userCreateDto.Username,
-                Email = userCreateDto.Email,
-                PasswordHash = userCreateDto.Password, // In a real application, you should hash the password before storing it,
-                CreatedAtUtc = DateTime.UtcNow
 
-            };
-
-            //return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc));
-            var result = await _userRepo.CreateAsync(user, ct);
+            var result = await _userWriteService.CreateAsync(createDto, ct);
 
             var dto = result.IsSuccess
                 ? new UserDetailedDto(result.Value.Id, result.Value.Username, result.Value.Email, result.Value.CreatedAtUtc)
@@ -46,7 +40,7 @@ namespace media_vault_app.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDetailedDto>>> GetAllUsers(CancellationToken ct)
         {
-            var result = await _userRepo.GetAllAsync(ct);
+            var result = await _userReadService.GetDetailedCollectionAsync(ct: ct);
 
             if (result.IsSuccess)
             {
@@ -70,7 +64,7 @@ namespace media_vault_app.API.Controllers
         public async Task<ActionResult<UserDetailedDto>> GetUserById(Guid id, CancellationToken ct)
         {
 
-            var result = await _userRepo.GetByIdAsync(id, ct);
+            var result = await _userReadService.GetByIdAsync(id, ct);
 
             if (result.IsSuccess)
             {

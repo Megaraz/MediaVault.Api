@@ -1,3 +1,4 @@
+using media_vault_app.API.Security;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Services.User;
@@ -22,6 +23,11 @@ namespace media_vault_app.API
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
+
+            builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
+
+            builder.Services.AddScoped<IMediaEntryReadService, MediaEntryReadService>();
+            builder.Services.AddScoped<IMediaEntryWriteService, MediaEntryWriteService>();
 
             builder.Services.AddScoped<IUserRepo, UserRepo>();
             builder.Services.AddScoped<IUserReadService, UserReadService>();
