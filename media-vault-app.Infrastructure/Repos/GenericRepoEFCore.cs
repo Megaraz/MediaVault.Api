@@ -67,8 +67,8 @@ namespace media_vault_app.Infrastructure.Repos
             ErrorContext errorContext = new(
                 layer: "Infrastructure",
                 serviceName: this.GetType().Name,
-                methodName: nameof(CreateAsync),
-                operation: OperationType.Create,
+                methodName: nameof(GetByIdAsync),
+                operation: OperationType.Get,
                 entityName: typeof(TEntity).Name
             );
 
@@ -102,16 +102,23 @@ namespace media_vault_app.Infrastructure.Repos
 
         }
 
-        public virtual async Task<Result<IReadOnlyList<TEntity>>> GetAllAsync(CancellationToken ct = default)
+        public virtual async Task<Result<IReadOnlyList<TEntity>>> GetCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             // Define error handling context
-            string methodName = nameof(GetAllAsync);
-            string errorDescriptionPrefix = $"An error occurred when trying to get all entities in Infrastructure layer: {this.GetType().Name}.{methodName}()";
+            ErrorContext errorContext = new(
+                layer: "Infrastructure",
+                serviceName: this.GetType().Name,
+                methodName: nameof(GetCollectionAsync),
+                operation: OperationType.GetCollection,
+                entityName: typeof(TEntity).Name
+            );
 
             try
             {
                 var entities = await _dbSet
                     .AsNoTracking()
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync(ct);
 
                 return Result<IReadOnlyList<TEntity>>.Success(entities);
@@ -119,7 +126,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 return Result<IReadOnlyList<TEntity>>.Failure(
-                    Error.DbGetCollectionFailure<TEntity>(errorDescriptionPrefix, ex),
+                    Error.DbGetCollectionFailure<TEntity>(errorContext.DescriptionPrefix, ex),
                     $"An error occurred while retrieving the {typeof(TEntity).Name} collection.");
             }
         }

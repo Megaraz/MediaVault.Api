@@ -27,10 +27,12 @@ namespace media_vault_app.API
 
             builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
+            builder.Services.AddScoped<IUserRepo, UserRepo>();
+            builder.Services.AddScoped<IMediaEntryRepo, MediaEntryRepo>();
+
             builder.Services.AddScoped<IMediaEntryReadService, MediaEntryReadService>();
             builder.Services.AddScoped<IMediaEntryWriteService, MediaEntryWriteService>();
 
-            builder.Services.AddScoped<IUserRepo, UserRepo>();
             builder.Services.AddScoped<IUserReadService, UserReadService>();
             builder.Services.AddScoped<IUserWriteService, UserWriteService>();
 

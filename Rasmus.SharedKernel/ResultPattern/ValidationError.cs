@@ -28,10 +28,10 @@ namespace Rasmus.SharedKernel.ResultPattern
         }
 
 
-        public static ValidationError InvalidFormat<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string expectedFormat) =>
+        public static ValidationError InvalidFormat<T>(ErrorContext errorContext, string expectedFormat) =>
             new ValidationError(
-                ErrorCode.For<T>(currentOperation, ErrorReasonCode.ValidationInvalidFormat).Code,
-                $"{errorDescriptionPrefix}: The field '{fieldName}' has an invalid format. Expected format: {expectedFormat}.",
+                ErrorCode.For<T>(errorContext.Operation, ErrorReasonCode.ValidationInvalidFormat).Code,
+                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' has an invalid format. Expected format: {expectedFormat}.",
                 ValidationErrorType.InvalidFormat);
 
         public static ValidationError Required<T>(ErrorContext errorContext)
@@ -47,28 +47,28 @@ namespace Rasmus.SharedKernel.ResultPattern
                 ValidationErrorType.Required);
         }
 
-        public static ValidationError TooLong<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string range) =>
+        public static ValidationError TooLong<T>(ErrorContext errorContext, string range) =>
             new ValidationError(
-                ErrorCode.For<T>(currentOperation, ErrorReasonCode.ValidationTooLong).Code,
-                $"{errorDescriptionPrefix}: The field '{fieldName}' is too long. Expected maximum length: {range}.",
+                ErrorCode.For<T>(errorContext.Operation, ErrorReasonCode.ValidationTooLong).Code,
+                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' is too long. Expected maximum length: {range}.",
                 ValidationErrorType.TooLong);
-        public static ValidationError OutOfRange<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string range) =>
+        public static ValidationError OutOfRange<T>(ErrorContext errorContext, string range) =>
             new ValidationError(
-                ErrorCode.For<T>(currentOperation, ErrorReasonCode.ValidationOutOfRange).Code,
-                $"{errorDescriptionPrefix}: The field '{fieldName}' is out of range. Expected range: {range}.",
+                ErrorCode.For<T>(errorContext.Operation, ErrorReasonCode.ValidationOutOfRange).Code,
+                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' is out of range. Expected range: {range}.",
                 ValidationErrorType.OutOfRange);
 
-        public static ValidationError TooShort<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string range) =>
+        public static ValidationError TooShort<T>(ErrorContext errorContext, string range) =>
             new ValidationError(
-                ErrorCode.For<T>(currentOperation, ErrorReasonCode.ValidationTooShort).Code,
-                $"{errorDescriptionPrefix}: The field '{fieldName}' is too short. Expected minimum length: {range}.",
+                ErrorCode.For<T>(errorContext.Operation, ErrorReasonCode.ValidationTooShort).Code,
+                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' is too short. Expected minimum length: {range}.",
                 ValidationErrorType.TooShort);
 
         public static ValidationError NonMatchingValues<T>(ErrorContext errorContext) =>
             new ValidationError(
                 ErrorCode.For<T>(errorContext.Operation, ErrorReasonCode.ValidationNonMatchingValues).Code,
                 $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}",
-                ValidationErrorType.Custom);
+                ValidationErrorType.NonMatchingValues);
         public static ValidationError Custom<T>(ErrorContext errorContext) =>
             new ValidationError(
                 ErrorCode.For<T>(errorContext.Operation, ErrorReasonCode.Custom).Code,

@@ -41,7 +41,7 @@ namespace media_vault_app.Application.Services
                 serviceName: this.GetType().Name,
                 methodName: nameof(CreateAsync),
                 operation: OperationType.Create,
-                entityName: typeof(TCreateDto).Name
+                entityName: typeof(TEntity).Name
             );
 
             if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
@@ -57,9 +57,27 @@ namespace media_vault_app.Application.Services
 
         }
 
-        public Task<Result> DeleteAsync(TKey Id, CancellationToken ct)
+        public async Task<Result> DeleteAsync(TKey id, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var errorContext = new ErrorContext(
+                layer: "Service",
+                serviceName: this.GetType().Name,
+                methodName: nameof(DeleteAsync),
+                operation: OperationType.Delete,
+                entityName: typeof(TEntity).Name
+            );
+
+            if (!Validator.IsValidId(id))
+            {
+                errorContext.DescriptionSuffix = $"A valid Id is required and cannot be null or empty.";
+                errorContext.FieldName = nameof(id);
+
+                var nullValueError = ValidationError.Required<TKey>(errorContext);
+
+                return Result.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
+            }
+
+            return await _repo.DeleteAsync(id, ct);
         }
 
         public Task<Result> UpdateAsync(TKey id, TUpdateDto updateDto, CancellationToken ct)

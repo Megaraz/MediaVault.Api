@@ -25,19 +25,112 @@ namespace media_vault_app.Application.Services
             _entityToDtoMapper = entityToDtoMapper;
         }
 
-        public Task<Result<TDetailedDto>> GetByIdAsync(TKey id, CancellationToken ct)
+        public async Task<Result<TDetailedDto>> GetByIdAsync(TKey id, CancellationToken ct)
         {
-            throw new NotImplementedException();
+
+            ErrorContext errorContext = new(
+                layer: "Service",
+                serviceName: this.GetType().Name,
+                methodName: nameof(GetByIdAsync),
+                operation: OperationType.Get,
+                entityName: typeof(TEntity).Name
+                );
+
+            if (!Validator.IsValidId(id))
+            {
+                errorContext.DescriptionSuffix = $"A valid Id is required and cannot be null or empty.";
+                errorContext.EntityName = nameof(id);
+
+                var nullValueError = ValidationError.Required<TKey>(errorContext);
+
+                return Result<TDetailedDto>.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
+            }
+
+            var repoResult = await _repo.GetByIdAsync(id, ct);
+
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
+
         }
 
-        public Task<Result<IEnumerable<TDetailedDto>>> GetDetailedCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+        public async Task<Result<IEnumerable<TDetailedDto>>> GetDetailedCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            ErrorContext errorContext = new(
+                layer: "Service",
+                serviceName: this.GetType().Name,
+                methodName: nameof(GetDetailedCollectionAsync),
+                operation: OperationType.GetCollection,
+                entityName: typeof(TEntity).Name
+                );
+
+            IEnumerable<ValidationError> validationErrors = new List<ValidationError>();
+
+            if (pageNumber < 1)
+            {
+                errorContext.DescriptionSuffix = $"Page number must be greater than 0.";
+                errorContext.FieldName = nameof(pageNumber);
+
+                var pageNumberError = ValidationError.OutOfRange<int>(errorContext, "Greater than 0");
+                validationErrors = validationErrors.Append(pageNumberError);
+
+            }
+            if (pageSize < 1)
+            {
+                errorContext.DescriptionSuffix = $"Page size must be greater than 0.";
+                errorContext.FieldName = nameof(pageSize);
+
+                var pageSizeError = ValidationError.OutOfRange<int>(errorContext, "Greater than 0");
+                validationErrors = validationErrors.Append(pageSizeError);
+            }
+
+            if (validationErrors.Any())
+            {
+                return Result<IEnumerable<TDetailedDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
+            }
+
+            var repoResult = await _repo.GetCollectionAsync(pageNumber, pageSize, ct);
+
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDtoCollection);
+
         }
 
-        public Task<Result<IEnumerable<TMinimalDto>>> GetMinimalCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+        public async Task<Result<IEnumerable<TMinimalDto>>> GetMinimalCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            ErrorContext errorContext = new(
+                layer: "Service",
+                serviceName: this.GetType().Name,
+                methodName: nameof(GetMinimalCollectionAsync),
+                operation: OperationType.GetCollection,
+                entityName: typeof(TEntity).Name
+                );
+
+            IEnumerable<ValidationError> validationErrors = new List<ValidationError>();
+
+            if (pageNumber < 1)
+            {
+                errorContext.DescriptionSuffix = $"Page number must be greater than 0.";
+                errorContext.FieldName = nameof(pageNumber);
+
+                var pageNumberError = ValidationError.OutOfRange<int>(errorContext, "Greater than 0");
+                validationErrors = validationErrors.Append(pageNumberError);
+
+            }
+            if (pageSize < 1)
+            {
+                errorContext.DescriptionSuffix = $"Page size must be greater than 0.";
+                errorContext.FieldName = nameof(pageSize);
+
+                var pageSizeError = ValidationError.OutOfRange<int>(errorContext, "Greater than 0");
+                validationErrors = validationErrors.Append(pageSizeError);
+            }
+
+            if (validationErrors.Any())
+            {
+                return Result<IEnumerable<TMinimalDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
+            }
+
+            var repoResult = await _repo.GetCollectionAsync(pageNumber, pageSize, ct);
+
+            return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
         }
     }
 }
