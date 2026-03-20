@@ -13,6 +13,8 @@ namespace Rasmus.SharedKernel.ResultPattern
         GetCollection = 3,
         Update = 4,
         Delete = 5,
+
+        Login = 100,
     }
     public enum ErrorReasonCode
     {
@@ -21,8 +23,9 @@ namespace Rasmus.SharedKernel.ResultPattern
         ValidationRequired = 100,
         ValidationInvalidFormat = 101,
         ValidationOutOfRange = 102,
-        ValidationTooShort = 103,
-        ValidationTooLong = 104,
+        ValidationNonMatchingValues = 103,
+        ValidationTooShort = 104,
+        ValidationTooLong = 105,
 
         DatabaseFailure = 200,
 
@@ -30,7 +33,9 @@ namespace Rasmus.SharedKernel.ResultPattern
         GeneralNotFound = 301,
         GeneralConflict = 302,
         GeneralUnauthorized = 303,
-        GeneralForbidden = 304
+        GeneralForbidden = 304,
+
+        UserLoginFailure = 400,
     }
 
     // Represents a structured error code that encapsulates the operation, entity type, and error type.

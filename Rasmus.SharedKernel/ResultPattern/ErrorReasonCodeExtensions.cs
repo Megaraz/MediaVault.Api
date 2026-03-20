@@ -15,6 +15,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             ErrorReasonCode.ValidationRequired => "Required",
             ErrorReasonCode.ValidationInvalidFormat => "InvalidFormat",
             ErrorReasonCode.ValidationOutOfRange => "OutOfRange",
+            ErrorReasonCode.ValidationNonMatchingValues => "NonMatchingValues",
             ErrorReasonCode.ValidationTooShort => "TooShort",
             ErrorReasonCode.ValidationTooLong => "TooLong",
 
@@ -25,6 +26,8 @@ namespace Rasmus.SharedKernel.ResultPattern
             ErrorReasonCode.GeneralConflict => "Conflict",
             ErrorReasonCode.GeneralUnauthorized => "Unauthorized",
             ErrorReasonCode.GeneralForbidden => "Forbidden",
+
+            ErrorReasonCode.UserLoginFailure => "LoginFailure",
 
             _ => "Unknown"
         };

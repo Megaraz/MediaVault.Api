@@ -6,6 +6,7 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
+using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services
@@ -19,34 +20,33 @@ namespace media_vault_app.Application.Services
 
         private readonly IMapEntityToDetailedDto<TEntity, TDetailedDto> _entityToDtoMapper;
         private readonly IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TKey, TUpdateDto> _dtoToEntityMapper;
+        private readonly IDtoValidator<TKey, TCreateDto, TUpdateDto> _dtoValidator;
 
         public WriteServiceBase(
             IGenericRepo<TEntity, TKey> repo,
             IMapEntityToDetailedDto<TEntity, TDetailedDto> entityToDtoMapper,
-            IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TKey, TUpdateDto> dtoToEntityMapper)
+            IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TKey, TUpdateDto> dtoToEntityMapper,
+            IDtoValidator<TKey, TCreateDto, TUpdateDto> dtoValidator)
         {
             _repo = repo;
             _entityToDtoMapper = entityToDtoMapper;
             _dtoToEntityMapper = dtoToEntityMapper;
+            _dtoValidator = dtoValidator;
         }
 
         public virtual async Task<Result<TDetailedDto>> CreateAsync(TCreateDto createDto, CancellationToken ct)
         {
-            string methodName = nameof(CreateAsync);
-            string errorDescriptionPrefix = $"An error occurred when trying to create the entity in Service Layer: {this.GetType().Name}.{methodName}()";
-            string entityName = typeof(TCreateDto).Name;
+            var errorContext = new ErrorContext(
+                layer: "Service",
+                serviceName: this.GetType().Name,
+                methodName: nameof(CreateAsync),
+                operation: OperationType.Create,
+                entityName: typeof(TCreateDto).Name
+            );
 
-            if (createDto is null)
+            if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
             {
-                string errorMessageReason = $"A value for the entity '{entityName}' is required and cannot be null or empty.";
-
-                ValidationError nullValueError = ValidationError.Required<TCreateDto>(
-                    OperationType.Create,
-                    errorDescriptionPrefix,
-                    entityName,
-                    errorMessageReason);
-
-                return Result<TDetailedDto>.ValidationFailure([nullValueError], errorMessageReason);
+                return Result<TDetailedDto>.ValidationFailure(validationErrors, errorContext.DescriptionPrefix);
             }
 
             var entity = _dtoToEntityMapper.ToEntity(createDto);

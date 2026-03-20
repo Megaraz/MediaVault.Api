@@ -10,8 +10,9 @@ namespace Rasmus.SharedKernel.ResultPattern
         Required = 1,
         InvalidFormat = 2,
         OutOfRange = 3,
-        TooShort = 4,
-        TooLong = 5,
+        NonMatchingValues = 4,
+        TooShort = 5,
+        TooLong = 6,
     }
 
     public record ValidationError : Error
@@ -33,16 +34,15 @@ namespace Rasmus.SharedKernel.ResultPattern
                 $"{errorDescriptionPrefix}: The field '{fieldName}' has an invalid format. Expected format: {expectedFormat}.",
                 ValidationErrorType.InvalidFormat);
 
-        public static ValidationError Required<T>(OperationType currentOperation, string errorDescriptionPrefix, string fieldName, string? errorMessageReason)
+        public static ValidationError Required<T>(ErrorContext errorContext)
         {
+            if (string.IsNullOrWhiteSpace(errorContext.DescriptionSuffix))
+                errorContext.DescriptionSuffix = $"A value for the field or entity '{errorContext.EntityName}' is required and cannot be null or empty.";
 
-            if (string.IsNullOrWhiteSpace(errorMessageReason))
-                errorMessageReason = $"A value for the field or entity '{fieldName}' is required and cannot be null or empty.";
-
-            string description = $"{errorDescriptionPrefix}: {errorMessageReason}";
+            string description = $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}";
 
             return new ValidationError(
-                ErrorCode.For<T>(currentOperation, ErrorReasonCode.ValidationRequired).Code,
+                ErrorCode.For<T>(errorContext.Operation, ErrorReasonCode.ValidationRequired).Code,
                 description,
                 ValidationErrorType.Required);
         }
@@ -63,10 +63,16 @@ namespace Rasmus.SharedKernel.ResultPattern
                 ErrorCode.For<T>(currentOperation, ErrorReasonCode.ValidationTooShort).Code,
                 $"{errorDescriptionPrefix}: The field '{fieldName}' is too short. Expected minimum length: {range}.",
                 ValidationErrorType.TooShort);
-        public static ValidationError Custom<T>(OperationType currentOperation, string errorDescriptionPrefix, string message) =>
+
+        public static ValidationError NonMatchingValues<T>(ErrorContext errorContext) =>
             new ValidationError(
-                ErrorCode.For<T>(currentOperation, ErrorReasonCode.Custom).Code,
-                $"{errorDescriptionPrefix}: {message}",
+                ErrorCode.For<T>(errorContext.Operation, ErrorReasonCode.ValidationNonMatchingValues).Code,
+                $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}",
+                ValidationErrorType.Custom);
+        public static ValidationError Custom<T>(ErrorContext errorContext) =>
+            new ValidationError(
+                ErrorCode.For<T>(errorContext.Operation, ErrorReasonCode.Custom).Code,
+                $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}",
                 ValidationErrorType.Custom);
     }
 }

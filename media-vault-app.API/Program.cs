@@ -1,6 +1,7 @@
 using media_vault_app.API.Security;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Services.MediaEntry;
 using media_vault_app.Application.Services.User;
 using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.Repos;

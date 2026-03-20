@@ -16,20 +16,23 @@ namespace media_vault_app.Infrastructure.Repos
 
         public async Task<Result<User>> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken ct = default)
         {
-            string methodName = nameof(GetByUsernameOrEmailAsync);
-            string errorDescriptionPrefix = $"An error occurred when trying to get the user by username or email in Infrastructure layer: {this.GetType().Name}.{methodName}()";
+
+            var errorContext = new ErrorContext(
+                layer: "Infrastructure",
+                serviceName: this.GetType().Name,
+                methodName: nameof(GetByUsernameOrEmailAsync),
+                operation: OperationType.Get,
+                entityName: typeof(User).Name
+            );
+
 
             if (string.IsNullOrWhiteSpace(usernameOrEmail))
             {
-                string errorMessageReason = "A username or email is required and cannot be null or empty.";
+                errorContext.DescriptionSuffix = "A username or email is required and cannot be null or empty.";
 
-                ValidationError requiredValueError = ValidationError.Required<User>(
-                    OperationType.Get,
-                    errorDescriptionPrefix,
-                    nameof(usernameOrEmail),
-                    errorMessageReason);
+                ValidationError requiredValueError = ValidationError.Required<User>(errorContext);
 
-                return Result<User>.ValidationFailure([requiredValueError], errorMessageReason);
+                return Result<User>.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix);
             }
 
             try
@@ -45,7 +48,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (user is null)
                 {
                     return Result<User>.Failure(
-                        Error.NotFound<User>(errorDescriptionPrefix),
+                        Error.NotFound<User>(errorContext.DescriptionPrefix),
                         "Invalid username/email or password.");
                 }
 
@@ -54,7 +57,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 return Result<User>.Failure(
-                    Error.DbGetFailure<User>(errorDescriptionPrefix, ex),
+                    Error.DbGetFailure<User>(errorContext.DescriptionPrefix, ex),
                     "An error occurred while retrieving the User.");
             }
         }

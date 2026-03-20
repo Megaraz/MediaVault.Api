@@ -24,7 +24,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <summary>
         /// Gets the validation errors for a validation failure.
         /// </summary>
-        public IReadOnlyCollection<ValidationError> ValidationErrors { get; }
+        public IEnumerable<ValidationError> ValidationErrors { get; }
 
         /// <summary>
         /// Gets the main error for a failed result.
@@ -45,7 +45,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null.</exception>
         /// <exception cref="ArgumentException">Thrown if the result state is inconsistent.</exception>
 
-        protected Result(bool isSuccess, string message, IReadOnlyCollection<ValidationError> validationErrors, Error primaryError)
+        protected Result(bool isSuccess, string message, IEnumerable<ValidationError> validationErrors, Error primaryError)
         {
             // **|| GUARD CLAUSES TO ENSURE CONSISTENCY OF THE RESULT STATE ||**
 
@@ -59,7 +59,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 if (primaryError.Type != ErrorType.None)
                     throw new ArgumentException($"Success result cannot contain errors. {nameof(primaryError)}");
 
-                if (validationErrors.Count > 0)
+                if (validationErrors.Any())
                     throw new ArgumentException($"Success result cannot contain validation errors. {nameof(validationErrors)}");
             }
 
@@ -75,7 +75,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                     if (primaryError is not ValidationError validationPrimary)
                         throw new ArgumentException($"Validation failure result must have an error of type ValidationError. {nameof(primaryError)}");
 
-                    if (validationErrors.Count == 0)
+                    if (!validationErrors.Any())
                         throw new ArgumentException($"Validation failure result must contain a collection of validation errors. {nameof(validationErrors)}");
 
                     if (!validationErrors.Contains(validationPrimary))
@@ -83,7 +83,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 }
                 else
                 {
-                    if (validationErrors.Count > 0)
+                    if (validationErrors.Any())
                         throw new ArgumentException($"Non-validation failure result cannot contain validation errors. {nameof(validationErrors)}");
 
                 }
@@ -122,13 +122,13 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="message">The result message.</param>
         /// <returns>A failed <see cref="Result"/> with validation errors.</returns>
         public static Result ValidationFailure(
-            IReadOnlyCollection<ValidationError> validationErrors,
+            IEnumerable<ValidationError> validationErrors,
             string message)
         {
 
             ArgumentNullException.ThrowIfNull(validationErrors);
 
-            if (validationErrors.Count == 0)
+            if (!validationErrors.Any())
                 throw new ArgumentException("Validation failure result must contain at least one validation error.", nameof(validationErrors));
 
             var normalizedValidationErrors = validationErrors.ToList();
@@ -207,7 +207,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="primaryError">The main error for the result.</param>
         internal Result(
             string message,
-            IReadOnlyCollection<ValidationError> validationErrors,
+            IEnumerable<ValidationError> validationErrors,
             Error primaryError) : base(false, message, validationErrors, primaryError)
         {
             _value = default;
@@ -235,12 +235,12 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <exception cref="ArgumentNullException">Thrown if the validation errors are null.</exception>
         /// <exception cref="ArgumentException">Thrown if the validation errors collection is empty.</exception>
         public new static Result<TValue> ValidationFailure(
-            IReadOnlyCollection<ValidationError> validationErrors,
+            IEnumerable<ValidationError> validationErrors,
             string message)
         {
             ArgumentNullException.ThrowIfNull(validationErrors);
 
-            if (validationErrors.Count == 0)
+            if (!validationErrors.Any())
                 throw new ArgumentException("Validation failure result must contain at least one validation error.", nameof(validationErrors));
 
             var normalizedValidationErrors = validationErrors.ToList();
