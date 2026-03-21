@@ -36,13 +36,7 @@ namespace media_vault_app.Application.Services
 
         public virtual async Task<Result<TDetailedDto>> CreateAsync(TCreateDto createDto, CancellationToken ct)
         {
-            var errorContext = new ErrorContext(
-                layer: "Service",
-                serviceName: this.GetType().Name,
-                methodName: nameof(CreateAsync),
-                operation: OperationType.Create,
-                entityName: typeof(TEntity).Name
-            );
+            var errorContext = CreateErrorContext(nameof(CreateAsync), OperationType.Create);
 
             if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
             {
@@ -59,20 +53,14 @@ namespace media_vault_app.Application.Services
 
         public async Task<Result> DeleteAsync(TKey id, CancellationToken ct)
         {
-            var errorContext = new ErrorContext(
-                layer: "Service",
-                serviceName: this.GetType().Name,
-                methodName: nameof(DeleteAsync),
-                operation: OperationType.Delete,
-                entityName: typeof(TEntity).Name
-            );
+            var errorContext = CreateErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
             if (!Validator.IsValidId(id))
             {
                 errorContext.DescriptionSuffix = $"A valid Id is required and cannot be null or empty.";
                 errorContext.FieldName = nameof(id);
 
-                var nullValueError = ValidationError.Required<TKey>(errorContext);
+                var nullValueError = ValidationError.Required(errorContext);
 
                 return Result.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
             }
@@ -83,6 +71,16 @@ namespace media_vault_app.Application.Services
         public Task<Result> UpdateAsync(TKey id, TUpdateDto updateDto, CancellationToken ct)
         {
             throw new NotImplementedException();
+        }
+
+        private ErrorContext CreateErrorContext(string methodName, OperationType operation)
+        {
+            return new ErrorContext(
+                layer: "Service",
+                serviceName: GetType().Name,
+                methodName: methodName,
+                operation: operation,
+                entityName: typeof(TEntity).Name);
         }
     }
 }

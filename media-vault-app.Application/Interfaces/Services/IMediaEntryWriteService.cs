@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
-using media_vault_app.Domain.Entities;
-using Rasmus.SharedKernel.Interfaces.Services;
+using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Services
 {
-    public interface IMediaEntryWriteService : IWriteService<MediaEntry, Guid, MediaEntryCreateDto, MediaEntryUpdateDto, MediaEntryDetailedDto>
+    public interface IMediaEntryWriteService
     {
+        Task<Result<MediaEntryDetailedDto>> CreateAsync(Guid userId, MediaEntryCreateDto createDto, CancellationToken ct = default);
+        Task<Result> UpdateAsync(Guid userId, Guid mediaEntryId, MediaEntryUpdateDto updateDto, CancellationToken ct = default);
+        Task<Result> DeleteAsync(Guid userId, Guid mediaEntryId, CancellationToken ct = default);
     }
 }

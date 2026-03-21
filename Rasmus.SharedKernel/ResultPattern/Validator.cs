@@ -16,5 +16,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 id is Guid guid && guid == Guid.Empty ||
                 id.Equals(default(TKey)));
         }
+
+
     }
 }

@@ -13,29 +13,20 @@ namespace media_vault_app.Application.Services.User
         {
             validationErrors = new List<ValidationError>();
 
-            if (loginDto is null)
+            if (loginDto.IsNull(errorContext, out ValidationError nullValueError))
             {
-                errorContext.DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty.";
-
-                ValidationError nullValueError = ValidationError.Required<UserLoginDto>(errorContext);
-                validationErrors.Append(nullValueError);
+                validationErrors = validationErrors.Append(nullValueError);
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(loginDto.UsernameOrEmail))
+            if (loginDto.UsernameOrEmail.IsNullOrWhiteSpace(errorContext, out ValidationError nullOrEmptyError))
             {
-                errorContext.DescriptionSuffix = $"The field 'UsernameOrEmail' is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
-                ValidationError nullValueError = ValidationError.Required<UserLoginDto>(errorContext);
-                validationErrors.Append(nullValueError);
-                return false;
+                validationErrors = validationErrors.Append(nullOrEmptyError);
             }
 
-            if (string.IsNullOrWhiteSpace(loginDto.Password))
+            if (loginDto.Password.IsNullOrWhiteSpace(errorContext, out ValidationError nullOrEmptyPasswordError))
             {
-                errorContext.DescriptionSuffix = $"The field 'Password' is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
-                ValidationError nullValueError = ValidationError.Required<UserLoginDto>(errorContext);
-                validationErrors.Append(nullValueError);
-                return false;
+                validationErrors = validationErrors.Append(nullOrEmptyPasswordError);
             }
 
             return !validationErrors.Any();
@@ -44,31 +35,27 @@ namespace media_vault_app.Application.Services.User
         {
             validationErrors = new List<ValidationError>();
 
-            if (createDto is null)
+            if (createDto.IsNull(errorContext, out ValidationError nullValueError))
             {
-                errorContext.DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty.";
-
-                ValidationError nullValueError = ValidationError.Required<UserCreateDto>(errorContext);
-
-                validationErrors.Append(nullValueError);
+                validationErrors = validationErrors.Append(nullValueError);
                 return false;
-
             }
 
-            if (!string.Equals(createDto.Email, createDto.ConfirmEmail, StringComparison.OrdinalIgnoreCase))
-            {
-                errorContext.DescriptionSuffix = $"Email and ConfirmEmail must match for the entity '{errorContext.EntityName}'.";
+            string[] requiredFields = { createDto.Username, createDto.Email, createDto.ConfirmEmail, createDto.Password, createDto.ConfirmPassword };
 
-                validationErrors.Append(
-                    ValidationError.Custom<UserCreateDto>(errorContext));
+            if (requiredFields.AnyIsNullOrWhiteSpace(errorContext, out ValidationError nullOrEmptyError))
+            {
+                validationErrors = validationErrors.Append(nullOrEmptyError);
             }
 
-            if (!string.Equals(createDto.Password, createDto.ConfirmPassword, StringComparison.Ordinal))
+            if (!createDto.Email.Matches(createDto.ConfirmEmail, errorContext, out ValidationError notMatchingEmailError))
             {
-                errorContext.DescriptionSuffix = $"Password and ConfirmPassword must match for the entity '{errorContext.EntityName}'.";
+                validationErrors = validationErrors.Append(notMatchingEmailError);
+            }
 
-                validationErrors.Append(
-                    ValidationError.Custom<UserCreateDto>(errorContext));
+            if (!createDto.Password.Matches(createDto.ConfirmPassword, errorContext, out ValidationError notMatchingPasswordError))
+            {
+                validationErrors = validationErrors.Append(notMatchingPasswordError);
             }
 
             return !validationErrors.Any();

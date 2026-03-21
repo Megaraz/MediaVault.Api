@@ -16,21 +16,14 @@ namespace media_vault_app.Infrastructure.Repos
 
         public async Task<Result<User>> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken ct = default)
         {
-
-            var errorContext = new ErrorContext(
-                layer: "Infrastructure",
-                serviceName: this.GetType().Name,
-                methodName: nameof(GetByUsernameOrEmailAsync),
-                operation: OperationType.Get,
-                entityName: typeof(User).Name
-            );
+            var errorContext = DefineErrorContext(nameof(GetByUsernameOrEmailAsync), OperationType.Get);
 
 
             if (string.IsNullOrWhiteSpace(usernameOrEmail))
             {
                 errorContext.DescriptionSuffix = "A username or email is required and cannot be null or empty.";
 
-                ValidationError requiredValueError = ValidationError.Required<User>(errorContext);
+                ValidationError requiredValueError = ValidationError.Required(errorContext);
 
                 return Result<User>.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix);
             }
@@ -56,10 +49,22 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
+                errorContext.DescriptionSuffix = "An error occurred while retrieving the User.";
+
                 return Result<User>.Failure(
-                    Error.DbGetFailure<User>(errorContext.DescriptionPrefix, ex),
+                    Error.DbGetFailure(errorContext, ex),
                     "An error occurred while retrieving the User.");
             }
+        }
+
+        private ErrorContext DefineErrorContext(string methodName, OperationType operation)
+        {
+            return new ErrorContext(
+                layer: "Infrastructure",
+                serviceName: GetType().Name,
+                methodName: methodName,
+                operation: operation,
+                entityName: typeof(User).Name);
         }
     }
 }

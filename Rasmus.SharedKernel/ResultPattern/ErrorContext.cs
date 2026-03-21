@@ -11,6 +11,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         public string MethodName { get; }
         public OperationType Operation { get; }
         public string EntityName { get; set; }
+        public string? ConfirmFieldName { get; set; }
         public string? FieldName { get; set; }
         public string? DescriptionSuffix { get; set; }
         public string DescriptionPrefix => $"An error occurred in {Layer} layer, in service {ServiceName}, method {MethodName}, during {Operation} operation on entity {EntityName}.";

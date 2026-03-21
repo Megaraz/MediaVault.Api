@@ -25,20 +25,14 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default)
         {
             // Define error handling context
-            ErrorContext errorContext = new(
-                layer: "Infrastructure",
-                serviceName: this.GetType().Name,
-                methodName: nameof(CreateAsync),
-                operation: OperationType.Create,
-                entityName: typeof(TEntity).Name
-            );
+            var errorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
 
 
             if (entity is null || entity.Equals(default(TEntity)))
             {
                 errorContext.DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty.";
 
-                ValidationError nullValueError = ValidationError.Required<TEntity>(errorContext);
+                ValidationError nullValueError = ValidationError.Required(errorContext);
 
                 return Result<TEntity>.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
             }
@@ -51,9 +45,9 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                Error dbCreateFailure = Error.DbCreateFailure<TEntity>(
-                    $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}",
-                    ex);
+                errorContext.DescriptionSuffix = $"An error occurred while creating the {errorContext.EntityName}.";
+
+                Error dbCreateFailure = Error.DbCreateFailure(errorContext, ex);
 
                 return Result<TEntity>.Failure(dbCreateFailure, "An error occurred while creating the entity.");
             }
@@ -64,22 +58,11 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken ct = default)
         {
             // Define error handling context
-            ErrorContext errorContext = new(
-                layer: "Infrastructure",
-                serviceName: this.GetType().Name,
-                methodName: nameof(GetByIdAsync),
-                operation: OperationType.Get,
-                entityName: typeof(TEntity).Name
-            );
+            var errorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
-            if (!Validator.IsValidId(id))
+            if (!id.IsValidId(errorContext, out var idError))
             {
-                errorContext.DescriptionSuffix = $"A valid Id is required and cannot be null or empty.";
-                errorContext.EntityName = nameof(id);
-
-                var nullValueError = ValidationError.Required<TKey>(errorContext);
-
-                return Result<TEntity>.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
+                return Result<TEntity>.ValidationFailure([idError], errorContext.DescriptionSuffix!);
             }
 
             try
@@ -95,8 +78,10 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
+                errorContext.DescriptionSuffix = $"An error occurred while retrieving the {errorContext.EntityName}.";
+
                 return Result<TEntity>.Failure(
-                    Error.DbGetFailure<TEntity>(errorContext.DescriptionPrefix, ex),
+                    Error.DbGetFailure(errorContext, ex),
                     $"An error occurred while retrieving the {typeof(TEntity).Name}.");
             }
 
@@ -105,13 +90,8 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result<IReadOnlyList<TEntity>>> GetCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             // Define error handling context
-            ErrorContext errorContext = new(
-                layer: "Infrastructure",
-                serviceName: this.GetType().Name,
-                methodName: nameof(GetCollectionAsync),
-                operation: OperationType.GetCollection,
-                entityName: typeof(TEntity).Name
-            );
+
+            var errorContext = DefineErrorContext(nameof(GetCollectionAsync), OperationType.GetCollection);
 
             try
             {
@@ -125,8 +105,10 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
+                errorContext.DescriptionSuffix = $"An error occurred while retrieving the {errorContext.EntityName} collection.";
+
                 return Result<IReadOnlyList<TEntity>>.Failure(
-                    Error.DbGetCollectionFailure<TEntity>(errorContext.DescriptionPrefix, ex),
+                    Error.DbGetCollectionFailure(errorContext, ex),
                     $"An error occurred while retrieving the {typeof(TEntity).Name} collection.");
             }
         }
@@ -134,20 +116,14 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result> DeleteAsync(TKey id, CancellationToken ct = default)
         {
             // Define error handling context
-            var errorContext = new ErrorContext(
-                layer: "Infrastructure",
-                serviceName: this.GetType().Name,
-                methodName: nameof(DeleteAsync),
-                operation: OperationType.Delete,
-                entityName: typeof(TEntity).Name
-            );
+            var errorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
             if (!Validator.IsValidId(id))
             {
                 errorContext.DescriptionSuffix = $"A valid Id is required and cannot be null or empty.";
                 errorContext.EntityName = nameof(id);
 
-                var nullValueError = ValidationError.Required<TKey>(errorContext);
+                var nullValueError = ValidationError.Required(errorContext);
 
                 return Result.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
             }
@@ -169,8 +145,10 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
+                errorContext.DescriptionSuffix = $"An error occurred while deleting the {errorContext.EntityName}.";
+
                 return Result.Failure(
-                    Error.DbDeleteFailure<TEntity>(errorContext.DescriptionPrefix, ex),
+                    Error.DbDeleteFailure(errorContext, ex),
                     $"An error occurred while deleting the {typeof(TEntity).Name}.");
             }
         }
@@ -182,32 +160,14 @@ namespace media_vault_app.Infrastructure.Repos
         {
 
             // Define error handling context
-            var errorContext = new ErrorContext(
-                layer: "Infrastructure",
-                serviceName: this.GetType().Name,
-                methodName: nameof(UpdateAsync),
-                operation: OperationType.Update,
-                entityName: typeof(TEntity).Name
-            );
+            var errorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
 
-            if (updatedEntity is null || updatedEntity.Equals(default(TEntity)))
-            {
-                errorContext.DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty.";
+            if (updatedEntity.IsNull(errorContext, out var nullValueError))
+                return Result.ValidationFailure([nullValueError], errorContext.DescriptionSuffix!);
 
-                var requiredValueError = ValidationError.Required<TEntity>(errorContext);
+            if (!updatedEntity.Id.IsValidId(errorContext, out var idError))
+                return Result.ValidationFailure([idError], errorContext.DescriptionSuffix!);
 
-                return Result.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix);
-            }
-
-
-            if (!Validator.IsValidId(updatedEntity.Id))
-            {
-                errorContext.DescriptionSuffix = $"A valid Id is required and cannot be null or empty.";
-                errorContext.EntityName = nameof(updatedEntity.Id);
-
-                var nullValueError = ValidationError.Required<TKey>(errorContext);
-                return Result.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
-            }
             try
             {
 
@@ -233,11 +193,22 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
+                errorContext.DescriptionSuffix = $"An error occurred while updating the {errorContext.EntityName}.";
+
                 return Result.Failure(
-                    Error.DbUpdateFailure<TEntity>(errorContext.DescriptionPrefix, ex),
-                    $"An error occurred while updating {errorContext.EntityName}.");
+                    Error.DbUpdateFailure(errorContext, ex),
+                    errorContext.DescriptionSuffix);
             }
 
+        }
+        private ErrorContext DefineErrorContext(string methodName, OperationType operation)
+        {
+            return new ErrorContext(
+                layer: "Infrastructure",
+                serviceName: this.GetType().Name,
+                methodName: methodName,
+                operation: operation,
+                entityName: typeof(TEntity).Name);
         }
     }
 }

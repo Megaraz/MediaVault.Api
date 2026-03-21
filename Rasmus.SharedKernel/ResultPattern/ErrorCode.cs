@@ -80,6 +80,8 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <returns>An ErrorCode instance representing the specified operation and reason, associated with the type parameter.</returns>
         public static ErrorCode For<T>(OperationType operation, ErrorReasonCode reason) =>
             new(operation, typeof(T).Name, reason);
+        //public static ErrorCode For<T>(OperationType operation, ErrorReasonCode reason) =>
+        //    new(operation, typeof(T).Name, reason);
 
         /// <summary>
         /// Creates a new <see cref="ErrorCode"/> instance for the specified operation type and error reason, associating it with the

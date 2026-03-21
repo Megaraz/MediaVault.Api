@@ -13,55 +13,60 @@ namespace Rasmus.SharedKernel.ResultPattern
 
     }
 
-    public record Error(string Code, string Description, ErrorType Type)
+    public record Error(string Code, string Description, ErrorType Type, Exception? exception = null)
     {
 
         public static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
 
-        public static Error DbCreateFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbCreateFailure(ErrorContext errorContext, Exception exception)
             => new Error(
-                ErrorCode.For<T>(OperationType.Create, ErrorReasonCode.DatabaseFailure).Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while creating the entity in the database: {exception?.Message}",
-                ErrorType.Database);
+                ErrorCode.For(OperationType.Create, errorContext.EntityName, ErrorReasonCode.DatabaseFailure).Code,
+                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while creating the entity in the database",
+                ErrorType.Database,
+                exception);
 
-        public static Error DbGetFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbGetFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.For<T>(OperationType.Get, ErrorReasonCode.DatabaseFailure);
+            var errorCode = ErrorCode.For(OperationType.Get, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while getting the entity {errorCode.NameOfEntity} from the database: {exception?.Message}",
-                ErrorType.Database);
+                $"{errorContext.DescriptionSuffix}: A Database failure occurred while getting the entity {errorCode.NameOfEntity} from the database",
+                ErrorType.Database,
+                exception);
         }
 
-        public static Error DbGetCollectionFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbGetCollectionFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.For<T>(OperationType.GetCollection, ErrorReasonCode.DatabaseFailure);
+            var errorCode = ErrorCode.For(OperationType.GetCollection, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while getting the list of entities {errorCode.NameOfEntity} from the database: {exception?.Message}",
-                ErrorType.Database);
+                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while getting the list of entities {errorCode.NameOfEntity} from the database",
+                ErrorType.Database,
+                exception);
         }
 
-        public static Error DbDeleteFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbDeleteFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.For<T>(OperationType.Delete, ErrorReasonCode.DatabaseFailure);
+            var errorCode = ErrorCode.For(OperationType.Delete, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while deleting the entity {errorCode.NameOfEntity} from the database: {exception?.Message}",
-                ErrorType.Database);
+                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while deleting the entity {errorCode.NameOfEntity} from the database",
+                ErrorType.Database,
+                exception);
         }
 
-        public static Error DbUpdateFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbUpdateFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.For<T>(OperationType.Update, ErrorReasonCode.DatabaseFailure);
+            var errorCode = ErrorCode.For(OperationType.Update, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while updating the entity {errorCode.NameOfEntity} in the database: {exception?.Message}",
-                ErrorType.Database);
+                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while updating the entity {errorCode.NameOfEntity} in the database",
+                ErrorType.Database,
+                exception);
         }
 
         public static Error NotFound<T>(string errorDescriptionPrefix) =>

@@ -58,13 +58,7 @@ namespace media_vault_app.Application.Services.User
                 return await base.CreateAsync(createDto!, ct);
             }
 
-            var errorContext = new ErrorContext(
-                layer: "Service",
-                serviceName: this.GetType().Name,
-                methodName: nameof(CreateAsync),
-                operation: OperationType.Create,
-                entityName: typeof(UserCreateDto).Name
-            );
+            var errorContext = CreateErrorContext(nameof(CreateAsync), OperationType.Create, typeof(UserCreateDto).Name);
 
             if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
             {
@@ -84,14 +78,7 @@ namespace media_vault_app.Application.Services.User
 
         public async Task<Result<UserDetailedDto>> LoginAsync(UserLoginDto loginDto, CancellationToken ct = default)
         {
-
-            var errorContext = new ErrorContext(
-                layer: "Service",
-                serviceName: this.GetType().Name,
-                methodName: nameof(LoginAsync),
-                operation: OperationType.Login,
-                entityName: typeof(UserLoginDto).Name
-            );
+            var errorContext = CreateErrorContext(nameof(LoginAsync), OperationType.Login, typeof(UserLoginDto).Name);
 
             if (!_userDtoValidator.IsValidLoginDto(loginDto, errorContext, out var validationErrors))
             {
@@ -118,6 +105,16 @@ namespace media_vault_app.Application.Services.User
             }
 
             return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
+        }
+
+        private ErrorContext CreateErrorContext(string methodName, OperationType operation, string? entityName = null)
+        {
+            return new ErrorContext(
+                layer: "Service",
+                serviceName: GetType().Name,
+                methodName: methodName,
+                operation: operation,
+                entityName: entityName ?? typeof(UserEntitiy).Name);
         }
     }
 }
