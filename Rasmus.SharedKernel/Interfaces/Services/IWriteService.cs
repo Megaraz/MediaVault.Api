@@ -6,9 +6,8 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Interfaces.Services
 {
-    public interface IWriteService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto> :
+    public interface IWriteService<TEntity, TKey, TCreateDto, TDetailedDto> :
         ICreateService<TCreateDto, TDetailedDto>,
-        IUpdateService<TKey, TUpdateDto>,
         IDeleteService<TKey>
         where TEntity : class, IEntityId<TKey>
         where TDetailedDto : IDtoID<TKey>

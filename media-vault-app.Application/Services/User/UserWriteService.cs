@@ -11,26 +11,27 @@ using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Validators;
+using media_vault_app.Application.Mappers.User;
 
 namespace media_vault_app.Application.Services.User
 {
     public class UserWriteService
-        : WriteServiceBase<UserEntitiy, Guid, UserCreateDto, UserUpdateDto, UserDetailedDto>, IUserWriteService
+        : WriteServiceBase<UserEntitiy, Guid, UserCreateDto, UserDetailedDto>, IUserWriteService
     {
         private readonly IUserRepo _userRepo;
         private readonly IPasswordHasherService _passwordHasherService;
         private readonly UserDtoValidator _dtoValidator;
         private readonly IMapEntityToDetailedDto<UserEntitiy, UserDetailedDto> _entityToDtoMapper;
+        private readonly UserDtoMapper _dtoToEntityMapper;
 
         public UserWriteService(
             IUserRepo userRepo,
             IMapEntityToDetailedDto<UserEntitiy, UserDetailedDto> entityToDtoMapper,
-            IMapDtoToEntity<UserEntitiy, UserDetailedDto, UserCreateDto, Guid, UserUpdateDto> dtoToEntityMapper,
             IPasswordHasherService passwordHasherService)
             : this(
                 userRepo,
                 entityToDtoMapper,
-                dtoToEntityMapper,
+                new UserDtoMapper(),
                 passwordHasherService,
                 new UserDtoValidator())
         {
@@ -39,12 +40,13 @@ namespace media_vault_app.Application.Services.User
         private UserWriteService(
             IUserRepo userRepo,
             IMapEntityToDetailedDto<UserEntitiy, UserDetailedDto> entityToDtoMapper,
-            IMapDtoToEntity<UserEntitiy, UserDetailedDto, UserCreateDto, Guid, UserUpdateDto> dtoToEntityMapper,
+            UserDtoMapper dtoToEntityMapper,
             IPasswordHasherService passwordHasherService,
             UserDtoValidator dtoValidator)
             : base(userRepo, entityToDtoMapper, dtoToEntityMapper, dtoValidator)
         {
             _entityToDtoMapper = entityToDtoMapper;
+            _dtoToEntityMapper = dtoToEntityMapper;
             _userRepo = userRepo;
             _passwordHasherService = passwordHasherService;
             _dtoValidator = dtoValidator;
@@ -57,7 +59,7 @@ namespace media_vault_app.Application.Services.User
                 return await base.CreateAsync(createDto!, ct);
             }
 
-            var errorContext = CreateErrorContext(nameof(CreateAsync), OperationType.Create, typeof(UserCreateDto).Name);
+            var errorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create, typeof(UserCreateDto).Name);
 
             if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
             {
@@ -77,7 +79,7 @@ namespace media_vault_app.Application.Services.User
 
         public async Task<Result<UserDetailedDto>> LoginAsync(UserLoginDto loginDto, CancellationToken ct = default)
         {
-            var errorContext = CreateErrorContext(nameof(LoginAsync), OperationType.Login, typeof(UserLoginDto).Name);
+            var errorContext = DefineErrorContext(nameof(LoginAsync), OperationType.Login, typeof(UserLoginDto).Name);
 
             //if (!_userDtoValidator.IsValidLoginDto(loginDto, errorContext, out var validationErrors))
             if (!_dtoValidator.IsValidLoginDto(loginDto, errorContext, out var validationErrors))
@@ -107,14 +109,41 @@ namespace media_vault_app.Application.Services.User
             return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
         }
 
-        private ErrorContext CreateErrorContext(string methodName, OperationType operation, string? entityName = null)
+        //public async Task<Result> UpdatePasswordAsync(Guid id, UserUpdateDto updateDto, CancellationToken ct = default)
+        //{
+
+        //}
+
+        public async Task<Result> UpdateUserInfoAsync(Guid id, UserUpdateDto updateDto, CancellationToken ct = default)
+        {
+            var errorContext = DefineErrorContext(nameof(UpdateUserInfoAsync), OperationType.Update);
+
+            List<ValidationError> validationErrors = new();
+
+            if (!id.IsValidId(errorContext, out var idError))
+                validationErrors.Add(idError);
+
+            if (!_dtoValidator.IsValidUpdateDto(updateDto, errorContext, out var updateValidationErrors))
+                validationErrors.AddRange(updateValidationErrors);
+
+            if (validationErrors.Count > 0)
+            {
+                return Result.ValidationFailure(validationErrors, "User update validation failed.");
+            }
+
+            var userEntity = _dtoToEntityMapper.MapToEntity(id, updateDto);
+
+            return (await _userRepo.UpdateAsync(userEntity, ct));
+        }
+
+        private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null)
         {
             return new ErrorContext(
                 layer: "Service",
                 serviceName: GetType().Name,
                 methodName: methodName,
                 operation: operation,
-                entityName: entityName ?? typeof(UserEntitiy).Name);
+                entityName: typeof(UserEntitiy).Name);
         }
     }
 }

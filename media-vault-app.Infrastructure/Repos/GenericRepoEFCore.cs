@@ -142,7 +142,6 @@ namespace media_vault_app.Infrastructure.Repos
 
         public virtual async Task<Result> UpdateAsync(
             TEntity updatedEntity,
-            Func<TEntity, TEntity, bool> shouldUpdate,
             CancellationToken ct = default)
         {
 
@@ -165,11 +164,6 @@ namespace media_vault_app.Infrastructure.Repos
                     return Result.Failure(
                         Error.NotFound<TEntity>(errorContext.DescriptionPrefix),
                         $"{errorContext.EntityName} not found");
-                }
-
-                if (!shouldUpdate(oldEntity, updatedEntity))
-                {
-                    return Result.Success();
                 }
 
                 _appDbContext.Entry(oldEntity).CurrentValues.SetValues(updatedEntity);

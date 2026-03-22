@@ -29,15 +29,8 @@ namespace media_vault_app.Application.Services
         {
             var errorContext = CreateErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
-            if (!Validator.IsValidId(id))
-            {
-                errorContext.DescriptionSuffix = $"A valid Id is required and cannot be null or empty.";
-                errorContext.EntityName = nameof(id);
-
-                var nullValueError = ValidationError.Required(errorContext);
-
-                return Result<TDetailedDto>.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
-            }
+            if (!id.IsValidId(errorContext, out var idNotValidError))
+                return Result<TDetailedDto>.ValidationFailure([idNotValidError], errorContext.DescriptionSuffix!);
 
             var repoResult = await _repo.GetByIdAsync(id, ct);
 

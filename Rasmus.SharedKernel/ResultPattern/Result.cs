@@ -45,7 +45,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null.</exception>
         /// <exception cref="ArgumentException">Thrown if the result state is inconsistent.</exception>
 
-        protected Result(bool isSuccess, string message, IEnumerable<ValidationError> validationErrors, Error primaryError)
+        internal Result(bool isSuccess, string message, IEnumerable<ValidationError> validationErrors, Error primaryError)
         {
             // **|| GUARD CLAUSES TO ENSURE CONSISTENCY OF THE RESULT STATE ||**
 

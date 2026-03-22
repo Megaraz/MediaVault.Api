@@ -10,7 +10,7 @@ namespace Rasmus.SharedKernel.Interfaces
         // TODO: Maybe split to minimal/detailed DTOs in the future if needed.
         Task<Result<IReadOnlyList<TEntity>>> GetCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default);
         Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken ct = default);
-        Task<Result> UpdateAsync(TEntity updatedEntity, Func<TEntity, TEntity, bool> shouldUpdate, CancellationToken ct = default);
+        Task<Result> UpdateAsync(TEntity updatedEntity, CancellationToken ct = default);
         Task<Result> DeleteAsync(TKey id, CancellationToken ct = default);
     }
 }
