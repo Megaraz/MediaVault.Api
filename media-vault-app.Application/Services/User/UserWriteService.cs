@@ -19,8 +19,7 @@ namespace media_vault_app.Application.Services.User
     {
         private readonly IUserRepo _userRepo;
         private readonly IPasswordHasherService _passwordHasherService;
-        private readonly IDtoValidator<Guid, UserCreateDto, UserUpdateDto> _dtoValidator;
-        private readonly UserDtoValidator _userDtoValidator = new();
+        private readonly UserDtoValidator _dtoValidator;
         private readonly IMapEntityToDetailedDto<UserEntitiy, UserDetailedDto> _entityToDtoMapper;
 
         public UserWriteService(
@@ -42,7 +41,7 @@ namespace media_vault_app.Application.Services.User
             IMapEntityToDetailedDto<UserEntitiy, UserDetailedDto> entityToDtoMapper,
             IMapDtoToEntity<UserEntitiy, UserDetailedDto, UserCreateDto, Guid, UserUpdateDto> dtoToEntityMapper,
             IPasswordHasherService passwordHasherService,
-            IDtoValidator<Guid, UserCreateDto, UserUpdateDto> dtoValidator)
+            UserDtoValidator dtoValidator)
             : base(userRepo, entityToDtoMapper, dtoToEntityMapper, dtoValidator)
         {
             _entityToDtoMapper = entityToDtoMapper;
@@ -80,7 +79,8 @@ namespace media_vault_app.Application.Services.User
         {
             var errorContext = CreateErrorContext(nameof(LoginAsync), OperationType.Login, typeof(UserLoginDto).Name);
 
-            if (!_userDtoValidator.IsValidLoginDto(loginDto, errorContext, out var validationErrors))
+            //if (!_userDtoValidator.IsValidLoginDto(loginDto, errorContext, out var validationErrors))
+            if (!_dtoValidator.IsValidLoginDto(loginDto, errorContext, out var validationErrors))
             {
                 return Result<UserDetailedDto>.ValidationFailure(validationErrors, "User login validation failed.");
             }

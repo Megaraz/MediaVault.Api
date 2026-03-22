@@ -16,13 +16,9 @@ namespace media_vault_app.Infrastructure.Repos
         {
             var errorContext = DefineErrorContext(nameof(GetCollectionByUserIdAsync), OperationType.GetCollection);
 
-            if (!Validator.IsValidId(userId))
+            if (!userId.IsValidId(errorContext, out var idError))
             {
-                errorContext.DescriptionSuffix = "A valid UserId is required and cannot be null or empty.";
-                errorContext.FieldName = nameof(userId);
-
-                var userIdError = ValidationError.Required(errorContext);
-                return Result<IReadOnlyList<MediaEntry>>.ValidationFailure([userIdError], errorContext.DescriptionSuffix);
+                return Result<IReadOnlyList<MediaEntry>>.ValidationFailure([idError], errorContext.DescriptionSuffix!);
             }
 
             try
@@ -50,22 +46,14 @@ namespace media_vault_app.Infrastructure.Repos
         {
             var errorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
-            if (!Validator.IsValidId(userId))
+            if (!userId.IsValidId(errorContext, out var userIdError))
             {
-                errorContext.DescriptionSuffix = "A valid UserId is required and cannot be null or empty.";
-                errorContext.FieldName = nameof(userId);
-
-                var userIdError = ValidationError.Required(errorContext);
-                return Result<MediaEntry>.ValidationFailure([userIdError], errorContext.DescriptionSuffix);
+                return Result<MediaEntry>.ValidationFailure([userIdError], errorContext.DescriptionSuffix!);
             }
 
-            if (!Validator.IsValidId(mediaEntryId))
+            if (!mediaEntryId.IsValidId(errorContext, out var mediaEntryIdError))
             {
-                errorContext.DescriptionSuffix = "A valid MediaEntry Id is required and cannot be null or empty.";
-                errorContext.FieldName = nameof(mediaEntryId);
-
-                var mediaEntryIdError = ValidationError.Required(errorContext);
-                return Result<MediaEntry>.ValidationFailure([mediaEntryIdError], errorContext.DescriptionSuffix);
+                return Result<MediaEntry>.ValidationFailure([mediaEntryIdError], errorContext.DescriptionSuffix!);
             }
 
             try
@@ -89,7 +77,7 @@ namespace media_vault_app.Infrastructure.Repos
 
                 return Result<MediaEntry>.Failure(
                     Error.DbGetFailure(errorContext, ex),
-                    "An error occurred while retrieving the MediaEntry.");
+                    errorContext.DescriptionSuffix);
             }
         }
 
@@ -97,31 +85,14 @@ namespace media_vault_app.Infrastructure.Repos
         {
             var errorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
 
-            if (!Validator.IsValidId(userId))
-            {
-                errorContext.DescriptionSuffix = "A valid UserId is required and cannot be null or empty.";
-                errorContext.FieldName = nameof(userId);
+            if (!userId.IsValidId(errorContext, out var userIdError))
+                return Result.ValidationFailure([userIdError], errorContext.DescriptionSuffix!);
 
-                var userIdError = ValidationError.Required(errorContext);
-                return Result.ValidationFailure([userIdError], errorContext.DescriptionSuffix);
-            }
+            if (updatedEntity.IsNull(errorContext, out var requiredValueError))
+                return Result.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix!);
 
-            if (updatedEntity is null || updatedEntity.Equals(default(MediaEntry)))
-            {
-                errorContext.DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty.";
-
-                var requiredValueError = ValidationError.Required(errorContext);
-                return Result.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix);
-            }
-
-            if (!Validator.IsValidId(updatedEntity.Id))
-            {
-                errorContext.DescriptionSuffix = "A valid MediaEntry Id is required and cannot be null or empty.";
-                errorContext.FieldName = nameof(updatedEntity.Id);
-
-                var mediaEntryIdError = ValidationError.Required(errorContext);
-                return Result.ValidationFailure([mediaEntryIdError], errorContext.DescriptionSuffix);
-            }
+            if (!updatedEntity.Id.IsValidId(errorContext, out var mediaEntryIdError))
+                return Result.ValidationFailure([mediaEntryIdError], errorContext.DescriptionSuffix!);
 
             try
             {
@@ -151,7 +122,7 @@ namespace media_vault_app.Infrastructure.Repos
 
                 return Result.Failure(
                     Error.DbUpdateFailure(errorContext, ex),
-                    "An error occurred while updating the MediaEntry.");
+                    errorContext.DescriptionSuffix);
             }
         }
 
@@ -159,23 +130,11 @@ namespace media_vault_app.Infrastructure.Repos
         {
             var errorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
-            if (!Validator.IsValidId(userId))
-            {
-                errorContext.DescriptionSuffix = "A valid UserId is required and cannot be null or empty.";
-                errorContext.FieldName = nameof(userId);
+            if (!userId.IsValidId(errorContext, out var userIdError))
+                return Result.ValidationFailure([userIdError], errorContext.DescriptionSuffix!);
 
-                var userIdError = ValidationError.Required(errorContext);
-                return Result.ValidationFailure([userIdError], errorContext.DescriptionSuffix);
-            }
-
-            if (!Validator.IsValidId(mediaEntryId))
-            {
-                errorContext.DescriptionSuffix = "A valid MediaEntry Id is required and cannot be null or empty.";
-                errorContext.FieldName = nameof(mediaEntryId);
-
-                var mediaEntryIdError = ValidationError.Required(errorContext);
-                return Result.ValidationFailure([mediaEntryIdError], errorContext.DescriptionSuffix);
-            }
+            if (!mediaEntryId.IsValidId(errorContext, out var mediaEntryIdError))
+                return Result.ValidationFailure([mediaEntryIdError], errorContext.DescriptionSuffix!);
 
             try
             {
@@ -200,7 +159,7 @@ namespace media_vault_app.Infrastructure.Repos
 
                 return Result.Failure(
                     Error.DbDeleteFailure(errorContext, ex),
-                    "An error occurred while deleting the MediaEntry.");
+                    errorContext.DescriptionSuffix);
             }
         }
 

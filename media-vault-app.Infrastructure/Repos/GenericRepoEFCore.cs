@@ -28,14 +28,8 @@ namespace media_vault_app.Infrastructure.Repos
             var errorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
 
 
-            if (entity is null || entity.Equals(default(TEntity)))
-            {
-                errorContext.DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty.";
-
-                ValidationError nullValueError = ValidationError.Required(errorContext);
-
-                return Result<TEntity>.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
-            }
+            if (entity.IsNull(errorContext, out var nullValueError))
+                return Result<TEntity>.ValidationFailure([nullValueError], errorContext.DescriptionSuffix!);
 
             try
             {
@@ -109,7 +103,7 @@ namespace media_vault_app.Infrastructure.Repos
 
                 return Result<IReadOnlyList<TEntity>>.Failure(
                     Error.DbGetCollectionFailure(errorContext, ex),
-                    $"An error occurred while retrieving the {typeof(TEntity).Name} collection.");
+                    errorContext.DescriptionSuffix);
             }
         }
 
@@ -118,15 +112,8 @@ namespace media_vault_app.Infrastructure.Repos
             // Define error handling context
             var errorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
-            if (!Validator.IsValidId(id))
-            {
-                errorContext.DescriptionSuffix = $"A valid Id is required and cannot be null or empty.";
-                errorContext.EntityName = nameof(id);
-
-                var nullValueError = ValidationError.Required(errorContext);
-
-                return Result.ValidationFailure([nullValueError], errorContext.DescriptionSuffix);
-            }
+            if (!id.IsValidId(errorContext, out var idError))
+                return Result.ValidationFailure([idError], errorContext.DescriptionSuffix!);
 
             try
             {
@@ -149,7 +136,7 @@ namespace media_vault_app.Infrastructure.Repos
 
                 return Result.Failure(
                     Error.DbDeleteFailure(errorContext, ex),
-                    $"An error occurred while deleting the {typeof(TEntity).Name}.");
+                    errorContext.DescriptionSuffix);
             }
         }
 

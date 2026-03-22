@@ -18,15 +18,8 @@ namespace media_vault_app.Infrastructure.Repos
         {
             var errorContext = DefineErrorContext(nameof(GetByUsernameOrEmailAsync), OperationType.Get);
 
-
-            if (string.IsNullOrWhiteSpace(usernameOrEmail))
-            {
-                errorContext.DescriptionSuffix = "A username or email is required and cannot be null or empty.";
-
-                ValidationError requiredValueError = ValidationError.Required(errorContext);
-
-                return Result<User>.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix);
-            }
+            if (!usernameOrEmail.IsNullOrWhiteSpace(errorContext, out var requiredValueError))
+                return Result<User>.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix!);
 
             try
             {
@@ -53,7 +46,7 @@ namespace media_vault_app.Infrastructure.Repos
 
                 return Result<User>.Failure(
                     Error.DbGetFailure(errorContext, ex),
-                    "An error occurred while retrieving the User.");
+                    errorContext.DescriptionSuffix);
             }
         }
 
