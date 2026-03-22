@@ -81,7 +81,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        public async Task<Result> UpdateAsync(Guid userId, MediaEntry updatedEntity, Func<MediaEntry, MediaEntry, bool> shouldUpdate, CancellationToken ct = default)
+        public async Task<Result> UpdateAsync(Guid userId, MediaEntry updatedEntity, CancellationToken ct = default)
         {
             var errorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
 
@@ -104,11 +104,6 @@ namespace media_vault_app.Infrastructure.Repos
                     return Result.Failure(
                         Error.NotFound<MediaEntry>(errorContext.DescriptionPrefix),
                         "MediaEntry not found.");
-                }
-
-                if (!shouldUpdate(existingEntity, updatedEntity))
-                {
-                    return Result.Success();
                 }
 
                 _appDbContext.Entry(existingEntity).CurrentValues.SetValues(updatedEntity);

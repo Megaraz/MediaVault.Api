@@ -29,12 +29,15 @@ namespace media_vault_app.API.Controllers
 
             var result = await _userWriteService.CreateAsync(createDto, ct);
 
-            var dto = result.IsSuccess
-                ? new UserDetailedDto(result.Value.Id, result.Value.Username, result.Value.Email, result.Value.CreatedAtUtc)
-                : null;
+            return this.ToCreated(result, nameof(GetUserById), value => new { id = result.Value.Id });
+        }
 
+        [HttpPost]
+        public async Task<ActionResult<UserDetailedDto>> LoginUser([FromBody] UserLoginDto loginDto, CancellationToken ct)
+        {
+            var result = await _userWriteService.LoginAsync(loginDto, ct);
 
-            return this.ToCreated(result, nameof(GetUserById), value => new { id = dto!.Id });
+            return this.ToOk(result);
         }
 
         [HttpGet]
@@ -42,22 +45,7 @@ namespace media_vault_app.API.Controllers
         {
             var result = await _userReadService.GetDetailedCollectionAsync(ct: ct);
 
-            if (result.IsSuccess)
-            {
-                var users = result.Value;
-                return Ok(users.Select(user => new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc)));
-            }
-
-            return result.PrimaryError.Type switch
-            {
-                ErrorType.NotFound => NotFound(result.PrimaryError.Description),
-                ErrorType.Validation => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
-                ErrorType.Unauthorized => Unauthorized(result.PrimaryError.Description),
-                ErrorType.Conflict => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
-                ErrorType.Forbidden => Forbid(result.PrimaryError.Description),
-                ErrorType.Failure => StatusCode(500, result.PrimaryError.Description),
-                _ => StatusCode(500, "An unexpected error occurred.")
-            };
+            return this.ToOk(result);
         }
 
         [HttpGet("{id:Guid}")]
@@ -66,25 +54,21 @@ namespace media_vault_app.API.Controllers
 
             var result = await _userReadService.GetByIdAsync(id, ct);
 
-            if (result.IsSuccess)
-            {
-                var user = result.Value;
-                return Ok(new UserDetailedDto(user.Id, user.Username, user.Email, user.CreatedAtUtc));
-            }
+            return this.ToOk(result);
+        }
 
-            Debug.WriteLine($"PrimaryError Description: {result.PrimaryError.Description}");
+        [HttpPut("{id:Guid}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateDto updateDto, CancellationToken ct)
+        {
+            var result = await _userWriteService.UpdateUserInfoAsync(id, updateDto, ct);
+            return this.ToNoContent(result);
+        }
 
-            return result.PrimaryError.Type switch
-            {
-                //ErrorType.NotFound => NotFound(result.PrimaryError.Description),
-                ErrorType.NotFound => NotFound("TEST TEST TEST"),
-                ErrorType.Validation => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
-                ErrorType.Unauthorized => Unauthorized(result.PrimaryError.Description),
-                ErrorType.Conflict => BadRequest(string.Join(", \n", result.ValidationErrors.Select(ve => ve.Description))),
-                ErrorType.Forbidden => Forbid(result.PrimaryError.Description),
-                ErrorType.Failure => StatusCode(500, result.PrimaryError.Description),
-                _ => StatusCode(500, "An unexpected error occurred.")
-            };
+        [HttpDelete("{id:Guid}")]
+        public async Task<IActionResult> DeleteUser(Guid id, CancellationToken ct)
+        {
+            var result = await _userWriteService.DeleteAsync(id, ct);
+            return this.ToNoContent(result);
         }
     }
 }

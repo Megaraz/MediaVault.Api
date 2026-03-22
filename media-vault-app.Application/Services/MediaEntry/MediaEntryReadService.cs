@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Mappers.MediaEntry;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.ResultPattern;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
@@ -97,7 +98,7 @@ namespace media_vault_app.Application.Services.MediaEntry
         private Result? ValidateCollectionRequest(Guid userId, int pageNumber, int pageSize, string methodName)
         {
             var validationErrors = new List<ValidationError>();
-            var errorContext = CreateErrorContext(methodName, OperationType.GetCollection);
+            var errorContext = DefineErrorContext(methodName, OperationType.GetCollection);
 
             if (!Validator.IsValidId(userId))
             {
@@ -135,7 +136,7 @@ namespace media_vault_app.Application.Services.MediaEntry
                 return null;
             }
 
-            var errorContext = CreateErrorContext(methodName, operation);
+            var errorContext = DefineErrorContext(methodName, operation);
             errorContext.DescriptionSuffix = "A valid UserId is required and cannot be null or empty.";
             errorContext.FieldName = nameof(userId);
 
@@ -150,7 +151,7 @@ namespace media_vault_app.Application.Services.MediaEntry
                 return null;
             }
 
-            var errorContext = CreateErrorContext(methodName, operation);
+            var errorContext = DefineErrorContext(methodName, operation);
             errorContext.DescriptionSuffix = "A valid MediaEntry Id is required and cannot be null or empty.";
             errorContext.FieldName = nameof(mediaEntryId);
 
@@ -158,7 +159,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             return Result.ValidationFailure([validationError], errorContext.DescriptionSuffix);
         }
 
-        private ErrorContext CreateErrorContext(string methodName, OperationType operation)
+        private ErrorContext DefineErrorContext(string methodName, OperationType operation)
         {
             return new ErrorContext(
                 layer: "Service",

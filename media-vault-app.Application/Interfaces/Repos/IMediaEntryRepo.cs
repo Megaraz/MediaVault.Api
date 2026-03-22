@@ -11,7 +11,7 @@ namespace media_vault_app.Application.Interfaces.Repos
     {
         Task<Result<IReadOnlyList<MediaEntry>>> GetCollectionByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default);
         Task<Result<MediaEntry>> GetByIdAsync(Guid userId, Guid mediaEntryId, CancellationToken ct = default);
-        Task<Result> UpdateAsync(Guid userId, MediaEntry updatedEntity, Func<MediaEntry, MediaEntry, bool> shouldUpdate, CancellationToken ct = default);
+        Task<Result> UpdateAsync(Guid userId, MediaEntry updatedEntity, CancellationToken ct = default);
         Task<Result> DeleteAsync(Guid userId, Guid mediaEntryId, CancellationToken ct = default);
     }
 }

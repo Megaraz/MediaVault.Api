@@ -3,6 +3,7 @@ using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Mappers.MediaEntry;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Validators;
@@ -16,31 +17,20 @@ namespace media_vault_app.Application.Services.MediaEntry
     {
         private readonly IMediaEntryRepo _mediaEntryRepo;
         private readonly IUserRepo _userRepo;
-        private readonly IMapEntityToDetailedDto<MediaEntryEntity, MediaEntryDetailedDto> _entityToDtoMapper;
-        private readonly IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, Guid, MediaEntryUpdateDto> _dtoToEntityMapper;
-        private readonly IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto> _dtoValidator;
+        private readonly MediaEntryDtoValidator _dtoValidator;
+        private readonly MediaEntryDtoMapper _dtoToEntityMapper;
+        private readonly MediaEntryEntityMapper _entityToDtoMapper;
 
-        //public MediaEntryWriteService(
-        //    IMediaEntryRepo mediaEntryRepo,
-        //    IUserRepo userRepo,
-        //    IMapEntityToDetailedDto<MediaEntryEntity, MediaEntryDetailedDto> entityToDtoMapper,
-        //    IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, Guid, MediaEntryUpdateDto> dtoToEntityMapper)
-        //    : this(mediaEntryRepo, userRepo, entityToDtoMapper, dtoToEntityMapper, new MediaEntryDtoValidator())
-        //{
-        //}
 
         public MediaEntryWriteService(
             IMediaEntryRepo mediaEntryRepo,
-            IUserRepo userRepo,
-            IMapEntityToDetailedDto<MediaEntryEntity, MediaEntryDetailedDto> entityToDtoMapper,
-            IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, Guid, MediaEntryUpdateDto> dtoToEntityMapper,
-            IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto> dtoValidator)
+            IUserRepo userRepo)
         {
             _mediaEntryRepo = mediaEntryRepo;
             _userRepo = userRepo;
-            _entityToDtoMapper = entityToDtoMapper;
-            _dtoToEntityMapper = dtoToEntityMapper;
-            _dtoValidator = dtoValidator;
+            _entityToDtoMapper = new MediaEntryEntityMapper();
+            _dtoToEntityMapper = new MediaEntryDtoMapper();
+            _dtoValidator = new MediaEntryDtoValidator();
         }
 
         public async Task<Result<MediaEntryDetailedDto>> CreateAsync(Guid userId, MediaEntryCreateDto createDto, CancellationToken ct = default)
@@ -93,7 +83,7 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             var errorContext = CreateErrorContext(nameof(UpdateAsync), OperationType.Update, typeof(MediaEntryUpdateDto).Name);
 
-            if (!_dtoValidator.IsValidUpdateDto(mediaEntryId, updateDto, errorContext, out var validationErrors))
+            if (!_dtoValidator.IsValidUpdateDto(updateDto, errorContext, out var validationErrors))
             {
                 return Result.ValidationFailure(validationErrors, "MediaEntry update validation failed.");
             }
@@ -101,7 +91,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             var updatedEntity = _dtoToEntityMapper.MapToEntity(mediaEntryId, updateDto);
             updatedEntity.UserId = userId;
 
-            return await _mediaEntryRepo.UpdateAsync(userId, updatedEntity, (_, _) => true, ct);
+            return await _mediaEntryRepo.UpdateAsync(userId, updatedEntity, ct);
         }
 
         public async Task<Result> DeleteAsync(Guid userId, Guid mediaEntryId, CancellationToken ct = default)

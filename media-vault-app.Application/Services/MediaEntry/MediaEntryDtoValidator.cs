@@ -8,7 +8,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.MediaEntry
 {
-    public class MediaEntryDtoValidator : IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto>
+    public class MediaEntryDtoValidator : IDtoValidator<Guid, MediaEntryCreateDto>
     {
         public bool IsValidCreateDto(MediaEntryCreateDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
@@ -30,27 +30,18 @@ namespace media_vault_app.Application.Services.MediaEntry
 
         }
 
-        public bool IsValidUpdateDto(Guid id, MediaEntryUpdateDto updateDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidUpdateDto(MediaEntryUpdateDto updateDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
             validationErrors = new List<ValidationError>();
 
-            if (!Validator.IsValidId(id))
-            {
-                errorContext.DescriptionSuffix = "A valid Id is required and cannot be null or empty.";
-                errorContext.FieldName = nameof(id);
-
-                var idError = ValidationError.Required(errorContext);
-                validationErrors = validationErrors.Append(idError);
-            }
-
-            if (ValidatorExtensions.IsNull(updateDto, errorContext, out ValidationError nullValueError))
+            if (updateDto.IsNull(errorContext, out ValidationError nullValueError))
             {
                 validationErrors = validationErrors.Append(nullValueError);
                 return false;
             }
 
             errorContext.FieldName = nameof(updateDto.Title);
-            if (ValidatorExtensions.IsNullOrWhiteSpace(updateDto.Title, errorContext, out ValidationError nullOrEmptyError))
+            if (updateDto.Title.IsNullOrWhiteSpace(errorContext, out ValidationError nullOrEmptyError))
             {
                 validationErrors = validationErrors.Append(nullOrEmptyError);
             }
