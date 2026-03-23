@@ -29,7 +29,7 @@ namespace media_vault_app.API.Controllers
         {
             var result = await _writeService.CreateAsync(userId, createDto, ct);
 
-            return this.ToCreated(result, nameof(GetMediaEntryById), value => new { id = value.Id });
+            return this.ToCreated(result, nameof(GetMediaEntryById), value => new { userId = value.UserId, id = value.Id });
         }
 
         [HttpGet("{userId:Guid}/{id:Guid}")]

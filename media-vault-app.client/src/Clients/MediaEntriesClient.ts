@@ -55,6 +55,25 @@ export default class MediaEntriesClient {
         return response.json();
     }
 
+    async getById(userId: string, entryId: string): Promise<MediaEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`);
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entry: " + errorMessage);
+        }
+        return response.json();
+    }
+
+    async delete(userId: string, entryId: string): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`, {
+            method: "DELETE",
+        });
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to delete media entry: " + errorMessage);
+        }
+    }
+
     async create(userId: string, entry: MediaEntryCreateDto): Promise<MediaEntryDetailedDto> {
         const response = await fetch(`${this.baseUrl}/${userId}`, {
             method: "POST",
