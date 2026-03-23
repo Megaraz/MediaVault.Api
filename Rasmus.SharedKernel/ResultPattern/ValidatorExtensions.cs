@@ -13,7 +13,10 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             if (!Validator.IsValidId(id))
             {
-                errorContext.FieldName = nameof(id);
+                if (string.IsNullOrWhiteSpace(errorContext.FieldName))
+                {
+                    errorContext.FieldName = nameof(id);
+                }
                 errorContext.DescriptionSuffix = $"A valid Id is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
 
                 idError = ValidationError.Required(errorContext);
@@ -37,24 +40,28 @@ namespace Rasmus.SharedKernel.ResultPattern
                 return false;
         }
 
-        public static bool AnyIsNullOrWhiteSpace(this IEnumerable<string> values, ErrorContext errorContext, out ValidationError nullOrEmptyError)
+        public static bool AnyIsNullOrWhiteSpace(this IEnumerable<(string FieldName, string Value)> requiredValues, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
-            nullOrEmptyError = default!;
+            validationErrors = new List<ValidationError>();
+            var internalErrors = new List<ValidationError>();
 
-            if (values.IsNull(errorContext, out var nullValueError))
+            if (requiredValues.IsNull(errorContext, out var nullValueError))
             {
-                nullOrEmptyError = nullValueError;
+                internalErrors.Add(nullValueError);
                 return true;
             }
 
-            if (values.Any(string.IsNullOrWhiteSpace))
+            foreach (var (FieldName, Value) in requiredValues)
             {
-                errorContext.DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
-                nullOrEmptyError = ValidationError.Required(errorContext);
-                return true;
+                if (string.IsNullOrWhiteSpace(Value))
+                {
+                    errorContext.FieldName = FieldName;
+                    errorContext.DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
+                    internalErrors.Add(ValidationError.Required(errorContext));
+                }
             }
-            else
-                return false;
+            validationErrors = internalErrors;
+            return !validationErrors.Any();
         }
         public static bool IsNullOrWhiteSpace(this string value, ErrorContext errorContext, out ValidationError nullOrEmptyError)
         {
@@ -78,10 +85,10 @@ namespace Rasmus.SharedKernel.ResultPattern
             {
                 errorContext.DescriptionSuffix = $"The fields '{errorContext.FieldName}' and '{errorContext.ConfirmFieldName}' must match for the entity '{errorContext.EntityName}'.";
                 notMatchingError = ValidationError.NonMatchingValues(errorContext);
-                return true;
+                return false;
             }
             else
-                return false;
+                return true;
         }
 
     }

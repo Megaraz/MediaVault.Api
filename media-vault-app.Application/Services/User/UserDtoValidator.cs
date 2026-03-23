@@ -34,33 +34,44 @@ namespace media_vault_app.Application.Services.User
         public bool IsValidCreateDto(UserCreateDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
             validationErrors = new List<ValidationError>();
+            var internalErrors = new List<ValidationError>();
 
             if (createDto.IsNull(errorContext, out ValidationError nullValueError))
             {
-                validationErrors = validationErrors.Append(nullValueError);
+                internalErrors.Add(nullValueError);
+                validationErrors = internalErrors;
                 return false;
             }
 
-            string[] requiredFields = { createDto.Username, createDto.Email, createDto.ConfirmEmail, createDto.Password, createDto.ConfirmPassword };
-
-            if (requiredFields.AnyIsNullOrWhiteSpace(errorContext, out ValidationError nullOrEmptyError))
+            var requiredFields = new (string FieldName, string Value)[]
             {
-                validationErrors = validationErrors.Append(nullOrEmptyError);
+                (nameof(createDto.Username), createDto.Username),
+                (nameof(createDto.Email), createDto.Email),
+                (nameof(createDto.ConfirmEmail), createDto.ConfirmEmail),
+                (nameof(createDto.Password), createDto.Password),
+                (nameof(createDto.ConfirmPassword), createDto.ConfirmPassword)
+            };
+
+            if (requiredFields.AnyIsNullOrWhiteSpace(errorContext, out IEnumerable<ValidationError> nullOrEmptyErrors))
+            {
+                internalErrors.AddRange(nullOrEmptyErrors);
             }
 
             if (!createDto.Email.Matches(createDto.ConfirmEmail, errorContext, out ValidationError notMatchingEmailError))
             {
-                validationErrors = validationErrors.Append(notMatchingEmailError);
+                internalErrors.Add(notMatchingEmailError);
             }
 
             if (!createDto.Password.Matches(createDto.ConfirmPassword, errorContext, out ValidationError notMatchingPasswordError))
             {
-                validationErrors = validationErrors.Append(notMatchingPasswordError);
+                internalErrors.Add(notMatchingPasswordError);
             }
 
+            validationErrors = internalErrors;
             return !validationErrors.Any();
         }
 
+        // TODO: Implement update DTO validation logic
         public bool IsValidUpdateDto(UserUpdateDto updateDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
             throw new NotImplementedException();

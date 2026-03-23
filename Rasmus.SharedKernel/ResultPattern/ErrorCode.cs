@@ -40,7 +40,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
     // Represents a structured error code that encapsulates the operation, entity type, and error type.
     // The property Code is a concatenation of the three components, making it easy to identify and categorize errors in a consistent manner.
-    // Code will look like: "Create.User..Required" or "GetCollection.Order.Timeout"
+    // Code will look like: "Create.User.Required" or "GetCollection.Order.Timeout"
     public sealed record ErrorCode
     {
         /// <summary>

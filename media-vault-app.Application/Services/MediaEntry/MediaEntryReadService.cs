@@ -15,16 +15,16 @@ namespace media_vault_app.Application.Services.MediaEntry
     {
         private readonly IMediaEntryRepo _mediaEntryRepo;
         private readonly IUserRepo _userRepo;
-        private readonly IMapEntityToDto<MediaEntryEntity, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto> _entityToDtoMapper;
+        private readonly MediaEntryEntityMapper _entityToDtoMapper;
 
         public MediaEntryReadService(
             IMediaEntryRepo mediaEntryRepo,
-            IUserRepo userRepo,
-            IMapEntityToDto<MediaEntryEntity, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto> entityToDtoMapper)
+            IUserRepo userRepo)
+
         {
             _mediaEntryRepo = mediaEntryRepo;
             _userRepo = userRepo;
-            _entityToDtoMapper = entityToDtoMapper;
+            _entityToDtoMapper = new();
         }
 
         public async Task<Result<MediaEntryDetailedDto>> GetByIdAsync(Guid userId, Guid mediaEntryId, CancellationToken ct = default)

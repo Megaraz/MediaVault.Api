@@ -18,7 +18,7 @@ namespace media_vault_app.Infrastructure.Repos
         {
             var errorContext = DefineErrorContext(nameof(GetByUsernameOrEmailAsync), OperationType.Get);
 
-            if (!usernameOrEmail.IsNullOrWhiteSpace(errorContext, out var requiredValueError))
+            if (usernameOrEmail.IsNullOrWhiteSpace(errorContext, out var requiredValueError))
                 return Result<User>.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix!);
 
             try

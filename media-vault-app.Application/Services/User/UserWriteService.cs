@@ -21,7 +21,7 @@ namespace media_vault_app.Application.Services.User
         private readonly IUserRepo _userRepo;
         private readonly IPasswordHasherService _passwordHasherService;
         private readonly UserDtoValidator _dtoValidator;
-        private readonly IMapEntityToDetailedDto<UserEntitiy, UserDetailedDto> _entityToDtoMapper;
+        private readonly UserEntityMapper _entityToDtoMapper;
         private readonly UserDtoMapper _dtoToEntityMapper;
 
         public UserWriteService(
@@ -30,7 +30,7 @@ namespace media_vault_app.Application.Services.User
             IPasswordHasherService passwordHasherService)
             : this(
                 userRepo,
-                entityToDtoMapper,
+                new UserEntityMapper(),
                 new UserDtoMapper(),
                 passwordHasherService,
                 new UserDtoValidator())
@@ -39,7 +39,7 @@ namespace media_vault_app.Application.Services.User
 
         private UserWriteService(
             IUserRepo userRepo,
-            IMapEntityToDetailedDto<UserEntitiy, UserDetailedDto> entityToDtoMapper,
+            UserEntityMapper entityToDtoMapper,
             UserDtoMapper dtoToEntityMapper,
             IPasswordHasherService passwordHasherService,
             UserDtoValidator dtoValidator)
@@ -96,6 +96,7 @@ namespace media_vault_app.Application.Services.User
 
             bool passwordIsValid = _passwordHasherService.VerifyPassword(repoResult.Value.PasswordHash, loginDto.Password);
 
+            // TODO: "The unauthorized error created here uses a hard-coded code string ("Unauthorized") instead of the structured ErrorCode.For(...) pattern used elsewhere. This makes error codes inconsistent and harder to handle uniformly (especially with ResultResponseMapper returning codes to clients). Consider adding/using an Error.Unauthorized(...) factory that uses OperationType.Login + ErrorReasonCode.GeneralUnauthorized / UserLoginFailure."
             if (!passwordIsValid)
             {
                 var unauthorizedError = new Error(
@@ -109,6 +110,7 @@ namespace media_vault_app.Application.Services.User
             return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
         }
 
+        // TODO: Implement UpdatePasswordAsync method, which should validate the new password, hash it, and update the user's password in the repository.
         //public async Task<Result> UpdatePasswordAsync(Guid id, UserUpdateDto updateDto, CancellationToken ct = default)
         //{
 

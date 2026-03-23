@@ -23,7 +23,7 @@ namespace media_vault_app.API.Controllers
             _userWriteService = userWriteService;
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<ActionResult<UserDetailedDto>> CreateUser([FromBody] UserCreateDto createDto, CancellationToken ct)
         {
 
@@ -32,7 +32,7 @@ namespace media_vault_app.API.Controllers
             return this.ToCreated(result, nameof(GetUserById), value => new { id = result.Value.Id });
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<ActionResult<UserDetailedDto>> LoginUser([FromBody] UserLoginDto loginDto, CancellationToken ct)
         {
             var result = await _userWriteService.LoginAsync(loginDto, ct);
@@ -41,7 +41,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDetailedDto>>> GetAllUsers(CancellationToken ct)
+        public async Task<ActionResult<IEnumerable<UserDetailedDto>>> GetUsers(CancellationToken ct)
         {
             var result = await _userReadService.GetDetailedCollectionAsync(ct: ct);
 
