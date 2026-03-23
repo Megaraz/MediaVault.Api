@@ -26,6 +26,19 @@ export type MediaEntryCreateDto = {
     mediaType: number;
 };
 
+export type MediaEntryUpdateDto = {
+    idExternal?: string | null;
+    status: number;
+    title: string;
+    rating?: number | null;
+    review?: string | null;
+    genre?: string | null;
+    releaseYear?: number | null;
+    imageUrl?: string | null;
+    mediaType: number;
+};
+
+
 export const StatusLabels: Record<number, string> = {
     0: "OnGoing",
     1: "Completed",
@@ -44,37 +57,7 @@ export const MediaTypeLabels: Record<number, string> = {
 export default class MediaEntriesClient {
     private baseUrl = "/mediaentries";
 
-    async getAll(userId: string, pageNumber = 1, pageSize = 10): Promise<MediaEntryDetailedDto[]> {
-        const response = await fetch(
-            `${this.baseUrl}/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
-        );
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to fetch media entries: " + errorMessage);
-        }
-        return response.json();
-    }
-
-    async getById(userId: string, entryId: string): Promise<MediaEntryDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`);
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to fetch media entry: " + errorMessage);
-        }
-        return response.json();
-    }
-
-    async delete(userId: string, entryId: string): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`, {
-            method: "DELETE",
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to delete media entry: " + errorMessage);
-        }
-    }
-
-    async create(userId: string, entry: MediaEntryCreateDto): Promise<MediaEntryDetailedDto> {
+    async createMediaEntry(userId: string, entry: MediaEntryCreateDto): Promise<MediaEntryDetailedDto> {
         const response = await fetch(`${this.baseUrl}/${userId}`, {
             method: "POST",
             headers: {
@@ -88,4 +71,48 @@ export default class MediaEntriesClient {
         }
         return response.json();
     }
+    async getMediaEntries(userId: string, pageNumber = 1, pageSize = 10): Promise<MediaEntryDetailedDto[]> {
+        const response = await fetch(
+            `${this.baseUrl}/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+        );
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entries: " + errorMessage);
+        }
+        return response.json();
+    }
+
+    async getMediaEntryById(userId: string, entryId: string): Promise<MediaEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`);
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entry: " + errorMessage);
+        }
+        return response.json();
+    }
+
+    async updateMediaEntry(userId: string, entryId: string, updatedEntry: MediaEntryUpdateDto): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedEntry),
+        });
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to update media entry: " + errorMessage);
+        }
+    }
+
+    async deleteMediaEntry(userId: string, entryId: string): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`, {
+            method: "DELETE",
+        });
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to delete media entry: " + errorMessage);
+        }
+    }
+
 }

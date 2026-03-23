@@ -31,7 +31,7 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      const fetched = await client.getAll(selectedUser.id);
+      const fetched = await client.getMediaEntries(selectedUser.id);
       setEntries(fetched);
     } catch (err) {
       setError((err as Error).message);
@@ -49,7 +49,7 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      const created = await client.create(selectedUser.id, dto);
+      const created = await client.createMediaEntry(selectedUser.id, dto);
       setEntries((prev) => [...prev, created]);
     } catch (err) {
       setError((err as Error).message);
