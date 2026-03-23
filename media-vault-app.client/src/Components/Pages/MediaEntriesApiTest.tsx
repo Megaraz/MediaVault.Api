@@ -1,22 +1,37 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import MediaEntriesClient, {
   type MediaEntryDetailedDto,
   type MediaEntryCreateDto,
   StatusLabels,
   MediaTypeLabels,
 } from "../../Clients/MediaEntriesClient";
+import type { UserDetailedDto } from "../../Clients/UsersClient";
+
+type MediaEntriesLocationState = {
+  selectedUser?: UserDetailedDto;
+};
 
 export default function MediaEntriesApiTest() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const selectedUser = (location.state as MediaEntriesLocationState | null)
+    ?.selectedUser;
   const [entries, setEntries] = useState<MediaEntryDetailedDto[]>([]);
   const [client] = useState(new MediaEntriesClient());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEntries = async () => {
+    if (!selectedUser) {
+      setError("Select a user from the Users API Test page before fetching media entries.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const fetched = await client.getAll();
+      const fetched = await client.getAll(selectedUser.id);
       setEntries(fetched);
     } catch (err) {
       setError((err as Error).message);
@@ -26,10 +41,15 @@ export default function MediaEntriesApiTest() {
   };
 
   const createEntry = async (dto: MediaEntryCreateDto) => {
+    if (!selectedUser) {
+      setError("Select a user from the Users API Test page before creating media entries.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const created = await client.create(dto);
+      const created = await client.create(selectedUser.id, dto);
       setEntries((prev) => [...prev, created]);
     } catch (err) {
       setError((err as Error).message);
@@ -46,6 +66,29 @@ export default function MediaEntriesApiTest() {
         <div className="flex flex-col gap-4">
           <h1 className="text-2xl font-bold">Media Entries API Test</h1>
           <p>This page is for testing the Media Entries API.</p>
+          {selectedUser ? (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-slate-700">
+              <p className="font-semibold text-slate-900">
+                Handle Media Entries for User: {selectedUser.username}
+              </p>
+              <p>Email: {selectedUser.email}</p>
+              <p>User ID: {selectedUser.id}</p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              <p className="font-semibold">No user selected.</p>
+              <p className="mb-3">
+                Go to the Users API Test page, fetch users, and click one to load that user here.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate("/users-api-test")}
+                className="rounded bg-amber-500 px-4 py-2 font-medium text-white transition hover:bg-amber-600"
+              >
+                Go to Users API Test
+              </button>
+            </div>
+          )}
         </div>
 
         {error && (
@@ -68,8 +111,8 @@ export default function MediaEntriesApiTest() {
               <>
                 <button
                   onClick={fetchEntries}
-                  className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
-                  disabled={loading}
+                  className="mb-4 px-4 py-2 bg-blue-500 text-white rounded disabled:cursor-not-allowed disabled:bg-slate-400"
+                  disabled={loading || !selectedUser}
                 >
                   Fetch Media Entries
                 </button>
@@ -250,8 +293,8 @@ export default function MediaEntriesApiTest() {
               </div>
               <button
                 type="submit"
-                className="px-4 py-2 bg-green-500 text-white rounded"
-                disabled={loading}
+                className="px-4 py-2 bg-green-500 text-white rounded disabled:cursor-not-allowed disabled:bg-slate-400"
+                disabled={loading || !selectedUser}
               >
                 Add Media Entry
               </button>

@@ -44,18 +44,19 @@ export const MediaTypeLabels: Record<number, string> = {
 export default class MediaEntriesClient {
     private baseUrl = "/mediaentries";
 
-    async getAll(pageNumber = 1, pageSize = 10): Promise<MediaEntryDetailedDto[]> {
+    async getAll(userId: string, pageNumber = 1, pageSize = 10): Promise<MediaEntryDetailedDto[]> {
         const response = await fetch(
-            `${this.baseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+            `${this.baseUrl}/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
         );
         if (!response.ok) {
-            throw new Error("Failed to fetch media entries");
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entries: " + errorMessage);
         }
         return response.json();
     }
 
-    async create(entry: MediaEntryCreateDto): Promise<MediaEntryDetailedDto> {
-        const response = await fetch(this.baseUrl, {
+    async create(userId: string, entry: MediaEntryCreateDto): Promise<MediaEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/${userId}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -63,7 +64,8 @@ export default class MediaEntriesClient {
             body: JSON.stringify(entry),
         });
         if (!response.ok) {
-            throw new Error("Failed to create media entry");
+            const errorMessage = await response.text();
+            throw new Error("Failed to create media entry: " + errorMessage);
         }
         return response.json();
     }

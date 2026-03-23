@@ -13,7 +13,7 @@ namespace media_vault_app.API.Controllers
         private readonly IMediaEntryWriteService _writeService;
 
         // Hardcoded user ID for testing (no auth yet)
-        private static readonly Guid TestUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        //private static readonly Guid TestUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
         public MediaEntriesController(IMediaEntryReadService readService, IMediaEntryWriteService writeService)
         {
@@ -21,45 +21,59 @@ namespace media_vault_app.API.Controllers
             _writeService = writeService;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<MediaEntryDetailedDto>> CreateMediaEntry([FromBody] MediaEntryCreateDto createDto, CancellationToken ct)
+        [HttpPost("{userId:Guid}")]
+        public async Task<ActionResult<MediaEntryDetailedDto>> CreateMediaEntry(
+            [FromRoute] Guid userId,
+            [FromBody] MediaEntryCreateDto createDto,
+            CancellationToken ct)
         {
-            var result = await _writeService.CreateAsync(TestUserId, createDto, ct);
+            var result = await _writeService.CreateAsync(userId, createDto, ct);
 
             return this.ToCreated(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
 
-        [HttpGet("{id:Guid}")]
-        public async Task<ActionResult<MediaEntryDetailedDto>> GetMediaEntryById(Guid id, CancellationToken ct)
+        [HttpGet("{userId:Guid}/{id:Guid}")]
+        public async Task<ActionResult<MediaEntryDetailedDto>> GetMediaEntryById(
+            [FromRoute] Guid userId,
+            [FromRoute] Guid id,
+            CancellationToken ct)
         {
-            var result = await _readService.GetByIdAsync(TestUserId, id, ct);
+            var result = await _readService.GetByIdAsync(userId, id, ct);
 
             return this.ToOk(result);
         }
 
-        [HttpGet]
+        [HttpGet("{userId:Guid}")]
         public async Task<ActionResult<IEnumerable<MediaEntryDetailedDto>>> GetMediaEntries(
+            [FromRoute] Guid userId,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
             CancellationToken ct = default)
         {
-            var result = await _readService.GetDetailedCollectionAsync(TestUserId, pageNumber, pageSize, ct);
+            var result = await _readService.GetDetailedCollectionAsync(userId, pageNumber, pageSize, ct);
 
             return this.ToOk(result);
         }
 
-        [HttpPut("{id:Guid}")]
-        public async Task<IActionResult> UpdateMediaEntry(Guid id, [FromBody] MediaEntryUpdateDto updateDto, CancellationToken ct)
+        [HttpPut("{userId:Guid}/{id:Guid}")]
+        public async Task<IActionResult> UpdateMediaEntry(
+            [FromRoute] Guid userId,
+            [FromRoute] Guid id,
+            [FromBody] MediaEntryUpdateDto updateDto,
+            CancellationToken ct)
         {
-            var result = await _writeService.UpdateAsync(TestUserId, id, updateDto, ct);
+            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
 
             return this.ToNoContent(result);
         }
 
-        [HttpDelete("{id:Guid}")]
-        public async Task<IActionResult> DeleteMediaEntry(Guid id, CancellationToken ct)
+        [HttpDelete("{userId:Guid}/{id:Guid}")]
+        public async Task<IActionResult> DeleteMediaEntry(
+            [FromRoute] Guid userId,
+            [FromRoute] Guid id,
+            CancellationToken ct)
         {
-            var result = await _writeService.DeleteAsync(TestUserId, id, ct);
+            var result = await _writeService.DeleteAsync(userId, id, ct);
 
             return this.ToNoContent(result);
         }
