@@ -56,6 +56,10 @@ export default defineConfig({
                 target,
                 secure: false
             },
+            '^/[Mm]edia[Ee]ntries': {
+                target,
+                secure: false
+            },
             '^/openapi': {
                 target,
                 secure: false
