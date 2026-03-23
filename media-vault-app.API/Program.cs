@@ -3,6 +3,7 @@ using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Services.MediaEntry;
 using media_vault_app.Application.Services.User;
+using media_vault_app.Domain.Entities;
 using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.Repos;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,10 @@ namespace media_vault_app.API
 
             builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
+            builder.Services.AddScoped<IGenericRepo<User, Guid>, UserRepo>();
             builder.Services.AddScoped<IUserRepo, UserRepo>();
+
+            builder.Services.AddScoped<IGenericRepo<MediaEntry, Guid>, MediaEntryRepo>();
             builder.Services.AddScoped<IMediaEntryRepo, MediaEntryRepo>();
 
             builder.Services.AddScoped<IMediaEntryReadService, MediaEntryReadService>();

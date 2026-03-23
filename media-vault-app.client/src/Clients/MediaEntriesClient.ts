@@ -1,0 +1,91 @@
+
+export type MediaEntryDetailedDto = {
+    id: string;
+    idExternal: string | null;
+    userId: string;
+    status: number;
+    title: string | null;
+    rating: number;
+    review: string | null;
+    genre: string | null;
+    releaseYear: number;
+    imageUrl: string | null;
+    mediaType: number;
+    createdAtUtc: string;
+};
+
+export type MediaEntryCreateDto = {
+    idExternal?: string | null;
+    status: number;
+    title: string;
+    rating?: number | null;
+    review?: string | null;
+    genre?: string | null;
+    releaseYear?: number | null;
+    imageUrl?: string | null;
+    mediaType: number;
+};
+
+export const StatusLabels: Record<number, string> = {
+    0: "OnGoing",
+    1: "Completed",
+    2: "Backlog",
+    3: "Dropped",
+};
+
+export const MediaTypeLabels: Record<number, string> = {
+    0: "Movie",
+    1: "Series",
+    2: "Book",
+    3: "Manga",
+    4: "Game",
+};
+
+export default class MediaEntriesClient {
+    private baseUrl = "/mediaentries";
+
+    async getAll(userId: string, pageNumber = 1, pageSize = 10): Promise<MediaEntryDetailedDto[]> {
+        const response = await fetch(
+            `${this.baseUrl}/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+        );
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entries: " + errorMessage);
+        }
+        return response.json();
+    }
+
+    async getById(userId: string, entryId: string): Promise<MediaEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`);
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entry: " + errorMessage);
+        }
+        return response.json();
+    }
+
+    async delete(userId: string, entryId: string): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`, {
+            method: "DELETE",
+        });
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to delete media entry: " + errorMessage);
+        }
+    }
+
+    async create(userId: string, entry: MediaEntryCreateDto): Promise<MediaEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/${userId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(entry),
+        });
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to create media entry: " + errorMessage);
+        }
+        return response.json();
+    }
+}

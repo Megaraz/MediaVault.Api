@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   type UserDetailedDto,
   type UserCreateDto,
@@ -6,11 +7,20 @@ import {
 import UsersClient from "../../Clients/UsersClient";
 
 export default function UsersApiTest() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserDetailedDto[]>([]);
   const [client] = useState(new UsersClient());
   const [loading, setLoading] = useState(false);
   const [timeout, setTimeoutMs] = useState(5000);
   const [timedOut, setTimedOut] = useState(false);
+
+  const handleUserClick = (user: UserDetailedDto) => {
+    navigate("/media-entries-api-test", {
+      state: {
+        selectedUser: user,
+      },
+    });
+  };
 
   const createUser = async (newUser: UserCreateDto) => {
     setLoading(true);
@@ -103,20 +113,31 @@ export default function UsersApiTest() {
                 </button>
                 {users.length > 0 && (
                   <>
-                    <h2>All fetched users</h2>
+                    <div className="flex flex-col items-center gap-2">
+                      <h2 className="text-lg font-semibold">All fetched users</h2>
+                      <p className="text-sm text-slate-600">
+                        Click a user to manage that user&apos;s media entries.
+                      </p>
+                    </div>
                     <ul className="flex flex-col gap-6">
                       {users.map((user) => (
-                        <div className="" key={user.id}>
-                          <li>
+                        <li key={user.id} className="list-none">
+                          <button
+                            type="button"
+                            onClick={() => handleUserClick(user)}
+                            className="w-full rounded-xl border border-slate-200 bg-gray-300 p-4 text-left shadow-sm transition duration-150 hover:-translate-y-1 hover:border-blue-400 hover:shadow-md active:translate-y-0 active:scale-[0.99]"
+                          >
+                            <p>
                             <b>ID:</b> {user.id}
-                          </li>
-                          <li>
+                            </p>
+                            <p>
                             <b>Username:</b> {user.username}
-                          </li>
-                          <li>
+                            </p>
+                            <p>
                             <b>Email:</b> {user.email}
-                          </li>
-                        </div>
+                            </p>
+                          </button>
+                        </li>
                       ))}
                     </ul>
                   </>

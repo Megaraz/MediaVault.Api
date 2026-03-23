@@ -17,6 +17,7 @@ export default function Layout() {
             <div className="flex flex-1 justify-end gap-4 md:gap-10">
               <nav className="hidden md:flex items-center gap-8">
                 <Link to="/users-api-test">Users API Test</Link>
+                <Link to="/media-entries-api-test">Media Entries API Test</Link>
                 <a
                   className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors"
                   href="#features"

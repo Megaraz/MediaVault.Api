@@ -26,7 +26,6 @@ namespace media_vault_app.Application.Services.User
 
         public UserWriteService(
             IUserRepo userRepo,
-            IMapEntityToDetailedDto<UserEntitiy, UserDetailedDto> entityToDtoMapper,
             IPasswordHasherService passwordHasherService)
             : this(
                 userRepo,
