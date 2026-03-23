@@ -14,7 +14,6 @@ namespace media_vault_app.Application.Services.User
     {
         public UserReadService(
             IGenericRepo<UserEntity, Guid> repo
-            //IMapEntityToDto<UserEntity, Guid, UserDetailedDto, UserMinimalDto> entityToDtoMapper
             ) : base(repo, new UserEntityMapper())
         {
         }
