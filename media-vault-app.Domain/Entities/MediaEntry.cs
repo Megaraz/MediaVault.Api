@@ -1,5 +1,6 @@
 ﻿using media_vault_app.Domain.Enums;
 using Rasmus.SharedKernel.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Domain.Entities
 {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Rasmus.SharedKernel.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
@@ -10,7 +11,8 @@ namespace media_vault_app.Infrastructure.Repos
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TKey"></typeparam>
     /// <remarks> This class implements the generic repository interface <see cref="IGenericRepo{TEntity, TKey}"/></remarks>
-    public class GenericRepoEFCore<TEntity, TKey> : IGenericRepoEFCore<TEntity, TKey> where TEntity : class, IEntityId<TKey>
+    public class GenericRepoEFCore<TEntity, TKey> :
+        IGenericRepo<TEntity, TKey> where TEntity : class, IEntityId<TKey>
     {
         protected readonly AppDbContext _appDbContext;
         protected readonly DbSet<TEntity> _dbSet;
@@ -23,19 +25,11 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default)
         {
             // Define error handling context
-            string methodName = nameof(CreateAsync);
-            string currentOperation = ErrorCodes.Operation.Create;
-            string errorDescriptionPrefix = $"An error occurred when trying to create the entity in Infrastructure Layer: {this.GetType().Name}.{methodName}()";
+            var errorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
 
-            if (entity is null || entity.Equals(default(TEntity)))
-            {
-                ValidationError nullValueError = ValidationError.NullValue<TEntity>(
-                    currentOperation,
-                    errorDescriptionPrefix,
-                    out string errorMessageReason);
 
-                return Result<TEntity>.ValidationFailure([nullValueError], errorMessageReason);
-            }
+            if (entity.IsNull(errorContext, out var nullValueError))
+                return Result<TEntity>.ValidationFailure([nullValueError], errorContext.DescriptionSuffix!);
 
             try
             {
@@ -45,9 +39,9 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                Error dbCreateFailure = Error.DbCreateFailure<TEntity>(
-                    errorDescriptionPrefix,
-                    ex);
+                errorContext.DescriptionSuffix = $"An error occurred while creating the {errorContext.EntityName}.";
+
+                Error dbCreateFailure = Error.DbCreateFailure(errorContext, ex);
 
                 return Result<TEntity>.Failure(dbCreateFailure, "An error occurred while creating the entity.");
             }
@@ -58,18 +52,11 @@ namespace media_vault_app.Infrastructure.Repos
         public virtual async Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken ct = default)
         {
             // Define error handling context
-            string methodName = nameof(GetByIdAsync);
-            string currentOperation = ErrorCodes.Operation.Get;
-            string errorDescriptionPrefix = $"An error occurred when trying to get the entity by Id in Infrastructure layer: {this.GetType().Name}.{methodName}()";
+            var errorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
-            if (!Validator.IsValidId(id))
+            if (!id.IsValidId(errorContext, out var idError))
             {
-                var nullValueError = ValidationError.NullValue<TKey>(
-                    currentOperation,
-                    errorDescriptionPrefix,
-                    out string errorMessageReason);
-
-                return Result<TEntity>.ValidationFailure([nullValueError], errorMessageReason);
+                return Result<TEntity>.ValidationFailure([idError], errorContext.DescriptionSuffix!);
             }
 
             try
@@ -77,59 +64,56 @@ namespace media_vault_app.Infrastructure.Repos
                 var entity = await _dbSet.FindAsync(new object[] { id! }, ct);
                 if (entity is null)
                 {
-                    Error notFoundError = Error.NotFound<TEntity>(errorDescriptionPrefix);
+                    Error notFoundError = Error.NotFound<TEntity>(errorContext.DescriptionPrefix);
 
-                    return Result<TEntity>.Failure(notFoundError, "Entity not found");
+                    return Result<TEntity>.Failure(notFoundError, $"{typeof(TEntity).Name} not found");
                 }
                 return Result<TEntity>.Success(entity);
             }
             catch (Exception ex)
             {
+                errorContext.DescriptionSuffix = $"An error occurred while retrieving the {errorContext.EntityName}.";
+
                 return Result<TEntity>.Failure(
-                    Error.DbGetFailure<TEntity>(errorDescriptionPrefix, ex),
-                    "An error occurred while retrieving the entity.");
+                    Error.DbGetFailure(errorContext, ex),
+                    $"An error occurred while retrieving the {typeof(TEntity).Name}.");
             }
 
         }
 
-        public virtual async Task<Result<IReadOnlyList<TEntity>>> GetAllAsync(CancellationToken ct = default)
+        public virtual async Task<Result<IReadOnlyList<TEntity>>> GetCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             // Define error handling context
-            string methodName = nameof(GetAllAsync);
-            string errorDescriptionPrefix = $"An error occurred when trying to get all entities in Infrastructure layer: {this.GetType().Name}.{methodName}()";
+
+            var errorContext = DefineErrorContext(nameof(GetCollectionAsync), OperationType.GetCollection);
 
             try
             {
                 var entities = await _dbSet
                     .AsNoTracking()
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync(ct);
 
                 return Result<IReadOnlyList<TEntity>>.Success(entities);
             }
             catch (Exception ex)
             {
+                errorContext.DescriptionSuffix = $"An error occurred while retrieving the {errorContext.EntityName} collection.";
+
                 return Result<IReadOnlyList<TEntity>>.Failure(
-                    Error.DbGetCollectionFailure<TEntity>(errorDescriptionPrefix, ex),
-                    "An error occurred while retrieving the entities.");
+                    Error.DbGetCollectionFailure(errorContext, ex),
+                    errorContext.DescriptionSuffix);
             }
         }
 
         public virtual async Task<Result> DeleteAsync(TKey id, CancellationToken ct = default)
         {
             // Define error handling context
-            string methodName = nameof(DeleteAsync);
-            string currentOperation = ErrorCodes.Operation.Delete;
-            string errorDescriptionPrefix = $"An error occurred when trying to delete the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
+            var errorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
-            if (!Validator.IsValidId(id))
-            {
-                var nullValueError = ValidationError.NullValue<TKey>(
-                    currentOperation,
-                    errorDescriptionPrefix,
-                    out string errorMessageReason);
-
-                return Result.ValidationFailure([nullValueError], errorMessageReason);
-            }
+            if (!id.IsValidId(errorContext, out var idError))
+                return Result.ValidationFailure([idError], errorContext.DescriptionSuffix!);
 
             try
             {
@@ -138,8 +122,8 @@ namespace media_vault_app.Infrastructure.Repos
                 if (entity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound<TEntity>(errorDescriptionPrefix),
-                        "Entity not found");
+                        Error.NotFound<TEntity>(errorContext.DescriptionPrefix),
+                        $"{typeof(TEntity).Name} not found");
                 }
 
                 _dbSet.Remove(entity);
@@ -148,42 +132,28 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
+                errorContext.DescriptionSuffix = $"An error occurred while deleting the {errorContext.EntityName}.";
+
                 return Result.Failure(
-                    Error.DbDeleteFailure<TEntity>(errorDescriptionPrefix, ex),
-                    "An error occurred while deleting the entity.");
+                    Error.DbDeleteFailure(errorContext, ex),
+                    errorContext.DescriptionSuffix);
             }
         }
 
         public virtual async Task<Result> UpdateAsync(
             TEntity updatedEntity,
-            Func<TEntity, TEntity, bool> shouldUpdate,
             CancellationToken ct = default)
         {
 
             // Define error handling context
-            string methodName = nameof(UpdateAsync);
-            string currentOperation = ErrorCodes.Operation.Update;
-            string errorDescriptionPrefix = $"An error occurred when trying to update the entity in Infrastructure layer: {this.GetType().Name}.{methodName}()";
+            var errorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
 
-            if (updatedEntity is null || updatedEntity.Equals(default(TEntity)))
-            {
-                var nullValueError = ValidationError.NullValue<TEntity>(
-                    currentOperation,
-                    errorDescriptionPrefix,
-                    out string errorMessageReason);
-                return Result.ValidationFailure([nullValueError], errorMessageReason);
-            }
+            if (updatedEntity.IsNull(errorContext, out var nullValueError))
+                return Result.ValidationFailure([nullValueError], errorContext.DescriptionSuffix!);
 
+            if (!updatedEntity.Id.IsValidId(errorContext, out var idError))
+                return Result.ValidationFailure([idError], errorContext.DescriptionSuffix!);
 
-            if (!Validator.IsValidId(updatedEntity.Id))
-            {
-                var nullValueError = ValidationError.NullValue<TKey>(
-                    currentOperation,
-                    errorDescriptionPrefix,
-                    out string errorMessageReason);
-
-                return Result.ValidationFailure([nullValueError], errorMessageReason);
-            }
             try
             {
 
@@ -192,13 +162,8 @@ namespace media_vault_app.Infrastructure.Repos
                 if (oldEntity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound<TEntity>(errorDescriptionPrefix),
-                        "Entity not found");
-                }
-
-                if (!shouldUpdate(oldEntity, updatedEntity))
-                {
-                    return Result.Success();
+                        Error.NotFound<TEntity>(errorContext.DescriptionPrefix),
+                        $"{errorContext.EntityName} not found");
                 }
 
                 _appDbContext.Entry(oldEntity).CurrentValues.SetValues(updatedEntity);
@@ -209,11 +174,22 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
+                errorContext.DescriptionSuffix = $"An error occurred while updating the {errorContext.EntityName}.";
+
                 return Result.Failure(
-                    Error.DbUpdateFailure<TEntity>(errorDescriptionPrefix, ex),
-                    "An error occurred while updating the entity.");
+                    Error.DbUpdateFailure(errorContext, ex),
+                    errorContext.DescriptionSuffix);
             }
 
+        }
+        private ErrorContext DefineErrorContext(string methodName, OperationType operation)
+        {
+            return new ErrorContext(
+                layer: "Infrastructure",
+                serviceName: this.GetType().Name,
+                methodName: methodName,
+                operation: operation,
+                entityName: typeof(TEntity).Name);
         }
     }
 }

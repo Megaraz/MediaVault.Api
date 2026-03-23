@@ -1,4 +1,4 @@
-﻿namespace Rasmus.SharedKernel.Interfaces
+﻿namespace Rasmus.SharedKernel.Interfaces.Identifiers
 {
     public interface IEntityId<TKey>
     {

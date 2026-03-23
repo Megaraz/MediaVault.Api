@@ -2,100 +2,91 @@ namespace Rasmus.SharedKernel.ResultPattern
 {
     public enum ErrorType
     {
-        Failure,
-        Validation,
-        NotFound,
-        Conflict,
-        Unauthorized,
-        Forbidden,
-        None
+        None = 0,
+        Failure = 1,
+        Validation = 2,
+        NotFound = 3,
+        Conflict = 4,
+        Unauthorized = 5,
+        Forbidden = 6,
+        Database = 7,
 
     }
 
-    public record Error(string Code, string Description, ErrorType Type)
+    public record Error(string Code, string Description, ErrorType Type, Exception? exception = null)
     {
 
-        public static Error None => new Error(string.Empty, string.Empty, ErrorType.None);
+        public static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
 
-        public static Error DbCreateFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbCreateFailure(ErrorContext errorContext, Exception exception)
             => new Error(
-                ErrorCode.Create<T>(ErrorCodes.DatabaseError.DbFailure).Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while creating the entity in the database: {exception?.Message}",
-                ErrorType.Failure);
+                ErrorCode.For(OperationType.Create, errorContext.EntityName, ErrorReasonCode.DatabaseFailure).Code,
+                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while creating the entity in the database",
+                ErrorType.Database,
+                exception);
 
-        public static Error DbGetFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbGetFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.Get<T>(ErrorCodes.DatabaseError.DbFailure);
+            var errorCode = ErrorCode.For(OperationType.Get, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while getting the entity {errorCode.NameOfEntity} from the database: {exception?.Message}",
-                ErrorType.Failure);
+                $"{errorContext.DescriptionSuffix}: A Database failure occurred while getting the entity {errorCode.NameOfEntity} from the database",
+                ErrorType.Database,
+                exception);
         }
 
-        public static Error DbGetCollectionFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbGetCollectionFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.GetCollection<T>(ErrorCodes.DatabaseError.DbFailure);
+            var errorCode = ErrorCode.For(OperationType.GetCollection, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while getting the list of entities {errorCode.NameOfEntity} from the database: {exception?.Message}",
-                ErrorType.Failure);
+                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while getting the list of entities {errorCode.NameOfEntity} from the database",
+                ErrorType.Database,
+                exception);
         }
 
-        public static Error DbDeleteFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbDeleteFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.Delete<T>(ErrorCodes.DatabaseError.DbFailure);
+            var errorCode = ErrorCode.For(OperationType.Delete, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while deleting the entity {errorCode.NameOfEntity} from the database: {exception?.Message}",
-                ErrorType.Failure);
+                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while deleting the entity {errorCode.NameOfEntity} from the database",
+                ErrorType.Database,
+                exception);
         }
 
-        public static Error DbUpdateFailure<T>(string errorDescriptionPrefix, Exception? exception)
+        public static Error DbUpdateFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.Update<T>(ErrorCodes.DatabaseError.DbFailure);
+            var errorCode = ErrorCode.For(OperationType.Update, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
 
             return new Error(
                 errorCode.Code,
-                $"{errorDescriptionPrefix}: A Database-Exception occurred while updating the entity {errorCode.NameOfEntity} in the database: {exception?.Message}",
-                ErrorType.Failure);
+                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while updating the entity {errorCode.NameOfEntity} in the database",
+                ErrorType.Database,
+                exception);
         }
 
-        public static Error NullValue<T>(string currentOperation, string errorDescriptionPrefix, out string errorMessageReason)
-        {
-            var errorCode = ErrorCode.NullValue<T>(currentOperation);
+        public static Error NotFound<T>(string errorDescriptionPrefix) =>
+            new Error(ErrorCode.For<T>(OperationType.Get, ErrorReasonCode.GeneralNotFound).Code,
+                    $"{errorDescriptionPrefix}: {typeof(T).Name} not found",
+                    ErrorType.NotFound);
 
-            errorMessageReason = $"{errorCode.NameOfEntity} cannot be null or default";
+        public static Error Conflict<T>(OperationType operation, string errorDescriptionPrefix) =>
+            new Error(ErrorCode.For<T>(operation, ErrorReasonCode.GeneralConflict).Code,
+                    $"{errorDescriptionPrefix}: A conflict occurred during the {operation} operation.",
+                    ErrorType.Conflict);
 
-            // Create full error of ErrorType.Validation, with ErrorCode from above, and return it
-            return new Error(
-                errorCode.Code,
-                $"{errorDescriptionPrefix}: {errorMessageReason}",
-                ErrorType.Validation);
+        //public static Error Unauthorized(ErrorCode code, string description) =>
+        //    new(code.Code, description, ErrorType.Unauthorized);
 
-        }
+        //public static Error Forbidden(ErrorCode code, string description) =>
+        //    new(code.Code, description, ErrorType.Forbidden);
 
-        public static Error NotFound<T>(string errorDescriptionPrefix)
-        {
-            var errorCode = ErrorCode.Get<T>(ErrorCodes.GeneralError.NotFound);
-
-            return new Error(errorCode.Code, $"{errorDescriptionPrefix}: {errorCode.NameOfEntity} not found", ErrorType.NotFound);
-
-        }
-
-        public static Error Conflict(ErrorCode code, string description) =>
-            new(code.Code, description, ErrorType.Conflict);
-
-        public static Error Unauthorized(ErrorCode code, string description) =>
-            new(code.Code, description, ErrorType.Unauthorized);
-
-        public static Error Forbidden(ErrorCode code, string description) =>
-            new(code.Code, description, ErrorType.Forbidden);
-
-        public static Error Failure(ErrorCode code, string description) =>
-            new(code.Code, description, ErrorType.Failure);
+        //public static Error Failure(ErrorCode code, string description) =>
+        //    new(code.Code, description, ErrorType.Failure);
 
     }
 

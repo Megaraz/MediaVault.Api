@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rasmus.SharedKernel.Interfaces
+namespace Rasmus.SharedKernel.Interfaces.Identifiers
 {
     public interface IEntityChild<TEntityParent, TKeyParent, TEntityChild, TKeyChild> : IEntityId<TKeyChild>
         where TEntityParent : class, IEntityId<TKeyParent>

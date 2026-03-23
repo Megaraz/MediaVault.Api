@@ -6,56 +6,73 @@ namespace Rasmus.SharedKernel.ResultPattern
 {
     public enum ValidationErrorType
     {
-        Required,
-        InvalidFormat,
-        NullValue,
-        OutOfRange,
-        Custom
+        Custom = 0,
+        Required = 1,
+        InvalidFormat = 2,
+        OutOfRange = 3,
+        NonMatchingValues = 4,
+        TooShort = 5,
+        TooLong = 6,
     }
 
     public record ValidationError : Error
     {
         public ValidationErrorType ValidationErrorType { get; }
-        private ValidationError(string Code, string Description, ValidationErrorType validationErrorType) : base(Code, Description, ErrorType.Validation)
+
+        // Private constructor to enforce the use of static factory methods for creating ValidationError instances
+        // Sets the ErrorType of base-class to Validation for all instances of ValidationError
+        private ValidationError(string code, string description, ValidationErrorType type)
+            : base(code, description, ErrorType.Validation)
         {
-            ValidationErrorType = validationErrorType;
+            ValidationErrorType = type;
         }
 
-        public static ValidationError Required<T>(string currentOperation, string fieldName) =>
-            new ValidationError(
-                ErrorCode.NullValue<T>(currentOperation).Code,
-                $"The field '{fieldName}' is required and cannot be null or empty.",
-                ValidationErrorType.Required);
 
-        public static ValidationError InvalidFormat<T>(string currentOperation, string fieldName, string expectedFormat) =>
+        public static ValidationError InvalidFormat(ErrorContext errorContext, string expectedFormat) =>
             new ValidationError(
-                ErrorCode.InvalidFormat<T>(currentOperation).Code,
-                $"The field '{fieldName}' has an invalid format. Expected format: {expectedFormat}.",
+                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationInvalidFormat).Code,
+                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' has an invalid format. Expected format: {expectedFormat}.",
                 ValidationErrorType.InvalidFormat);
 
-        public new static ValidationError NullValue<T>(string currentOperation, string errorDescriptionPrefix, out string errorMessageReason)
+        public static ValidationError Required(ErrorContext errorContext)
         {
-            var errorCode = ErrorCode.NullValue<T>(currentOperation);
+            if (string.IsNullOrWhiteSpace(errorContext.DescriptionSuffix))
+                errorContext.DescriptionSuffix = $"A value for the field or entity '{errorContext.EntityName}' is required and cannot be null or empty.";
 
-            errorMessageReason = $"{errorCode.NameOfEntity} cannot be null or default";
+            string description = $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}";
 
-            // Create and return full ValidationError of ValidationErrorType.NullValue, with ErrorCode from above
             return new ValidationError(
-                errorCode.Code,
-                $"{errorDescriptionPrefix}: {errorMessageReason}",
-                ValidationErrorType.NullValue);
+                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationRequired).Code,
+                description,
+                ValidationErrorType.Required);
         }
 
-        public static ValidationError OutOfRange<T>(string currentOperation, string fieldName, string range) =>
+        public static ValidationError TooLong(ErrorContext errorContext, string range) =>
             new ValidationError(
-                ErrorCode.OutOfRange<T>(currentOperation).Code,
-                $"The field '{fieldName}' is out of range. Expected range: {range}.",
+                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationTooLong).Code,
+                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' is too long. Expected maximum length: {range}.",
+                ValidationErrorType.TooLong);
+        public static ValidationError OutOfRange(ErrorContext errorContext, string range) =>
+            new ValidationError(
+                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationOutOfRange).Code,
+                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' is out of range. Expected range: {range}.",
                 ValidationErrorType.OutOfRange);
 
-        public static ValidationError Custom<T>(string currentOperation, string customErrorType, string message) =>
+        public static ValidationError TooShort(ErrorContext errorContext, string range) =>
             new ValidationError(
-                ErrorCode.Custom<T>(currentOperation, customErrorType).Code,
-                message,
+                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationTooShort).Code,
+                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' is too short. Expected minimum length: {range}.",
+                ValidationErrorType.TooShort);
+
+        public static ValidationError NonMatchingValues(ErrorContext errorContext) =>
+            new ValidationError(
+                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationNonMatchingValues).Code,
+                $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}",
+                ValidationErrorType.NonMatchingValues);
+        public static ValidationError Custom(ErrorContext errorContext) =>
+            new ValidationError(
+                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.Custom).Code,
+                $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}",
                 ValidationErrorType.Custom);
     }
 }
