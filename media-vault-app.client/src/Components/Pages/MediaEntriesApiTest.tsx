@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MediaEntriesClient, {
   type MediaEntryDetailedDto,
-  type MediaEntryCreateDto,
+  type MediaEntrySubmitDto,
   StatusLabels,
   MediaTypeLabels,
+  MediaType,
+  StatusType,
 } from "../../Clients/MediaEntriesClient";
 import type { UserDetailedDto } from "../../Clients/UsersClient";
 import ButtonPrimary from "../../Shared/ButtonPrimary";
 import MediaEntry from "../MediaEntry/MediaEntry";
+import MediaEntrySmall from "../MediaEntry/MediaEntrySmall";
 
 type MediaEntriesLocationState = {
   selectedUser?: UserDetailedDto;
@@ -23,15 +26,8 @@ export default function MediaEntriesApiTest() {
   const [client] = useState(new MediaEntriesClient());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showEditForm, setShowEditForm] = useState(false);
-
-  // useEffect(() => {
-  //   const fetchEntries = async () => {
-  //     await onClickFetchEntries();
-  //   };
-  //   fetchEntries();
-  // }, [entries]);
+  const [showPopup, setShowPopup] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto>();
 
   const onClickFetchEntries = async () => {
     if (!selectedUser) {
@@ -53,6 +49,11 @@ export default function MediaEntriesApiTest() {
     }
   };
 
+  const onClickEntry = (entry: MediaEntryDetailedDto) => {
+    setSelectedEntry(entry);
+    setShowPopup(true);
+  };
+
   const onClickCreateEntry = () => {
     if (!selectedUser) {
       setError(
@@ -60,10 +61,10 @@ export default function MediaEntriesApiTest() {
       );
       return;
     }
-    setShowCreateForm(true);
+    setShowPopup(true);
   };
 
-  const handleCreateMediaEntry = async (dto: MediaEntryCreateDto) => {
+  const handleCreateMediaEntry = async (dto: MediaEntrySubmitDto) => {
     if (!selectedUser) {
       setError(
         "Select a user from the Users API Test page before creating media entries.",
@@ -80,21 +81,76 @@ export default function MediaEntriesApiTest() {
       setError((err as Error).message);
     } finally {
       setLoading(false);
-      setShowCreateForm(false);
+      setShowPopup(false);
     }
   };
+
+  const handleUpdateMediaEntry = async (
+    updateDto: MediaEntrySubmitDto,
+    entryId?: string,
+  ) => {
+    if (!selectedUser) {
+      setError(
+        "Select a user from the Users API Test page before updating media entries.",
+      );
+      return;
+    }
+
+    if (!entryId) {
+      setError("Entry ID is required for updating a media entry.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      await client.updateMediaEntry(selectedUser.id, entryId, updateDto);
+
+      const fetched = await client.getMediaEntryById(selectedUser.id, entryId);
+      setEntries((prev) => prev.map((e) => (e.id === entryId ? fetched : e)));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+      setSelectedEntry(undefined);
+      setShowPopup(false);
+    }
+  };
+
+  const onCancel = () => {
+    setShowPopup(false);
+    setSelectedEntry(undefined);
+  };
+
+  const mediaSections = [
+    { type: MediaType.Game, title: "Games" },
+    { type: MediaType.Book, title: "Books" },
+    { type: MediaType.Movie, title: "Movies" },
+    { type: MediaType.Series, title: "Series" },
+    { type: MediaType.Manga, title: "Manga" },
+  ];
+
+  const statusSections = [
+    { type: StatusType.OnGoing, title: "On Going" },
+    { type: StatusType.Completed, title: "Completed" },
+    { type: StatusType.Backlog, title: "Backlog" },
+    { type: StatusType.Dropped, title: "Dropped" },
+  ];
 
   return (
     <div
       className={`${loading ? "opacity-50 pointer-events-none" : ""} flex w-2/3 flex-col items-center gap-6 p-6`}
     >
-      {showCreateForm && selectedUser && (
+      {showPopup && selectedUser && (
         <MediaEntry
-          createMode={true}
-          onCreate={handleCreateMediaEntry}
-          onCancel={() => setShowCreateForm(false)}
+          detailedEntry={selectedEntry ?? undefined}
+          onSubmit={(dto) =>
+            selectedEntry
+              ? handleUpdateMediaEntry(dto, selectedEntry.id)
+              : handleCreateMediaEntry(dto)
+          }
+          onCancel={onCancel}
           onDelete={() => undefined}
-          onSubmit={() => undefined}
         />
       )}
       {/* MediaEntries Header */}
@@ -163,35 +219,30 @@ export default function MediaEntriesApiTest() {
               {entries.length > 0 && (
                 <div className="flex flex-col gap-4">
                   <h2 className="text-lg font-semibold">All fetched entries</h2>
-                  <ul className="flex flex-row flex-wrap gap-6">
-                    {entries.map((entry) => (
-                      <div key={entry.id} className="border p-3 rounded">
-                        <li>
-                          <b>Title:</b> {entry.title}
-                        </li>
-                        <li>
-                          <b>Type:</b>{" "}
-                          {MediaTypeLabels[entry.mediaType] ?? entry.mediaType}
-                        </li>
-                        <li>
-                          <b>Status:</b>{" "}
-                          {StatusLabels[entry.status] ?? entry.status}
-                        </li>
-                        <li>
-                          <b>Rating:</b> {entry.rating}
-                        </li>
-                        <li>
-                          <b>Genre:</b> {entry.genre ?? "N/A"}
-                        </li>
-                        <li>
-                          <b>Release Year:</b> {entry.releaseYear || "N/A"}
-                        </li>
-                        <li>
-                          <b>Review:</b> {entry.review ?? "N/A"}
-                        </li>
-                      </div>
-                    ))}
-                  </ul>
+                  <div className="flex flex-row flex-wrap gap-6">
+                    {mediaSections.map(({ type, title }) => {
+                      const sectionEntries = entries.filter(
+                        (e) => e.mediaType === type,
+                      );
+
+                      if (sectionEntries.length === 0) {
+                        return null;
+                      }
+
+                      return (
+                        <div key={type} className="flex flex-col gap-2">
+                          <h3 className="text-md font-medium">{title}</h3>
+                          {sectionEntries.map((entry) => (
+                            <MediaEntrySmall
+                              key={entry.id}
+                              entry={entry}
+                              onClickEntry={onClickEntry}
+                            />
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

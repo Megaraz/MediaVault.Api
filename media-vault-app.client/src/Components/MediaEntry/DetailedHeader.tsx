@@ -1,11 +1,11 @@
 type DetailedHeaderProps = {
-  createMode?: boolean;
+  isEditMode: boolean;
   subtitle?: string;
   onCancel: () => void;
 };
 
 export default function DetailedHeader({
-  createMode,
+  isEditMode,
   subtitle,
   onCancel,
 }: DetailedHeaderProps) {
@@ -17,7 +17,7 @@ export default function DetailedHeader({
         </div>
         <div>
           <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight">
-            {createMode ? "New" : "Edit"} Entry
+            {isEditMode ? "Edit" : "New"} Entry
           </h2>
           {subtitle && (
             <p className="text-slate-500 dark:text-slate-400 text-xs">

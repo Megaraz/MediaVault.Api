@@ -1,8 +1,7 @@
 import { useState } from "react";
 import type {
-  MediaEntryCreateDto,
+  MediaEntrySubmitDto,
   MediaEntryDetailedDto,
-  MediaEntryUpdateDto,
 } from "../../Clients/MediaEntriesClient";
 import DetailedHeader from "./DetailedHeader";
 import MediaEntryForm from "./MediaEntryForm";
@@ -10,10 +9,8 @@ import type { MediaEntryFormData } from "./MediaEntryForm";
 import FormFooter from "./FormFooter";
 
 type MediaEntryProps = {
-  createMode?: boolean;
   detailedEntry?: MediaEntryDetailedDto;
-  onCreate: (newEntry: MediaEntryCreateDto) => void;
-  onSubmit: (updatedEntry: MediaEntryUpdateDto) => void;
+  onSubmit: (updatedEntry: MediaEntrySubmitDto, entryId?: string) => void;
   onDelete: (id: string) => void;
   onCancel: () => void;
 };
@@ -37,16 +34,16 @@ function formatSubtitle(entry?: MediaEntryDetailedDto): string | undefined {
 }
 
 export default function MediaEntry({
-  createMode,
   detailedEntry,
   onSubmit,
   onDelete,
-  onCreate,
   onCancel,
 }: MediaEntryProps) {
   const [formData, setFormData] = useState<MediaEntryFormData>(
     buildInitialFormData(detailedEntry),
   );
+
+  const isEditMode = detailedEntry != null && detailedEntry.id != null;
 
   const handleChange = (
     field: keyof MediaEntryFormData,
@@ -58,7 +55,7 @@ export default function MediaEntry({
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const dto = {
+    const dto: MediaEntrySubmitDto = {
       title: formData.title,
       mediaType: formData.mediaType,
       status: formData.status,
@@ -66,11 +63,7 @@ export default function MediaEntry({
       review: formData.review || null,
     };
 
-    if (createMode) {
-      onCreate(dto as MediaEntryCreateDto);
-    } else {
-      onSubmit(dto as MediaEntryUpdateDto);
-    }
+    onSubmit(dto, detailedEntry?.id);
   };
 
   const handleDelete = () => {
@@ -95,7 +88,7 @@ export default function MediaEntry({
         onClick={(e) => e.stopPropagation()}
       >
         <DetailedHeader
-          createMode={createMode}
+          isEditMode={isEditMode}
           subtitle={formatSubtitle(detailedEntry)}
           onCancel={onCancel}
         />
@@ -104,8 +97,8 @@ export default function MediaEntry({
           <MediaEntryForm formData={formData} onChange={handleChange} />
 
           <FormFooter
-            createMode={createMode}
-            onDelete={createMode ? undefined : handleDelete}
+            isEditMode={isEditMode}
+            onDelete={isEditMode ? handleDelete : undefined}
             onCancel={onCancel}
           />
         </form>

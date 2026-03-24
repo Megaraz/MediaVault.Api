@@ -14,19 +14,7 @@ export type MediaEntryDetailedDto = {
     createdAtUtc: string;
 };
 
-export type MediaEntryCreateDto = {
-    idExternal?: string | null;
-    status: number;
-    title: string;
-    rating?: number | null;
-    review?: string | null;
-    genre?: string | null;
-    releaseYear?: number | null;
-    imageUrl?: string | null;
-    mediaType: number;
-};
-
-export type MediaEntryUpdateDto = {
+export type MediaEntrySubmitDto = {
     idExternal?: string | null;
     status: number;
     title: string;
@@ -54,10 +42,26 @@ export const MediaTypeLabels: Record<number, string> = {
     4: "Game",
 };
 
+
+export const StatusType = {
+    OnGoing: 0,
+    Completed: 1,
+    Backlog: 2,
+    Dropped: 3,
+} as const;
+
+export const MediaType = {
+    Movie: 0,
+    Series: 1,
+    Book: 2,
+    Manga: 3,
+    Game: 4,
+} as const;
+
 export default class MediaEntriesClient {
     private baseUrl = "/mediaentries";
 
-    async createMediaEntry(userId: string, entry: MediaEntryCreateDto): Promise<MediaEntryDetailedDto> {
+    async createMediaEntry(userId: string, entry: MediaEntrySubmitDto): Promise<MediaEntryDetailedDto> {
         const response = await fetch(`${this.baseUrl}/${userId}`, {
             method: "POST",
             headers: {
@@ -91,7 +95,7 @@ export default class MediaEntriesClient {
         return response.json();
     }
 
-    async updateMediaEntry(userId: string, entryId: string, updatedEntry: MediaEntryUpdateDto): Promise<void> {
+    async updateMediaEntry(userId: string, entryId: string, updatedEntry: MediaEntrySubmitDto): Promise<void> {
         const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`, {
             method: "PUT",
             headers: {
