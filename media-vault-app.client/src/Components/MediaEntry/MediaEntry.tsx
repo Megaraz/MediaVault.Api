@@ -19,7 +19,7 @@ type MediaEntryProps = {
 };
 
 function buildInitialFormData(
-  entry?: MediaEntryDetailedDto
+  entry?: MediaEntryDetailedDto,
 ): MediaEntryFormData {
   return {
     title: entry?.title ?? "",
@@ -45,17 +45,17 @@ export default function MediaEntry({
   onCancel,
 }: MediaEntryProps) {
   const [formData, setFormData] = useState<MediaEntryFormData>(
-    buildInitialFormData(detailedEntry)
+    buildInitialFormData(detailedEntry),
   );
 
   const handleChange = (
     field: keyof MediaEntryFormData,
-    value: string | number
+    value: string | number,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const dto = {
@@ -80,22 +80,36 @@ export default function MediaEntry({
   };
 
   return (
-    <div className="relative w-full max-w-2xl bg-background-light dark:bg-background-dark rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-      <DetailedHeader
-        createMode={createMode}
-        subtitle={formatSubtitle(detailedEntry)}
-        onCancel={onCancel}
-      />
-
-      <form className="p-6 space-y-6" onSubmit={handleSubmit}>
-        <MediaEntryForm formData={formData} onChange={handleChange} />
-
-        <FormFooter
+    <div
+      className="
+    w-screen h-lvh 
+    fixed 
+    top-0 left-0 
+    flex justify-center items-center 
+    bg-black/80 backdrop-blur-xs 
+    z-40"
+      onClick={() => onCancel()}
+    >
+      <div
+        className="relative w-full max-w-2xl bg-background-light dark:bg-background-dark rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <DetailedHeader
           createMode={createMode}
-          onDelete={createMode ? undefined : handleDelete}
+          subtitle={formatSubtitle(detailedEntry)}
           onCancel={onCancel}
         />
-      </form>
+
+        <form className="p-6 space-y-6" onSubmit={handleSubmit}>
+          <MediaEntryForm formData={formData} onChange={handleChange} />
+
+          <FormFooter
+            createMode={createMode}
+            onDelete={createMode ? undefined : handleDelete}
+            onCancel={onCancel}
+          />
+        </form>
+      </div>
     </div>
   );
 }
