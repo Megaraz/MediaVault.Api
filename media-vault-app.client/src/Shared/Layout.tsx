@@ -48,7 +48,7 @@ export default function Layout() {
             </div>
           </header>
 
-          <main className="flex-1">
+          <main className="flex flex-1 flex-row justify-center">
             <Outlet /> {/* like @Body */}
           </main>
 

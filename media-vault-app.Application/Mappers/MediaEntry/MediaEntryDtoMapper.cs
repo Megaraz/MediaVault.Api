@@ -21,7 +21,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.IdExternal = createDto.IdExternal;
             entity.Status = createDto.Status;
             entity.Title = createDto.Title;
-            entity.Rating = createDto.Rating ?? 0.5m;
+            entity.Rating = createDto.Rating;
             entity.Review = createDto.Review;
             entity.Genre = createDto.Genre;
             entity.ReleaseYear = createDto.ReleaseYear ?? 0;
@@ -63,7 +63,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.IdExternal = updateDto.IdExternal;
             entity.Status = updateDto.Status;
             entity.Title = updateDto.Title;
-            entity.Rating = updateDto.Rating ?? 0.5m;
+            entity.Rating = updateDto.Rating;
             entity.Review = updateDto.Review;
             entity.Genre = updateDto.Genre;
             entity.ReleaseYear = updateDto.ReleaseYear ?? 0;

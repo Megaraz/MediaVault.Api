@@ -30,7 +30,7 @@ namespace media_vault_app.Infrastructure
             modelBuilder.Entity<MediaEntry>()
                 .ToTable(t =>
                 t.HasCheckConstraint("CK_MediaEntry_Rating",
-                "Rating >= 0.5 AND Rating <= 10 AND Rating * 2 = FLOOR(Rating * 2)"));
+                "Rating >= 0 AND Rating <= 5 AND Rating * 2 = FLOOR(Rating * 2)"));
         }
     }
 }
