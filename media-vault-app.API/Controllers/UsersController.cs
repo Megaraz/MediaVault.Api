@@ -1,11 +1,13 @@
 using media_vault_app.Application.DTOs.User.Request;
-using media_vault_app.Application.Interfaces.Repos;
-using media_vault_app.Domain.Entities;
 using Rasmus.SharedKernel.ResultPattern;
 using Microsoft.AspNetCore.Mvc;
 using media_vault_app.Application.DTOs.User.Response;
 using System.Diagnostics;
 using media_vault_app.Application.Interfaces.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 
 namespace media_vault_app.API.Controllers
 {
@@ -36,6 +38,28 @@ namespace media_vault_app.API.Controllers
         public async Task<ActionResult<UserDetailedDto>> LoginUser([FromBody] UserLoginDto loginDto, CancellationToken ct)
         {
             var result = await _userWriteService.LoginAsync(loginDto, ct);
+
+            if (result.IsFailure)
+            {
+                return this.ToOk(result);
+            }
+
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, result.Value.Id.ToString()),
+                new(ClaimTypes.Name, result.Value.Username),
+                new(ClaimTypes.Email, result.Value.Email)
+            };
+
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal);
 
             return this.ToOk(result);
         }
@@ -69,6 +93,29 @@ namespace media_vault_app.API.Controllers
         {
             var result = await _userWriteService.DeleteAsync(id, ct);
             return this.ToNoContent(result);
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(CancellationToken ct)
+        {
+            await HttpContext.SignOutAsync();
+            return NoContent();
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<ActionResult<UserDetailedDto>> GetCurrentUser(CancellationToken ct)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userReadService.GetByIdAsync(userId, ct);
+            return this.ToOk(result);
         }
     }
 }
