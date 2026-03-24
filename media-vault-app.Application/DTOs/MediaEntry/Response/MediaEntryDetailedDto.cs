@@ -13,20 +13,7 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Response
         public Guid UserId { get; init; }
         public Status Status { get; init; }
         public string? Title { get; init; } = null;
-        private decimal _rating;
-
-        public decimal Rating
-        {
-            get => _rating;
-            init
-            {
-                // Clamp the value between 0.5 and 10
-                var clamped = Math.Clamp(value, 0.5m, 10m);
-
-                // Round to the nearest 0.5
-                _rating = Math.Round(clamped * 2, MidpointRounding.AwayFromZero) / 2;
-            }
-        }
+        public decimal Rating { get; init; }
 
         public string? Review { get; init; }
         public string? Genre { get; init; }

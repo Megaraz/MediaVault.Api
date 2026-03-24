@@ -19,10 +19,7 @@ namespace media_vault_app.Domain.Entities
             get => _rating;
             set
             {
-                // Clamp the value between 0.5 and 10
-                var clamped = Math.Clamp(value, 0.5m, 10m);
-
-                // Round to the nearest 0.5
+                var clamped = Math.Clamp(value, 0m, 5m);
                 _rating = Math.Round(clamped * 2, MidpointRounding.AwayFromZero) / 2;
             }
         }

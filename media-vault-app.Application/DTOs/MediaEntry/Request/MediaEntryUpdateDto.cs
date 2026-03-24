@@ -10,7 +10,7 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Request
         string? IdExternal,
         Status Status,
         string Title,
-        decimal? Rating,
+        decimal Rating,
         string? Review,
         string? Genre,
         int? ReleaseYear,

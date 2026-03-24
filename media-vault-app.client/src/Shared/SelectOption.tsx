@@ -1,7 +1,7 @@
 type SelectOptionProps = {
   options: SelectOptionItem[];
   value: string | number;
-  onChange: (newValue: string | number) => void;
+  onChange: (newValue: string) => void;
   className?: string;
 };
 

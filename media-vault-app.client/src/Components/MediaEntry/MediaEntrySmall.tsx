@@ -16,7 +16,7 @@ export default function MediaEntrySmall({
   return (
     <div
       key={entry.id}
-      className="border p-3 rounded hover: cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      className="border p-3 rounded hover:cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
       onClick={() => onClickEntry(entry)}
     >
       <ul>
@@ -30,7 +30,7 @@ export default function MediaEntrySmall({
           <b>Status:</b> {StatusLabels[entry.status] ?? entry.status}
         </li>
         <li>
-          <b>Rating:</b> {entry.rating}
+          <b>Rating:</b> {entry.rating > 0 ? `${entry.rating.toFixed(1)} / 5.0` : "Not rated"}
         </li>
         <li>
           <b>Genre:</b> {entry.genre ?? "N/A"}

@@ -18,7 +18,7 @@ export type MediaEntrySubmitDto = {
     idExternal?: string | null;
     status: number;
     title: string;
-    rating?: number | null;
+    rating: number;
     review?: string | null;
     genre?: string | null;
     releaseYear?: number | null;

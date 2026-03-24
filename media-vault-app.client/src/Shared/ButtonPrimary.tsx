@@ -17,7 +17,7 @@ function ButtonPrimary({
         py-2 
       bg-blue-600 
       hover:bg-blue-700 
-      text-white rounded-md + ${className}
+      text-white rounded-md ${className}
     `}
     >
       {children}

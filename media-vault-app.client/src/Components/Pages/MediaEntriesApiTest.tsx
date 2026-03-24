@@ -3,13 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MediaEntriesClient, {
   type MediaEntryDetailedDto,
   type MediaEntrySubmitDto,
-  StatusLabels,
-  MediaTypeLabels,
   MediaType,
-  StatusType,
 } from "../../Clients/MediaEntriesClient";
 import type { UserDetailedDto } from "../../Clients/UsersClient";
-import ButtonPrimary from "../../Shared/ButtonPrimary";
 import MediaEntry from "../MediaEntry/MediaEntry";
 import MediaEntrySmall from "../MediaEntry/MediaEntrySmall";
 
@@ -130,12 +126,12 @@ export default function MediaEntriesApiTest() {
     { type: MediaType.Manga, title: "Manga" },
   ];
 
-  const statusSections = [
-    { type: StatusType.OnGoing, title: "On Going" },
-    { type: StatusType.Completed, title: "Completed" },
-    { type: StatusType.Backlog, title: "Backlog" },
-    { type: StatusType.Dropped, title: "Dropped" },
-  ];
+  // const statusSections = [
+  //   { type: StatusType.OnGoing, title: "On Going" },
+  //   { type: StatusType.Completed, title: "Completed" },
+  //   { type: StatusType.Backlog, title: "Backlog" },
+  //   { type: StatusType.Dropped, title: "Dropped" },
+  // ];
 
   return (
     <div
@@ -168,7 +164,7 @@ export default function MediaEntriesApiTest() {
             <p>User ID: {selectedUser.id}</p>
           </div>
         ) : (
-          <div className="max-w-2/3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <div className="max-w-[66%] rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             <p className="font-semibold">No user selected.</p>
             <p className="mb-3">
               Go to the Users API Test page, fetch users, and click one to load

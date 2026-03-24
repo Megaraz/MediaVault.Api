@@ -59,7 +59,7 @@ export default function MediaEntry({
       title: formData.title,
       mediaType: formData.mediaType,
       status: formData.status,
-      rating: formData.rating || null,
+      rating: formData.rating,
       review: formData.review || null,
     };
 
