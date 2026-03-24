@@ -25,8 +25,8 @@ namespace media_vault_app.API.Controllers
             _userWriteService = userWriteService;
         }
 
-        [HttpPost("create")]
-        public async Task<ActionResult<UserDetailedDto>> CreateUser([FromBody] UserCreateDto createDto, CancellationToken ct)
+        [HttpPost("register")]
+        public async Task<ActionResult<UserDetailedDto>> RegisterUser([FromBody] UserCreateDto createDto, CancellationToken ct)
         {
 
             var result = await _userWriteService.CreateAsync(createDto, ct);

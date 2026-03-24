@@ -14,10 +14,17 @@ export type UserCreateDto = {
     confirmPassword: string;
 }
 
+export type UserLoginDto = {
+    email: string;
+    password: string;
+}
+
 
 export default class UsersClient {
 
     private baseUrl = "/users";
+
+
 
     async getAllUsers(): Promise<UserDetailedDto[]> {
         const response = await fetch(this.baseUrl);
@@ -27,8 +34,23 @@ export default class UsersClient {
         return response.json();
     }
 
-    async createUser(user: UserCreateDto): Promise<UserDetailedDto> {
-        const response = await fetch(this.baseUrl, {
+    async login(credentials: UserLoginDto): Promise<UserDetailedDto> {
+        const response = await fetch(this.baseUrl + "/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(credentials)
+        });
+        if (!response.ok) {
+            throw new Error("Failed to login");
+        }
+        return response.json();
+    }
+
+
+    async registerUser(user: UserCreateDto): Promise<UserDetailedDto> {
+        const response = await fetch(this.baseUrl + "/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -36,7 +58,7 @@ export default class UsersClient {
             body: JSON.stringify(user)
         });
         if (!response.ok) {
-            throw new Error("Failed to create user");
+            throw new Error("Failed to register user");
         }
         return response.json();
     }

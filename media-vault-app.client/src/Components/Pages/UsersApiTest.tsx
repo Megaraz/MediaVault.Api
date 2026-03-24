@@ -25,7 +25,7 @@ export default function UsersApiTest() {
   const createUser = async (newUser: UserCreateDto) => {
     setLoading(true);
     await client
-      .createUser(newUser)
+      .registerUser(newUser)
       .then((createdUser) => {
         setUsers((prevUsers) => [...prevUsers, createdUser]);
       })
