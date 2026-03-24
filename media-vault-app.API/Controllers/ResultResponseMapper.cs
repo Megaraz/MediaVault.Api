@@ -3,8 +3,6 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.API.Controllers
 {
-    public sealed record ResponseDto(string Message, string Code);
-    public sealed record ValidationResponseDto(string Message, IEnumerable<string>? ValidationErrors);
 
     public static class ResultResponseMapper
     {

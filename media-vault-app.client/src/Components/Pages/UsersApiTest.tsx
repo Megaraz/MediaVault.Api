@@ -125,7 +125,7 @@ export default function UsersApiTest() {
                           <button
                             type="button"
                             onClick={() => handleUserClick(user)}
-                            className="w-full rounded-xl border border-slate-200 bg-gray-300 p-4 text-left shadow-sm transition duration-150 hover:-translate-y-1 hover:border-blue-400 hover:shadow-md active:translate-y-0 active:scale-[0.99]"
+                            className="w-full rounded-xl border border-slate-200 bg-gray-600 p-4 text-left shadow-sm transition duration-150 hover:-translate-y-1 hover:border-blue-400 hover:shadow-md active:translate-y-0 active:scale-[0.99]"
                           >
                             <p>
                             <b>ID:</b> {user.id}
