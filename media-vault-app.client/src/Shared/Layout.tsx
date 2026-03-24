@@ -1,8 +1,23 @@
+import { useState } from "react";
 import { Outlet, Link } from "react-router-dom";
+import RegisterUser from "../Components/UserAccount/RegisterUser";
 
 export default function Layout() {
+  const [showRegisterPopup, setShowRegisterPopup] = useState(false);
+
+  const handleOpenRegisterPopup = () => {
+    setShowRegisterPopup(true);
+  };
+
+  const handleCloseRegisterPopup = () => {
+    setShowRegisterPopup(false);
+  };
+
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+      {showRegisterPopup && (
+        <RegisterUser onSubmit={() => {}} onCancel={handleCloseRegisterPopup} />
+      )}
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
         <div className="layout-container flex h-full grow flex-col">
           <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 px-6 md:px-20 py-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
@@ -41,7 +56,10 @@ export default function Layout() {
                 <button className="flex min-w-21 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold transition-all hover:opacity-90">
                   Login
                 </button>
-                <button className="flex min-w-21 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold transition-all hover:shadow-lg hover:shadow-primary/20">
+                <button
+                  className="flex min-w-21 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold transition-all hover:shadow-lg hover:shadow-primary/20"
+                  onClick={handleOpenRegisterPopup}
+                >
                   Sign Up
                 </button>
               </div>

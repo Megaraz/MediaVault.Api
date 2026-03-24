@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using media_vault_app.API.DTOs;
+using Microsoft.AspNetCore.Mvc;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.API.Controllers

@@ -1,9 +1,11 @@
-import { MediaTypeLabels, StatusLabels } from "../../Clients/MediaEntriesClient";
-import type { SelectOptionItem } from "../../Shared/SelectOption";
-import InputText from "../../Shared/InputText";
-import SelectOption from "../../Shared/SelectOption";
-import StarRating from "../../Shared/StarRating";
-
+import {
+  MediaTypeLabels,
+  StatusLabels,
+} from "../../Clients/MediaEntriesClient";
+import type { SelectOptionItem } from "../../Components/Shared/SelectOption";
+import InputText from "../../Components/Shared/InputText";
+import SelectOption from "../../Components/Shared/SelectOption";
+import StarRating from "../../Components/Shared/StarRating";
 export type MediaEntryFormData = {
   title: string;
   mediaType: number;
@@ -17,15 +19,18 @@ type MediaEntryFormProps = {
   onChange: (field: keyof MediaEntryFormData, value: string | number) => void;
 };
 
-const mediaTypeOptions: SelectOptionItem[] = Object.entries(MediaTypeLabels).map(
-  ([value, label]) => ({ value: Number(value), label })
-);
+const mediaTypeOptions: SelectOptionItem[] = Object.entries(
+  MediaTypeLabels,
+).map(([value, label]) => ({ value: Number(value), label }));
 
 const statusOptions: SelectOptionItem[] = Object.entries(StatusLabels).map(
-  ([value, label]) => ({ value: Number(value), label })
+  ([value, label]) => ({ value: Number(value), label }),
 );
 
-export default function MediaEntryForm({ formData, onChange }: MediaEntryFormProps) {
+export default function MediaEntryForm({
+  formData,
+  onChange,
+}: MediaEntryFormProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Title */}

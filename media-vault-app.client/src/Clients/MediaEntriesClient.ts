@@ -61,8 +61,8 @@ export const MediaType = {
 export default class MediaEntriesClient {
     private baseUrl = "/mediaentries";
 
-    async createMediaEntry(userId: string, entry: MediaEntrySubmitDto): Promise<MediaEntryDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/${userId}`, {
+    async createMediaEntry(entry: MediaEntrySubmitDto): Promise<MediaEntryDetailedDto> {
+        const response = await fetch(this.baseUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -75,9 +75,9 @@ export default class MediaEntriesClient {
         }
         return response.json();
     }
-    async getMediaEntries(userId: string, pageNumber = 1, pageSize = 10): Promise<MediaEntryDetailedDto[]> {
+    async getMediaEntries(pageNumber = 1, pageSize = 10): Promise<MediaEntryDetailedDto[]> {
         const response = await fetch(
-            `${this.baseUrl}/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+            `${this.baseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
         );
         if (!response.ok) {
             const errorMessage = await response.text();
@@ -86,8 +86,8 @@ export default class MediaEntriesClient {
         return response.json();
     }
 
-    async getMediaEntryById(userId: string, entryId: string): Promise<MediaEntryDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`);
+    async getMediaEntryById(entryId: string): Promise<MediaEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/${entryId}`);
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error("Failed to fetch media entry: " + errorMessage);
@@ -95,8 +95,8 @@ export default class MediaEntriesClient {
         return response.json();
     }
 
-    async updateMediaEntry(userId: string, entryId: string, updatedEntry: MediaEntrySubmitDto): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`, {
+    async updateMediaEntry(entryId: string, updatedEntry: MediaEntrySubmitDto): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/${entryId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -109,8 +109,8 @@ export default class MediaEntriesClient {
         }
     }
 
-    async deleteMediaEntry(userId: string, entryId: string): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/${userId}/${entryId}`, {
+    async deleteMediaEntry(entryId: string): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/${entryId}`, {
             method: "DELETE",
         });
         if (!response.ok) {

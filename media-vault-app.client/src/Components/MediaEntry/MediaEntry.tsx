@@ -7,6 +7,7 @@ import DetailedHeader from "./DetailedHeader";
 import MediaEntryForm from "./MediaEntryForm";
 import type { MediaEntryFormData } from "./MediaEntryForm";
 import FormFooter from "./FormFooter";
+import ModularPopupWindow from "../../Components/Shared/ModularPopupWindow";
 
 type MediaEntryProps = {
   detailedEntry?: MediaEntryDetailedDto;
@@ -73,36 +74,22 @@ export default function MediaEntry({
   };
 
   return (
-    <div
-      className="
-    w-screen h-lvh 
-    fixed 
-    top-0 left-0 
-    flex justify-center items-center 
-    bg-black/80 backdrop-blur-xs 
-    z-40"
-      onClick={() => onCancel()}
-    >
-      <div
-        className="relative w-full max-w-2xl bg-background-light dark:bg-background-dark rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <DetailedHeader
+    <ModularPopupWindow onClose={onCancel}>
+      <DetailedHeader
+        isEditMode={isEditMode}
+        subtitle={formatSubtitle(detailedEntry)}
+        onCancel={onCancel}
+      />
+
+      <form className="p-6 space-y-6" onSubmit={handleSubmit}>
+        <MediaEntryForm formData={formData} onChange={handleChange} />
+
+        <FormFooter
           isEditMode={isEditMode}
-          subtitle={formatSubtitle(detailedEntry)}
+          onDelete={isEditMode ? handleDelete : undefined}
           onCancel={onCancel}
         />
-
-        <form className="p-6 space-y-6" onSubmit={handleSubmit}>
-          <MediaEntryForm formData={formData} onChange={handleChange} />
-
-          <FormFooter
-            isEditMode={isEditMode}
-            onDelete={isEditMode ? handleDelete : undefined}
-            onCancel={onCancel}
-          />
-        </form>
-      </div>
-    </div>
+      </form>
+    </ModularPopupWindow>
   );
 }

@@ -36,7 +36,7 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      const fetched = await client.getMediaEntries(selectedUser.id);
+      const fetched = await client.getMediaEntries();
       setEntries(fetched);
     } catch (err) {
       setError((err as Error).message);
@@ -71,7 +71,7 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      const created = await client.createMediaEntry(selectedUser.id, dto);
+      const created = await client.createMediaEntry(dto);
       setEntries((prev) => [...prev, created]);
     } catch (err) {
       setError((err as Error).message);
@@ -92,7 +92,7 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      await client.deleteMediaEntry(selectedUser.id, entryId);
+      await client.deleteMediaEntry(entryId);
       setEntries((prev) => prev.filter((e) => e.id !== entryId));
     } catch (err) {
       setError((err as Error).message);
@@ -122,9 +122,9 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      await client.updateMediaEntry(selectedUser.id, entryId, updateDto);
+      await client.updateMediaEntry(entryId, updateDto);
 
-      const fetched = await client.getMediaEntryById(selectedUser.id, entryId);
+      const fetched = await client.getMediaEntryById(entryId);
       setEntries((prev) => prev.map((e) => (e.id === entryId ? fetched : e)));
     } catch (err) {
       setError((err as Error).message);
