@@ -81,6 +81,28 @@ export default function MediaEntriesApiTest() {
     }
   };
 
+  const handleDeleteMediaEntry = async (entryId: string) => {
+    if (!selectedUser) {
+      setError(
+        "Select a user from the Users API Test page before deleting media entries.",
+      );
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      await client.deleteMediaEntry(selectedUser.id, entryId);
+      setEntries((prev) => prev.filter((e) => e.id !== entryId));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+      setSelectedEntry(undefined);
+      setShowPopup(false);
+    }
+  };
+
   const handleUpdateMediaEntry = async (
     updateDto: MediaEntrySubmitDto,
     entryId?: string,
@@ -146,7 +168,9 @@ export default function MediaEntriesApiTest() {
               : handleCreateMediaEntry(dto)
           }
           onCancel={onCancel}
-          onDelete={() => undefined}
+          onDelete={() =>
+            selectedEntry && handleDeleteMediaEntry(selectedEntry.id)
+          }
         />
       )}
       {/* MediaEntries Header */}
