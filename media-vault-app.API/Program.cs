@@ -9,6 +9,7 @@ using media_vault_app.Infrastructure.Repos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Rasmus.SharedKernel.Interfaces;
+using media_vault_app.Application.Services.Auth;
 
 namespace media_vault_app.API
 {
@@ -37,6 +38,8 @@ namespace media_vault_app.API
 
             builder.Services.AddScoped<IMediaEntryReadService, MediaEntryReadService>();
             builder.Services.AddScoped<IMediaEntryWriteService, MediaEntryWriteService>();
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
             builder.Services.AddScoped<IUserReadService, UserReadService>();
             builder.Services.AddScoped<IUserWriteService, UserWriteService>();

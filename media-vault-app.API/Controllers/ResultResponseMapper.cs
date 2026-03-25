@@ -14,6 +14,13 @@ namespace media_vault_app.API.Controllers
                 : c.ToFailureResponse(result);
         }
 
+        public static IActionResult ToOk(this ControllerBase c, Result result)
+        {
+            return result.IsSuccess
+                ? c.Ok()
+                : c.ToFailureResponse(result);
+        }
+
         public static IActionResult ToNoContent(this ControllerBase c, Result result)
         {
             return result.IsSuccess

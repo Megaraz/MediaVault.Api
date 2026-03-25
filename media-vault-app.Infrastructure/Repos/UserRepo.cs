@@ -14,6 +14,31 @@ namespace media_vault_app.Infrastructure.Repos
         {
         }
 
+        public async Task<Result> RegisterUserAsync(User entity, CancellationToken ct = default)
+        {
+            // Define error handling context
+            var errorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
+
+            if (entity.IsNull(errorContext, out var nullValueError))
+                return Result.ValidationFailure([nullValueError], errorContext.DescriptionSuffix!);
+
+            try
+            {
+                _dbSet.Add(entity);
+                await _appDbContext.SaveChangesAsync(ct);
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                errorContext.DescriptionSuffix = $"An error occurred while creating the {errorContext.EntityName}.";
+
+                Error dbCreateFailure = Error.DbCreateFailure(errorContext, ex);
+
+                return Result.Failure(dbCreateFailure, "An error occurred while creating the entity.");
+            }
+
+        }
+
         public async Task<Result<User>> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken ct = default)
         {
             var errorContext = DefineErrorContext(nameof(GetByUsernameOrEmailAsync), OperationType.Get);

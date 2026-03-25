@@ -79,8 +79,12 @@ namespace Rasmus.SharedKernel.ResultPattern
                     $"{errorDescriptionPrefix}: A conflict occurred during the {operation} operation.",
                     ErrorType.Conflict);
 
-        //public static Error Unauthorized(ErrorCode code, string description) =>
-        //    new(code.Code, description, ErrorType.Unauthorized);
+        public static Error Unauthorized(ErrorContext errorContext) =>
+            new Error(
+                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.GeneralUnauthorized).Code,
+                $"{errorContext.DescriptionPrefix}: Unauthorized access.",
+                ErrorType.Unauthorized);
+
 
         //public static Error Forbidden(ErrorCode code, string description) =>
         //    new(code.Code, description, ErrorType.Forbidden);

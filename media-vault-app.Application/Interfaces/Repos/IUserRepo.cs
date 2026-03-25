@@ -7,6 +7,7 @@ namespace media_vault_app.Application.Interfaces.Repos
 {
     public interface IUserRepo : IGenericRepo<User, Guid>
     {
+        Task<Result> RegisterUserAsync(User entity, CancellationToken ct = default);
         Task<Result<User>> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken ct = default);
     }
 }
