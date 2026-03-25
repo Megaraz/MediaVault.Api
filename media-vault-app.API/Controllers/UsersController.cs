@@ -25,16 +25,6 @@ namespace media_vault_app.API.Controllers
             _userWriteService = userWriteService;
         }
 
-        [HttpPost("create")]
-        public async Task<ActionResult<UserDetailedDto>> CreateUser([FromBody] UserRegisterDto createDto, CancellationToken ct)
-        {
-
-            var result = await _userWriteService.CreateAsync(createDto, ct);
-
-            return this.ToCreated(result, nameof(GetUserById), value => new { id = result.Value.Id });
-        }
-
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDetailedDto>>> GetUsers(CancellationToken ct)
         {
@@ -50,13 +40,6 @@ namespace media_vault_app.API.Controllers
             var result = await _userReadService.GetByIdAsync(id, ct);
 
             return this.ToOk(result);
-        }
-
-        [HttpPut("{id:Guid}")]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateDto updateDto, CancellationToken ct)
-        {
-            var result = await _userWriteService.UpdateUserInfoAsync(id, updateDto, ct);
-            return this.ToNoContent(result);
         }
 
         [HttpDelete("{id:Guid}")]

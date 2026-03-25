@@ -11,13 +11,25 @@ namespace media_vault_app.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AuthController(IAuthService authService) : ControllerBase
+    public class AuthController : ControllerBase
     {
+        private readonly IAuthService _authService;
+        private readonly IUserReadService _userReadService;
+        private readonly IUserWriteService _userWriteService;
+
+
+        public AuthController(IAuthService authService, IUserReadService userReadService, IUserWriteService userWriteService)
+        {
+            _authService = authService;
+            _userReadService = userReadService;
+            _userWriteService = userWriteService;
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(
             [FromBody] UserRegisterDto createDto,
             CancellationToken ct = default) =>
-                this.ToOk(await authService.RegisterUserAsync(createDto, ct));
+                this.ToOk(await _authService.RegisterUserAsync(createDto, ct));
 
 
         [HttpPost("login")]
@@ -25,7 +37,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] UserLoginDto loginDto,
             CancellationToken ct = default)
         {
-            var result = await authService.LoginAsync(loginDto, ct);
+            var result = await _authService.LoginAsync(loginDto, ct);
 
             if (result.IsFailure)
             {
@@ -55,12 +67,11 @@ namespace media_vault_app.API.Controllers
         [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateUser(
-            IUserWriteService userWriteService,
             [FromBody] UserUpdateDto updateDto,
             CancellationToken ct = default) =>
                 !TryGetCurrentUserId(out var userId)
                     ? Unauthorized()
-                    : this.ToNoContent(await userWriteService.UpdateUserInfoAsync(userId, updateDto, ct));
+                    : this.ToNoContent(await _userWriteService.UpdateUserInfoAsync(userId, updateDto, ct));
 
         [Authorize]
         [HttpPost("logout")]
@@ -72,14 +83,12 @@ namespace media_vault_app.API.Controllers
 
         [Authorize]
         [HttpGet("me")]
-        public async Task<ActionResult<UserDetailedDto>> GetCurrentUser(
-            IUserReadService userReadService,
-            CancellationToken ct = default)
+        public async Task<ActionResult<UserDetailedDto>> GetCurrentUser(CancellationToken ct = default)
         {
             if (!TryGetCurrentUserId(out var userId))
                 return Unauthorized();
 
-            var result = await userReadService.GetByIdAsync(userId, ct);
+            var result = await _userReadService.GetByIdAsync(userId, ct);
             return this.ToOk(result);
         }
 

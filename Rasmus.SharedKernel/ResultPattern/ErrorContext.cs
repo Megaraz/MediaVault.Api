@@ -16,13 +16,15 @@ namespace Rasmus.SharedKernel.ResultPattern
         public string? DescriptionSuffix { get; set; }
         //public string DescriptionPrefix => $"An error occurred in {Layer} layer, in service {ServiceName}, method {MethodName}, during {Operation} operation on entity {EntityName}.";
         public string DescriptionPrefix { get; init; }
-        public ErrorContext(string layer, string serviceName, string methodName, OperationType operation, string entityName)
+        public ErrorContext(string layer, string serviceName, string methodName, OperationType operation, string entityName, string? fieldName = null, string? confirmFieldName = null)
         {
             Layer = layer;
             ServiceName = serviceName;
             MethodName = methodName;
             Operation = operation;
             EntityName = entityName;
+            FieldName = fieldName;
+            ConfirmFieldName = confirmFieldName;
             DescriptionPrefix = FormatDescriptionPrefix(layer, serviceName, methodName, operation, entityName);
         }
 

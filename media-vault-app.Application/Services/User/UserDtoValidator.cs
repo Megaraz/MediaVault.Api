@@ -12,23 +12,27 @@ namespace media_vault_app.Application.Services.User
         public bool IsValidLoginDto(UserLoginDto loginDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
             validationErrors = new List<ValidationError>();
+            var internalValidationErrors = new List<ValidationError>();
 
             if (loginDto.IsNull(errorContext, out ValidationError nullValueError))
             {
-                validationErrors = validationErrors.Append(nullValueError);
+                internalValidationErrors.Add(nullValueError);
+                validationErrors = internalValidationErrors;
                 return false;
             }
 
-            if (loginDto.UsernameOrEmail.IsNullOrWhiteSpace(errorContext, out ValidationError nullOrEmptyError))
+            var requiredFields = new (string FieldName, string Value)[]
             {
-                validationErrors = validationErrors.Append(nullOrEmptyError);
+                ("Username or Email", loginDto.UsernameOrEmail),
+                ("Password", loginDto.Password)
+            };
+
+            if (requiredFields.AnyIsNullOrWhiteSpace(errorContext, out IEnumerable<ValidationError> nullOrEmptyErrors))
+            {
+                internalValidationErrors.AddRange(nullOrEmptyErrors);
             }
 
-            if (loginDto.Password.IsNullOrWhiteSpace(errorContext, out ValidationError nullOrEmptyPasswordError))
-            {
-                validationErrors = validationErrors.Append(nullOrEmptyPasswordError);
-            }
-
+            validationErrors = internalValidationErrors;
             return !validationErrors.Any();
         }
         public bool IsValidCreateDto(UserRegisterDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)

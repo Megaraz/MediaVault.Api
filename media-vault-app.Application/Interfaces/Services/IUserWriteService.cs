@@ -10,7 +10,6 @@ namespace media_vault_app.Application.Interfaces.Services
 {
     public interface IUserWriteService : IWriteService<User, Guid, UserRegisterDto, UserDetailedDto>
     {
-        new Task<Result<UserDetailedDto>> CreateAsync(UserRegisterDto createDto, CancellationToken ct = default);
         Task<Result> UpdateUserInfoAsync(Guid id, UserUpdateDto updateDto, CancellationToken ct = default);
     }
 }

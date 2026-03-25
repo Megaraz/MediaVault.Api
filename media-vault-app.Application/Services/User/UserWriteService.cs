@@ -47,38 +47,6 @@ namespace media_vault_app.Application.Services.User
             _dtoValidator = dtoValidator;
         }
 
-        //public override async Task<Result<UserDetailedDto>> CreateAsync(UserRegisterDto createDto, CancellationToken ct = default)
-        //{
-        //    if (createDto is null)
-        //    {
-        //        return await base.CreateAsync(createDto!, ct);
-        //    }
-
-        //    var errorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create, typeof(UserRegisterDto).Name);
-
-        //    if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
-        //    {
-        //        return Result<UserDetailedDto>.ValidationFailure(validationErrors, "User creation validation failed.");
-        //    }
-
-        //    string hashedPassword = _passwordHasherService.HashPassword(createDto.Password);
-
-        //    var hashedCreateDto = createDto with
-        //    {
-        //        Password = hashedPassword,
-        //        ConfirmPassword = hashedPassword
-        //    };
-
-        //    return await base.CreateAsync(hashedCreateDto, ct);
-        //}
-
-
-        // TODO: Implement UpdatePasswordAsync method, which should validate the new password, hash it, and update the user's password in the repository.
-        //public async Task<Result> UpdatePasswordAsync(Guid id, UserUpdateDto updateDto, CancellationToken ct = default)
-        //{
-
-        //}
-
         public async Task<Result> UpdateUserInfoAsync(Guid id, UserUpdateDto updateDto, CancellationToken ct = default)
         {
             var errorContext = DefineErrorContext(nameof(UpdateUserInfoAsync), OperationType.Update);
