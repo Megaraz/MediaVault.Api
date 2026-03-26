@@ -11,18 +11,18 @@ const defaultMainPopupClassName =
 
 export default function Login({ onCancel }: LoginProps) {
   const { login, isLoading } = useUser();
-  const [email, setEmail] = useState("");
+  const [userNameOrEmail, setUserNameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsSubmitting(true);
 
     try {
-      await login({ email, password });
+      await login({ userNameOrEmail, password });
       onCancel();
     } catch (error) {
       setErrorMessage(
@@ -59,16 +59,16 @@ export default function Login({ onCancel }: LoginProps) {
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label
-              htmlFor="login-email"
+              htmlFor="login-username-or-email"
               className="block text-sm text-slate-300"
             >
-              Email
+              Username or Email
             </label>
             <input
-              id="login-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="login-username-or-email"
+              type="text"
+              value={userNameOrEmail}
+              onChange={(e) => setUserNameOrEmail(e.target.value)}
               required
               className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-slate-100"
             />

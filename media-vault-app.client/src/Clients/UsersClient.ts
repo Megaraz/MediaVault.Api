@@ -15,7 +15,7 @@ export type UserCreateDto = {
 }
 
 export type UserLoginDto = {
-    email: string;
+    userNameOrEmail: string;
     password: string;
 }
 

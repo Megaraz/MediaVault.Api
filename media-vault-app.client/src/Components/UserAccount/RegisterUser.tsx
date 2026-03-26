@@ -41,7 +41,7 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
     new RegisterUserFormData(),
   );
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsSubmitting(true);
@@ -78,6 +78,7 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
       );
     } finally {
       setIsSubmitting(false);
+      onCancel(true);
     }
   };
 
@@ -120,7 +121,7 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
       <form className="p-8 pt-6 space-y-4" onSubmit={handleSubmit}>
         <RegisterUserForm formData={formData} onChange={handleChange} />
         {/* Terms */}
-        <div className="flex items-start gap-3 pt-2">
+        {/* <div className="flex items-start gap-3 pt-2">
           <input
             className="mt-1 h-4 w-4 rounded border-slate-700 bg-slate-800 text-primary focus:ring-primary focus:ring-offset-slate-900"
             id="terms"
@@ -140,7 +141,7 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
             </a>
             .
           </label>
-        </div>
+        </div> */}
         {/* Button */}
 
         {errorMessage && <p className="text-sm text-red-400">{errorMessage}</p>}
