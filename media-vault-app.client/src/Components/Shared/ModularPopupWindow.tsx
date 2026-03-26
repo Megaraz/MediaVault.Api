@@ -2,10 +2,10 @@ type PopupWindowProps = {
   children: React.ReactNode;
   onClose: () => void;
   mainPopupClassName?: string;
-  bgClassName?: string;
+  overlayClassName?: string;
 };
 
-const defaultBgClassName: string =
+const defaultOverlayClassName: string =
   "w-screen h-lvh fixed top-0 left-0 flex justify-center items-center bg-black/80 backdrop-blur-xs z-40";
 
 const defaultMainPopupClassName: string =
@@ -15,10 +15,10 @@ export default function ModularPopupWindow({
   children,
   onClose,
   mainPopupClassName = defaultMainPopupClassName,
-  bgClassName = defaultBgClassName,
+  overlayClassName = defaultOverlayClassName,
 }: PopupWindowProps) {
   return (
-    <div className={bgClassName} onClick={() => onClose()}>
+    <div className={overlayClassName} onClick={() => onClose()}>
       <div className={mainPopupClassName} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
