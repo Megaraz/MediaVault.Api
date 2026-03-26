@@ -13,17 +13,6 @@ type RegisterUserFormProps = {
   onChange: (field: keyof RegisterUserFormData, value: string) => void;
 };
 
-function isMatch(
-  fieldName: string,
-  value1: string,
-  value2: string,
-): boolean {
-  if (value1 !== value2) {
-    alert(`${fieldName} do not match`);
-    return false;
-  }
-  return true;
-}
 
 export default function RegisterUserForm({
   formData,

@@ -60,6 +60,10 @@ export default defineConfig({
                 target,
                 secure: false
             },
+            '^/[Aa]uth': {
+                target,
+                secure: false
+            },
             '^/openapi': {
                 target,
                 secure: false

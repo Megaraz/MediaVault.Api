@@ -49,7 +49,7 @@ export default function UsersApiTest() {
       );
 
       const [fetchedUsers] = (await Promise.race([
-        Promise.all([client.getAllUsers(), simulatedDelay]),
+        Promise.all([client.getUsers(), simulatedDelay]),
         timeoutPromise,
       ])) as [UserDetailedDto[], unknown];
 
@@ -114,7 +114,9 @@ export default function UsersApiTest() {
                 {users.length > 0 && (
                   <>
                     <div className="flex flex-col items-center gap-2">
-                      <h2 className="text-lg font-semibold">All fetched users</h2>
+                      <h2 className="text-lg font-semibold">
+                        All fetched users
+                      </h2>
                       <p className="text-sm text-slate-600">
                         Click a user to manage that user&apos;s media entries.
                       </p>
@@ -128,13 +130,13 @@ export default function UsersApiTest() {
                             className="w-full rounded-xl border border-slate-200 bg-gray-600 p-4 text-left shadow-sm transition duration-150 hover:-translate-y-1 hover:border-blue-400 hover:shadow-md active:translate-y-0 active:scale-[0.99]"
                           >
                             <p>
-                            <b>ID:</b> {user.id}
+                              <b>ID:</b> {user.id}
                             </p>
                             <p>
-                            <b>Username:</b> {user.username}
+                              <b>Username:</b> {user.username}
                             </p>
                             <p>
-                            <b>Email:</b> {user.email}
+                              <b>Email:</b> {user.email}
                             </p>
                           </button>
                         </li>

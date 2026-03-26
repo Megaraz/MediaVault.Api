@@ -2,11 +2,7 @@ import { useState } from "react";
 import type { UserCreateDto } from "../../Clients/UsersClient";
 import ModularPopupWindow from "../Shared/ModularPopupWindow";
 import RegisterUserForm, { RegisterUserFormData } from "./RegisterUserForm";
-
-type RegisterProps = {
-  onSubmit: (data: UserCreateDto) => void;
-  onCancel: () => void;
-};
+import UsersClient from "../../Clients/UsersClient";
 
 function isMatch(fieldName: string, value1: string, value2: string): boolean {
   if (value1 !== value2) {
@@ -33,23 +29,35 @@ function isValidFormData(data: RegisterUserFormData): boolean {
 const defaultclassNameName: string =
   "relative w-full max-w-[480px] bg-slate-900/50 border border-slate-800 rounded-xl shadow-2xl overflow-hidden";
 
-export default function RegisterUser({ onSubmit, onCancel }: RegisterProps) {
+type RegisterProps = {
+  onCancel: (toLogin: boolean) => void;
+};
+
+export default function RegisterUser({ onCancel }: RegisterProps) {
+  const [client] = useState(() => new UsersClient());
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<RegisterUserFormData>(
     new RegisterUserFormData(),
   );
 
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrorMessage(null);
+    setIsSubmitting(true);
 
-    // if (!isValidFormData(formData)) {
-    //   return;
-    // }
+    if (!isValidFormData(formData)) {
+      setIsSubmitting(false);
+      return;
+    }
 
     if (!isMatch("Emails", formData.email, formData.confirmEmail)) {
+      setIsSubmitting(false);
       return;
     }
 
     if (!isMatch("Passwords", formData.password, formData.confirmPassword)) {
+      setIsSubmitting(false);
       return;
     }
 
@@ -61,7 +69,16 @@ export default function RegisterUser({ onSubmit, onCancel }: RegisterProps) {
       confirmPassword: formData.confirmPassword,
     };
 
-    onSubmit(dto);
+    try {
+      await client.registerUser(dto);
+      onCancel(true);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to register user",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: keyof RegisterUserFormData, value: string) => {
@@ -72,7 +89,7 @@ export default function RegisterUser({ onSubmit, onCancel }: RegisterProps) {
 
   return (
     <ModularPopupWindow
-      onClose={onCancel}
+      onClose={() => onCancel(false)}
       mainPopupClassName={defaultclassNameName}
       overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-background-dark/80 backdrop-blur-md p-4"
     >
@@ -87,7 +104,7 @@ export default function RegisterUser({ onSubmit, onCancel }: RegisterProps) {
             </h2>
           </div>
           <button
-            onClick={onCancel}
+            onClick={() => onCancel(false)}
             className="text-slate-400 hover:text-slate-100 transition-colors"
           >
             <span className="material-symbols-outlined">close</span>
@@ -125,8 +142,14 @@ export default function RegisterUser({ onSubmit, onCancel }: RegisterProps) {
           </label>
         </div>
         {/* Button */}
-        <button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 mt-4">
-          <span>Create Account</span>
+
+        {errorMessage && <p className="text-sm text-red-400">{errorMessage}</p>}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 mt-4"
+        >
+          <span>{isSubmitting ? "Creating Account..." : "Create Account"}</span>
           <span className="material-symbols-outlined text-lg">
             arrow_forward
           </span>
@@ -140,6 +163,7 @@ export default function RegisterUser({ onSubmit, onCancel }: RegisterProps) {
           <a
             className="ms-1 text-primary font-semibold hover:underline"
             href="#"
+            onClick={() => onCancel(true)}
           >
             Sign In
           </a>

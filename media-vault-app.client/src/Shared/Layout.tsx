@@ -1,23 +1,41 @@
 import { useState } from "react";
 import { Outlet, Link } from "react-router-dom";
 import RegisterUser from "../Components/UserAccount/RegisterUser";
+import Login from "../Components/UserAccount/Login";
+import { useUser } from "./UserContext";
 
 export default function Layout() {
   const [showRegisterPopup, setShowRegisterPopup] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const { currentUser, isAuthenticated, isLoading, logout } = useUser();
 
-  const handleOpenRegisterPopup = () => {
+  const openRegisterWindow = () => {
     setShowRegisterPopup(true);
   };
 
-  const handleCloseRegisterPopup = () => {
+  const openLoginWindow = () => {
+    setShowLoginPopup(true);
+  };
+
+  const closeRegisterWindow = (toLogin: boolean) => {
     setShowRegisterPopup(false);
+    if (toLogin) {
+      setShowLoginPopup(true);
+    }
+  };
+
+  const closeLoginWindow = () => {
+    setShowLoginPopup(false);
+  };
+
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
-      {showRegisterPopup && (
-        <RegisterUser onSubmit={() => {}} onCancel={handleCloseRegisterPopup} />
-      )}
+      {showRegisterPopup && <RegisterUser onCancel={closeRegisterWindow} />}
+      {showLoginPopup && <Login onCancel={closeLoginWindow} />}
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
         <div className="layout-container flex h-full grow flex-col">
           <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 px-6 md:px-20 py-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
@@ -31,8 +49,8 @@ export default function Layout() {
             </div>
             <div className="flex flex-1 justify-end gap-4 md:gap-10">
               <nav className="hidden md:flex items-center gap-8">
-                <Link to="/users-api-test">Users API Test</Link>
-                <Link to="/media-entries-api-test">Media Entries API Test</Link>
+                {/* <Link to="/users-api-test">Users API Test</Link>
+                <Link to="/media-entries-api-test">Media Entries API Test</Link> */}
                 <a
                   className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors"
                   href="#features"
@@ -53,15 +71,41 @@ export default function Layout() {
                 </a>
               </nav>
               <div className="flex gap-3">
-                <button className="flex min-w-21 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold transition-all hover:opacity-90">
-                  Login
-                </button>
-                <button
-                  className="flex min-w-21 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold transition-all hover:shadow-lg hover:shadow-primary/20"
-                  onClick={handleOpenRegisterPopup}
-                >
-                  Sign Up
-                </button>
+                {isLoading ? (
+                  <div className="flex min-w-21 items-center justify-center rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold opacity-70">
+                    Loading...
+                  </div>
+                ) : isAuthenticated ? (
+                  <>
+                    <div className="flex items-center rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-semibold">
+                      {currentUser?.username}
+                    </div>
+                    <button
+                      type="button"
+                      className="flex min-w-21 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold transition-all hover:opacity-90"
+                      onClick={() => void handleLogout()}
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="flex min-w-21 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold transition-all hover:opacity-90"
+                      onClick={openLoginWindow}
+                    >
+                      Login
+                    </button>
+                    <button
+                      type="button"
+                      className="flex min-w-21 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold transition-all hover:shadow-lg hover:shadow-primary/20"
+                      onClick={openRegisterWindow}
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </header>

@@ -65,39 +65,25 @@ namespace media_vault_app.Application.Services.Auth
                 return Result.ValidationFailure(dtoValidationErrors, "User register validation failed.");
             }
 
-            Task<Result<bool>> isEmailAvailableTask = _userRepo.IsEmailAvailable(registerDto.Email, ct);
-            Task<Result<bool>> isUserNameAvailableTask = _userRepo.IsUserNameAvailable(registerDto.Username, ct);
+            var availabilityResult = await _userRepo.CheckRegistrationAvailabilityAsync(registerDto.Username, registerDto.Email, ct);
+
+            if (availabilityResult.IsFailure)
+            {
+                if (availabilityResult.PrimaryError.Type != ErrorType.Validation)
+                    return availabilityResult;
+
+                return Result.ValidationFailure(availabilityResult.ValidationErrors, "User register validation failed.");
+            }
 
             var registrationValidationErrors = new List<ValidationError>();
 
-            var emailAvailableResult = await isEmailAvailableTask;
-            var userNameAvailableResult = await isUserNameAvailableTask;
-
-
-            // USERNAME AVAILABILITY CHECK
-
-            if (userNameAvailableResult.IsFailure)
-            {
-                if (userNameAvailableResult.PrimaryError.Type != ErrorType.Validation)
-                    return userNameAvailableResult;
-
-                registrationValidationErrors.AddRange(userNameAvailableResult.ValidationErrors);
-            }
-            else if (!userNameAvailableResult.Value)
+            if (!availabilityResult.Value.IsUserNameAvailable)
             {
                 var userNameErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create, nameof(UserRegisterDto.Username));
                 registrationValidationErrors.Add(ValidationError.AlreadyExists(userNameErrorContext));
             }
 
-            // EMAIL AVAILABILITY CHECK
-            if (emailAvailableResult.IsFailure)
-            {
-                if (emailAvailableResult.PrimaryError.Type != ErrorType.Validation)
-                    return emailAvailableResult;
-
-                registrationValidationErrors.AddRange(emailAvailableResult.ValidationErrors);
-            }
-            else if (!emailAvailableResult.Value)
+            if (!availabilityResult.Value.IsEmailAvailable)
             {
                 var emailErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create, nameof(UserRegisterDto.Email));
                 registrationValidationErrors.Add(ValidationError.AlreadyExists(emailErrorContext));
@@ -120,30 +106,6 @@ namespace media_vault_app.Application.Services.Auth
             return await _userRepo.RegisterUserAsync(userEntity, ct);
         }
 
-        private void CheckAvailabiltyResult(string fieldName, ErrorContext errorContext, Result<bool> availabilityResult, out List<ValidationError> validationErrors)
-        {
-
-            validationErrors = new List<ValidationError>();
-            var internalErrors = new List<ValidationError>();
-
-            if (availabilityResult.IsFailure)
-            {
-                if (availabilityResult.PrimaryError.Type != ErrorType.Validation)
-                {
-                    //return availabilityResult;
-                    return;
-                }
-                else
-                {
-                    validationErrors.AddRange(availabilityResult.ValidationErrors);
-                }
-            }
-            else if (!availabilityResult.Value)
-            {
-                errorContext.FieldName = fieldName;
-                validationErrors.Add(ValidationError.AlreadyExists(errorContext));
-            }
-        }
         // TODO: Implement UpdatePasswordAsync method, which should validate the new password, hash it, and update the user's password in the repository.
         //public async Task<Result> UpdatePasswordAsync(Guid id, UserUpdateDto updateDto, CancellationToken ct = default)
         //{

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Text;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
@@ -46,46 +47,42 @@ namespace media_vault_app.Infrastructure.Repos
 
         }
 
-        public async Task<Result<bool>> IsUserNameAvailable(string username, CancellationToken ct = default)
+        public async Task<Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>> CheckRegistrationAvailabilityAsync(string username, string email, CancellationToken ct = default)
         {
-            var errorContext = DefineErrorContext(nameof(IsUserNameAvailable), OperationType.Get, "Username");
-            if (username.IsNullOrWhiteSpace(errorContext, out var requiredValueError))
-                return Result<bool>.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix!);
+            var errorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
+            var validationErrors = new List<ValidationError>();
+
+            var usernameErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get, "Username");
+            if (username.IsNullOrWhiteSpace(usernameErrorContext, out var usernameRequiredError))
+                validationErrors.Add(usernameRequiredError);
+
+            var emailErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get, "Email");
+            if (email.IsNullOrWhiteSpace(emailErrorContext, out var emailRequiredError))
+                validationErrors.Add(emailRequiredError);
+
+            if (validationErrors.Count > 0)
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.ValidationFailure(validationErrors, errorContext.DescriptionSuffix!);
+
             try
             {
                 string lookupUsername = username.Trim();
-                bool usernameExists = await _dbSet
-                    .AsNoTracking()
-                    .AnyAsync(currentUser => currentUser.Username == lookupUsername, ct);
-
-                return Result<bool>.Success(!usernameExists);
-            }
-            catch (Exception ex)
-            {
-                errorContext.DescriptionSuffix = "An error occurred while checking the username.";
-                return Result<bool>.Failure(
-                    Error.DbGetFailure(errorContext, ex),
-                    errorContext.DescriptionSuffix);
-            }
-        }
-        public async Task<Result<bool>> IsEmailAvailable(string email, CancellationToken ct = default)
-        {
-            var errorContext = DefineErrorContext(nameof(IsEmailAvailable), OperationType.Get, "Email");
-            if (email.IsNullOrWhiteSpace(errorContext, out var requiredValueError))
-                return Result<bool>.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix!);
-            try
-            {
                 string lookupEmail = email.Trim();
-                bool emailExists = await _dbSet
-                    .AsNoTracking()
-                    .AnyAsync(currentUser => currentUser.Email == lookupEmail, ct);
 
-                return Result<bool>.Success(!emailExists);
+                var matchingUsers = await _dbSet
+                    .AsNoTracking()
+                    .Where(currentUser => currentUser.Username == lookupUsername || currentUser.Email == lookupEmail)
+                    .Select(currentUser => new { currentUser.Username, currentUser.Email })
+                    .ToListAsync(ct);
+
+                bool usernameExists = matchingUsers.Any(currentUser => currentUser.Username == lookupUsername);
+                bool emailExists = matchingUsers.Any(currentUser => currentUser.Email == lookupEmail);
+
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success((!usernameExists, !emailExists));
             }
             catch (Exception ex)
             {
-                errorContext.DescriptionSuffix = "An error occurred while checking the email.";
-                return Result<bool>.Failure(
+                errorContext.DescriptionSuffix = "An error occurred while checking the username and email.";
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(
                     Error.DbGetFailure(errorContext, ex),
                     errorContext.DescriptionSuffix);
             }
