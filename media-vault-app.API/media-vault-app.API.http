@@ -1,20 +1,57 @@
 @media_vault_app.API_HostAddress = https://localhost:7121
+@username = testuser
+@email = testuser@example.com
+@password = Test123!
+@updatedUsername = testuser-updated
+@updatedEmail = testuser-updated@example.com
 
-POST {{media_vault_app.API_HostAddress}}/Users
+### Register
+POST {{media_vault_app.API_HostAddress}}/Auth/register
 Content-Type: application/json
 Accept: application/json
 
 {
-  "username": "testuser",
-  "email": "testuser@example.com",
-  "confirmEmail": "testuser@example.com",
-  "password": "Test123!",
-  "confirmPassword": "Test123!"
+  "username": "{{username}}",
+  "email": "{{email}}",
+  "confirmEmail": "{{email}}",
+  "password": "{{password}}",
+  "confirmPassword": "{{password}}"
 }
 
 ###
 
-GET {{media_vault_app.API_HostAddress}}/Users
+### Login
+POST {{media_vault_app.API_HostAddress}}/Auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "usernameOrEmail": "{{username}}",
+  "password": "{{password}}"
+}
+
+###
+
+### Get current user
+GET {{media_vault_app.API_HostAddress}}/Auth/me
+Accept: application/json
+
+###
+
+### Update current user
+PUT {{media_vault_app.API_HostAddress}}/Auth
+Content-Type: application/json
+Accept: application/json
+
+{
+  "userName": "{{updatedUsername}}",
+  "email": "{{updatedEmail}}"
+}
+
+###
+
+### Logout
+POST {{media_vault_app.API_HostAddress}}/Auth/logout
 Accept: application/json
 
 ###

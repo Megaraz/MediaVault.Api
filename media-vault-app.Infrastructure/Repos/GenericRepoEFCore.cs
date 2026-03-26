@@ -64,7 +64,7 @@ namespace media_vault_app.Infrastructure.Repos
                 var entity = await _dbSet.FindAsync(new object[] { id! }, ct);
                 if (entity is null)
                 {
-                    Error notFoundError = Error.NotFound<TEntity>(errorContext.DescriptionPrefix);
+                    Error notFoundError = Error.NotFound(errorContext);
 
                     return Result<TEntity>.Failure(notFoundError, $"{typeof(TEntity).Name} not found");
                 }
@@ -122,7 +122,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (entity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound<TEntity>(errorContext.DescriptionPrefix),
+                        Error.NotFound(errorContext),
                         $"{typeof(TEntity).Name} not found");
                 }
 
@@ -162,7 +162,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (oldEntity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound<TEntity>(errorContext.DescriptionPrefix),
+                        Error.NotFound(errorContext),
                         $"{errorContext.EntityName} not found");
                 }
 

@@ -1,11 +1,13 @@
 using media_vault_app.Application.DTOs.User.Request;
-using media_vault_app.Application.Interfaces.Repos;
-using media_vault_app.Domain.Entities;
 using Rasmus.SharedKernel.ResultPattern;
 using Microsoft.AspNetCore.Mvc;
 using media_vault_app.Application.DTOs.User.Response;
 using System.Diagnostics;
 using media_vault_app.Application.Interfaces.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 
 namespace media_vault_app.API.Controllers
 {
@@ -21,23 +23,6 @@ namespace media_vault_app.API.Controllers
         {
             _userReadService = userReadService;
             _userWriteService = userWriteService;
-        }
-
-        [HttpPost("create")]
-        public async Task<ActionResult<UserDetailedDto>> CreateUser([FromBody] UserCreateDto createDto, CancellationToken ct)
-        {
-
-            var result = await _userWriteService.CreateAsync(createDto, ct);
-
-            return this.ToCreated(result, nameof(GetUserById), value => new { id = result.Value.Id });
-        }
-
-        [HttpPost("login")]
-        public async Task<ActionResult<UserDetailedDto>> LoginUser([FromBody] UserLoginDto loginDto, CancellationToken ct)
-        {
-            var result = await _userWriteService.LoginAsync(loginDto, ct);
-
-            return this.ToOk(result);
         }
 
         [HttpGet]
@@ -57,18 +42,12 @@ namespace media_vault_app.API.Controllers
             return this.ToOk(result);
         }
 
-        [HttpPut("{id:Guid}")]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateDto updateDto, CancellationToken ct)
-        {
-            var result = await _userWriteService.UpdateUserInfoAsync(id, updateDto, ct);
-            return this.ToNoContent(result);
-        }
-
         [HttpDelete("{id:Guid}")]
         public async Task<IActionResult> DeleteUser(Guid id, CancellationToken ct)
         {
             var result = await _userWriteService.DeleteAsync(id, ct);
             return this.ToNoContent(result);
         }
+
     }
 }

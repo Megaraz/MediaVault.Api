@@ -11,8 +11,9 @@ namespace Rasmus.SharedKernel.ResultPattern
         InvalidFormat = 2,
         OutOfRange = 3,
         NonMatchingValues = 4,
-        TooShort = 5,
-        TooLong = 6,
+        AlreadyExists = 5,
+        TooShort = 6,
+        TooLong = 7,
     }
 
     public record ValidationError : Error
@@ -27,52 +28,96 @@ namespace Rasmus.SharedKernel.ResultPattern
             ValidationErrorType = type;
         }
 
+        public static ValidationError AlreadyExists(ErrorContext errorContext)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.GeneralConflict);
 
-        public static ValidationError InvalidFormat(ErrorContext errorContext, string expectedFormat) =>
-            new ValidationError(
-                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationInvalidFormat).Code,
-                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' has an invalid format. Expected format: {expectedFormat}.",
-                ValidationErrorType.InvalidFormat);
+            string defaultDescriptionSuffix = $"A {errorContext.EntityName} with that {errorContext.FieldName} already exists, please choose a different {errorContext.FieldName}.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.AlreadyExists);
+        }
+
+        public static ValidationError InvalidFormat(ErrorContext errorContext, string expectedFormat)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.ValidationInvalidFormat);
+
+            string defaultDescriptionSuffix = $"The field '{errorContext.FieldName}' has an invalid format. Expected format: {expectedFormat}.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.InvalidFormat);
+        }
 
         public static ValidationError Required(ErrorContext errorContext)
         {
-            if (string.IsNullOrWhiteSpace(errorContext.DescriptionSuffix))
-                errorContext.DescriptionSuffix = $"A value for the field or entity '{errorContext.EntityName}' is required and cannot be null or empty.";
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.ValidationRequired);
 
-            string description = $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}";
+            string defaultDescriptionSuffix = string.IsNullOrWhiteSpace(errorContext.FieldName)
+                ? $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty."
+                : $"A value for the field '{errorContext.FieldName}' is required and cannot be null or empty.";
 
-            return new ValidationError(
-                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationRequired).Code,
-                description,
-                ValidationErrorType.Required);
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Required);
         }
 
-        public static ValidationError TooLong(ErrorContext errorContext, string range) =>
-            new ValidationError(
-                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationTooLong).Code,
-                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' is too long. Expected maximum length: {range}.",
-                ValidationErrorType.TooLong);
-        public static ValidationError OutOfRange(ErrorContext errorContext, string range) =>
-            new ValidationError(
-                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationOutOfRange).Code,
-                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' is out of range. Expected range: {range}.",
-                ValidationErrorType.OutOfRange);
+        public static ValidationError TooLong(ErrorContext errorContext, string range)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.ValidationTooLong);
 
-        public static ValidationError TooShort(ErrorContext errorContext, string range) =>
-            new ValidationError(
-                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationTooShort).Code,
-                $"{errorContext.DescriptionPrefix}: The field '{errorContext.FieldName}' is too short. Expected minimum length: {range}.",
-                ValidationErrorType.TooShort);
+            string defaultDescriptionSuffix = $"The field '{errorContext.FieldName}' is too long. Expected maximum length: {range}.";
 
-        public static ValidationError NonMatchingValues(ErrorContext errorContext) =>
-            new ValidationError(
-                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.ValidationNonMatchingValues).Code,
-                $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}",
-                ValidationErrorType.NonMatchingValues);
-        public static ValidationError Custom(ErrorContext errorContext) =>
-            new ValidationError(
-                ErrorCode.For(errorContext.Operation, errorContext.EntityName, ErrorReasonCode.Custom).Code,
-                $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}",
-                ValidationErrorType.Custom);
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooLong);
+        }
+
+        public static ValidationError OutOfRange(ErrorContext errorContext, string range)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.ValidationOutOfRange);
+
+            string defaultDescriptionSuffix = $"The field '{errorContext.FieldName}' is out of range. Expected range: {range}.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.OutOfRange);
+        }
+
+        public static ValidationError TooShort(ErrorContext errorContext, string range)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.ValidationTooShort);
+
+            string defaultDescriptionSuffix = $"The field '{errorContext.FieldName}' is too short. Expected minimum length: {range}.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooShort);
+        }
+
+        public static ValidationError NonMatchingValues(ErrorContext errorContext)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.ValidationNonMatchingValues);
+
+            string defaultDescriptionSuffix = !string.IsNullOrWhiteSpace(errorContext.FieldName) && !string.IsNullOrWhiteSpace(errorContext.ConfirmFieldName)
+                ? $"The values for '{errorContext.FieldName}' and '{errorContext.ConfirmFieldName}' do not match."
+                : "The provided values do not match.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.NonMatchingValues);
+        }
+
+        public static ValidationError Custom(ErrorContext errorContext)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.Custom);
+
+            string defaultDescriptionSuffix = "A custom validation error occurred.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Custom);
+        }
     }
 }

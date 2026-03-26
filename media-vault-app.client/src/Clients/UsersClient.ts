@@ -14,30 +14,93 @@ export type UserCreateDto = {
     confirmPassword: string;
 }
 
+export type UserLoginDto = {
+    userNameOrEmail: string;
+    password: string;
+}
+
+type ApiErrorResponse = {
+    message?: string;
+    errorCode?: string;
+    errors?: string[];
+}
 
 export default class UsersClient {
+    private authBaseUrl = "/auth";
+    private usersBaseUrl = "/users";
 
-    private baseUrl = "/users";
-
-    async getAllUsers(): Promise<UserDetailedDto[]> {
-        const response = await fetch(this.baseUrl);
+    private async readResponse<T>(response: Response): Promise<T> {
         if (!response.ok) {
-            throw new Error("Failed to fetch users");
+            let errorMessage = "Request failed";
+
+            try {
+                const error = (await response.json()) as ApiErrorResponse;
+                errorMessage = error.message ?? error.errors?.join(", ") ?? errorMessage;
+            } catch {
+                errorMessage = response.statusText || errorMessage;
+            }
+
+            throw new Error(errorMessage);
         }
-        return response.json();
+
+        if (response.status === 204) {
+            return undefined as T;
+        }
+
+        return response.json() as Promise<T>;
     }
 
-    async createUser(user: UserCreateDto): Promise<UserDetailedDto> {
-        const response = await fetch(this.baseUrl, {
+    async getUsers(pageNumber: number = 1, pageSize: number = 10): Promise<UserDetailedDto[]> {
+        const response = await fetch(
+            `${this.usersBaseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+            {
+                credentials: "include"
+            }
+        );
+
+        return this.readResponse<UserDetailedDto[]>(response);
+    }
+
+    async login(credentials: UserLoginDto): Promise<UserDetailedDto> {
+        const response = await fetch(this.authBaseUrl + "/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: "include",
+            body: JSON.stringify(credentials)
+        });
+
+        return this.readResponse<UserDetailedDto>(response);
+    }
+
+    async registerUser(user: UserCreateDto): Promise<UserDetailedDto> {
+        const response = await fetch(this.authBaseUrl + "/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
             body: JSON.stringify(user)
         });
-        if (!response.ok) {
-            throw new Error("Failed to create user");
-        }
-        return response.json();
+
+        return this.readResponse<UserDetailedDto>(response);
+    }
+
+    async logout(): Promise<void> {
+        const response = await fetch(this.authBaseUrl + "/logout", {
+            method: "POST",
+            credentials: "include"
+        });
+
+        await this.readResponse<void>(response);
+    }
+
+    async getCurrentUser(): Promise<UserDetailedDto> {
+        const response = await fetch(this.authBaseUrl + "/me", {
+            credentials: "include"
+        });
+
+        return this.readResponse<UserDetailedDto>(response);
     }
 }

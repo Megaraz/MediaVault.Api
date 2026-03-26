@@ -4,6 +4,7 @@ import HomePage from "./Components/Pages/HomePage";
 import UsersApiTest from "./Components/Pages/UsersApiTest";
 import MediaEntriesApiTest from "./Components/Pages/MediaEntriesApiTest";
 import "./App.css";
+import { UserProvider } from "./Shared/UserContext";
 
 const router = createBrowserRouter([
   {
@@ -18,5 +19,9 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <UserProvider>
+      <RouterProvider router={router} />
+    </UserProvider>
+  );
 }

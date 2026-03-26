@@ -48,15 +48,15 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
-                target,
-                secure: false
-            },
             '^/[Uu]sers': {
                 target,
                 secure: false
             },
             '^/[Mm]edia[Ee]ntries': {
+                target,
+                secure: false
+            },
+            '^/[Aa]uth': {
                 target,
                 secure: false
             },

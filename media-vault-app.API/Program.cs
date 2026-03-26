@@ -7,7 +7,9 @@ using media_vault_app.Domain.Entities;
 using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.Repos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Rasmus.SharedKernel.Interfaces;
+using media_vault_app.Application.Services.Auth;
 
 namespace media_vault_app.API
 {
@@ -37,12 +39,39 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IMediaEntryReadService, MediaEntryReadService>();
             builder.Services.AddScoped<IMediaEntryWriteService, MediaEntryWriteService>();
 
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
             builder.Services.AddScoped<IUserReadService, UserReadService>();
             builder.Services.AddScoped<IUserWriteService, UserWriteService>();
 
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            builder.Services
+                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.Cookie.Name = "media-vault-auth";
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SameSite = SameSiteMode.Lax;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                    options.SlidingExpiration = true;
+
+                    options.Events.OnRedirectToLogin = context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    };
+
+                    options.Events.OnRedirectToAccessDenied = context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    };
+                });
+
+            builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
@@ -57,6 +86,7 @@ namespace media_vault_app.API
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

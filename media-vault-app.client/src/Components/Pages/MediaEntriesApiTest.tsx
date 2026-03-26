@@ -1,23 +1,20 @@
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import MediaEntriesClient, {
   type MediaEntryDetailedDto,
   type MediaEntrySubmitDto,
   MediaType,
 } from "../../Clients/MediaEntriesClient";
-import type { UserDetailedDto } from "../../Clients/UsersClient";
 import MediaEntry from "../MediaEntry/MediaEntry";
 import MediaEntrySmall from "../MediaEntry/MediaEntrySmall";
+import { useUser } from "../../Shared/UserContext";
 
-type MediaEntriesLocationState = {
-  selectedUser?: UserDetailedDto;
-};
+// type MediaEntriesLocationState = {
+//   selectedUser?: UserDetailedDto;
+// };
 
 export default function MediaEntriesApiTest() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const selectedUser = (location.state as MediaEntriesLocationState | null)
-    ?.selectedUser;
+  const { currentUser, isAuthenticated } = useUser();
   const [entries, setEntries] = useState<MediaEntryDetailedDto[]>([]);
   const [client] = useState(new MediaEntriesClient());
   const [loading, setLoading] = useState(false);
@@ -25,8 +22,16 @@ export default function MediaEntriesApiTest() {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto>();
 
+  useEffect(() => {
+    // Effect runs when currentUser changes, but we handle redirect in JSX
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" />;
+  }
+
   const onClickFetchEntries = async () => {
-    if (!selectedUser) {
+    if (!currentUser) {
       setError(
         "Select a user from the Users API Test page before fetching media entries.",
       );
@@ -36,7 +41,7 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      const fetched = await client.getMediaEntries(selectedUser.id);
+      const fetched = await client.getMediaEntries();
       setEntries(fetched);
     } catch (err) {
       setError((err as Error).message);
@@ -51,7 +56,7 @@ export default function MediaEntriesApiTest() {
   };
 
   const onClickCreateEntry = () => {
-    if (!selectedUser) {
+    if (!currentUser) {
       setError(
         "Select a user from the Users API Test page before creating media entries.",
       );
@@ -61,7 +66,7 @@ export default function MediaEntriesApiTest() {
   };
 
   const handleCreateMediaEntry = async (dto: MediaEntrySubmitDto) => {
-    if (!selectedUser) {
+    if (!currentUser) {
       setError(
         "Select a user from the Users API Test page before creating media entries.",
       );
@@ -71,7 +76,7 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      const created = await client.createMediaEntry(selectedUser.id, dto);
+      const created = await client.createMediaEntry(dto);
       setEntries((prev) => [...prev, created]);
     } catch (err) {
       setError((err as Error).message);
@@ -82,7 +87,7 @@ export default function MediaEntriesApiTest() {
   };
 
   const handleDeleteMediaEntry = async (entryId: string) => {
-    if (!selectedUser) {
+    if (!currentUser) {
       setError(
         "Select a user from the Users API Test page before deleting media entries.",
       );
@@ -92,7 +97,7 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      await client.deleteMediaEntry(selectedUser.id, entryId);
+      await client.deleteMediaEntry(entryId);
       setEntries((prev) => prev.filter((e) => e.id !== entryId));
     } catch (err) {
       setError((err as Error).message);
@@ -107,7 +112,7 @@ export default function MediaEntriesApiTest() {
     updateDto: MediaEntrySubmitDto,
     entryId?: string,
   ) => {
-    if (!selectedUser) {
+    if (!currentUser) {
       setError(
         "Select a user from the Users API Test page before updating media entries.",
       );
@@ -122,9 +127,9 @@ export default function MediaEntriesApiTest() {
     setLoading(true);
     setError(null);
     try {
-      await client.updateMediaEntry(selectedUser.id, entryId, updateDto);
+      await client.updateMediaEntry(entryId, updateDto);
 
-      const fetched = await client.getMediaEntryById(selectedUser.id, entryId);
+      const fetched = await client.getMediaEntryById(entryId);
       setEntries((prev) => prev.map((e) => (e.id === entryId ? fetched : e)));
     } catch (err) {
       setError((err as Error).message);
@@ -159,7 +164,7 @@ export default function MediaEntriesApiTest() {
     <div
       className={`${loading ? "opacity-50 pointer-events-none" : ""} flex w-2/3 flex-col items-center gap-6 p-6`}
     >
-      {showPopup && selectedUser && (
+      {showPopup && currentUser && (
         <MediaEntry
           detailedEntry={selectedEntry ?? undefined}
           onSubmit={(dto) =>
@@ -179,13 +184,13 @@ export default function MediaEntriesApiTest() {
           <h1 className="text-2xl font-bold">Media Entries API Test</h1>
           <p>This page is for testing the Media Entries API.</p>
         </div>
-        {selectedUser ? (
+        {currentUser ? (
           <div className="max-w-fit rounded-xl border border-blue-200 bg-blue-50 py-4 px-5 text-sm text-slate-700">
             <p className="font-semibold text-slate-900">
-              Handle Media Entries for User: {selectedUser.username}
+              Handle Media Entries for User: {currentUser.username}
             </p>
-            <p>Email: {selectedUser.email}</p>
-            <p>User ID: {selectedUser.id}</p>
+            <p>Email: {currentUser.email}</p>
+            <p>User ID: {currentUser.id}</p>
           </div>
         ) : (
           <div className="max-w-[66%] rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
@@ -194,13 +199,6 @@ export default function MediaEntriesApiTest() {
               Go to the Users API Test page, fetch users, and click one to load
               that user here.
             </p>
-            <button
-              type="button"
-              onClick={() => navigate("/users-api-test")}
-              className="rounded bg-amber-500 px-4 py-2 font-medium text-white transition hover:bg-amber-600"
-            >
-              Go to Users API Test
-            </button>
           </div>
         )}
       </div>
@@ -224,14 +222,14 @@ export default function MediaEntriesApiTest() {
                 <button
                   onClick={onClickFetchEntries}
                   className="mb-4 px-4 max-h-fit py-2 bg-blue-500 text-white rounded disabled:cursor-not-allowed disabled:bg-slate-400"
-                  disabled={loading || !selectedUser}
+                  disabled={loading || !currentUser}
                 >
                   Fetch Media Entries
                 </button>
                 <button
                   onClick={onClickCreateEntry}
                   className="mb-4 px-4 max-h-fit py-2 bg-green-500 text-white rounded disabled:cursor-not-allowed disabled:bg-slate-400"
-                  disabled={loading || !selectedUser}
+                  disabled={loading || !currentUser}
                 >
                   Create New Entry
                 </button>

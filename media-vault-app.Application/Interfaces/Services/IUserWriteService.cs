@@ -8,10 +8,8 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Services
 {
-    public interface IUserWriteService : IWriteService<User, Guid, UserCreateDto, UserDetailedDto>
+    public interface IUserWriteService : IWriteService<User, Guid, UserRegisterDto, UserDetailedDto>
     {
-        new Task<Result<UserDetailedDto>> CreateAsync(UserCreateDto createDto, CancellationToken ct = default);
-        Task<Result<UserDetailedDto>> LoginAsync(UserLoginDto loginDto, CancellationToken ct = default);
         Task<Result> UpdateUserInfoAsync(Guid id, UserUpdateDto updateDto, CancellationToken ct = default);
     }
 }

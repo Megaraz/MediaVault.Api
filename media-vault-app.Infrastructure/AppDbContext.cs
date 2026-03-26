@@ -23,6 +23,14 @@ namespace media_vault_app.Infrastructure
                 .WithOne()
                 .HasForeignKey(me => me.UserId);
 
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
             modelBuilder.Entity<MediaEntry>()
                 .Property(x => x.Rating)
                 .HasPrecision(3, 1);

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Linq;
 using System.Text;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Rasmus.SharedKernel.ResultPattern;
 
@@ -12,6 +15,77 @@ namespace media_vault_app.Infrastructure.Repos
     {
         public UserRepo(AppDbContext appDbContext) : base(appDbContext)
         {
+        }
+
+        public async Task<Result> RegisterUserAsync(User entity, CancellationToken ct = default)
+        {
+            // Define error handling context
+            var errorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
+
+            if (entity.IsNull(errorContext, out var nullValueError))
+                return Result.ValidationFailure([nullValueError], errorContext.DescriptionSuffix!);
+
+            try
+            {
+                _dbSet.Add(entity);
+                await _appDbContext.SaveChangesAsync(ct);
+                return Result.Success();
+            }
+            catch (DbUpdateException dbEx)
+            {
+                if (dbEx.InnerException is SqlException sqlEx &&
+                    (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+                {
+                    return Result.Failure(Error.Conflict(errorContext), "A conflict occurred while creating the entity.");
+                }
+                else
+                {
+                    errorContext.DescriptionSuffix = $"An error occurred while creating the {errorContext.EntityName}.";
+                    return Result.Failure(Error.DbCreateFailure(errorContext, dbEx), errorContext.DescriptionSuffix);
+                }
+            }
+
+        }
+
+        public async Task<Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>> CheckRegistrationAvailabilityAsync(string username, string email, CancellationToken ct = default)
+        {
+            var errorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
+            var validationErrors = new List<ValidationError>();
+
+            var usernameErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get, "Username");
+            if (username.IsNullOrWhiteSpace(usernameErrorContext, out var usernameRequiredError))
+                validationErrors.Add(usernameRequiredError);
+
+            var emailErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get, "Email");
+            if (email.IsNullOrWhiteSpace(emailErrorContext, out var emailRequiredError))
+                validationErrors.Add(emailRequiredError);
+
+            if (validationErrors.Count > 0)
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.ValidationFailure(validationErrors, errorContext.DescriptionSuffix!);
+
+            try
+            {
+                string lookupUsername = username.Trim();
+                string lookupEmail = email.Trim();
+
+                var matchingUsers = await _dbSet
+                    .AsNoTracking()
+                    .Where(currentUser => currentUser.Username == lookupUsername || currentUser.Email == lookupEmail)
+                    .Select(currentUser => new { currentUser.Username, currentUser.Email })
+                    .ToListAsync(ct);
+
+                bool usernameExists = matchingUsers.Any(currentUser => currentUser.Username == lookupUsername);
+                bool emailExists = matchingUsers.Any(currentUser => currentUser.Email == lookupEmail);
+
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success((!usernameExists, !emailExists));
+            }
+            catch (Exception ex)
+            {
+                errorContext.DescriptionSuffix = "An error occurred while checking the username and email.";
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(
+                    Error.DbGetFailure(errorContext, ex),
+                    errorContext.DescriptionSuffix);
+            }
         }
 
         public async Task<Result<User>> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken ct = default)
@@ -34,7 +108,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (user is null)
                 {
                     return Result<User>.Failure(
-                        Error.NotFound<User>(errorContext.DescriptionPrefix),
+                        Error.Unauthorized(errorContext),
                         "Invalid username/email or password.");
                 }
 
@@ -50,14 +124,16 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        private ErrorContext DefineErrorContext(string methodName, OperationType operation)
+        private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null, string? confirmFieldName = null)
         {
             return new ErrorContext(
                 layer: "Infrastructure",
                 serviceName: GetType().Name,
                 methodName: methodName,
                 operation: operation,
-                entityName: typeof(User).Name);
+                entityName: typeof(User).Name,
+                fieldName: fieldName,
+                confirmFieldName: confirmFieldName);
         }
     }
 }

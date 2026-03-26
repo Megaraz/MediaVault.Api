@@ -3,9 +3,8 @@
 type InputText = {
   value?: string;
   onChange: (newValue: string) => void;
-  //   onSubmit: (newValue: string) => void;
   placeholder?: string;
-  //   typeOfAction: string;
+  type?: string;
   className?: string;
 };
 
@@ -14,24 +13,18 @@ const defaultClassName: string =
 
 export default function InputText({
   value = "",
+  type = "text",
   onChange,
-  //   onSubmit,
-  //   typeOfAction,
   className = defaultClassName,
   placeholder = "",
 }: InputText) {
   return (
-    <>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={className}
-        placeholder={placeholder}
-      />
-      {/* <ButtonPrimary onClick={() => onSubmit(value)}>
-        {typeOfAction}
-      </ButtonPrimary> */}
-    </>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={className}
+      placeholder={placeholder}
+    />
   );
 }

@@ -19,74 +19,107 @@ namespace Rasmus.SharedKernel.ResultPattern
         public static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
 
         public static Error DbCreateFailure(ErrorContext errorContext, Exception exception)
-            => new Error(
-                ErrorCode.For(OperationType.Create, errorContext.EntityName, ErrorReasonCode.DatabaseFailure).Code,
-                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while creating the entity in the database",
-                ErrorType.Database,
-                exception);
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
+
+            string defaultDescriptionSuffix = $"A database failure occurred while creating the entity {errorCode.NameOfEntity} in the database.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
+        }
 
         public static Error DbGetFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.For(OperationType.Get, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
 
-            return new Error(
-                errorCode.Code,
-                $"{errorContext.DescriptionSuffix}: A Database failure occurred while getting the entity {errorCode.NameOfEntity} from the database",
-                ErrorType.Database,
-                exception);
+            string defaultDescriptionSuffix = $"A database failure occurred while getting the entity {errorCode.NameOfEntity} from the database.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
         }
 
         public static Error DbGetCollectionFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.For(OperationType.GetCollection, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
 
-            return new Error(
-                errorCode.Code,
-                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while getting the list of entities {errorCode.NameOfEntity} from the database",
-                ErrorType.Database,
-                exception);
+            string defaultDescriptionSuffix = $"A database failure occurred while getting the list of entities {errorCode.NameOfEntity} from the database.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
         }
 
         public static Error DbDeleteFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.For(OperationType.Delete, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
 
-            return new Error(
-                errorCode.Code,
-                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while deleting the entity {errorCode.NameOfEntity} from the database",
-                ErrorType.Database,
-                exception);
+            string defaultDescriptionSuffix = $"A database failure occurred while deleting the entity {errorCode.NameOfEntity} from the database.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
         }
 
         public static Error DbUpdateFailure(ErrorContext errorContext, Exception exception)
         {
-            var errorCode = ErrorCode.For(OperationType.Update, errorContext.EntityName, ErrorReasonCode.DatabaseFailure);
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
 
-            return new Error(
-                errorCode.Code,
-                $"{errorContext.DescriptionSuffix}: A Database-Exception occurred while updating the entity {errorCode.NameOfEntity} in the database",
-                ErrorType.Database,
-                exception);
+            string defaultDescriptionSuffix = $"A database failure occurred while updating the entity {errorCode.NameOfEntity} in the database.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
         }
 
-        public static Error NotFound<T>(string errorDescriptionPrefix) =>
-            new Error(ErrorCode.For<T>(OperationType.Get, ErrorReasonCode.GeneralNotFound).Code,
-                    $"{errorDescriptionPrefix}: {typeof(T).Name} not found",
-                    ErrorType.NotFound);
+        public static Error NotFound(ErrorContext errorContext)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.GeneralNotFound);
 
-        public static Error Conflict<T>(OperationType operation, string errorDescriptionPrefix) =>
-            new Error(ErrorCode.For<T>(operation, ErrorReasonCode.GeneralConflict).Code,
-                    $"{errorDescriptionPrefix}: A conflict occurred during the {operation} operation.",
-                    ErrorType.Conflict);
+            string defaultDescriptionSuffix = $"{errorContext.EntityName} not found";
 
-        //public static Error Unauthorized(ErrorCode code, string description) =>
-        //    new(code.Code, description, ErrorType.Unauthorized);
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.NotFound);
+        }
+
+        public static Error Conflict(ErrorContext errorContext)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.GeneralConflict);
+
+            string defaultDescriptionSuffix = $"Unique {errorContext.EntityName} constraint violated.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Conflict);
+        }
+
+        public static Error Unauthorized(ErrorContext errorContext)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.GeneralUnauthorized);
+
+            string defaultDescriptionSuffix = $"Unauthorized access" + (string.IsNullOrWhiteSpace(errorContext.FieldName) ? "" : $" to {errorContext.FieldName}");
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Unauthorized);
+        }
+
 
         //public static Error Forbidden(ErrorCode code, string description) =>
         //    new(code.Code, description, ErrorType.Forbidden);
 
         //public static Error Failure(ErrorCode code, string description) =>
         //    new(code.Code, description, ErrorType.Failure);
+
+        protected static string FormatDescription(ErrorContext errorContext, string defaultDescriptionSuffix)
+        {
+            if (string.IsNullOrWhiteSpace(errorContext.DescriptionSuffix))
+                errorContext.DescriptionSuffix = defaultDescriptionSuffix;
+
+            return $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}";
+        }
 
     }
 

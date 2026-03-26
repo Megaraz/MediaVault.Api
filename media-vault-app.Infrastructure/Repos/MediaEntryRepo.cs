@@ -65,7 +65,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (mediaEntry is null)
                 {
                     return Result<MediaEntry>.Failure(
-                        Error.NotFound<MediaEntry>(errorContext.DescriptionPrefix),
+                        Error.NotFound(errorContext),
                         "MediaEntry not found.");
                 }
 
@@ -102,7 +102,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (existingEntity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound<MediaEntry>(errorContext.DescriptionPrefix),
+                        Error.NotFound(errorContext),
                         "MediaEntry not found.");
                 }
 
@@ -139,7 +139,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (mediaEntry is null)
                 {
                     return Result.Failure(
-                        Error.NotFound<MediaEntry>(errorContext.DescriptionPrefix),
+                        Error.NotFound(errorContext),
                         "MediaEntry not found.");
                 }
 
