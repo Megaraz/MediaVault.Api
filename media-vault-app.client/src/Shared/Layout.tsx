@@ -11,10 +11,12 @@ export default function Layout() {
 
   const openRegisterWindow = () => {
     setShowRegisterPopup(true);
+    setShowLoginPopup(false);
   };
 
   const openLoginWindow = () => {
     setShowLoginPopup(true);
+    setShowRegisterPopup(false);
   };
 
   const closeRegisterWindow = (toLogin: boolean) => {

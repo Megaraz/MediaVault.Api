@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./Shared/Layout";
 import HomePage from "./Components/Pages/HomePage";
 import UsersApiTest from "./Components/Pages/UsersApiTest";
-import MediaEntriesApiTest from "./Components/Pages/MediaEntriesApiTest";
+import Dashboard from "./Components/Pages/Dashboard";
 import "./App.css";
 import { UserProvider } from "./Shared/UserContext";
 
@@ -13,8 +13,11 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <HomePage /> },
       { path: "/users-api-test", element: <UsersApiTest /> },
-      { path: "/media-entries-api-test", element: <MediaEntriesApiTest /> },
     ],
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />,
   },
 ]);
 
