@@ -26,8 +26,9 @@ function isValidFormData(data: RegisterUserFormData): boolean {
   return true;
 }
 
-const defaultclassNameName: string =
-  "relative w-full max-w-[480px] bg-slate-900/50 border border-slate-800 rounded-xl shadow-2xl overflow-hidden";
+const defaultCardClassName: string =
+  "w-full max-w-[480px] bg-slate-100 dark:bg-[#182634] rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden";
+// "relative w-full max-w-[480px] bg-slate-900/80 border border-slate-800 rounded-xl shadow-2xl overflow-hidden";
 
 type RegisterProps = {
   onCancel: (toLogin: boolean) => void;
@@ -91,44 +92,41 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
   return (
     <ModularPopupWindow
       onClose={() => onCancel(false)}
-      mainPopupClassName={defaultclassNameName}
-      overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-background-dark/80 backdrop-blur-md p-4"
+      cardClassName={defaultCardClassName}
     >
-      <div className="p-8 pb-0">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 text-primary">
-            <span className="material-symbols-outlined text-2xl">
-              motion_photos_on
-            </span>
-            <h2 className="text-slate-100 text-xl font-bold tracking-tight">
-              MediaVault
-            </h2>
-          </div>
-          <button
-            onClick={() => onCancel(false)}
-            className="text-slate-400 hover:text-slate-100 transition-colors"
-          >
-            <span className="material-symbols-outlined">close</span>
-          </button>
+      <div className="px-8 pt-10 pb-6 text-center relative">
+        <button
+          type="button"
+          onClick={() => onCancel(false)}
+          className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 transition-colors"
+        >
+          <span className="material-symbols-outlined">close</span>
+        </button>
+        <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 mb-4">
+          <span className="material-symbols-outlined text-primary text-3xl">
+            person_add
+          </span>
         </div>
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-100">Create Account</h1>
-          <p className="text-slate-400 text-sm">
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+            Create Account
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">
             Join the community and start logging your media today.
           </p>
         </div>
       </div>
-      <form className="p-8 pt-6 space-y-4" onSubmit={handleSubmit}>
+      <form className="px-8 pb-10 space-y-4" onSubmit={handleSubmit}>
         <RegisterUserForm formData={formData} onChange={handleChange} />
         {/* Terms */}
-        {/* <div className="flex items-start gap-3 pt-2">
+        <div className="flex items-center pt-2">
           <input
-            className="mt-1 h-4 w-4 rounded border-slate-700 bg-slate-800 text-primary focus:ring-primary focus:ring-offset-slate-900"
+            className="w-5 h-5 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] text-primary focus:ring-primary focus:ring-offset-0"
             id="terms"
             type="checkbox"
           />
           <label
-            className="text-sm text-slate-400 leading-snug"
+            className="ml-3 text-sm font-medium text-slate-600 dark:text-slate-400 leading-snug"
             htmlFor="terms"
           >
             I agree to the{" "}
@@ -141,40 +139,34 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
             </a>
             .
           </label>
-        </div> */}
+        </div>
         {/* Button */}
 
         {errorMessage && <p className="text-sm text-red-400">{errorMessage}</p>}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 mt-4"
+          className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group"
         >
           <span>{isSubmitting ? "Creating Account..." : "Create Account"}</span>
-          <span className="material-symbols-outlined text-lg">
+          <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
             arrow_forward
           </span>
         </button>
       </form>
 
       {/* Footer */}
-      <div className="px-8 pb-8 text-center">
-        <p className="text-sm text-slate-400">
+      <div className="px-8 pb-10 text-center">
+        <p className="text-center text-sm text-slate-500 dark:text-slate-400">
           Already have an account?
           <a
-            className="ms-1 text-primary font-semibold hover:underline"
+            className="ms-1 text-primary font-bold hover:underline"
             href="#"
             onClick={() => onCancel(true)}
           >
             Sign In
           </a>
         </p>
-      </div>
-      {/* Decorative Element */}
-      <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-        <span className="material-symbols-outlined text-[120px]">
-          person_add
-        </span>
       </div>
     </ModularPopupWindow>
   );

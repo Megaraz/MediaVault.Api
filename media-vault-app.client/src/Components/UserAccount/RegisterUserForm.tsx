@@ -1,5 +1,3 @@
-import InputText from "../Shared/InputText";
-
 export class RegisterUserFormData {
   username: string = "";
   email: string = "";
@@ -13,7 +11,6 @@ type RegisterUserFormProps = {
   onChange: (field: keyof RegisterUserFormData, value: string) => void;
 };
 
-
 export default function RegisterUserForm({
   formData,
   onChange,
@@ -21,92 +18,99 @@ export default function RegisterUserForm({
   return (
     <>
       {/* Username Row */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-300">
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Username
         </label>
         <div className="relative">
-          <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500 text-xl">
+          <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-xl">
             person
           </span>
-          <InputText
+          <input
             value={formData.username}
-            onChange={(val) => onChange("username", val)}
+            onChange={(event) => onChange("username", event.target.value)}
             placeholder="JohnDoe123"
-            className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 pl-11 pr-4 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+            required
+            className="w-full h-14 pl-12 pr-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-500"
           />
         </div>
       </div>
       {/* Email Row */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-300">
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Email Address
         </label>
         <div className="relative">
-          <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500 text-xl">
+          <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-xl">
             mail
           </span>
-          <InputText
+          <input
             type="email"
             value={formData.email}
-            onChange={(val) => onChange("email", val)}
+            onChange={(event) => onChange("email", event.target.value)}
             placeholder="johndoe@example.com"
-            className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 pl-11 pr-4 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+            required
+            className="w-full h-14 pl-12 pr-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-500"
           />
         </div>
       </div>
       {/* Confirm Email Row */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-300">
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Confirm Email Address
         </label>
         <div className="relative">
-          <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500 text-xl">
+          <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-xl">
             mail
           </span>
-          <InputText
+          <input
             type="email"
             value={formData.confirmEmail}
-            onChange={(val) => onChange("confirmEmail", val)}
+            onChange={(event) => onChange("confirmEmail", event.target.value)}
             placeholder="johndoe@example.com"
-            className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 pl-11 pr-4 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+            required
+            className="w-full h-14 pl-12 pr-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-500"
           />
         </div>
       </div>
       {/* Password Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-300">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Password
           </label>
           <div className="relative">
-            <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500 text-xl">
+            <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-xl">
               lock
             </span>
-            <InputText
+            <input
               type="password"
               value={formData.password}
-              onChange={(val) => onChange("password", val)}
+              onChange={(event) => onChange("password", event.target.value)}
               placeholder="*********"
-              className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 pl-11 pr-4 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+              required
+              className="w-full h-14 pl-12 pr-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-500"
             />
           </div>
         </div>
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-300">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Confirm Password
           </label>
           <div className="relative">
-            <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500 text-xl">
+            <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-xl">
               shield
             </span>
 
-            <InputText
+            <input
               type="password"
               value={formData.confirmPassword}
-              onChange={(val) => onChange("confirmPassword", val)}
+              onChange={(event) =>
+                onChange("confirmPassword", event.target.value)
+              }
               placeholder="*********"
-              className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 pl-11 pr-4 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+              required
+              className="w-full h-14 pl-12 pr-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-500"
             />
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet, Link } from "react-router-dom";
-import RegisterUser from "../Components/UserAccount/RegisterUser";
-import Login from "../Components/UserAccount/Login";
+import RegisterUserCard from "../Components/UserAccount/RegisterUserCard";
+import Login from "../Components/UserAccount/LoginCard";
 import { useUser } from "./UserContext";
 
 export default function Layout() {
@@ -34,7 +34,7 @@ export default function Layout() {
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
-      {showRegisterPopup && <RegisterUser onCancel={closeRegisterWindow} />}
+      {showRegisterPopup && <RegisterUserCard onCancel={closeRegisterWindow} />}
       {showLoginPopup && <Login onCancel={closeLoginWindow} />}
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
         <div className="layout-container flex h-full grow flex-col">
@@ -109,7 +109,8 @@ export default function Layout() {
             </div>
           </header>
 
-          <main className="flex flex-1 flex-row justify-center">
+          {/* <main className="flex flex-1 flex-row justify-center"> */}
+          <main className="flex-1">
             <Outlet /> {/* like @Body */}
           </main>
 
