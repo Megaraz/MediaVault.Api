@@ -4,14 +4,29 @@ import MediaEntriesClient, {
   type MediaEntryDetailedDto,
   type MediaEntrySubmitDto,
   MediaType,
+  StatusType,
 } from "../../Clients/MediaEntriesClient";
 import MediaEntry from "../MediaEntry/MediaEntry";
 import MediaItem from "../Dashboard/MediaItem";
 import { useUser } from "../../Shared/UserContext";
+import MainHeader from "../Dashboard/MainHeader";
+import Sidebar from "../Dashboard/Sidebar";
+import EntriesSectionMain from "../Dashboard/EntriesSectionMain";
 
-// type MediaEntriesLocationState = {
-//   selectedUser?: UserDetailedDto;
-// };
+export const mediaSections = [
+  { type: MediaType.Game, title: "Games" },
+  { type: MediaType.Book, title: "Books" },
+  { type: MediaType.Movie, title: "Movies" },
+  { type: MediaType.Series, title: "Series" },
+  { type: MediaType.Manga, title: "Manga" },
+];
+
+export const statusSections = [
+  { type: StatusType.OnGoing, title: "On Going" },
+  { type: StatusType.Completed, title: "Completed" },
+  { type: StatusType.Backlog, title: "Backlog" },
+  { type: StatusType.Dropped, title: "Dropped" },
+];
 
 export default function Dashboard() {
   const { currentUser, isAuthenticated } = useUser();
@@ -21,16 +36,19 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto>();
+  const [mainMediaTypeFilter, setMainMediaTypeFilter] = useState<number>();
 
-  useEffect(() => {
-  }, [isAuthenticated]);
+  useEffect(() => {}, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return <Navigate to="/" />;
   }
 
   useEffect(() => {
+    const fetchMediaEntries = async () => {
       await handleFetchMediaEntries();
+    };
+    fetchMediaEntries();
   }, [currentUser]);
 
   const handleFetchMediaEntries = async () => {
@@ -53,7 +71,7 @@ export default function Dashboard() {
     }
   };
 
-  const onClickListedMediaEntry = (entry: MediaEntryDetailedDto) => {
+  const onClickEntry = (entry: MediaEntryDetailedDto) => {
     setSelectedEntry(entry);
     setShowPopup(true);
   };
@@ -111,6 +129,10 @@ export default function Dashboard() {
     }
   };
 
+  const onChangeMainMediaTypeFilter = (mediaType: number | undefined) => {
+    setMainMediaTypeFilter(mediaType);
+  };
+
   const handleUpdateMediaEntry = async (
     updateDto: MediaEntrySubmitDto,
     entryId?: string,
@@ -148,91 +170,73 @@ export default function Dashboard() {
     setSelectedEntry(undefined);
   };
 
-  const mediaSections = [
-    { type: MediaType.Game, title: "Games" },
-    { type: MediaType.Book, title: "Books" },
-    { type: MediaType.Movie, title: "Movies" },
-    { type: MediaType.Series, title: "Series" },
-    { type: MediaType.Manga, title: "Manga" },
-  ];
-
-
   return (
-<body className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
-<div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-<div className="flex h-full grow">
-{/* <!-- Main Content Area --> */}
-<main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
-<div className="p-8 space-y-10">
-
-</div>
-{/* <!-- Sticky Mobile Nav --> */}
-<div className="lg:hidden sticky bottom-0 z-20 w-full flex items-center justify-around p-3 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800">
-<button className="p-2 text-primary">
-<span className="material-symbols-outlined">dashboard</span>
-</button>
-<button className="p-2 text-slate-500">
-<span className="material-symbols-outlined">library_books</span>
-</button>
-<button className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-white shadow-lg shadow-primary/30 -mt-8">
-<span className="material-symbols-outlined">add</span>
-</button>
-<button className="p-2 text-slate-500">
-<span className="material-symbols-outlined">insights</span>
-</button>
-<button className="p-2 text-slate-500">
-<span className="material-symbols-outlined">person</span>
-</button>
-</div>
-</main>
-</div>
-</div>
-</body>
-  );
-}
-
-  return (
-    <div
-      className={`${loading ? "opacity-50 pointer-events-none" : ""} flex w-2/3 flex-col items-center gap-6 p-6`}
-    >
-      <div>
-        <button
-          onClick={onClickCreateEntry}
-          className="mb-4 px-4 max-h-fit py-2 bg-green-500 text-white rounded disabled:cursor-not-allowed disabled:bg-slate-400"
-          disabled={loading || !currentUser}
-        >
-          Create New Entry
-        </button>
-      </div>
-      {entries.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">All fetched entries</h2>
-          <div className="flex flex-row flex-wrap gap-6">
-            {mediaSections.map(({ type, title }) => {
-              const sectionEntries = entries.filter(
-                (e) => e.mediaType === type,
-              );
-
-              if (sectionEntries.length === 0) {
-                return null;
+    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+      <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+        <div className="flex h-full grow">
+          {/* Media Entry Modal Popup Window */}
+          {showPopup && (
+            <MediaEntry
+              detailedEntry={selectedEntry}
+              onCancel={onCancel}
+              onSubmit={
+                selectedEntry ? handleUpdateMediaEntry : handleCreateMediaEntry
               }
+              onDelete={handleDeleteMediaEntry}
+            />
+          )}
 
-              return (
-                <div key={type} className="flex flex-col gap-2">
-                  <h3 className="text-md font-medium">{title}</h3>
-                  {sectionEntries.map((entry) => (
-                    <MediaItem
-                      key={entry.id}
-                      entry={entry}
-                      onClickEntry={onClickListedMediaEntry}
+          {/* Sidebar */}
+          <Sidebar onChangeMediaTypeFilter={onChangeMainMediaTypeFilter} />
+
+          {/* <!-- Main Content Area --> */}
+          <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+            {/* Main Header for Dashboard with search and add entry button */}
+            <MainHeader
+              onClickAddEntry={onClickCreateEntry}
+              onChangeSearch={(query) => console.log("Search query:", query)}
+            />
+
+            {entries.length > 0 && (
+              <>
+                {statusSections.map(({ type, title }) => {
+                  const sectionEntries = entries.filter(
+                    (e) => e.status === type,
+                  );
+
+                  return (
+                    <EntriesSectionMain
+                      key={type}
+                      mediaEntries={sectionEntries}
+                      onClickEntry={onClickEntry}
+                      statusSectionType={title}
                     />
-                  ))}
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </>
+            )}
+
+            {/* <!-- Sticky Mobile Nav --> */}
+            <div className="lg:hidden sticky bottom-0 z-20 w-full flex items-center justify-around p-3 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800">
+              <button className="p-2 text-primary">
+                <span className="material-symbols-outlined">dashboard</span>
+              </button>
+              <button className="p-2 text-slate-500">
+                <span className="material-symbols-outlined">library_books</span>
+              </button>
+              <button className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-white shadow-lg shadow-primary/30 -mt-8">
+                <span className="material-symbols-outlined">add</span>
+              </button>
+              <button className="p-2 text-slate-500">
+                <span className="material-symbols-outlined">insights</span>
+              </button>
+              <button className="p-2 text-slate-500">
+                <span className="material-symbols-outlined">person</span>
+              </button>
+            </div>
+          </main>
         </div>
-      )}
+      </div>
     </div>
   );
 }

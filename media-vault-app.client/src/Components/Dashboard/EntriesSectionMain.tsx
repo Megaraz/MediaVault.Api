@@ -5,20 +5,14 @@ import { StatusType } from "../../Clients/MediaEntriesClient";
 type props = {
   mediaEntries: MediaEntryDetailedDto[];
   onClickEntry: (entry: MediaEntryDetailedDto) => void;
+  statusSectionType: string;
 };
 
 export default function EntriesSectionMain({
   mediaEntries,
   onClickEntry,
+  statusSectionType,
 }: props) {
-
-  const statusSections = [
-    { type: StatusType.OnGoing, title: "On Going" },
-    { type: StatusType.Completed, title: "Completed" },
-    { type: StatusType.Backlog, title: "Backlog" },
-    { type: StatusType.Dropped, title: "Dropped" },
-  ];
-
   return (
     <>
       <section>
@@ -27,7 +21,7 @@ export default function EntriesSectionMain({
             <span className="material-symbols-outlined text-primary">
               play_circle
             </span>
-            Your On-Going
+            Your {statusSectionType}
           </h2>
           <div className="flex flex-wrap gap-2">
             <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-medium border border-slate-200 dark:border-slate-700">

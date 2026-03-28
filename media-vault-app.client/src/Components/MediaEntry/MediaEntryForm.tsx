@@ -38,11 +38,18 @@ export default function MediaEntryForm({
         <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
           Entry Title
         </label>
-        <InputText
+        <input
+          className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+          placeholder="e.g. Elden Ring, The Great Gatsby"
+          type="text"
+          value={formData.title}
+          onChange={(e) => onChange("title", e.target.value)}
+        />
+        {/* <InputText
           value={formData.title}
           onChange={(val) => onChange("title", val)}
           placeholder="e.g. Elden Ring, The Great Gatsby"
-        />
+        /> */}
       </div>
 
       {/* Media Type */}
