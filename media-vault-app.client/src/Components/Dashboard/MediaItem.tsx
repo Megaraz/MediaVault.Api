@@ -24,13 +24,12 @@ export default function MediaItem({
             className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
             data-alt="Dark futuristic sci-fi movie poster art"
             style={{
-              backgroundImage:
-                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC__5pGl12Q6yug749GjA1RvNEagcHckw9H5jT3tyz3fA7zdtMBmZp1u7IJR7HYb3rSBdbaoLXjIAytVc851yiWNi2Y8jl0JqrByBpBPXIk_jlnUe0NcSWcewaIhe1TMTyWJyTNcPlcAsIPHpCX9zFww7fumM_ZF17xjU6CXzVj1lOiQWNl77bKAUuKpBjtTBJuO6RpgfpKLLz-ammt17SeDkGrWbuSSMMGwja0gOx642PZYGQF7SNSeg4pta0QknKRJn-pRF6TXrY');",
+              backgroundImage: `url('${entry.imageUrl ?? ""}')`,
             }}
           ></div>
-          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-white uppercase">
+          {/* <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-white uppercase">
             EP 08 / 12
-          </div>
+          </div> */}
           <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-linear-to-t from-black/80 to-transparent"></div>
         </div>
         <h3 className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
@@ -44,7 +43,9 @@ export default function MediaItem({
             <span className="material-symbols-outlined text-xs fill-1">
               star
             </span>
-            <span className="text-xs font-medium ml-1">4.9</span>
+            <span className="text-xs font-medium ml-1">
+              {entry.rating.toFixed(1)}
+            </span>
           </div>
         </div>
       </div>

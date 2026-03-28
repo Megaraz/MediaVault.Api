@@ -51,7 +51,9 @@ export default function Layout() {
             </div>
             <div className="flex flex-1 justify-end gap-4 md:gap-10">
               <nav className="hidden md:flex items-center gap-8">
-                <Link to="/dashboard">Dashboard</Link>
+                {currentUser && isAuthenticated && (
+                  <Link to="/dashboard">Dashboard</Link>
+                )}
                 <a
                   className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors"
                   href="#features"

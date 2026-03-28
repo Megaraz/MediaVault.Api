@@ -8,6 +8,7 @@ import SelectOption from "../../Components/Shared/SelectOption";
 import StarRating from "../../Components/Shared/StarRating";
 export type MediaEntryFormData = {
   title: string;
+  imageUrl: string;
   mediaType: number;
   status: number;
   rating: number;
@@ -31,6 +32,21 @@ export default function MediaEntryForm({
   formData,
   onChange,
 }: MediaEntryFormProps) {
+  if (formData.mediaType === 0) {
+    return (
+      <div>
+        <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+          Media Type
+        </label>
+        <SelectOption
+          options={mediaTypeOptions}
+          value={formData.mediaType}
+          onChange={(val) => onChange("mediaType", Number(val))}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Title */}
@@ -45,11 +61,18 @@ export default function MediaEntryForm({
           value={formData.title}
           onChange={(e) => onChange("title", e.target.value)}
         />
-        {/* <InputText
-          value={formData.title}
-          onChange={(val) => onChange("title", val)}
-          placeholder="e.g. Elden Ring, The Great Gatsby"
-        /> */}
+      </div>
+
+      <div className="col-span-full">
+        <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+          Image URL
+        </label>
+        <InputText
+          type="url"
+          value={formData.imageUrl}
+          placeholder="https://example.com/cover.jpg"
+          onChange={(value) => onChange("imageUrl", value)}
+        />
       </div>
 
       {/* Media Type */}

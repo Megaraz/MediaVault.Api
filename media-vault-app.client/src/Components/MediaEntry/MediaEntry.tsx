@@ -21,6 +21,7 @@ function buildInitialFormData(
 ): MediaEntryFormData {
   return {
     title: entry?.title ?? "",
+    imageUrl: entry?.imageUrl ?? "",
     mediaType: entry?.mediaType ?? 0,
     status: entry?.status ?? 0,
     rating: entry?.rating ?? 0,
@@ -61,6 +62,7 @@ export default function MediaEntry({
       mediaType: formData.mediaType,
       status: formData.status,
       rating: formData.rating,
+      imageUrl: formData.imageUrl.trim() || null,
       review: formData.review || null,
     };
 

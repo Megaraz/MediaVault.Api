@@ -7,7 +7,7 @@ type Props = {
 };
 
 export default function Sidebar({ onChangeMediaTypeFilter }: Props) {
-  const { currentUser, isAuthenticated } = useUser();
+  const { currentUser } = useUser();
 
   const mapMediaSectionsToIcons = (
     mediaSection: (typeof mediaSections)[number],
@@ -23,6 +23,8 @@ export default function Sidebar({ onChangeMediaTypeFilter }: Props) {
         return "tv";
       case MediaType.Manga:
         return "auto_stories";
+      case MediaType.None:
+        return "";
       default:
         return "help_outline";
     }
@@ -74,10 +76,14 @@ export default function Sidebar({ onChangeMediaTypeFilter }: Props) {
                 onClick={() => onChangeMediaTypeFilter(type)}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
               >
-                <span className="material-symbols-outlined">
-                  {mapMediaSectionsToIcons({ type, title })}
-                </span>
-                <span>{title}</span>
+                {type !== MediaType.None && (
+                  <>
+                    <span className="material-symbols-outlined">
+                      {mapMediaSectionsToIcons({ type, title })}
+                    </span>
+                    <span>{title}</span>
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -94,7 +100,9 @@ export default function Sidebar({ onChangeMediaTypeFilter }: Props) {
               }}
             ></div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold">{currentUser?.username}</span>
+              <span className="text-sm font-semibold">
+                {currentUser?.username}
+              </span>
               <span className="text-xs text-slate-500">Pro Curator</span>
             </div>
           </div>

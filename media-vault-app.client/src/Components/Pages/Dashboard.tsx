@@ -7,13 +7,13 @@ import MediaEntriesClient, {
   StatusType,
 } from "../../Clients/MediaEntriesClient";
 import MediaEntry from "../MediaEntry/MediaEntry";
-import MediaItem from "../Dashboard/MediaItem";
 import { useUser } from "../../Shared/UserContext";
 import MainHeader from "../Dashboard/MainHeader";
 import Sidebar from "../Dashboard/Sidebar";
 import EntriesSectionMain from "../Dashboard/EntriesSectionMain";
 
 export const mediaSections = [
+  { type: MediaType.None, title: "None" },
   { type: MediaType.Game, title: "Games" },
   { type: MediaType.Book, title: "Books" },
   { type: MediaType.Movie, title: "Movies" },
