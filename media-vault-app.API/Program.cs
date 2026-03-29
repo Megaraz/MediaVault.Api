@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Rasmus.SharedKernel.Interfaces;
 using media_vault_app.Application.Services.Auth;
+using media_vault_app.Infrastructure.API_Clients;
 
 namespace media_vault_app.API
 {
@@ -24,6 +25,24 @@ namespace media_vault_app.API
             var connectionString = builder.Configuration
                 .GetConnectionString("Default") ??
                 throw new InvalidOperationException("Connection string 'Default' not found.");
+
+            var rawgConnectionString = builder.Configuration
+                .GetConnectionString("Rawg") ??
+                throw new InvalidOperationException("Connection string 'Rawg' not found.");
+
+            var rawgApiKey = builder.Configuration["APIKeys:Rawg"] ??
+                throw new InvalidOperationException("Rawg API key not found in configuration.");
+
+            var rawgApiOptions = new RawgApiOptions(rawgConnectionString, rawgApiKey);
+
+            builder.Services.AddSingleton(rawgApiOptions);
+
+            builder.Services.AddHttpClient<RawgApiClient>((serviceProvider, client) =>
+            {
+                var options = serviceProvider.GetRequiredService<RawgApiOptions>();
+                client.BaseAddress = new Uri(options.NormalizedBaseUrl);
+            });
+
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
