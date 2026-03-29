@@ -46,7 +46,9 @@ export default function EntriesSectionMain({
       internalMediaTypeFilter === undefined ||
       internalMediaTypeFilter === MediaType.All
         ? [...mediaEntries]
-        : mediaEntries.filter((entry) => entry.mediaType === internalMediaTypeFilter);
+        : mediaEntries.filter(
+            (entry) => entry.mediaType === internalMediaTypeFilter,
+          );
 
     const getCreatedAtTime = (entry: MediaEntryDetailedDto) =>
       new Date(entry.createdAtUtc).getTime();
