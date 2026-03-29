@@ -20,7 +20,7 @@ type MediaEntryFormProps = {
   onChange: (field: keyof MediaEntryFormData, value: string | number) => void;
 };
 
-const mediaTypeOptions: SelectOptionItem[] = Object.entries(
+export const mediaTypeOptions: SelectOptionItem[] = Object.entries(
   MediaTypeLabels,
 ).map(([value, label]) => ({ value: Number(value), label }));
 

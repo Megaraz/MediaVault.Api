@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { UserCreateDto } from "../../Clients/UsersClient";
-import ModularPopupWindow from "../Shared/ModularPopupWindow";
+import ModalWindow from "../Shared/ModalWindow";
 import RegisterUserForm, { RegisterUserFormData } from "./RegisterUserForm";
 import UsersClient from "../../Clients/UsersClient";
 
@@ -90,7 +90,7 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
   };
 
   return (
-    <ModularPopupWindow
+    <ModalWindow
       onClose={() => onCancel(false)}
       cardClassName={defaultCardClassName}
     >
@@ -168,6 +168,6 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
           </a>
         </p>
       </div>
-    </ModularPopupWindow>
+    </ModalWindow>
   );
 }

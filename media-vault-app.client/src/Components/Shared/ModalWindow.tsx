@@ -12,7 +12,7 @@ const defaultOverlayClassName: string =
 const defaultCardClassName: string =
   "relative w-full max-w-2xl bg-background-light dark:bg-background-dark rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden";
 
-export default function ModularPopupWindow({
+export default function ModalWindow({
   children,
   onClose,
   cardClassName = defaultCardClassName,

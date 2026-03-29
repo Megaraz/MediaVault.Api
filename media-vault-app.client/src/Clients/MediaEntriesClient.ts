@@ -35,7 +35,7 @@ export const StatusLabels: Record<number, string> = {
 };
 
 export const MediaTypeLabels: Record<number, string> = {
-    0: "None",
+    0: "All",
     1: "Movie",
     2: "Series",
     3: "Book",
@@ -52,7 +52,7 @@ export const StatusType = {
 } as const;
 
 export const MediaType = {
-    None: 0,
+    All: 0,
     Movie: 1,
     Series: 2,
     Book: 3,

@@ -1,12 +1,16 @@
 import { MediaType } from "../../Clients/MediaEntriesClient";
 import { useUser } from "../../Shared/UserContext";
-import { mediaSections } from "../Pages/Dashboard";
+import { mediaSections } from "../../Shared/mediaConstants";
 
 type Props = {
   onChangeMediaTypeFilter: (mediaType: number | undefined) => void;
+  currentMainMediaTypeFilter: number;
 };
 
-export default function Sidebar({ onChangeMediaTypeFilter }: Props) {
+export default function Sidebar({
+  onChangeMediaTypeFilter,
+  currentMainMediaTypeFilter = MediaType.All,
+}: Props) {
   const { currentUser } = useUser();
 
   const mapMediaSectionsToIcons = (
@@ -23,8 +27,8 @@ export default function Sidebar({ onChangeMediaTypeFilter }: Props) {
         return "tv";
       case MediaType.Manga:
         return "auto_stories";
-      case MediaType.None:
-        return "";
+      case MediaType.All:
+        return "globe";
       default:
         return "help_outline";
     }
@@ -70,22 +74,24 @@ export default function Sidebar({ onChangeMediaTypeFilter }: Props) {
               My Lists
             </p>
 
-            {mediaSections.map(({ type, title }) => (
-              <button
-                key={type}
-                onClick={() => onChangeMediaTypeFilter(type)}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
-              >
-                {type !== MediaType.None && (
-                  <>
-                    <span className="material-symbols-outlined">
-                      {mapMediaSectionsToIcons({ type, title })}
-                    </span>
-                    <span>{title}</span>
-                  </>
-                )}
-              </button>
-            ))}
+            {mediaSections.map(({ type, title }) => {
+              const isCurrent = currentMainMediaTypeFilter === type;
+
+              return (
+                <button
+                  key={type}
+                  onClick={() => onChangeMediaTypeFilter(type)}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left ${
+                    isCurrent ? "bg-primary/10 text-primary" : ""
+                  }`}
+                >
+                  <span className="material-symbols-outlined">
+                    {mapMediaSectionsToIcons({ type, title })}
+                  </span>
+                  <span>{title}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
         <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800">

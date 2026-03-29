@@ -35,6 +35,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 _dbSet.Add(entity);
                 await _appDbContext.SaveChangesAsync(ct);
+                entity.CreatedAtUtc = DateTime.UtcNow; // Set CreatedAtUtc after saving to ensure it has a value
                 return Result<TEntity>.Success(entity);
             }
             catch (Exception ex)

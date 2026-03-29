@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ModularPopupWindow from "../Shared/ModularPopupWindow";
+import ModalWindow from "../Shared/ModalWindow";
 import { useUser } from "../../Shared/UserContext";
 
 type LoginProps = {
@@ -35,7 +35,7 @@ export default function Login({ onCancel }: LoginProps) {
   };
 
   return (
-    <ModularPopupWindow onClose={onCancel} cardClassName={defaultCardClassName}>
+    <ModalWindow onClose={onCancel} cardClassName={defaultCardClassName}>
       {/* Header */}
       <div className="px-8 pt-10 pb-6 text-center">
         <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 mb-4">
@@ -143,6 +143,6 @@ export default function Login({ onCancel }: LoginProps) {
           </a>
         </p>
       </div>
-    </ModularPopupWindow>
+    </ModalWindow>
   );
 }

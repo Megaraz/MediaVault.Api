@@ -6,37 +6,26 @@ import MediaEntriesClient, {
   MediaType,
   StatusType,
 } from "../../Clients/MediaEntriesClient";
-import MediaEntry from "../MediaEntry/MediaEntry";
+import MediaEntryModal from "../MediaEntry/MediaEntryModal";
 import { useUser } from "../../Shared/UserContext";
 import MainHeader from "../Dashboard/MainHeader";
 import Sidebar from "../Dashboard/Sidebar";
 import EntriesSectionMain from "../Dashboard/EntriesSectionMain";
-
-export const mediaSections = [
-  { type: MediaType.None, title: "None" },
-  { type: MediaType.Game, title: "Games" },
-  { type: MediaType.Book, title: "Books" },
-  { type: MediaType.Movie, title: "Movies" },
-  { type: MediaType.Series, title: "Series" },
-  { type: MediaType.Manga, title: "Manga" },
-];
-
-export const statusSections = [
-  { type: StatusType.OnGoing, title: "On Going" },
-  { type: StatusType.Completed, title: "Completed" },
-  { type: StatusType.Backlog, title: "Backlog" },
-  { type: StatusType.Dropped, title: "Dropped" },
-];
+import EntriesSectionSub from "../Dashboard/EntriesSectionSub";
+import { statusSections } from "../../Shared/mediaConstants";
 
 export default function Dashboard() {
   const { currentUser, isAuthenticated } = useUser();
   const [entries, setEntries] = useState<MediaEntryDetailedDto[]>([]);
   const [client] = useState(new MediaEntriesClient());
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setLoading] = useState(false);
+  const [, setError] = useState<string | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto>();
-  const [mainMediaTypeFilter, setMainMediaTypeFilter] = useState<number>();
+  const [, setSearchQuery] = useState("");
+  const [mainMediaTypeFilter, setMainMediaTypeFilter] = useState<number>(
+    MediaType.All,
+  );
 
   useEffect(() => {}, [isAuthenticated]);
 
@@ -91,7 +80,9 @@ export default function Dashboard() {
       setError(
         "Select a user from the Users API Test page before creating media entries.",
       );
-      return;
+      throw new Error(
+        "Select a user from the Users API Test page before creating media entries.",
+      );
     }
 
     setLoading(true);
@@ -101,9 +92,9 @@ export default function Dashboard() {
       setEntries((prev) => [...prev, created]);
     } catch (err) {
       setError((err as Error).message);
+      throw err;
     } finally {
       setLoading(false);
-      setShowPopup(false);
     }
   };
 
@@ -112,7 +103,9 @@ export default function Dashboard() {
       setError(
         "Select a user from the Users API Test page before deleting media entries.",
       );
-      return;
+      throw new Error(
+        "Select a user from the Users API Test page before deleting media entries.",
+      );
     }
 
     setLoading(true);
@@ -122,15 +115,14 @@ export default function Dashboard() {
       setEntries((prev) => prev.filter((e) => e.id !== entryId));
     } catch (err) {
       setError((err as Error).message);
+      throw err;
     } finally {
       setLoading(false);
-      setSelectedEntry(undefined);
-      setShowPopup(false);
     }
   };
 
   const onChangeMainMediaTypeFilter = (mediaType: number | undefined) => {
-    setMainMediaTypeFilter(mediaType);
+    setMainMediaTypeFilter(mediaType ?? MediaType.All);
   };
 
   const handleUpdateMediaEntry = async (
@@ -141,12 +133,14 @@ export default function Dashboard() {
       setError(
         "Select a user from the Users API Test page before updating media entries.",
       );
-      return;
+      throw new Error(
+        "Select a user from the Users API Test page before updating media entries.",
+      );
     }
 
     if (!entryId) {
       setError("Entry ID is required for updating a media entry.");
-      return;
+      throw new Error("Entry ID is required for updating a media entry.");
     }
 
     setLoading(true);
@@ -158,13 +152,23 @@ export default function Dashboard() {
       setEntries((prev) => prev.map((e) => (e.id === entryId ? fetched : e)));
     } catch (err) {
       setError((err as Error).message);
+      throw err;
     } finally {
       setLoading(false);
-      setSelectedEntry(undefined);
-      setShowPopup(false);
     }
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+
+      // For simplicity, this example only filters the already fetched entries on the client side.
+      // In a real application, you might want to implement server-side searching.
+
+    // This will trigger the useMemo hooks in the EntriesSection components to re-filter the displayed entries based on the search query.
+
+
+
+  };
   const onCancel = () => {
     setShowPopup(false);
     setSelectedEntry(undefined);
@@ -176,7 +180,7 @@ export default function Dashboard() {
         <div className="flex h-full grow">
           {/* Media Entry Modal Popup Window */}
           {showPopup && (
-            <MediaEntry
+            <MediaEntryModal
               detailedEntry={selectedEntry}
               onCancel={onCancel}
               onSubmit={
@@ -187,29 +191,41 @@ export default function Dashboard() {
           )}
 
           {/* Sidebar */}
-          <Sidebar onChangeMediaTypeFilter={onChangeMainMediaTypeFilter} />
+          <Sidebar
+            currentMainMediaTypeFilter={mainMediaTypeFilter}
+            onChangeMediaTypeFilter={onChangeMainMediaTypeFilter}
+          />
 
           {/* <!-- Main Content Area --> */}
           <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
             {/* Main Header for Dashboard with search and add entry button */}
             <MainHeader
               onClickAddEntry={onClickCreateEntry}
-              onChangeSearch={(query) => console.log("Search query:", query)}
+              onChangeSearch={(query) => handleSearch(query)}
             />
 
             {entries.length > 0 && (
               <>
                 {statusSections.map(({ type, title }) => {
-                  const sectionEntries = entries.filter(
+                  const sectionEntriesByStatus = entries.filter(
                     (e) => e.status === type,
                   );
 
-                  return (
-                    <EntriesSectionMain
+                  return type === StatusType.Backlog ? (
+                    <EntriesSectionSub
                       key={type}
-                      mediaEntries={sectionEntries}
+                      mediaEntries={sectionEntriesByStatus}
                       onClickEntry={onClickEntry}
                       statusSectionType={title}
+                      currentMainMediaTypeFilter={mainMediaTypeFilter}
+                    />
+                  ) : (
+                    <EntriesSectionMain
+                      key={type}
+                      mediaEntries={sectionEntriesByStatus}
+                      onClickEntry={onClickEntry}
+                      statusSectionType={title}
+                      currentMainMediaTypeFilter={mainMediaTypeFilter}
                     />
                   );
                 })}
