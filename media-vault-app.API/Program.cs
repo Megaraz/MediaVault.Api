@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Rasmus.SharedKernel.Interfaces;
 using media_vault_app.Application.Services.Auth;
 using media_vault_app.Infrastructure.API_Clients;
+using media_vault_app.Application.Interfaces.Clients;
+using media_vault_app.Application.Services.API;
 
 namespace media_vault_app.API
 {
@@ -62,6 +64,10 @@ namespace media_vault_app.API
 
             builder.Services.AddScoped<IUserReadService, UserReadService>();
             builder.Services.AddScoped<IUserWriteService, UserWriteService>();
+
+            builder.Services.AddScoped<IRawgApiClient, RawgApiClient>();
+            builder.Services.AddScoped<IRawgApiService, RawgApiService>();
+
 
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();

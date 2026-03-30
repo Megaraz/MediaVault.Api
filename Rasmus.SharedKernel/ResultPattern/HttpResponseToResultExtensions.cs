@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Rasmus.SharedKernel.ResultPattern
 {
-    public static class HttpResponseResultMapper
+    public static class HttpResponseToResultExtensions
     {
         private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
