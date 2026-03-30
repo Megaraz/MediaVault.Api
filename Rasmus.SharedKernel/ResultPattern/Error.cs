@@ -107,6 +107,19 @@ namespace Rasmus.SharedKernel.ResultPattern
             return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Unauthorized);
         }
 
+        public static Error Failure(ErrorContext errorContext, string? descriptionSuffix = null, Exception? exception = null)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.GeneralFailure);
+
+            string defaultDescriptionSuffix = string.IsNullOrWhiteSpace(descriptionSuffix)
+                ? $"An unexpected failure occurred while processing {errorContext.EntityName}."
+                : descriptionSuffix;
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Failure, exception);
+        }
+
 
         //public static Error Forbidden(ErrorCode code, string description) =>
         //    new(code.Code, description, ErrorType.Forbidden);

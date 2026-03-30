@@ -32,7 +32,7 @@ namespace media_vault_app.Infrastructure.API_Clients
             using var response = await _httpClient.GetAsync(BuildRequestUri($"games/{id}"), cancellationToken);
 
             var httpResponseErrorContext = DefineErrorContext(nameof(GetGameAsync), OperationType.Get, fieldName: $"{id}");
-            var result = await _httpResponseResultMapper.FromResponseWithValue<RawgGameResponse>(response, httpResponseErrorContext, cancellationToken);
+            var result = await _httpResponseResultMapper.MapAsync<RawgGameResponse>(response, httpResponseErrorContext, cancellationToken);
 
             return result.Map(MapToGameSearchResult);
         }
@@ -103,7 +103,7 @@ namespace media_vault_app.Infrastructure.API_Clients
             var requestUri = BuildRequestUri($"games?{string.Join("&", queryParameters)}");
 
             using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
-            var result = await _httpResponseResultMapper.FromResponseWithValue<RawgSearchResponse>(response, errorContext, cancellationToken);
+            var result = await _httpResponseResultMapper.MapAsync<RawgSearchResponse>(response, errorContext, cancellationToken);
 
             return result.Map(searchResponse =>
                 (IReadOnlyList<GameSearchResultDto>)(searchResponse.Results?.Select(MapToGameSearchResult).ToArray()
