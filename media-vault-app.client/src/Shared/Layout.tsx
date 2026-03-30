@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet, Link } from "react-router-dom";
-import RegisterUser from "../Components/UserAccount/RegisterUser";
-import Login from "../Components/UserAccount/Login";
+import RegisterUserCard from "../Components/UserAccount/RegisterUserCard";
+import Login from "../Components/UserAccount/LoginCard";
 import { useUser } from "./UserContext";
 
 export default function Layout() {
@@ -11,10 +11,12 @@ export default function Layout() {
 
   const openRegisterWindow = () => {
     setShowRegisterPopup(true);
+    setShowLoginPopup(false);
   };
 
   const openLoginWindow = () => {
     setShowLoginPopup(true);
+    setShowRegisterPopup(false);
   };
 
   const closeRegisterWindow = (toLogin: boolean) => {
@@ -34,7 +36,7 @@ export default function Layout() {
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
-      {showRegisterPopup && <RegisterUser onCancel={closeRegisterWindow} />}
+      {showRegisterPopup && <RegisterUserCard onCancel={closeRegisterWindow} />}
       {showLoginPopup && <Login onCancel={closeLoginWindow} />}
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
         <div className="layout-container flex h-full grow flex-col">
@@ -49,7 +51,9 @@ export default function Layout() {
             </div>
             <div className="flex flex-1 justify-end gap-4 md:gap-10">
               <nav className="hidden md:flex items-center gap-8">
-                <Link to="/media-entries-api-test">Media Entries API Test</Link>
+                {currentUser && isAuthenticated && (
+                  <Link to="/dashboard">Dashboard</Link>
+                )}
                 <a
                   className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors"
                   href="#features"
@@ -109,7 +113,8 @@ export default function Layout() {
             </div>
           </header>
 
-          <main className="flex flex-1 flex-row justify-center">
+          {/* <main className="flex flex-1 flex-row justify-center"> */}
+          <main className="flex-1">
             <Outlet /> {/* like @Body */}
           </main>
 

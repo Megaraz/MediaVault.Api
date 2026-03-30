@@ -8,6 +8,7 @@ import SelectOption from "../../Components/Shared/SelectOption";
 import StarRating from "../../Components/Shared/StarRating";
 export type MediaEntryFormData = {
   title: string;
+  imageUrl: string;
   mediaType: number;
   status: number;
   rating: number;
@@ -19,7 +20,7 @@ type MediaEntryFormProps = {
   onChange: (field: keyof MediaEntryFormData, value: string | number) => void;
 };
 
-const mediaTypeOptions: SelectOptionItem[] = Object.entries(
+export const mediaTypeOptions: SelectOptionItem[] = Object.entries(
   MediaTypeLabels,
 ).map(([value, label]) => ({ value: Number(value), label }));
 
@@ -31,6 +32,21 @@ export default function MediaEntryForm({
   formData,
   onChange,
 }: MediaEntryFormProps) {
+  if (formData.mediaType === 0) {
+    return (
+      <div>
+        <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+          Media Type
+        </label>
+        <SelectOption
+          options={mediaTypeOptions}
+          value={formData.mediaType}
+          onChange={(val) => onChange("mediaType", Number(val))}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Title */}
@@ -38,10 +54,24 @@ export default function MediaEntryForm({
         <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
           Entry Title
         </label>
-        <InputText
-          value={formData.title}
-          onChange={(val) => onChange("title", val)}
+        <input
+          className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
           placeholder="e.g. Elden Ring, The Great Gatsby"
+          type="text"
+          value={formData.title}
+          onChange={(e) => onChange("title", e.target.value)}
+        />
+      </div>
+
+      <div className="col-span-full">
+        <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+          Image URL
+        </label>
+        <InputText
+          type="url"
+          value={formData.imageUrl}
+          placeholder="https://example.com/cover.jpg"
+          onChange={(value) => onChange("imageUrl", value)}
         />
       </div>
 

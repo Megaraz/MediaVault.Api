@@ -35,11 +35,12 @@ export const StatusLabels: Record<number, string> = {
 };
 
 export const MediaTypeLabels: Record<number, string> = {
-    0: "Movie",
-    1: "Series",
-    2: "Book",
-    3: "Manga",
-    4: "Game",
+    0: "All",
+    1: "Movie",
+    2: "Series",
+    3: "Book",
+    4: "Manga",
+    5: "Game",
 };
 
 
@@ -51,11 +52,12 @@ export const StatusType = {
 } as const;
 
 export const MediaType = {
-    Movie: 0,
-    Series: 1,
-    Book: 2,
-    Manga: 3,
-    Game: 4,
+    All: 0,
+    Movie: 1,
+    Series: 2,
+    Book: 3,
+    Manga: 4,
+    Game: 5,
 } as const;
 
 export default class MediaEntriesClient {
