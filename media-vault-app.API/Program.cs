@@ -40,7 +40,7 @@ namespace media_vault_app.API
             builder.Services.AddHttpClient<RawgApiClient>((serviceProvider, client) =>
             {
                 var options = serviceProvider.GetRequiredService<RawgApiOptions>();
-                client.BaseAddress = new Uri(options.NormalizedBaseUrl);
+                client.BaseAddress = new Uri(options.BaseUrl);
             });
 
 

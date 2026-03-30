@@ -35,7 +35,21 @@ namespace Rasmus.SharedKernel.ResultPattern
         GeneralUnauthorized = 303,
         GeneralForbidden = 304,
 
-        UserLoginFailure = 400,
+        UserLoginFailure = 399,
+
+        HttpBadRequest = 400,
+        HttpUnauthorized = 401,
+        HttpForbidden = 403,
+        HttpNotFound = 404,
+        HttpMethodNotAllowed = 405,
+        HttpRequestTimeout = 408,
+        HttpConflict = 409,
+        HttpUnprocessableContent = 422,
+        HttpInternalServerError = 500,
+        HttpBadGateway = 502,
+        HttpServiceUnavailable = 503, 
+        HttpGatewayTimeout = 504
+
     }
 
     // Represents a structured error code that encapsulates the operation, entity type, and error type.

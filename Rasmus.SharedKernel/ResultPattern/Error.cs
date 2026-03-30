@@ -10,6 +10,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         Unauthorized = 5,
         Forbidden = 6,
         Database = 7,
+        HttpError = 8
 
     }
 

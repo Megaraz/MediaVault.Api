@@ -29,6 +29,20 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             ErrorReasonCode.UserLoginFailure => "LoginFailure",
 
+            ErrorReasonCode.HttpBadRequest => "BadRequest",
+            ErrorReasonCode.HttpUnauthorized => "Unauthorized",
+            ErrorReasonCode.HttpForbidden => "Forbidden",
+            ErrorReasonCode.HttpNotFound => "NotFound",
+            ErrorReasonCode.HttpMethodNotAllowed => "MethodNotAllowed",
+            ErrorReasonCode.HttpRequestTimeout => "RequestTimeout",
+            ErrorReasonCode.HttpConflict => "Conflict",
+            ErrorReasonCode.HttpUnprocessableContent => "UnproccessableContent",
+            ErrorReasonCode.HttpInternalServerError => "InternalServerError",
+            ErrorReasonCode.HttpBadGateway => "BadGateway",
+            ErrorReasonCode.HttpServiceUnavailable => "ServiceUnavailable",
+            ErrorReasonCode.HttpGatewayTimeout => "GatewayTimeout",
+
+
             _ => "Unknown"
         };
     }
