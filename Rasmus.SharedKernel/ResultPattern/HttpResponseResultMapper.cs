@@ -3,11 +3,11 @@ using System.Text.Json;
 
 namespace Rasmus.SharedKernel.ResultPattern
 {
-    public sealed class HttpResponseResultMapper
+    public static class HttpResponseResultMapper
     {
         private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
-        public async Task<Result<TValue>> MapAsync<TValue>(HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
+        public static async Task<Result<TValue>> MapAsync<TValue>(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
         {
             var localErrorContext = CloneErrorContext(errorContext);
 
@@ -58,7 +58,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             }
         }
 
-        public async Task<Result> Map(HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
+        public static async Task<Result> Map(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
         {
             var localErrorContext = CloneErrorContext(errorContext);
 

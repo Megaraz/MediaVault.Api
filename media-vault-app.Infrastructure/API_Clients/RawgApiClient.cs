@@ -10,13 +10,11 @@ namespace media_vault_app.Infrastructure.API_Clients
     {
         private readonly HttpClient _httpClient;
         private readonly RawgApiOptions _options;
-        private readonly HttpResponseResultMapper _httpResponseResultMapper;
 
         public RawgApiClient(HttpClient httpClient, RawgApiOptions options)
         {
             _httpClient = httpClient;
             _options = options;
-            _httpResponseResultMapper = new HttpResponseResultMapper();
         }
 
         public async Task<Result<GameSearchResultDto>> GetGameAsync(int id, CancellationToken cancellationToken = default)
@@ -32,7 +30,8 @@ namespace media_vault_app.Infrastructure.API_Clients
             using var response = await _httpClient.GetAsync(BuildRequestUri($"games/{id}"), cancellationToken);
 
             var httpResponseErrorContext = DefineErrorContext(nameof(GetGameAsync), OperationType.Get, fieldName: $"{id}");
-            var result = await _httpResponseResultMapper.MapAsync<RawgGameResponse>(response, httpResponseErrorContext, cancellationToken);
+
+            var result = await response.MapAsync<RawgGameResponse>(httpResponseErrorContext, cancellationToken);
 
             return result.Map(MapToGameSearchResult);
         }
@@ -103,7 +102,7 @@ namespace media_vault_app.Infrastructure.API_Clients
             var requestUri = BuildRequestUri($"games?{string.Join("&", queryParameters)}");
 
             using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
-            var result = await _httpResponseResultMapper.MapAsync<RawgSearchResponse>(response, errorContext, cancellationToken);
+            var result = await response.MapAsync<RawgSearchResponse>(errorContext, cancellationToken);
 
             return result.Map(searchResponse =>
                 (IReadOnlyList<GameSearchResultDto>)(searchResponse.Results?.Select(MapToGameSearchResult).ToArray()
