@@ -27,13 +27,9 @@ namespace media_vault_app.Infrastructure.API_Clients
 
 
             return await response.MapAsync<RawgGameResponse>(httpResponseErrorContext, cancellationToken);
-
-            //var result = await response.MapAsync<RawgGameResponse>(httpResponseErrorContext, cancellationToken);
-
-            //return result.Map(MapToGameSearchResult);
         }
 
-        public async Task<Result<IReadOnlyList<RawgSearchResponse>>> SearchGamesAsync(
+        public async Task<Result<RawgSearchResponse>> SearchGamesAsync(
             List<string> queryParameters,
             CancellationToken cancellationToken = default)
         {
@@ -43,7 +39,7 @@ namespace media_vault_app.Infrastructure.API_Clients
 
             using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
 
-            return await response.MapAsync<IReadOnlyList<RawgSearchResponse>>(errorContext, cancellationToken);
+            return await response.MapAsync<RawgSearchResponse>(errorContext, cancellationToken);
         }
 
         private string BuildRequestUri(string pathAndQuery)

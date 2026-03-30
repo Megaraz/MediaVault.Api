@@ -97,7 +97,7 @@ namespace media_vault_app.Application.Services.API
 
             var result = await _client.SearchGamesAsync(queryParameters, cancellationToken);
 
-            return result.Map(searchResponse => MapToGameSearchResult((IReadOnlyList<RawgGameResponse>?)searchResponse));
+            return result.Map(searchResponse => MapToGameSearchResult(searchResponse.Results));
 
         }
 

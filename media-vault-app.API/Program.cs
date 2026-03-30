@@ -39,7 +39,7 @@ namespace media_vault_app.API
 
             builder.Services.AddSingleton(rawgApiOptions);
 
-            builder.Services.AddHttpClient<RawgApiClient>((serviceProvider, client) =>
+            builder.Services.AddHttpClient<IRawgApiClient, RawgApiClient>((serviceProvider, client) =>
             {
                 var options = serviceProvider.GetRequiredService<RawgApiOptions>();
                 client.BaseAddress = new Uri(options.BaseUrl);
@@ -65,7 +65,6 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IUserReadService, UserReadService>();
             builder.Services.AddScoped<IUserWriteService, UserWriteService>();
 
-            builder.Services.AddScoped<IRawgApiClient, RawgApiClient>();
             builder.Services.AddScoped<IRawgApiService, RawgApiService>();
 
 

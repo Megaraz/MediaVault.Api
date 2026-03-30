@@ -7,7 +7,7 @@ namespace media_vault_app.API.Controllers
 {
 
     [ApiController]
-    [Authorize]
+    //[Authorize]
     [Route("[controller]")]
     public class RawgApiController : ControllerBase
     {
@@ -20,7 +20,7 @@ namespace media_vault_app.API.Controllers
 
         [HttpPost("search")]
         public async Task<ActionResult<IReadOnlyList<GameSearchResultDto>>> SearchGames(
-            [FromBody] string search,
+            [FromBody] GameSearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
@@ -28,7 +28,7 @@ namespace media_vault_app.API.Controllers
             [FromQuery] bool? searchExact = null,
             [FromQuery] string? ordering = null)
         {
-            var result = await _rawgApiService.SearchGamesAsync(search, page, pageSize, searchPrecise, searchExact, ordering, ct);
+            var result = await _rawgApiService.SearchGamesAsync(request.Search, page, pageSize, searchPrecise, searchExact, ordering, ct);
             return this.ToActionResult(result);
         }
 
