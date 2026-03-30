@@ -1,78 +1,83 @@
-﻿using media_vault_app.API.DTOs;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.API.Controllers
 {
-
+    /// <summary>
+    /// Thin ASP.NET adapter that converts domain <see cref="Result"/> instances into ASP.NET
+    /// <see cref="ActionResult"/> types, using <see cref="HttpResultMapper"/> for framework-agnostic HTTP mapping.
+    /// </summary>
     public static class ResultResponseMapper
     {
-        public static ActionResult<TValue> ToOk<TValue>(this ControllerBase c, Result<TValue> result)
+        /// <summary>
+        /// Maps a <see cref="Result{TValue}"/> to a 200 OK <see cref="ActionResult{TValue}"/> on success,
+        /// or the appropriate error response on failure.
+        /// </summary>
+        public static ActionResult<TValue> ToActionResult<TValue>(this ControllerBase c, Result<TValue> result)
         {
-            return result.IsSuccess
-                ? c.Ok(result.Value)
-                : c.ToFailureResponse(result);
+            var response = HttpResultMapper.ToHttpResponse(result);
+            return c.ToActionResult<TValue>(response);
         }
 
-        public static IActionResult ToOk(this ControllerBase c, Result result)
+        /// <summary>
+        /// Maps a <see cref="Result"/> to a 200 OK <see cref="IActionResult"/> on success,
+        /// or the appropriate error response on failure.
+        /// </summary>
+        public static IActionResult ToActionResult(this ControllerBase c, Result result)
         {
-            return result.IsSuccess
-                ? c.Ok()
-                : c.ToFailureResponse(result);
+            var response = HttpResultMapper.ToHttpResponse(result);
+            return c.ToActionResult(response);
         }
 
-        public static IActionResult ToNoContent(this ControllerBase c, Result result)
+        /// <summary>
+        /// Maps a <see cref="Result"/> to a 204 No Content <see cref="IActionResult"/> on success,
+        /// or the appropriate error response on failure.
+        /// </summary>
+        public static IActionResult ToNoContentResult(this ControllerBase c, Result result)
         {
-            return result.IsSuccess
-                ? c.NoContent()
-                : c.ToFailureResponse(result);
+            var response = HttpResultMapper.ToNoContentResponse(result);
+            return c.ToActionResult(response);
         }
 
-        public static ActionResult<TValue> ToCreated<TValue>(
+        /// <summary>
+        /// Maps a <see cref="Result{TValue}"/> to a 201 Created <see cref="ActionResult{TValue}"/> on success
+        /// using ASP.NET's <see cref="ControllerBase.CreatedAtAction"/>,
+        /// or the appropriate error response on failure.
+        /// </summary>
+        public static ActionResult<TValue> ToCreatedResult<TValue>(
             this ControllerBase c,
             Result<TValue> result,
             string actionName,
             Func<TValue, object> routeValuesFactory)
         {
-            return result.IsSuccess
-                ? c.CreatedAtAction(actionName, routeValuesFactory(result.Value), result.Value)
-                : c.ToFailureResponse(result);
+            if (result.IsFailure)
+            {
+                var failureResponse = HttpResultMapper.ToHttpResponse(result);
+                return c.ToActionResult<TValue>(failureResponse);
+            }
+
+            return c.CreatedAtAction(actionName, routeValuesFactory(result.Value), result.Value);
         }
 
-        private static ActionResult<TValue> ToFailureResponse<TValue>(this ControllerBase c, Result<TValue> result)
-            => new(c.BuildFailureResponse(
-                result.Message,
-                result.PrimaryError.Type,
-                result.PrimaryError.Code,
-                result.ValidationErrors?.Select(x => x.Code)));
-
-        private static IActionResult ToFailureResponse(this ControllerBase c, Result result)
-            => c.BuildFailureResponse(
-                result.Message,
-                result.PrimaryError.Type,
-                result.PrimaryError.Code,
-                result.ValidationErrors?.Select(x => x.Code));
-
-        private static ActionResult BuildFailureResponse(
-            this ControllerBase c,
-            string message,
-            ErrorType errorType,
-            string errorCode,
-            IEnumerable<string>? validationErrors)
+        private static ActionResult<TValue> ToActionResult<TValue>(this ControllerBase c, MappedHttpResponse response)
         {
-
-            var responseDto = new ResponseDto(message, errorCode);
-
-            return errorType switch
+            return response.StatusCode switch
             {
-                ErrorType.Validation => c.UnprocessableEntity(new ValidationResponseDto(message, validationErrors)),
-                ErrorType.NotFound => c.NotFound(responseDto),
-                ErrorType.Conflict => c.Conflict(responseDto),
-                ErrorType.Unauthorized => c.Unauthorized(responseDto),
-                ErrorType.Forbidden => c.StatusCode(403, responseDto),
-                ErrorType.Failure => c.StatusCode(500, responseDto),
-                ErrorType.Database => c.StatusCode(500, responseDto),
-                _ => c.BadRequest(responseDto)
+                200 => c.Ok(response.Body),
+                201 when response.Location is not null => new ActionResult<TValue>(c.Created(response.Location, response.Body)),
+                _ => new ActionResult<TValue>(c.StatusCode(response.StatusCode, response.Body))
+            };
+        }
+
+        private static IActionResult ToActionResult(this ControllerBase c, MappedHttpResponse response)
+        {
+            return response.StatusCode switch
+            {
+                200 when response.Body is not null => c.Ok(response.Body),
+                200 => c.Ok(),
+                201 when response.Location is not null => c.Created(response.Location, response.Body),
+                204 => c.NoContent(),
+                _ => c.StatusCode(response.StatusCode, response.Body)
             };
         }
     }
