@@ -32,6 +32,7 @@ namespace media_vault_app.API
                 .GetConnectionString("Rawg") ??
                 throw new InvalidOperationException("Connection string 'Rawg' not found.");
 
+
             var rawgApiKey = builder.Configuration["APIKeys:Rawg"] ??
                 throw new InvalidOperationException("Rawg API key not found in configuration.");
 
@@ -44,6 +45,26 @@ namespace media_vault_app.API
                 var options = serviceProvider.GetRequiredService<RawgApiOptions>();
                 client.BaseAddress = new Uri(options.BaseUrl);
             });
+
+            #region TMDB API
+            var tmdbConnectionString = builder.Configuration
+                .GetConnectionString("tmdb") ??
+                throw new InvalidOperationException("Connection string 'tmdb' not found.");
+
+            var tmdbApiKey = builder.Configuration["APIKeys:tmdb"] ??
+                throw new InvalidOperationException("tmdb API key not found in configuration.");
+
+            var tmdbApiOptions = new TmdbApiOptions(tmdbConnectionString, tmdbApiKey);
+
+            builder.Services.AddSingleton(tmdbApiOptions);
+
+            builder.Services.AddHttpClient<ITmdbApiClient, TmdbApiClient>((serviceProvider, client) =>
+            {
+                var options = serviceProvider.GetRequiredService<TmdbApiOptions>();
+                client.BaseAddress = new Uri(options.BaseUrl);
+            });
+
+            #endregion
 
 
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -66,6 +87,9 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IUserWriteService, UserWriteService>();
 
             builder.Services.AddScoped<IRawgApiService, RawgApiService>();
+
+            builder.Services.AddScoped<ITmdbMovieApiService, TmdbMovieApiService>();
+            builder.Services.AddScoped<ITmdbTvSeriesApiService, TmdbTvSeriesApiService>();
 
 
             builder.Services.AddControllers();
