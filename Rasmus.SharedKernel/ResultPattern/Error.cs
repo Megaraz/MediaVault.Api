@@ -10,6 +10,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         Unauthorized = 5,
         Forbidden = 6,
         Database = 7,
+        HttpError = 8
 
     }
 
@@ -104,6 +105,19 @@ namespace Rasmus.SharedKernel.ResultPattern
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
             return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Unauthorized);
+        }
+
+        public static Error Failure(ErrorContext errorContext, string? descriptionSuffix = null, Exception? exception = null)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.GeneralFailure);
+
+            string defaultDescriptionSuffix = string.IsNullOrWhiteSpace(descriptionSuffix)
+                ? $"An unexpected failure occurred while processing {errorContext.EntityName}."
+                : descriptionSuffix;
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Failure, exception);
         }
 
 

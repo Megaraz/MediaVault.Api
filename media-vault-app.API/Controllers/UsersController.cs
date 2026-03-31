@@ -30,7 +30,7 @@ namespace media_vault_app.API.Controllers
         {
             var result = await _userReadService.GetDetailedCollectionAsync(ct: ct);
 
-            return this.ToOk(result);
+            return this.ToActionResult(result);
         }
 
         [HttpGet("{id:Guid}")]
@@ -39,14 +39,14 @@ namespace media_vault_app.API.Controllers
 
             var result = await _userReadService.GetByIdAsync(id, ct);
 
-            return this.ToOk(result);
+            return this.ToActionResult(result);
         }
 
         [HttpDelete("{id:Guid}")]
         public async Task<IActionResult> DeleteUser(Guid id, CancellationToken ct)
         {
             var result = await _userWriteService.DeleteAsync(id, ct);
-            return this.ToNoContent(result);
+            return this.ToNoContentResult(result);
         }
 
     }

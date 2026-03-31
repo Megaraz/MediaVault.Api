@@ -51,9 +51,10 @@ export default function MediaEntryModal({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessState, setShowSuccessState] = useState(false);
+  const [deleteSuccessState, setDeleteSuccessState] = useState(false);
 
   const isEditMode = detailedEntry != null && detailedEntry.id != null;
-  const isBusy = isSubmitting || showSuccessState;
+  const isBusy = isSubmitting || showSuccessState || deleteSuccessState;
 
   const handleChange = (
     field: keyof MediaEntryFormData,
@@ -92,8 +93,24 @@ export default function MediaEntryModal({
 
   const handleDelete = async () => {
     if (detailedEntry) {
-      await onDelete(detailedEntry.id);
-      onCancel();
+      setIsSubmitting(true);
+      setShowSuccessState(false);
+      setDeleteSuccessState(false);
+
+      try {
+        await onDelete(detailedEntry.id);
+        setIsSubmitting(false);
+        setShowSuccessState(true);
+        setDeleteSuccessState(true);
+        await new Promise((resolve) => {
+          window.setTimeout(resolve, SUCCESS_STATE_DELAY_MS);
+        });
+        onCancel();
+      } catch {
+        setDeleteSuccessState(false);
+        setIsSubmitting(false);
+        setShowSuccessState(false);
+      }
     }
   };
 
@@ -117,11 +134,18 @@ export default function MediaEntryModal({
             <span className="material-symbols-outlined text-5xl">check</span>
           </div>
           <h2 className="mb-3 text-3xl font-black tracking-tight text-white">
-            {isEditMode ? "Entry Updated" : "Entry Created"}
+            {deleteSuccessState
+              ? "Entry Deleted"
+              : isEditMode
+                ? "Entry Updated"
+                : "Entry Created"}
           </h2>
           <p className="mb-8 text-base leading-relaxed text-slate-300">
-            Your media library was updated successfully. Returning you to the
-            dashboard now.
+            {deleteSuccessState
+              ? "The entry was deleted successfully. Returning you to the dashboard now."
+              : isEditMode
+                ? "The entry was updated successfully. Returning you to the dashboard now."
+                : "The entry was created successfully. Returning you to the dashboard now."}
           </p>
           <div className="flex flex-col gap-3">
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
@@ -138,10 +162,15 @@ export default function MediaEntryModal({
             isEditMode={isEditMode}
             subtitle={formatSubtitle(detailedEntry)}
             onCancel={onCancel}
+            imgUrl={formData.imageUrl || undefined}
           />
 
           <form className="space-y-6 p-6" onSubmit={handleSubmit}>
-            <MediaEntryForm formData={formData} onChange={handleChange} />
+            <MediaEntryForm
+              formData={formData}
+              onChange={handleChange}
+              isEditMode={isEditMode}
+            />
 
             <FormFooter
               isEditMode={isEditMode}

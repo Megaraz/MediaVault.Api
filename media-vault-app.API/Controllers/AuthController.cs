@@ -29,7 +29,7 @@ namespace media_vault_app.API.Controllers
         public async Task<IActionResult> RegisterUser(
             [FromBody] UserRegisterDto createDto,
             CancellationToken ct = default) =>
-                this.ToOk(await _authService.RegisterUserAsync(createDto, ct));
+                this.ToActionResult(await _authService.RegisterUserAsync(createDto, ct));
 
 
         [HttpPost("login")]
@@ -41,7 +41,7 @@ namespace media_vault_app.API.Controllers
 
             if (result.IsFailure)
             {
-                return this.ToOk(result);
+                return this.ToActionResult(result);
             }
 
             var claims = new List<Claim>
@@ -61,7 +61,7 @@ namespace media_vault_app.API.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
 
-            return this.ToOk(result);
+            return this.ToActionResult(result);
         }
 
         [Authorize]
@@ -71,7 +71,7 @@ namespace media_vault_app.API.Controllers
             CancellationToken ct = default) =>
                 !TryGetCurrentUserId(out var userId)
                     ? Unauthorized()
-                    : this.ToNoContent(await _userWriteService.UpdateUserInfoAsync(userId, updateDto, ct));
+                    : this.ToNoContentResult(await _userWriteService.UpdateUserInfoAsync(userId, updateDto, ct));
 
         [Authorize]
         [HttpPost("logout")]
@@ -89,7 +89,7 @@ namespace media_vault_app.API.Controllers
                 return Unauthorized();
 
             var result = await _userReadService.GetByIdAsync(userId, ct);
-            return this.ToOk(result);
+            return this.ToActionResult(result);
         }
 
         private bool TryGetCurrentUserId(out Guid userId)

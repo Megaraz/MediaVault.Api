@@ -33,7 +33,7 @@ namespace media_vault_app.API.Controllers
 
             var result = await _writeService.CreateAsync(userId, createDto, ct);
 
-            return this.ToCreated(result, nameof(GetMediaEntryById), value => new { id = value.Id });
+            return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
 
         [HttpGet("{id:Guid}")]
@@ -46,7 +46,7 @@ namespace media_vault_app.API.Controllers
 
             var result = await _readService.GetByIdAsync(userId, id, ct);
 
-            return this.ToOk(result);
+            return this.ToActionResult(result);
         }
 
         [HttpGet]
@@ -60,7 +60,7 @@ namespace media_vault_app.API.Controllers
 
             var result = await _readService.GetDetailedCollectionAsync(userId, pageNumber, pageSize, ct);
 
-            return this.ToOk(result);
+            return this.ToActionResult(result);
         }
 
         [HttpPut("{id:Guid}")]
@@ -74,7 +74,7 @@ namespace media_vault_app.API.Controllers
 
             var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
 
-            return this.ToNoContent(result);
+            return this.ToNoContentResult(result);
         }
 
         [HttpDelete("{id:Guid}")]
@@ -87,7 +87,7 @@ namespace media_vault_app.API.Controllers
 
             var result = await _writeService.DeleteAsync(userId, id, ct);
 
-            return this.ToNoContent(result);
+            return this.ToNoContentResult(result);
         }
 
         private bool TryGetCurrentUserId(out Guid userId)
