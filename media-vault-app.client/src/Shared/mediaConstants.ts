@@ -9,6 +9,7 @@ export const mediaSections = [
   { type: MediaType.Manga, title: "Manga" },
 ];
 
+
 export const statusSections = [
   { type: StatusType.OnGoing, title: "On Going" },
   { type: StatusType.Completed, title: "Completed" },

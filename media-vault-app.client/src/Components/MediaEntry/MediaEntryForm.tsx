@@ -6,6 +6,7 @@ import type { SelectOptionItem } from "../../Components/Shared/SelectOption";
 import InputText from "../../Components/Shared/InputText";
 import SelectOption from "../../Components/Shared/SelectOption";
 import StarRating from "../../Components/Shared/StarRating";
+import TitleSearchInput from "./TitleSearchInput";
 export type MediaEntryFormData = {
   title: string;
   imageUrl: string;
@@ -18,9 +19,10 @@ export type MediaEntryFormData = {
 type MediaEntryFormProps = {
   formData: MediaEntryFormData;
   onChange: (field: keyof MediaEntryFormData, value: string | number) => void;
+  isEditMode: boolean;
 };
 
-export const mediaTypeOptions: SelectOptionItem[] = Object.entries(
+const mediaTypeOptions: SelectOptionItem[] = Object.entries(
   MediaTypeLabels,
 ).map(([value, label]) => ({ value: Number(value), label }));
 
@@ -31,6 +33,7 @@ const statusOptions: SelectOptionItem[] = Object.entries(StatusLabels).map(
 export default function MediaEntryForm({
   formData,
   onChange,
+  isEditMode,
 }: MediaEntryFormProps) {
   if (formData.mediaType === 0) {
     return (
@@ -54,13 +57,26 @@ export default function MediaEntryForm({
         <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
           Entry Title
         </label>
-        <input
+        <TitleSearchInput
+          placeholder="e.g. Elden Ring, The Great Gatsby"
+          titleInputValue={formData.title}
+          onChange={(value) => onChange("title", value)}
+          mediaType={formData.mediaType}
+          isEditMode={isEditMode}
+          onSelectGame={(game) => {
+            // When a game is picked from the dropdown, also fill in the cover image
+            onChange("title", game.title);
+            if (game.coverImageUrl) onChange("imageUrl", game.coverImageUrl);
+          }}
+        />
+
+        {/* <input
           className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
           placeholder="e.g. Elden Ring, The Great Gatsby"
           type="text"
           value={formData.title}
           onChange={(e) => onChange("title", e.target.value)}
-        />
+        /> */}
       </div>
 
       <div className="col-span-full">

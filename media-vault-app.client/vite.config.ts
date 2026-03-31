@@ -60,6 +60,10 @@ export default defineConfig({
                 target,
                 secure: false
             },
+            '^/[Rr]awg[Aa]pi': {
+                target,
+                secure: false
+            },
             '^/openapi': {
                 target,
                 secure: false
