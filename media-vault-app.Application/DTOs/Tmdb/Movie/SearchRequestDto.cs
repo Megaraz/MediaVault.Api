@@ -4,6 +4,6 @@ using System.Text;
 
 namespace media_vault_app.Application.DTOs.Tmdb.Movie
 {
-    public record MovieSearchRequestDto(string Query);
+    public record SearchRequestDto(string Query);
 
 }

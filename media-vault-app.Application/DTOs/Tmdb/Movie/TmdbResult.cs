@@ -7,7 +7,7 @@ namespace media_vault_app.Application.DTOs.Tmdb.Movie
 {
 
 
-    public sealed class TmdbMovieResult
+    public sealed class TmdbResult
     {
         [JsonPropertyName("poster_path")]
         public string? PosterPath { get; set; }
@@ -17,6 +17,9 @@ namespace media_vault_app.Application.DTOs.Tmdb.Movie
 
         [JsonPropertyName("title")]
         public string? Title { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
 
         //[JsonPropertyName("backdrop_path")]
         //public string? BackdropPath { get; set; }

@@ -1,45 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using media_vault_app.Application.DTOs.Tmdb.Movie;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Domain.Enums;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.API
 {
-    public class TmdbMovieApiService : ITmdbMovieApiService
+    public class TmdbApiService : ITmdbApiService
     {
         private readonly ITmdbApiClient _client;
 
-        public TmdbMovieApiService(ITmdbApiClient client)
+        public TmdbApiService(ITmdbApiClient client)
         {
             _client = client;
         }
 
-
-        public async Task<Result<MovieSearchResultDto>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Result<TmdbSearchResultDto>> GetByIdAsync(int id, MediaEntryType mediaType, CancellationToken cancellationToken = default)
         {
-            var idValidationErrorContext = DefineErrorContext(nameof(GetMovieByIdAsync), OperationType.Get);
+            var idValidationErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
             if (!id.IsValidId(idValidationErrorContext, out var idError))
             {
-                idValidationErrorContext.DescriptionSuffix = $"Invalid movie ID: {id}.";
-                return Result<MovieSearchResultDto>.ValidationFailure([idError], idValidationErrorContext.DescriptionSuffix);
+                idValidationErrorContext.DescriptionSuffix = $"Invalid ID: {id}.";
+                return Result<TmdbSearchResultDto>.ValidationFailure([idError], idValidationErrorContext.DescriptionSuffix);
             }
 
-            var result = await _client.GetMovieAsync(id, cancellationToken);
-            return result.Map(MapToMovieSearchResult);
-
+            var result = await _client.GetByIdAsync(id, mediaType, cancellationToken);
+            return result.Map(r => MapToSearchResult(r, mediaType));
         }
-        public async Task<Result<IReadOnlyList<MovieSearchResultDto>>> SearchMoviesAsync(
+
+        public async Task<Result<IReadOnlyList<TmdbSearchResultDto>>> SearchAsync(
             string search,
+            MediaEntryType mediaType,
             int page = 1,
             int pageSize = 10,
             string? ordering = null,
             CancellationToken cancellationToken = default)
         {
-            var errorContext = DefineErrorContext(nameof(SearchMoviesAsync), OperationType.GetCollection);
+            var errorContext = DefineErrorContext(nameof(SearchAsync), OperationType.GetCollection);
             List<ValidationError> errors = new();
 
             errorContext.FieldName = nameof(search);
@@ -68,7 +66,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                return Result<IReadOnlyList<MovieSearchResultDto>>.ValidationFailure(errors, "TMDB movie search validation failed.");
+                return Result<IReadOnlyList<TmdbSearchResultDto>>.ValidationFailure(errors, "TMDB search validation failed.");
             }
 
             var queryParameters = new List<string>
@@ -77,18 +75,10 @@ namespace media_vault_app.Application.Services.API
                 $"page={page}"
             };
 
-            var result = await _client.SearchMoviesAsync(queryParameters, cancellationToken);
+            var result = await _client.SearchAsync(queryParameters, mediaType, cancellationToken);
 
-            //if (!string.IsNullOrWhiteSpace(ordering))
-            //{
-            //    queryParameters.Add($"ordering={Uri.EscapeDataString(ordering)}");
-            //}
-
-            return result.Map(searchResponse => MapToMovieSearchResult(searchResponse.Results));
-
+            return result.Map(searchResponse => MapToSearchResults(searchResponse.Results, mediaType));
         }
-
-
 
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
@@ -101,17 +91,18 @@ namespace media_vault_app.Application.Services.API
                 fieldName: fieldName);
         }
 
-        private static IReadOnlyList<MovieSearchResultDto> MapToMovieSearchResult(IReadOnlyList<TmdbMovieResult>? tmdbMovies)
+        private static IReadOnlyList<TmdbSearchResultDto> MapToSearchResults(IReadOnlyList<TmdbResult>? results, MediaEntryType mediaType)
         {
-            return tmdbMovies?.Select(MapToMovieSearchResult).ToArray() ?? Array.Empty<MovieSearchResultDto>();
+            return results?.Select(r => MapToSearchResult(r, mediaType)).ToArray() ?? Array.Empty<TmdbSearchResultDto>();
         }
 
-        private static MovieSearchResultDto MapToMovieSearchResult(TmdbMovieResult tmdbMovie)
+        private static TmdbSearchResultDto MapToSearchResult(TmdbResult result, MediaEntryType mediaType)
         {
-            return new MovieSearchResultDto(
-                tmdbMovie.Id,
-                tmdbMovie.Title ?? string.Empty,
-                BuildImageUrl(tmdbMovie.PosterPath));
+            return new TmdbSearchResultDto(
+                result.Id,
+                result.Title ?? result.Name ?? string.Empty,
+                BuildImageUrl(result.PosterPath),
+                mediaType);
         }
 
         private static string? BuildImageUrl(string? path)

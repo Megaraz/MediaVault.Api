@@ -52,21 +52,13 @@ namespace media_vault_app.API
                 .GetConnectionString("tmdb") ??
                 throw new InvalidOperationException("Connection string 'tmdb' not found.");
 
-            //var tmdbApiKey = builder.Configuration["APIKeys:tmdb"] ??
-            //    throw new InvalidOperationException("tmdb API key not found in configuration.");
-
             var tmdbAccessToken = builder.Configuration["AccesTokens:tmdb"] ??
                 throw new InvalidOperationException("tmdb Access Token not found in configuration.");
 
-            var tmdbApiOptions = new TmdbApiOptions(tmdbConnectionString, tmdbAccessToken);
-
-            builder.Services.AddSingleton(tmdbApiOptions);
-
             builder.Services.AddHttpClient<ITmdbApiClient, TmdbApiClient>((serviceProvider, client) =>
             {
-                var options = serviceProvider.GetRequiredService<TmdbApiOptions>();
-                client.BaseAddress = new Uri(options.BaseUrl);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiKey);
+                client.BaseAddress = new Uri(tmdbConnectionString);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tmdbAccessToken);
             });
 
             #endregion
@@ -93,8 +85,7 @@ namespace media_vault_app.API
 
             builder.Services.AddScoped<IRawgApiService, RawgApiService>();
 
-            builder.Services.AddScoped<ITmdbMovieApiService, TmdbMovieApiService>();
-            builder.Services.AddScoped<ITmdbTvSeriesApiService, TmdbTvSeriesApiService>();
+            builder.Services.AddScoped<ITmdbApiService, TmdbApiService>();
 
 
             builder.Services.AddControllers();
