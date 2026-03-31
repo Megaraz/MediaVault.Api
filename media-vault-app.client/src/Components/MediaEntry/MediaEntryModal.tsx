@@ -162,6 +162,7 @@ export default function MediaEntryModal({
             isEditMode={isEditMode}
             subtitle={formatSubtitle(detailedEntry)}
             onCancel={onCancel}
+            imgUrl={formData.imageUrl || undefined}
           />
 
           <form className="space-y-6 p-6" onSubmit={handleSubmit}>

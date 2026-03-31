@@ -69,14 +69,6 @@ export default function MediaEntryForm({
             if (game.coverImageUrl) onChange("imageUrl", game.coverImageUrl);
           }}
         />
-
-        {/* <input
-          className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
-          placeholder="e.g. Elden Ring, The Great Gatsby"
-          type="text"
-          value={formData.title}
-          onChange={(e) => onChange("title", e.target.value)}
-        /> */}
       </div>
 
       <div className="col-span-full">
