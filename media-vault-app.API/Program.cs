@@ -13,6 +13,7 @@ using media_vault_app.Application.Services.Auth;
 using media_vault_app.Infrastructure.API_Clients;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Services.API;
+using System.Net.Http.Headers;
 
 namespace media_vault_app.API
 {
@@ -51,10 +52,13 @@ namespace media_vault_app.API
                 .GetConnectionString("tmdb") ??
                 throw new InvalidOperationException("Connection string 'tmdb' not found.");
 
-            var tmdbApiKey = builder.Configuration["APIKeys:tmdb"] ??
-                throw new InvalidOperationException("tmdb API key not found in configuration.");
+            //var tmdbApiKey = builder.Configuration["APIKeys:tmdb"] ??
+            //    throw new InvalidOperationException("tmdb API key not found in configuration.");
 
-            var tmdbApiOptions = new TmdbApiOptions(tmdbConnectionString, tmdbApiKey);
+            var tmdbAccessToken = builder.Configuration["AccesTokens:tmdb"] ??
+                throw new InvalidOperationException("tmdb Access Token not found in configuration.");
+
+            var tmdbApiOptions = new TmdbApiOptions(tmdbConnectionString, tmdbAccessToken);
 
             builder.Services.AddSingleton(tmdbApiOptions);
 
@@ -62,6 +66,7 @@ namespace media_vault_app.API
             {
                 var options = serviceProvider.GetRequiredService<TmdbApiOptions>();
                 client.BaseAddress = new Uri(options.BaseUrl);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiKey);
             });
 
             #endregion

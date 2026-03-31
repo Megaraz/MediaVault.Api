@@ -73,7 +73,7 @@ namespace media_vault_app.Application.Services.API
 
             var queryParameters = new List<string>
             {
-                $"search={Uri.EscapeDataString(search)}",
+                $"query={Uri.EscapeDataString(search)}",
                 $"page={page}"
             };
 
@@ -113,7 +113,13 @@ namespace media_vault_app.Application.Services.API
             return new TvSearchResultDto(
                 tmdbTvSeries.Id,
                 tmdbTvSeries.Name ?? string.Empty,
-                tmdbTvSeries.PosterPath);
+                BuildImageUrl(tmdbTvSeries.PosterPath));
+        }
+
+        private static string? BuildImageUrl(string? path)
+        {
+            const string tmdbImageBaseUrl = "https://image.tmdb.org/t/p/w500";
+            return string.IsNullOrEmpty(path) ? null : $"{tmdbImageBaseUrl}{path}";
         }
     }
 }

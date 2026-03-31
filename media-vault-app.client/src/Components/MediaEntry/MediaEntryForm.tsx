@@ -7,6 +7,7 @@ import InputText from "../../Components/Shared/InputText";
 import SelectOption from "../../Components/Shared/SelectOption";
 import StarRating from "../../Components/Shared/StarRating";
 import TitleSearchInput from "./TitleSearchInput";
+import type { SearchResult } from "./TitleSearchInput";
 export type MediaEntryFormData = {
   title: string;
   imageUrl: string;
@@ -63,10 +64,10 @@ export default function MediaEntryForm({
           onChange={(value) => onChange("title", value)}
           mediaType={formData.mediaType}
           isEditMode={isEditMode}
-          onSelectGame={(game) => {
-            // When a game is picked from the dropdown, also fill in the cover image
-            onChange("title", game.title);
-            if (game.coverImageUrl) onChange("imageUrl", game.coverImageUrl);
+          onSelectResult={(result: SearchResult) => {
+            // When a result is picked from the dropdown, also fill in the cover image
+            onChange("title", result.title);
+            if (result.coverImageUrl) onChange("imageUrl", result.coverImageUrl);
           }}
         />
       </div>

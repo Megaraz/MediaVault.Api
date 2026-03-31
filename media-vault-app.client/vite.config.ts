@@ -64,6 +64,14 @@ export default defineConfig({
                 target,
                 secure: false
             },
+            '^/[Tt]mdb[Mm]ovie[Aa]pi': {
+                target,
+                secure: false
+            },
+            '^/[Tt]mdb[Tt]v[Ss]eries[Aa]pi': {
+                target,
+                secure: false
+            },
             '^/openapi': {
                 target,
                 secure: false

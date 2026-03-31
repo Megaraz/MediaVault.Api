@@ -15,12 +15,10 @@ namespace media_vault_app.Infrastructure.API_Clients
     {
 
         private readonly HttpClient _httpClient;
-        private readonly TmdbApiOptions _options;
 
         public TmdbApiClient(HttpClient httpClient, TmdbApiOptions options)
         {
             _httpClient = httpClient;
-            _options = options;
         }
 
         public async Task<Result<TmdbMovieResult>> GetMovieAsync(int id, CancellationToken cancellationToken = default)
@@ -43,7 +41,7 @@ namespace media_vault_app.Infrastructure.API_Clients
             List<string> queryParameters,
             CancellationToken cancellationToken = default)
         {
-            var requestUri = BuildRequestUri($"movies?{string.Join("&", queryParameters)}");
+            var requestUri = BuildRequestUri($"search/movie?{string.Join("&", queryParameters)}");
 
             using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
 
@@ -56,7 +54,7 @@ namespace media_vault_app.Infrastructure.API_Clients
             List<string> queryParameters,
             CancellationToken cancellationToken = default)
         {
-            var requestUri = BuildRequestUri($"tv?{string.Join("&", queryParameters)}");
+            var requestUri = BuildRequestUri($"search/tv?{string.Join("&", queryParameters)}");
             using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
 
             var errorContext = DefineErrorContext(nameof(SearchTvSeriesAsync), OperationType.GetCollection);
@@ -64,10 +62,9 @@ namespace media_vault_app.Infrastructure.API_Clients
             return await response.MapAsync<TmdbTvSearchResponse>(errorContext, cancellationToken);
         }
 
-        private string BuildRequestUri(string pathAndQuery)
+        private static string BuildRequestUri(string pathAndQuery)
         {
-            var separator = pathAndQuery.Contains('?') ? "&" : "?";
-            return $"{pathAndQuery}{separator}key={Uri.EscapeDataString(_options.ApiKey)}";
+            return pathAndQuery;
         }
 
 
