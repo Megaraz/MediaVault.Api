@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using media_vault_app.Domain.Enums;
 
-namespace media_vault_app.Application.DTOs.Tmdb.Movie
+namespace media_vault_app.Application.DTOs.Tmdb
 {
     public sealed record TmdbSearchResultDto(
         int ExternalId,

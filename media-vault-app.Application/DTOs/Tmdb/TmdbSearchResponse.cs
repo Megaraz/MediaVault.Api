@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace media_vault_app.Application.DTOs.Tmdb.Movie
+namespace media_vault_app.Application.DTOs.Tmdb
 {
     public class TmdbSearchResponse
     {

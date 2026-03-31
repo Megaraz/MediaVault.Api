@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import RawgApiClient from "../../Clients/RawgApiClient";
-import TmdbMovieApiClient from "../../Clients/TmdbMovieApiClient";
-import TmdbTvSeriesApiClient from "../../Clients/TmdbTvSeriesApiClient";
+import TmdbApiClient from "../../Clients/TmdbApiClient";
 import { MediaType } from "../../Clients/MediaEntriesClient";
 
 // Unified shape shared by all three search APIs
@@ -41,8 +40,7 @@ export default function TitleSearchInput({
 }: TitleSearchProps) {
   // Lazily create the clients once (arrow function form of useState avoids re-creating on every render)
   const [rawgClient] = useState(() => new RawgApiClient());
-  const [movieClient] = useState(() => new TmdbMovieApiClient());
-  const [tvClient] = useState(() => new TmdbTvSeriesApiClient());
+  const [tmdbClient] = useState(() => new TmdbApiClient());
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -95,9 +93,9 @@ export default function TitleSearchInput({
         let results: SearchResult[];
 
         if (mediaType === MediaType.Movie) {
-          results = await movieClient.searchMovies({ query: value }, 1, 8);
+          results = await tmdbClient.searchMovies({ query: value }, 1);
         } else if (mediaType === MediaType.Series) {
-          results = await tvClient.searchTvSeries({ query: value }, 1, 8);
+          results = await tmdbClient.searchTvSeries({ query: value }, 1);
         } else {
           results = await rawgClient.searchGames({ search: value }, 1, 8);
         }

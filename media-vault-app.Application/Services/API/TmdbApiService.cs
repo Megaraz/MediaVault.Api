@@ -1,4 +1,4 @@
-using media_vault_app.Application.DTOs.Tmdb.Movie;
+using media_vault_app.Application.DTOs.Tmdb;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
