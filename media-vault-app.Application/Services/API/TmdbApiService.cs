@@ -1,3 +1,4 @@
+using media_vault_app.Application.DTOs.ExternalAPIs;
 using media_vault_app.Application.DTOs.Tmdb;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
@@ -15,21 +16,21 @@ namespace media_vault_app.Application.Services.API
             _client = client;
         }
 
-        public async Task<Result<TmdbSearchResultDto>> GetByIdAsync(int id, MediaEntryType mediaType, CancellationToken cancellationToken = default)
+        public async Task<Result<SearchResultDto>> GetByIdAsync(int id, MediaEntryType mediaType, CancellationToken cancellationToken = default)
         {
             var idValidationErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
             if (!id.IsValidId(idValidationErrorContext, out var idError))
             {
                 idValidationErrorContext.DescriptionSuffix = $"Invalid ID: {id}.";
-                return Result<TmdbSearchResultDto>.ValidationFailure([idError], idValidationErrorContext.DescriptionSuffix);
+                return Result<SearchResultDto>.ValidationFailure([idError], idValidationErrorContext.DescriptionSuffix);
             }
 
             var result = await _client.GetByIdAsync(id, mediaType, cancellationToken);
             return result.Map(r => MapToSearchResult(r, mediaType));
         }
 
-        public async Task<Result<IReadOnlyList<TmdbSearchResultDto>>> SearchAsync(
+        public async Task<Result<IReadOnlyList<SearchResultDto>>> SearchAsync(
             string search,
             MediaEntryType mediaType,
             int page = 1,
@@ -66,7 +67,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                return Result<IReadOnlyList<TmdbSearchResultDto>>.ValidationFailure(errors, "TMDB search validation failed.");
+                return Result<IReadOnlyList<SearchResultDto>>.ValidationFailure(errors, "TMDB search validation failed.");
             }
 
             var queryParameters = new List<string>
@@ -91,14 +92,14 @@ namespace media_vault_app.Application.Services.API
                 fieldName: fieldName);
         }
 
-        private static IReadOnlyList<TmdbSearchResultDto> MapToSearchResults(IReadOnlyList<TmdbResult>? results, MediaEntryType mediaType)
+        private static IReadOnlyList<SearchResultDto> MapToSearchResults(IReadOnlyList<TmdbResult>? results, MediaEntryType mediaType)
         {
-            return results?.Select(r => MapToSearchResult(r, mediaType)).ToArray() ?? Array.Empty<TmdbSearchResultDto>();
+            return results?.Select(r => MapToSearchResult(r, mediaType)).ToArray() ?? Array.Empty<SearchResultDto>();
         }
 
-        private static TmdbSearchResultDto MapToSearchResult(TmdbResult result, MediaEntryType mediaType)
+        private static SearchResultDto MapToSearchResult(TmdbResult result, MediaEntryType mediaType)
         {
-            return new TmdbSearchResultDto(
+            return new SearchResultDto(
                 result.Id,
                 result.Title ?? result.Name ?? string.Empty,
                 BuildImageUrl(result.PosterPath),

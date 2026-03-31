@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using media_vault_app.Application.DTOs.ExternalAPIs;
 using media_vault_app.Application.DTOs.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Domain.Enums;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.API
@@ -17,14 +19,14 @@ namespace media_vault_app.Application.Services.API
             _client = client;
         }
 
-        public async Task<Result<GameSearchResultDto>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Result<SearchResultDto>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var idValidationErrorContext = DefineErrorContext(nameof(GetGameByIdAsync), OperationType.Get);
 
             if (!id.IsValidId(idValidationErrorContext, out var idError))
             {
                 idValidationErrorContext.DescriptionSuffix = $"Invalid game ID: {id}.";
-                return Result<GameSearchResultDto>.ValidationFailure([idError], idValidationErrorContext.DescriptionSuffix);
+                return Result<SearchResultDto>.ValidationFailure([idError], idValidationErrorContext.DescriptionSuffix);
             }
 
             var result = await _client.GetGameAsync(id, cancellationToken);
@@ -32,7 +34,7 @@ namespace media_vault_app.Application.Services.API
             return result.Map(MapToGameSearchResult);
 
         }
-        public async Task<Result<IReadOnlyList<GameSearchResultDto>>> SearchGamesAsync(
+        public async Task<Result<IReadOnlyList<SearchResultDto>>> SearchGamesAsync(
             string search,
             int page = 1,
             int pageSize = 10,
@@ -70,7 +72,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                return Result<IReadOnlyList<GameSearchResultDto>>.ValidationFailure(errors, "RAWG game search validation failed.");
+                return Result<IReadOnlyList<SearchResultDto>>.ValidationFailure(errors, "RAWG game search validation failed.");
             }
 
             var queryParameters = new List<string>
@@ -114,18 +116,18 @@ namespace media_vault_app.Application.Services.API
                 fieldName: fieldName);
         }
 
-        private static IReadOnlyList<GameSearchResultDto> MapToGameSearchResult(IReadOnlyList<RawgGameResponse>? rawgGames)
+        private static IReadOnlyList<SearchResultDto> MapToGameSearchResult(IReadOnlyList<RawgGameResponse>? rawgGames)
         {
-            return rawgGames?.Select(MapToGameSearchResult).ToArray() ?? Array.Empty<GameSearchResultDto>();
+            return rawgGames?.Select(MapToGameSearchResult).ToArray() ?? Array.Empty<SearchResultDto>();
         }
 
-        private static GameSearchResultDto MapToGameSearchResult(RawgGameResponse rawgGame)
+        private static SearchResultDto MapToGameSearchResult(RawgGameResponse rawgGame)
         {
-            return new GameSearchResultDto(
+            return new SearchResultDto(
                 rawgGame.Id,
                 rawgGame.Name ?? string.Empty,
                 rawgGame.BackgroundImage,
-                rawgGame.Slug ?? string.Empty);
+                MediaEntryType.GameEntry);
         }
 
     }

@@ -1,4 +1,4 @@
-﻿using media_vault_app.Application.DTOs.Rawg;
+﻿using media_vault_app.Application.DTOs.ExternalAPIs;
 using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +19,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
-        public async Task<ActionResult<IReadOnlyList<GameSearchResultDto>>> SearchGames(
-            [FromBody] GameSearchRequestDto request,
+        public async Task<ActionResult<IReadOnlyList<SearchResultDto>>> SearchGames(
+            [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
@@ -28,12 +28,12 @@ namespace media_vault_app.API.Controllers
             [FromQuery] bool? searchExact = null,
             [FromQuery] string? ordering = null)
         {
-            var result = await _rawgApiService.SearchGamesAsync(request.Search, page, pageSize, searchPrecise, searchExact, ordering, ct);
+            var result = await _rawgApiService.SearchGamesAsync(request.Query, page, pageSize, searchPrecise, searchExact, ordering, ct);
             return this.ToActionResult(result);
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<GameSearchResultDto>> GetGameById(
+        public async Task<ActionResult<SearchResultDto>> GetGameById(
             [FromRoute] int id,
             CancellationToken ct)
         {

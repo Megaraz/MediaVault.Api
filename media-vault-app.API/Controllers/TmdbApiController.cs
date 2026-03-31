@@ -1,4 +1,4 @@
-using media_vault_app.Application.DTOs.Tmdb;
+using media_vault_app.Application.DTOs.ExternalAPIs;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +18,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("movie/search")]
-        public async Task<ActionResult<IReadOnlyList<TmdbSearchResultDto>>> SearchMovies(
+        public async Task<ActionResult<IReadOnlyList<SearchResultDto>>> SearchMovies(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
@@ -30,7 +30,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("movie/{id:int}")]
-        public async Task<ActionResult<TmdbSearchResultDto>> GetMovieById(
+        public async Task<ActionResult<SearchResultDto>> GetMovieById(
             [FromRoute] int id,
             CancellationToken ct)
         {
@@ -39,7 +39,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("tv/search")]
-        public async Task<ActionResult<IReadOnlyList<TmdbSearchResultDto>>> SearchTvSeries(
+        public async Task<ActionResult<IReadOnlyList<SearchResultDto>>> SearchTvSeries(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
@@ -51,7 +51,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("tv/{id:int}")]
-        public async Task<ActionResult<TmdbSearchResultDto>> GetTvSeriesById(
+        public async Task<ActionResult<SearchResultDto>> GetTvSeriesById(
             [FromRoute] int id,
             CancellationToken ct)
         {
