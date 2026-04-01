@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using media_vault_app.Application.DTOs.ExternalAPIs;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Services;
@@ -35,6 +36,18 @@ namespace media_vault_app.API.Controllers
 
             return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
+
+        [HttpPost("search")]
+        public async Task<ActionResult<IReadOnlyList<SearchResultDto>>> SearchGames(
+            [FromBody] SearchRequestDto request,
+            CancellationToken ct,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _writeService.SearchGamesAsync(request.Query, page, pageSize, ct);
+            return this.ToActionResult(result);
+        }
+
 
         [HttpGet("{id:Guid}")]
         public async Task<ActionResult<MediaEntryDetailedDto>> GetMediaEntryById(

@@ -77,6 +77,19 @@ namespace Rasmus.SharedKernel.ResultPattern
                 return false;
         }
 
+        public static bool IsToLow(this int value, int minValue, ErrorContext errorContext, out ValidationError toLowError)
+        {
+            toLowError = default!;
+            if (value < minValue)
+            {
+                errorContext.DescriptionSuffix = $"The field '{errorContext.FieldName}' must be greater than or equal to {minValue} for the entity '{errorContext.EntityName}'.";
+                toLowError = ValidationError.TooShort(errorContext, $"Greater than or equal to {minValue}");
+                return false;
+            }
+            else
+                return true;
+        }
+
         public static bool Matches(this string value1, string value2, ErrorContext errorContext, out ValidationError notMatchingError)
         {
             notMatchingError = default!;
