@@ -1,21 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using media_vault_app.Application.DTOs.Tmdb;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Domain.Enums;
+using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.API_Clients
 {
+    public sealed class TmdbApiOptions
+    {
+
+        public const string SectionName = "ExternalApis:Tmdb";
+
+        [Required]
+        public string BaseUrl { get; set; } = string.Empty;
+
+        [Required]
+        public string ApiAccessToken { get; set; } = string.Empty;
+    }
+
     public class TmdbApiClient : ITmdbApiClient
     {
 
         private readonly HttpClient _httpClient;
+        private readonly TmdbApiOptions _options;
 
-        public TmdbApiClient(HttpClient httpClient)
+        public TmdbApiClient(HttpClient httpClient, IOptions<TmdbApiOptions> options)
         {
             _httpClient = httpClient;
+            _options = options.Value;
         }
 
         public async Task<Result<TmdbResult>> GetByIdAsync(int id, MediaEntryType mediaType, CancellationToken cancellationToken = default)

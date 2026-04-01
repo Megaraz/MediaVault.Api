@@ -14,6 +14,7 @@ using media_vault_app.Infrastructure.API_Clients;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Services.API;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
 
 namespace media_vault_app.API
 {
@@ -29,45 +30,56 @@ namespace media_vault_app.API
                 .GetConnectionString("Default") ??
                 throw new InvalidOperationException("Connection string 'Default' not found.");
 
-            var rawgConnectionString = builder.Configuration
-                .GetConnectionString("Rawg") ??
-                throw new InvalidOperationException("Connection string 'Rawg' not found.");
 
+            #region Rawg API
 
-            var rawgApiKey = builder.Configuration["APIKeys:Rawg"] ??
-                throw new InvalidOperationException("Rawg API key not found in configuration.");
+            builder.Services
+                .AddOptions<RawgApiOptions>()
+                .BindConfiguration(RawgApiOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
-            var rawgApiOptions = new RawgApiOptions(rawgConnectionString, rawgApiKey);
-
-            builder.Services.AddSingleton(rawgApiOptions);
-
-            builder.Services.AddHttpClient<IRawgApiClient, RawgApiClient>((serviceProvider, client) =>
+            builder.Services.AddHttpClient<IRawgApiClient, RawgApiClient>((sp, client) =>
             {
-                var options = serviceProvider.GetRequiredService<RawgApiOptions>();
+                var options = sp.GetRequiredService<IOptions<RawgApiOptions>>().Value;
                 client.BaseAddress = new Uri(options.BaseUrl);
-            });
-
-            #region TMDB API
-            var tmdbConnectionString = builder.Configuration
-                .GetConnectionString("tmdb") ??
-                throw new InvalidOperationException("Connection string 'tmdb' not found.");
-
-            var tmdbAccessToken = builder.Configuration["AccesTokens:tmdb"] ??
-                throw new InvalidOperationException("tmdb Access Token not found in configuration.");
-
-            builder.Services.AddHttpClient<ITmdbApiClient, TmdbApiClient>((serviceProvider, client) =>
-            {
-                client.BaseAddress = new Uri(tmdbConnectionString);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tmdbAccessToken);
             });
 
             #endregion
 
-            #region Google Books API
-            builder.Services.AddHttpClient<IGoogleBooksApiClient, GoogleBooksApiClient>((serviceProvider, client) =>
+            #region TMDB API
+
+            builder.Services
+                .AddOptions<TmdbApiOptions>()
+                .BindConfiguration(TmdbApiOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            builder.Services.AddHttpClient<ITmdbApiClient, TmdbApiClient>((sp, client) =>
             {
-                client.BaseAddress = new Uri("https://www.googleapis.com/books/v1/");
+                var options = sp.GetRequiredService<IOptions<TmdbApiOptions>>().Value;
+                client.BaseAddress = new Uri(options.BaseUrl);
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", options.ApiAccessToken);
             });
+
+            #endregion
+
+
+            #region Google Books API
+
+            builder.Services
+                .AddOptions<GoogleBooksApiOptions>()
+                .BindConfiguration(GoogleBooksApiOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            builder.Services.AddHttpClient<IGoogleBooksApiClient, GoogleBooksApiClient>((sp, client) =>
+            {
+                var options = sp.GetRequiredService<IOptions<GoogleBooksApiOptions>>().Value;
+                client.BaseAddress = new Uri(options.BaseUrl);
+            });
+
             #endregion
 
             builder.Services.AddDbContext<AppDbContext>(options =>

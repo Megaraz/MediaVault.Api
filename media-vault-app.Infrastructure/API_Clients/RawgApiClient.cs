@@ -1,11 +1,22 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using media_vault_app.Application.DTOs.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
+using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.API_Clients
 {
-    public sealed record RawgApiOptions(string BaseUrl, string ApiKey);
+    public sealed class RawgApiOptions
+    {
+        public const string SectionName = "ExternalApis:Rawg";
+
+        [Required]
+        public string BaseUrl { get; set; } = string.Empty;
+
+        [Required]
+        public string ApiKey { get; set; } = string.Empty;
+    }
 
 
     public sealed class RawgApiClient : IRawgApiClient
@@ -13,10 +24,10 @@ namespace media_vault_app.Infrastructure.API_Clients
         private readonly HttpClient _httpClient;
         private readonly RawgApiOptions _options;
 
-        public RawgApiClient(HttpClient httpClient, RawgApiOptions options)
+        public RawgApiClient(HttpClient httpClient, IOptions<RawgApiOptions> options)
         {
             _httpClient = httpClient;
-            _options = options;
+            _options = options.Value;
         }
 
         public async Task<Result<RawgGameResponse>> GetGameAsync(int id, CancellationToken cancellationToken = default)
