@@ -68,6 +68,10 @@ export default defineConfig({
                 target,
                 secure: false
             },
+            '^/[Gg]oogle[Bb]ooks[Aa]pi': {
+                target,
+                secure: false
+            },
             '^/openapi': {
                 target,
                 secure: false

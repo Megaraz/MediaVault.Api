@@ -100,7 +100,7 @@ namespace media_vault_app.Application.Services.API
         private static SearchResultDto MapToSearchResult(TmdbResult result, MediaEntryType mediaType)
         {
             return new SearchResultDto(
-                result.Id,
+                result.Id.ToString(),
                 result.Title ?? result.Name ?? string.Empty,
                 BuildImageUrl(result.PosterPath),
                 mediaType);

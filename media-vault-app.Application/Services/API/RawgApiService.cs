@@ -124,7 +124,7 @@ namespace media_vault_app.Application.Services.API
         private static SearchResultDto MapToGameSearchResult(RawgGameResponse rawgGame)
         {
             return new SearchResultDto(
-                rawgGame.Id,
+                rawgGame.Id.ToString(),
                 rawgGame.Name ?? string.Empty,
                 rawgGame.BackgroundImage,
                 MediaEntryType.GameEntry);

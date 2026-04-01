@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import RawgApiClient from "../../Clients/RawgApiClient";
 import TmdbApiClient from "../../Clients/TmdbApiClient";
+import GoogleBooksApiClient from "../../Clients/GoogleBooksApiClient";
 import { MediaType } from "../../Clients/MediaEntriesClient";
 
-// Unified shape shared by all three search APIs
+// Unified shape shared by all search APIs
 export type SearchResult = {
-  externalId: number;
+  externalId: string;
   title: string;
   coverImageUrl: string | null;
 };
@@ -41,6 +42,7 @@ export default function TitleSearchInput({
   // Lazily create the clients once (arrow function form of useState avoids re-creating on every render)
   const [rawgClient] = useState(() => new RawgApiClient());
   const [tmdbClient] = useState(() => new TmdbApiClient());
+  const [googleBooksClient] = useState(() => new GoogleBooksApiClient());
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -53,11 +55,12 @@ export default function TitleSearchInput({
   // Flag to track if the user has typed in the input, to avoid searching on initial value when in edit mode
   const userHasTyped = useRef(!isEditMode);
 
-  // Enable typeahead for Game, Movie, and Series
+  // Enable typeahead for Game, Movie, Series, and Book
   const isSearchEnabled =
     mediaType === MediaType.Game ||
     mediaType === MediaType.Movie ||
-    mediaType === MediaType.Series;
+    mediaType === MediaType.Series ||
+    mediaType === MediaType.Book;
 
   // ── Debounced search effect ──
   // Runs every time `value` or `isSearchEnabled` changes.
@@ -96,6 +99,8 @@ export default function TitleSearchInput({
           results = await tmdbClient.searchMovies({ query: value }, 1);
         } else if (mediaType === MediaType.Series) {
           results = await tmdbClient.searchTvSeries({ query: value }, 1);
+        } else if (mediaType === MediaType.Book) {
+          results = await googleBooksClient.searchBooks({ query: value }, 1, 8);
         } else {
           results = await rawgClient.searchGames({ search: value }, 1, 8);
         }

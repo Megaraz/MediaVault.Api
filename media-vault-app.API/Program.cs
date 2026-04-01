@@ -63,6 +63,12 @@ namespace media_vault_app.API
 
             #endregion
 
+            #region Google Books API
+            builder.Services.AddHttpClient<IGoogleBooksApiClient, GoogleBooksApiClient>((serviceProvider, client) =>
+            {
+                client.BaseAddress = new Uri("https://www.googleapis.com/books/v1/");
+            });
+            #endregion
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
@@ -86,6 +92,8 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IRawgApiService, RawgApiService>();
 
             builder.Services.AddScoped<ITmdbApiService, TmdbApiService>();
+
+            builder.Services.AddScoped<IGoogleBooksApiService, GoogleBooksApiService>();
 
 
             builder.Services.AddControllers();

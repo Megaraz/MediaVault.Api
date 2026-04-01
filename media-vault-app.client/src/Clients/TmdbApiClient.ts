@@ -1,5 +1,5 @@
 export type TmdbSearchResultDto = {
-    externalId: number;
+    externalId: string;
     title: string;
     coverImageUrl: string | null;
 };
