@@ -7,7 +7,7 @@ namespace media_vault_app.API.Controllers
 {
 
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Route("[controller]")]
     public class RawgApiController : ControllerBase
     {

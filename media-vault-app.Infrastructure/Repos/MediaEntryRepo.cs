@@ -12,7 +12,32 @@ namespace media_vault_app.Infrastructure.Repos
         {
         }
 
-        public async Task<Result<IReadOnlyList<MediaEntry>>> GetCollectionByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<Result<IReadOnlyList<MediaEntry>>> SearchMediaEntriesAsync(Guid userId, string query, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        {
+
+            var errorContext = DefineErrorContext(nameof(SearchMediaEntriesAsync), OperationType.GetCollection);
+
+            try
+            {
+                var mediaEntries = await _dbSet
+                    .AsNoTracking()
+                    .Where(mediaEntry => mediaEntry.UserId == userId && !string.IsNullOrWhiteSpace(mediaEntry.Title) && mediaEntry.Title.Contains(query))
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync(ct);
+
+                return Result<IReadOnlyList<MediaEntry>>.Success(mediaEntries);
+            }
+            catch (Exception ex)
+            {
+                errorContext.DescriptionSuffix = "An error occurred while retrieving the MediaEntry collection.";
+
+                return Result<IReadOnlyList<MediaEntry>>.Failure(
+                    Error.DbGetCollectionFailure(errorContext, ex),
+                    errorContext.DescriptionSuffix);
+            }
+        }
+        public async Task<Result<IReadOnlyList<MediaEntry>>> GetCollectionByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 25, CancellationToken ct = default)
         {
             var errorContext = DefineErrorContext(nameof(GetCollectionByUserIdAsync), OperationType.GetCollection);
 
@@ -167,5 +192,6 @@ namespace media_vault_app.Infrastructure.Repos
                 operation: operation,
                 entityName: typeof(MediaEntry).Name);
         }
+
     }
 }

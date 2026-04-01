@@ -12,5 +12,10 @@ namespace media_vault_app.Application.DTOs.GoogleBooks
         [property: JsonPropertyName("imageLinks")] GoogleBooksImageLinks? ImageLinks);
 
     public sealed record GoogleBooksImageLinks(
-        [property: JsonPropertyName("small")] string? Small);
+        [property: JsonPropertyName("smallThumbnail")] string? SmallThumbnail,
+        [property: JsonPropertyName("thumbnail")] string? Thumbnail,
+        [property: JsonPropertyName("small")] string? Small,
+        [property: JsonPropertyName("medium")] string? Medium,
+        [property: JsonPropertyName("large")] string? Large,
+        [property: JsonPropertyName("extraLarge")] string? ExtraLarge);
 }

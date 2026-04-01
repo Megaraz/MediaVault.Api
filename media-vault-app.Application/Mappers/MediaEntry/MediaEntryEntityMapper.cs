@@ -31,7 +31,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entities.Select(ToDetailedDTO);
 
         public MediaEntryMinimalDto ToMinimalDTO(MediaEntryEntity entity) =>
-            new(entity.Id, entity.Title, entity.MediaType);
+            new(entity.Id, entity.Title, entity.MediaType, entity.ImageUrl);
 
         public IEnumerable<MediaEntryMinimalDto> ToMinimalDtoCollection(IEnumerable<MediaEntryEntity> entities) =>
             entities.Select(ToMinimalDTO);

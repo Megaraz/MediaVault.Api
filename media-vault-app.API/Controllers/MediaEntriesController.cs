@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using media_vault_app.Application.DTOs.ExternalAPIs;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Services;
@@ -36,6 +37,21 @@ namespace media_vault_app.API.Controllers
             return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
 
+        [HttpPost("search")]
+        public async Task<ActionResult<IEnumerable<MediaEntryMinimalDto>>> SearchMediaEntries(
+            [FromBody] SearchRequestDto request,
+            CancellationToken ct,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _readService.SearchMediaEntriesAsync(userId, request, page, pageSize, ct);
+            return this.ToActionResult(result);
+        }
+
+
         [HttpGet("{id:Guid}")]
         public async Task<ActionResult<MediaEntryDetailedDto>> GetMediaEntryById(
             [FromRoute] Guid id,
@@ -52,7 +68,7 @@ namespace media_vault_app.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MediaEntryDetailedDto>>> GetMediaEntries(
             [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
+            [FromQuery] int pageSize = 25,
             CancellationToken ct = default)
         {
             if (!TryGetCurrentUserId(out var userId))

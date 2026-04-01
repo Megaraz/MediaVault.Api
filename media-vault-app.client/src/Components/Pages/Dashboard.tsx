@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import MediaEntriesClient, {
   type MediaEntryDetailedDto,
+  type MediaEntryMinimalDto,
   type MediaEntrySubmitDto,
   MediaType,
   StatusType,
@@ -22,7 +23,6 @@ export default function Dashboard() {
   const [, setError] = useState<string | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto>();
-  const [, setUserLibrarySearchRequest] = useState("");
   const [mainMediaTypeFilter, setMainMediaTypeFilter] = useState<number>(
     MediaType.All,
   );
@@ -158,17 +158,16 @@ export default function Dashboard() {
     }
   };
 
-  const handleUserLibrarySearch = (query: string) => {
-    setUserLibrarySearchRequest(query);
-
-      // For simplicity, this example only filters the already fetched entries on the client side.
-      // In a real application, you might want to implement server-side searching.
-
-    // This will trigger the useMemo hooks in the EntriesSection components to re-filter the displayed entries based on the search query.
-
-
-
+  const handleSelectSearchResult = async (minimalEntry: MediaEntryMinimalDto) => {
+    try {
+      const detailed = await client.getMediaEntryById(minimalEntry.id);
+      setSelectedEntry(detailed);
+      setShowPopup(true);
+    } catch (err) {
+      setError((err as Error).message);
+    }
   };
+
   const onCancel = () => {
     setShowPopup(false);
     setSelectedEntry(undefined);
@@ -201,7 +200,7 @@ export default function Dashboard() {
             {/* Main Header for Dashboard with search and add entry button */}
             <MainHeader
               onClickAddEntry={onClickCreateEntry}
-              onChangeSearch={(query) => handleUserLibrarySearch(query)}
+              onSelectSearchResult={handleSelectSearchResult}
             />
 
             {entries.length > 0 && (

@@ -6,11 +6,13 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Application.DTOs.MediaEntry.Response
 {
-    public record MediaEntryMinimalDto 
+    public record MediaEntryMinimalDto
     (
         Guid Id,
         string? Title,
-        MediaEntryType MediaType
+        MediaEntryType MediaType,
+        string? ImageUrl
+
 
     ) : IDtoID<Guid>;
 

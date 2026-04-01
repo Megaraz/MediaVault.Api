@@ -1,12 +1,13 @@
 using media_vault_app.Application.DTOs.ExternalAPIs;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace media_vault_app.API.Controllers
 {
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Route("[controller]")]
     public class TmdbApiController : ControllerBase
     {
