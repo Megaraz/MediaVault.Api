@@ -38,13 +38,16 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
-        public async Task<ActionResult<IReadOnlyList<SearchResultDto>>> SearchGames(
+        public async Task<ActionResult<IEnumerable<MediaEntryMinimalDto>>> SearchMediaEntries(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
-            var result = await _writeService.SearchGamesAsync(request.Query, page, pageSize, ct);
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _readService.SearchMediaEntriesAsync(userId, request, page, pageSize, ct);
             return this.ToActionResult(result);
         }
 

@@ -30,17 +30,21 @@ namespace media_vault_app.Application.Services.MediaEntry
 
         public async Task<Result<MediaEntryDetailedDto>> GetByIdAsync(Guid userId, Guid mediaEntryId, CancellationToken ct = default)
         {
-            var userIdValidationResult = ValidateUserId(userId, nameof(GetByIdAsync), OperationType.Get);
-            if (userIdValidationResult is not null)
-            {
-                return Result<MediaEntryDetailedDto>.ValidationFailure(userIdValidationResult.ValidationErrors, userIdValidationResult.Message);
-            }
 
-            var mediaEntryIdValidationResult = ValidateMediaEntryId(mediaEntryId, nameof(GetByIdAsync), OperationType.Get);
-            if (mediaEntryIdValidationResult is not null)
-            {
-                return Result<MediaEntryDetailedDto>.ValidationFailure(mediaEntryIdValidationResult.ValidationErrors, mediaEntryIdValidationResult.Message);
-            }
+            var validationErrors = new List<ValidationError>();
+
+            var userIdErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get, "User ID");
+
+            if (!userId.IsValidId(userIdErrorContext, out var userIdValidationError))
+                validationErrors.Add(userIdValidationError);
+
+            var mediaEntryIdErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get, "Media Entry ID");
+
+            if (!mediaEntryId.IsValidId(mediaEntryIdErrorContext, out var mediaEntryIdValidationError))
+                validationErrors.Add(mediaEntryIdValidationError);
+
+            if (validationErrors.Any())
+                return Result<MediaEntryDetailedDto>.ValidationFailure(validationErrors, "Validation errors occurred.");
 
             var userResult = await EnsureUserExistsAsync(userId, ct);
             if (userResult.IsFailure)
@@ -55,10 +59,9 @@ namespace media_vault_app.Application.Services.MediaEntry
 
         public async Task<Result<IEnumerable<MediaEntryDetailedDto>>> GetDetailedCollectionAsync(Guid userId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
-            var validationResult = ValidateCollectionRequest(userId, pageNumber, pageSize, nameof(GetDetailedCollectionAsync));
-            if (validationResult is not null)
+            if (HasCollectionValidationErrors(userId, pageNumber, pageSize, nameof(GetDetailedCollectionAsync), out var validationErrors))
             {
-                return Result<IEnumerable<MediaEntryDetailedDto>>.ValidationFailure(validationResult.ValidationErrors, validationResult.Message);
+                return Result<IEnumerable<MediaEntryDetailedDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
             }
 
             var userResult = await EnsureUserExistsAsync(userId, ct);
@@ -83,10 +86,9 @@ namespace media_vault_app.Application.Services.MediaEntry
             var validationErrors = new List<ValidationError>();
 
             // Validate userId, pageNumber and pageSize using the existing collection validation method
-            var collectionValidationResult = ValidateCollectionRequest(userId, pageNumber, pageSize, nameof(SearchMediaEntriesAsync));
-            if (collectionValidationResult is not null)
+            if (HasCollectionValidationErrors(userId, pageNumber, pageSize, nameof(SearchMediaEntriesAsync), out var collectionValidationErrors))
             {
-                validationErrors.AddRange(collectionValidationResult.ValidationErrors);
+                validationErrors.AddRange(collectionValidationErrors);
             }
 
             // Validate search query
@@ -119,10 +121,9 @@ namespace media_vault_app.Application.Services.MediaEntry
 
         public async Task<Result<IEnumerable<MediaEntryMinimalDto>>> GetMinimalCollectionAsync(Guid userId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
-            var validationResult = ValidateCollectionRequest(userId, pageNumber, pageSize, nameof(GetMinimalCollectionAsync));
-            if (validationResult is not null)
+            if (HasCollectionValidationErrors(userId, pageNumber, pageSize, nameof(GetMinimalCollectionAsync), out var validationErrors))
             {
-                return Result<IEnumerable<MediaEntryMinimalDto>>.ValidationFailure(validationResult.ValidationErrors, validationResult.Message);
+                return Result<IEnumerable<MediaEntryMinimalDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
             }
 
             var userResult = await EnsureUserExistsAsync(userId, ct);
@@ -141,33 +142,62 @@ namespace media_vault_app.Application.Services.MediaEntry
             return await _userRepo.GetByIdAsync(userId, ct);
         }
 
-        private Result? ValidateCollectionRequest(Guid userId, int pageNumber, int pageSize, string methodName)
+
+        private bool HasCollectionValidationErrors(Guid userId, int pageNumber, int pageSize, string methodName, out IEnumerable<ValidationError> validationErrors)
         {
-            var validationErrors = new List<ValidationError>();
+            var internalErrors = new List<ValidationError>();
 
             var userIdErrorContext = DefineErrorContext(methodName, OperationType.GetCollection, "User ID");
 
             if (!userId.IsValidId(userIdErrorContext, out var userIdValidationError))
-                validationErrors.Add(userIdValidationError);
+                internalErrors.Add(userIdValidationError);
 
             var pageNumberErrorContext = DefineErrorContext(methodName, OperationType.GetCollection, "Page Number");
             int minPageNumber = 1;
             if (pageNumber.IsToLow(minPageNumber, pageNumberErrorContext, out var pageNumberValidationError))
             {
-                validationErrors.Add(pageNumberValidationError);
+                internalErrors.Add(pageNumberValidationError);
             }
 
             var pageSizeErrorContext = DefineErrorContext(methodName, OperationType.GetCollection, "Page Size");
             int minPageSize = 1;
             if (pageSize.IsToLow(minPageSize, pageSizeErrorContext, out var pageSizeValidationError))
             {
-                validationErrors.Add(pageSizeValidationError);
+                internalErrors.Add(pageSizeValidationError);
             }
 
-            return validationErrors.Any()
-                ? Result.ValidationFailure(validationErrors, "Validation errors occurred.")
-                : null;
+            validationErrors = internalErrors;
+
+            return !validationErrors.Any();
         }
+
+        //private Result? ValidateCollectionRequest(Guid userId, int pageNumber, int pageSize, string methodName)
+        //{
+        //    var validationErrors = new List<ValidationError>();
+
+        //    var userIdErrorContext = DefineErrorContext(methodName, OperationType.GetCollection, "User ID");
+
+        //    if (!userId.IsValidId(userIdErrorContext, out var userIdValidationError))
+        //        validationErrors.Add(userIdValidationError);
+
+        //    var pageNumberErrorContext = DefineErrorContext(methodName, OperationType.GetCollection, "Page Number");
+        //    int minPageNumber = 1;
+        //    if (pageNumber.IsToLow(minPageNumber, pageNumberErrorContext, out var pageNumberValidationError))
+        //    {
+        //        validationErrors.Add(pageNumberValidationError);
+        //    }
+
+        //    var pageSizeErrorContext = DefineErrorContext(methodName, OperationType.GetCollection, "Page Size");
+        //    int minPageSize = 1;
+        //    if (pageSize.IsToLow(minPageSize, pageSizeErrorContext, out var pageSizeValidationError))
+        //    {
+        //        validationErrors.Add(pageSizeValidationError);
+        //    }
+
+        //    return validationErrors.Any()
+        //        ? Result.ValidationFailure(validationErrors, "Validation errors occurred.")
+        //        : null;
+        //}
 
 
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null, string? confirmFieldName = null)
