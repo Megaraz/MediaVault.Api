@@ -9,7 +9,7 @@ namespace media_vault_app.Infrastructure.API_Clients
 
     public sealed class GoogleBooksApiOptions
     {
-        public const string SectionName = "ExternalApis:GoogleBooksApi";
+        public const string SectionName = "ExternalApis:GoogleBooks";
 
         [Required]
         public string BaseUrl { get; set; } = string.Empty;

@@ -103,7 +103,7 @@ namespace media_vault_app.Application.Services.API
 
         private static SearchResultDto MapToSearchResult(GoogleBooksVolumeResponse volume)
         {
-            var thumbnailUrl = volume.VolumeInfo?.ImageLinks?.Thumbnail;
+            var thumbnailUrl = volume.VolumeInfo?.ImageLinks?.Small;
 
             // Google Books may return http:// URLs — upgrade to https://
             if (thumbnailUrl != null && thumbnailUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
