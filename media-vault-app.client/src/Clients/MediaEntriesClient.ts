@@ -32,6 +32,7 @@ export const StatusLabels: Record<number, string> = {
     1: "Completed",
     2: "Backlog",
     3: "Dropped",
+    4: "Caught Up"
 };
 
 export const MediaTypeLabels: Record<number, string> = {
@@ -49,6 +50,7 @@ export const StatusType = {
     Completed: 1,
     Backlog: 2,
     Dropped: 3,
+    CaughtUp: 4,
 } as const;
 
 export const MediaType = {

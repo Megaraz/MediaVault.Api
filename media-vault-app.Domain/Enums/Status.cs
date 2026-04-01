@@ -2,10 +2,12 @@
 {
     public enum Status
     {
-        OnGoing,
-        Completed,
-        Backlog,
-        Dropped
+        OnGoing = 0,
+        Completed = 1,
+        Backlog = 2,
+        Dropped = 3,
+        CaughtUp = 4
+
     }
 
 }

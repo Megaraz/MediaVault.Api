@@ -1,14 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import RawgApiClient, {
-  type GameSearchResultDto,
-} from "../../Clients/RawgApiClient";
+import RawgApiClient from "../../Clients/RawgApiClient";
+import TmdbApiClient from "../../Clients/TmdbApiClient";
+import GoogleBooksApiClient from "../../Clients/GoogleBooksApiClient";
 import { MediaType } from "../../Clients/MediaEntriesClient";
+
+// Unified shape shared by all search APIs
+export type SearchResult = {
+  externalId: string;
+  title: string;
+  coverImageUrl: string | null;
+};
 
 type TitleSearchProps = {
   titleInputValue?: string;
   onChange: (newValue: string) => void;
-  //   /** Called when the user picks a game from the dropdown, so the parent can set imageUrl etc. */
-  onSelectGame?: (game: GameSearchResultDto) => void;
+  // /** Called when the user picks a result from the dropdown, so the parent can set imageUrl etc. */
+  onSelectResult?: (result: SearchResult) => void;
   placeholder?: string;
   className?: string;
   mediaType?: number;
@@ -26,15 +33,17 @@ const defaultClassName: string =
 export default function TitleSearchInput({
   titleInputValue: value = "",
   onChange,
-  onSelectGame,
+  onSelectResult,
   className = defaultClassName,
   placeholder = "",
   mediaType,
   isEditMode,
 }: TitleSearchProps) {
-  // Lazily create the client once (arrow function form of useState avoids re-creating on every render)
-  const [client] = useState(() => new RawgApiClient());
-  const [searchResults, setSearchResults] = useState<GameSearchResultDto[]>([]);
+  // Lazily create the clients once (arrow function form of useState avoids re-creating on every render)
+  const [rawgClient] = useState(() => new RawgApiClient());
+  const [tmdbClient] = useState(() => new TmdbApiClient());
+  const [googleBooksClient] = useState(() => new GoogleBooksApiClient());
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -46,8 +55,12 @@ export default function TitleSearchInput({
   // Flag to track if the user has typed in the input, to avoid searching on initial value when in edit mode
   const userHasTyped = useRef(!isEditMode);
 
-  // Only enable typeahead when the selected media type is "Game"
-  const isSearchEnabled = mediaType === MediaType.Game;
+  // Enable typeahead for Game, Movie, Series, and Book
+  const isSearchEnabled =
+    mediaType === MediaType.Game ||
+    mediaType === MediaType.Movie ||
+    mediaType === MediaType.Series ||
+    mediaType === MediaType.Book;
 
   // ── Debounced search effect ──
   // Runs every time `value` or `isSearchEnabled` changes.
@@ -80,11 +93,18 @@ export default function TitleSearchInput({
     debounceTimer.current = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const results = await client.searchGames(
-          { search: value },
-          1, // page
-          8, // pageSize – keep the dropdown manageable
-        );
+        let results: SearchResult[];
+
+        if (mediaType === MediaType.Movie) {
+          results = await tmdbClient.searchMovies({ query: value }, 1);
+        } else if (mediaType === MediaType.Series) {
+          results = await tmdbClient.searchTvSeries({ query: value }, 1);
+        } else if (mediaType === MediaType.Book) {
+          results = await googleBooksClient.searchBooks({ query: value }, 1, 8);
+        } else {
+          results = await rawgClient.searchGames({ search: value }, 1, 8);
+        }
+
         setSearchResults(results);
         setShowDropdown(results.length > 0);
       } catch {
@@ -103,13 +123,13 @@ export default function TitleSearchInput({
     };
   }, [value, isSearchEnabled]);
 
-  const handleSelectGame = (game: GameSearchResultDto) => {
+  const handleSelectResult = (result: SearchResult) => {
     // Tell the effect to skip the search triggered by this value change
     justSelected.current = true;
-    // Update the title field with the selected game's title
-    onChange(game.title);
+    // Update the title field with the selected result's title
+    onChange(result.title);
     // Notify the parent so it can also set imageUrl / other fields
-    onSelectGame?.(game);
+    onSelectResult?.(result);
     // Close the dropdown
     setShowDropdown(false);
     setSearchResults([]);
@@ -148,22 +168,22 @@ export default function TitleSearchInput({
       {/* ── Dropdown with search results ── */}
       {showDropdown && (
         <ul className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
-          {searchResults.map((game) => (
+          {searchResults.map((result) => (
             <li
-              key={game.externalId}
+              key={result.externalId}
               // onMouseDown fires before onBlur, so the click registers before the dropdown hides
-              onMouseDown={() => handleSelectGame(game)}
+              onMouseDown={() => handleSelectResult(result)}
               className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              {game.coverImageUrl && (
+              {result.coverImageUrl && (
                 <img
-                  src={game.coverImageUrl}
-                  alt={game.title}
+                  src={result.coverImageUrl}
+                  alt={result.title}
                   className="h-10 w-10 rounded object-cover shrink-0"
                 />
               )}
               <span className="truncate text-sm text-slate-900 dark:text-slate-100">
-                {game.title}
+                {result.title}
               </span>
             </li>
           ))}

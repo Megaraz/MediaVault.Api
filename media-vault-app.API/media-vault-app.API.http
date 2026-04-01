@@ -55,3 +55,37 @@ POST {{media_vault_app.API_HostAddress}}/Auth/logout
 Accept: application/json
 
 ###
+
+### TMDB - Search Movies
+POST {{media_vault_app.API_HostAddress}}/TmdbApi/movie/search?page=1&pageSize=10
+Content-Type: application/json
+Accept: application/json
+
+{
+  "query": "Inception"
+}
+
+###
+
+### TMDB - Get Movie by ID
+GET {{media_vault_app.API_HostAddress}}/TmdbApi/movie/550
+Accept: application/json
+
+###
+
+### TMDB - Search TV Series
+POST {{media_vault_app.API_HostAddress}}/TmdbApi/tv/search?page=1&pageSize=10
+Content-Type: application/json
+Accept: application/json
+
+{
+  "query": "Breaking Bad"
+}
+
+###
+
+### TMDB - Get TV Series by ID
+GET {{media_vault_app.API_HostAddress}}/TmdbApi/tv/1396
+Accept: application/json
+
+###

@@ -13,6 +13,8 @@ using media_vault_app.Application.Services.Auth;
 using media_vault_app.Infrastructure.API_Clients;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Services.API;
+using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
 
 namespace media_vault_app.API
 {
@@ -28,23 +30,57 @@ namespace media_vault_app.API
                 .GetConnectionString("Default") ??
                 throw new InvalidOperationException("Connection string 'Default' not found.");
 
-            var rawgConnectionString = builder.Configuration
-                .GetConnectionString("Rawg") ??
-                throw new InvalidOperationException("Connection string 'Rawg' not found.");
 
-            var rawgApiKey = builder.Configuration["APIKeys:Rawg"] ??
-                throw new InvalidOperationException("Rawg API key not found in configuration.");
+            #region Rawg API
 
-            var rawgApiOptions = new RawgApiOptions(rawgConnectionString, rawgApiKey);
+            builder.Services
+                .AddOptions<RawgApiOptions>()
+                .BindConfiguration(RawgApiOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
-            builder.Services.AddSingleton(rawgApiOptions);
-
-            builder.Services.AddHttpClient<IRawgApiClient, RawgApiClient>((serviceProvider, client) =>
+            builder.Services.AddHttpClient<IRawgApiClient, RawgApiClient>((sp, client) =>
             {
-                var options = serviceProvider.GetRequiredService<RawgApiOptions>();
+                var options = sp.GetRequiredService<IOptions<RawgApiOptions>>().Value;
                 client.BaseAddress = new Uri(options.BaseUrl);
             });
 
+            #endregion
+
+            #region TMDB API
+
+            builder.Services
+                .AddOptions<TmdbApiOptions>()
+                .BindConfiguration(TmdbApiOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            builder.Services.AddHttpClient<ITmdbApiClient, TmdbApiClient>((sp, client) =>
+            {
+                var options = sp.GetRequiredService<IOptions<TmdbApiOptions>>().Value;
+                client.BaseAddress = new Uri(options.BaseUrl);
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", options.ApiAccessToken);
+            });
+
+            #endregion
+
+
+            #region Google Books API
+
+            builder.Services
+                .AddOptions<GoogleBooksApiOptions>()
+                .BindConfiguration(GoogleBooksApiOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            builder.Services.AddHttpClient<IGoogleBooksApiClient, GoogleBooksApiClient>((sp, client) =>
+            {
+                var options = sp.GetRequiredService<IOptions<GoogleBooksApiOptions>>().Value;
+                client.BaseAddress = new Uri(options.BaseUrl);
+            });
+
+            #endregion
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
@@ -66,6 +102,10 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IUserWriteService, UserWriteService>();
 
             builder.Services.AddScoped<IRawgApiService, RawgApiService>();
+
+            builder.Services.AddScoped<ITmdbApiService, TmdbApiService>();
+
+            builder.Services.AddScoped<IGoogleBooksApiService, GoogleBooksApiService>();
 
 
             builder.Services.AddControllers();

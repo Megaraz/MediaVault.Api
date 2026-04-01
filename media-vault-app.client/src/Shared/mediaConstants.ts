@@ -12,6 +12,7 @@ export const mediaSections = [
 
 export const statusSections = [
   { type: StatusType.OnGoing, title: "On Going" },
+  { type: StatusType.CaughtUp, title: "Caught Up" },
   { type: StatusType.Completed, title: "Completed" },
   { type: StatusType.Backlog, title: "Backlog" },
   { type: StatusType.Dropped, title: "Dropped" },

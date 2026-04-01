@@ -1,5 +1,5 @@
 export type GameSearchResultDto = {
-    externalId: number;
+    externalId: string;
     title: string;
     coverImageUrl: string | null;
     slug: string;
