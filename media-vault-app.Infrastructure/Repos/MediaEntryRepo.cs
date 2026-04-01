@@ -37,7 +37,7 @@ namespace media_vault_app.Infrastructure.Repos
                     errorContext.DescriptionSuffix);
             }
         }
-        public async Task<Result<IReadOnlyList<MediaEntry>>> GetCollectionByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<Result<IReadOnlyList<MediaEntry>>> GetCollectionByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 25, CancellationToken ct = default)
         {
             var errorContext = DefineErrorContext(nameof(GetCollectionByUserIdAsync), OperationType.GetCollection);
 

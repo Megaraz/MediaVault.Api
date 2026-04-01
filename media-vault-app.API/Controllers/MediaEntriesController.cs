@@ -68,7 +68,7 @@ namespace media_vault_app.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MediaEntryDetailedDto>>> GetMediaEntries(
             [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
+            [FromQuery] int pageSize = 25,
             CancellationToken ct = default)
         {
             if (!TryGetCurrentUserId(out var userId))

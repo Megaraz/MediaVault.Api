@@ -116,7 +116,7 @@ export default class MediaEntriesClient {
         return response.json();
     }
 
-    async getMediaEntries(pageNumber = 1, pageSize = 10): Promise<MediaEntryDetailedDto[]> {
+    async getMediaEntries(pageNumber = 1, pageSize = 25): Promise<MediaEntryDetailedDto[]> {
         const response = await fetch(
             `${this.baseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
         );

@@ -57,7 +57,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
         }
 
-        public async Task<Result<IEnumerable<MediaEntryDetailedDto>>> GetDetailedCollectionAsync(Guid userId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<Result<IEnumerable<MediaEntryDetailedDto>>> GetDetailedCollectionAsync(Guid userId, int pageNumber = 1, int pageSize = 25, CancellationToken ct = default)
         {
             if (HasCollectionValidationErrors(userId, pageNumber, pageSize, nameof(GetDetailedCollectionAsync), out var validationErrors))
             {
