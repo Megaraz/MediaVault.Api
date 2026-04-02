@@ -38,7 +38,7 @@ namespace media_vault_app.Application.Services
         {
             var errorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
 
-            if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
+            if (!_dtoValidator.IsValidRegisterDto(createDto, errorContext, out var validationErrors))
             {
                 return Result<TDetailedDto>.ValidationFailure(validationErrors, errorContext.DescriptionPrefix);
             }

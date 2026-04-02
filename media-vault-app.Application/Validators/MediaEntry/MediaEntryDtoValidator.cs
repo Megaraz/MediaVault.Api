@@ -6,11 +6,11 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
-namespace media_vault_app.Application.Services.MediaEntry
+namespace media_vault_app.Application.Validators.MediaEntry
 {
     public class MediaEntryDtoValidator : IDtoValidator<Guid, MediaEntryCreateDto>
     {
-        public bool IsValidCreateDto(MediaEntryCreateDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidRegisterDto(MediaEntryCreateDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
             validationErrors = new List<ValidationError>();
 

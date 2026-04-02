@@ -14,6 +14,9 @@
   <Folder Name="/Backend/4. API/">
     <Project Path="media-vault-app.API/media-vault-app.API.csproj" />
   </Folder>
+  <Folder Name="/Backend/5. Tests/">
+    <Project Path="media-vault-app.Tests/media-vault-app.Tests.csproj" Id="8c45268a-b6ad-4df9-9026-9e5ae2416aa0" />
+  </Folder>
   <Folder Name="/Frontend/">
     <Project Path="media-vault-app.client/media-vault-app.client.esproj">
       <Build />

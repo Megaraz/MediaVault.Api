@@ -4,6 +4,7 @@ using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Mappers.MediaEntry;
+using media_vault_app.Application.Validators.MediaEntry;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Validators;
@@ -49,7 +50,7 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             var errorContext = CreateErrorContext(nameof(CreateAsync), OperationType.Create, typeof(MediaEntryCreateDto).Name);
 
-            if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
+            if (!_dtoValidator.IsValidRegisterDto(createDto, errorContext, out var validationErrors))
             {
                 return Result<MediaEntryDetailedDto>.ValidationFailure(validationErrors, "MediaEntry creation validation failed.");
             }

@@ -11,8 +11,4 @@
     <ProjectReference Include="..\media-vault-app.Domain\media-vault-app.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Validators\" />
-  </ItemGroup>
-
 </Project>

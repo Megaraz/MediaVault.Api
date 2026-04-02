@@ -12,6 +12,7 @@ using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Validators;
 using media_vault_app.Application.Mappers.User;
+using media_vault_app.Application.Validators.User;
 
 namespace media_vault_app.Application.Services.User
 {

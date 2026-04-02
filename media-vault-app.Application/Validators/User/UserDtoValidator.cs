@@ -5,13 +5,12 @@ using media_vault_app.Application.DTOs.User.Request;
 using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
-namespace media_vault_app.Application.Services.User
+namespace media_vault_app.Application.Validators.User
 {
     public class UserDtoValidator : IDtoValidator<Guid, UserRegisterDto>
     {
         public bool IsValidLoginDto(UserLoginDto loginDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
-            validationErrors = new List<ValidationError>();
             var internalValidationErrors = new List<ValidationError>();
 
             if (loginDto.IsNull(errorContext, out ValidationError nullValueError))
@@ -35,7 +34,7 @@ namespace media_vault_app.Application.Services.User
             validationErrors = internalValidationErrors;
             return !validationErrors.Any();
         }
-        public bool IsValidCreateDto(UserRegisterDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidRegisterDto(UserRegisterDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
             validationErrors = new List<ValidationError>();
             var internalErrors = new List<ValidationError>();
