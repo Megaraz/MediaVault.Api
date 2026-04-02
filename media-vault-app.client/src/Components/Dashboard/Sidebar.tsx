@@ -54,19 +54,13 @@ export default function Sidebar({
               <span className="material-symbols-outlined">dashboard</span>
               <span>Dashboard</span>
             </a>
+
             <a
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              href="#"
+              href="/"
             >
-              <span className="material-symbols-outlined">library_books</span>
-              <span>Library</span>
-            </a>
-            <a
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              href="#"
-            >
-              <span className="material-symbols-outlined">insights</span>
-              <span>Statistics</span>
+              <span className="material-symbols-outlined">home</span>
+              <span>Home</span>
             </a>
           </div>
           <div className="flex flex-col gap-1">

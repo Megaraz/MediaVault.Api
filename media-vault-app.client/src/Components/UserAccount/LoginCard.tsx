@@ -1,9 +1,10 @@
 import { useState } from "react";
 import ModalWindow from "../Shared/ModalWindow";
 import { useUser } from "../../Shared/UserContext";
+import { useNavigate } from "react-router-dom";
 
 type LoginProps = {
-  onCancel: () => void;
+  onCancel: (toRegister: boolean) => void;
 };
 
 const defaultCardClassName =
@@ -16,6 +17,8 @@ export default function Login({ onCancel }: LoginProps) {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,7 +27,9 @@ export default function Login({ onCancel }: LoginProps) {
 
     try {
       await login({ userNameOrEmail, password });
-      onCancel();
+      onCancel(false); // Close the login modal
+      navigate("/dashboard"); // Redirect to the dashboard after successful login
+
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Failed to login",
@@ -34,8 +39,12 @@ export default function Login({ onCancel }: LoginProps) {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  }
+
   return (
-    <ModalWindow onClose={onCancel} cardClassName={defaultCardClassName}>
+    <ModalWindow onClose={() => onCancel(false)} cardClassName={defaultCardClassName}>
       {/* Header */}
       <div className="px-8 pt-10 pb-6 text-center">
         <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 mb-4">
@@ -77,29 +86,34 @@ export default function Login({ onCancel }: LoginProps) {
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Password
               </label>
-              <a
+              {/* <a
                 className="text-sm font-semibold text-primary hover:underline"
                 href="#"
               >
                 Forgot password?
-              </a>
+              </a> */}
             </div>
             <div className="relative">
               <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-xl">
                 lock
               </span>
+
               <input
                 id="login-password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full h-14 pl-12 pr-12 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-500"
                 placeholder="••••••••"
               />
-              <button className="absolute inset-y-0 right-4 flex items-center ">
+              <button
+                type="button"
+                className="absolute inset-y-0 right-4 flex items-center"
+                onClick={togglePasswordVisibility}
+              >
                 <span className="material-symbols-outlined text-slate-400 text-xl">
-                  visibility
+                  {showPassword ? "visibility_off" : "visibility"}
                 </span>
               </button>
             </div>
@@ -138,7 +152,7 @@ export default function Login({ onCancel }: LoginProps) {
         {/* Footer Link */}
         <p className="text-center text-sm text-slate-500 dark:text-slate-400">
           Don't have an account?
-          <a className="ms-1 text-primary font-bold hover:underline" href="#">
+          <a className="ms-1 text-primary font-bold hover:underline" href="#" onClick={() => onCancel(true)}>
             Create an account
           </a>
         </p>

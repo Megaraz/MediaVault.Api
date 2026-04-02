@@ -102,7 +102,7 @@ export default function TitleSearchInput({
         } else if (mediaType === MediaType.Book) {
           results = await googleBooksClient.searchBooks({ query: value }, 1, 8);
         } else {
-          results = await rawgClient.searchGames({ search: value }, 1, 8);
+          results = await rawgClient.searchGames({ query: value }, 1, 8);
         }
 
         setSearchResults(results);

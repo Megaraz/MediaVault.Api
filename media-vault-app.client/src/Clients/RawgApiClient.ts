@@ -2,11 +2,11 @@ export type GameSearchResultDto = {
     externalId: string;
     title: string;
     coverImageUrl: string | null;
-    slug: string;
+    //slug: string;
 };
 
 export type GameSearchRequestDto = {
-    search: string;
+    query: string;
 };
 
 export default class RawgApiClient {

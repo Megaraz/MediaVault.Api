@@ -26,8 +26,11 @@ export default function Layout() {
     }
   };
 
-  const closeLoginWindow = () => {
+  const closeLoginWindow = (toRegister: boolean) => {
     setShowLoginPopup(false);
+    if (toRegister) {
+      setShowRegisterPopup(true);
+    }
   };
 
   const handleLogout = async () => {

@@ -124,6 +124,7 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
             className="w-5 h-5 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] text-primary focus:ring-primary focus:ring-offset-0"
             id="terms"
             type="checkbox"
+            required
           />
           <label
             className="ml-3 text-sm font-medium text-slate-600 dark:text-slate-400 leading-snug"
