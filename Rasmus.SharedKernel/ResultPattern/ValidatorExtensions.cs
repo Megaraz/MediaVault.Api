@@ -61,7 +61,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 }
             }
             validationErrors = internalErrors;
-            return !validationErrors.Any();
+            return validationErrors.Any();
         }
 
         public static bool IsNullOrWhiteSpace(this string value, string fieldName, ErrorContext errorContext, out ValidationError nullOrEmptyError)
