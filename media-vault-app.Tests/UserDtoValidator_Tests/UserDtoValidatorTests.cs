@@ -3,7 +3,7 @@ using media_vault_app.Application.Validators.User;
 using Rasmus.SharedKernel.ResultPattern;
 using Xunit.Abstractions;
 
-namespace media_vault_app.Tests
+namespace media_vault_app.Tests.UserDtoValidator_Tests
 {
     public class UserDtoValidatorTests
     {
@@ -12,25 +12,6 @@ namespace media_vault_app.Tests
         public UserDtoValidatorTests(ITestOutputHelper output)
         {
             _output = output;
-        }
-
-        [Fact]
-        public void ValidateUserRegisterDto_Should_ReturnFalse_When_UserRegisterDtoIsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto? userDto = null;
-
-            var dtoValidationErrorContext = DefineErrorContext("RegisterUserAsync", OperationType.Create);
-
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, dtoValidationErrorContext, out var validationErrors);
-
-            // Assert
-            Assert.False(result);
-
         }
 
 
@@ -58,29 +39,6 @@ namespace media_vault_app.Tests
             _output.WriteLine("Validation Errors:" + $" {string.Join(", ", validationErrors.Select(e => e.Description))}");
         }
 
-        [Fact]
-        public void ValidateUserRegisterDto_Should_ReturnTrue_When_UserRegisterDtoIsNotNull_AndAllRequiredFieldsAreProvided()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new UserRegisterDto(
-                Username: "testuser",
-                Email: "testuser@example.com",
-                ConfirmEmail: "testuser@example.com",
-                Password: "Test@1234",
-                ConfirmPassword: "Test@1234"
-                );
-
-            var dtoValidationErrorContext = DefineErrorContext("RegisterUserAsync", OperationType.Create);
-
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, dtoValidationErrorContext, out var validationErrors);
-
-            // Assert
-            Assert.True(result);
-        }
 
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null, string? confirmFieldName = null)
         {

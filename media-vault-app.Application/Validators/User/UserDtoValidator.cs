@@ -26,7 +26,7 @@ namespace media_vault_app.Application.Validators.User
                 ("Password", loginDto.Password)
             };
 
-            if (requiredFields.AnyIsNullOrWhiteSpace(errorContext, out IEnumerable<ValidationError> nullOrEmptyErrors))
+            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IEnumerable<ValidationError> nullOrEmptyErrors))
             {
                 internalValidationErrors.AddRange(nullOrEmptyErrors);
             }
@@ -36,7 +36,7 @@ namespace media_vault_app.Application.Validators.User
         }
         public bool IsValidRegisterDto(UserRegisterDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
-            validationErrors = new List<ValidationError>();
+            //validationErrors = new List<ValidationError>();
             var internalErrors = new List<ValidationError>();
 
             if (createDto.IsNull(errorContext, out ValidationError nullValueError))
@@ -55,7 +55,7 @@ namespace media_vault_app.Application.Validators.User
                 (nameof(createDto.ConfirmPassword), createDto.ConfirmPassword)
             };
 
-            if (requiredFields.AnyIsNullOrWhiteSpace(errorContext, out IEnumerable<ValidationError> nullOrEmptyErrors))
+            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IEnumerable<ValidationError> nullOrEmptyErrors))
             {
                 internalErrors.AddRange(nullOrEmptyErrors);
             }

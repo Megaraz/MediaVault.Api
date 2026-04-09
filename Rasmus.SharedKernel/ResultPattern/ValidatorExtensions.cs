@@ -25,6 +25,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             return true;
         }
 
+
         public static bool IsNull<TValue>(this TValue value, ErrorContext errorContext, out ValidationError nullValueError)
         {
             nullValueError = default!;
@@ -40,7 +41,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 return false;
         }
 
-        public static bool AnyIsNullOrWhiteSpace(this IEnumerable<(string FieldName, string Value)> requiredValues, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public static bool RequiredFieldsAreNullOrWhiteSpace(this IEnumerable<(string FieldName, string Value)> requiredValues, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
             validationErrors = new List<ValidationError>();
             var internalErrors = new List<ValidationError>();
@@ -48,20 +49,34 @@ namespace Rasmus.SharedKernel.ResultPattern
             if (requiredValues.IsNull(errorContext, out var nullValueError))
             {
                 internalErrors.Add(nullValueError);
+                validationErrors = internalErrors;
                 return true;
             }
 
             foreach (var (FieldName, Value) in requiredValues)
             {
-                if (string.IsNullOrWhiteSpace(Value))
+                if (Value.IsNullOrWhiteSpace(FieldName, errorContext, out var nullOrEmptyError))
                 {
-                    errorContext.FieldName = FieldName;
-                    errorContext.DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
-                    internalErrors.Add(ValidationError.Required(errorContext));
+                    internalErrors.Add(nullOrEmptyError);
                 }
             }
             validationErrors = internalErrors;
             return !validationErrors.Any();
+        }
+
+        public static bool IsNullOrWhiteSpace(this string value, string fieldName, ErrorContext errorContext, out ValidationError nullOrEmptyError)
+        {
+            nullOrEmptyError = default!;
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                errorContext.FieldName = string.IsNullOrWhiteSpace(fieldName) ? nameof(value) : fieldName;
+                errorContext.DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
+                nullOrEmptyError = ValidationError.Required(errorContext);
+                return true;
+            }
+            else
+                return false;
         }
         public static bool IsNullOrWhiteSpace(this string value, ErrorContext errorContext, out ValidationError nullOrEmptyError)
         {
