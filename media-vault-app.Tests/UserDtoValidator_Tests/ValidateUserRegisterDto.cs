@@ -18,7 +18,64 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             _output = output;
         }
 
+
+        [Fact]
+        public void Should_ReturnFalse_For_NonMatching_Password_And_ConfirmPassword()
+        {
+            // Arrange
+            var userDtoValidator = new UserDtoValidator();
+
+            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@4321", "Test@1234");
+
+            var errorContext = DefineErrorContext();
+
+            // Act
+            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
+
+            // Assert
+            Assert.False(result);
+
+        }
+
+        [Fact]
+        public void Should_RefOut_ValidationError_For_NonMatching_Password_And_ConfirmPassword()
+        {
+            // Arrange
+            var userDtoValidator = new UserDtoValidator();
+
+            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@4321", "Test@1234");
+
+            var errorContext = DefineErrorContext();
+
+            // Act
+            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
+
+            // Assert
+            Assert.NotNull(validationError);
+
+        }
+
+        [Fact]
+        public void Should_RefOut_ValidationError_With_ValidationErrorType_NonMatchingValues_For_NonMatching_Password_And_ConfirmPassword()
+        {
+            // Arrange
+            var userDtoValidator = new UserDtoValidator();
+
+            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@4321", "Test@1234");
+
+            var errorContext = DefineErrorContext();
+
+            // Act
+            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
+
+            // Assert
+            Assert.Contains(validationError, error => error.ValidationErrorType == ValidationErrorType.NonMatchingValues);
+
+        }
+
+
         #region UserRegisterDto Validation Tests
+
         [Fact]
         // Happy Path
         public void Should_ReturnTrue_When_UserRegisterDtoIsNotNull_And_AllRequiredFieldsAreProvided()
@@ -34,6 +91,23 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
             // Assert
             Assert.True(result);
+        }
+
+        [Fact]
+        // Happy Path
+        public void Should_RefOut_EmptyCollectionOfValidationErrors_When_UserRegisterDtoIsNotNull_And_AllRequiredFieldsAreProvided()
+        {
+            // Arrange
+            var userDtoValidator = new UserDtoValidator();
+            var errorContext = DefineErrorContext();
+            var userDto = CreateValidUserRegisterDto();
+
+
+            // Act
+            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationErrors);
+
+            // Assert
+            Assert.Empty(validationErrors);
         }
 
         [Fact]
@@ -54,21 +128,6 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
         }
 
-        [Fact]
-        public void Should_RefOut_EmptyValidationErrorCollection_When_UserRegisterDtoIsNotNull_And_AllRequiredFieldsAreProvided()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-            var errorContext = DefineErrorContext();
-            var userDto = CreateValidUserRegisterDto();
-
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationErrors);
-
-            // Assert
-            Assert.Empty(validationErrors);
-        }
 
         [Fact]
         public void Should_RefOut_ValidationErrors_When_UserRegisterDto_IsNull()
@@ -90,7 +149,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
 
         [Fact]
-        public void ValidationErrors_ErrorCode_Should_NotBeNullOrWhiteSpace_When_UserRegisterDto_IsNull()
+        public void Should_RefOut_ValidationErrors_With_NonEmptyErrorCode_When_UserRegisterDto_IsNull()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -108,7 +167,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         }
 
         [Fact]
-        public void ValidationErrors_ErrorType_Should_NotBeNone_When_UserRegisterDto_IsNull()
+        public void Should_RefOut_ValidationErrors_With_ErrorTypeNotNone_When_UserRegisterDto_IsNull()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -127,7 +186,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
 
         [Fact]
-        public void ValidationErrors_Description_Should_NotBeNullOrWhiteSpace_When_UserRegisterDto_IsNull()
+        public void Should_RefOut_ValidationErrors_With_DescriptionNotNullOrWhiteSpace_When_UserRegisterDto_IsNull()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -145,7 +204,6 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         }
 
         #endregion
-
 
         #region ConfirmPassword Validation Tests
         [Fact]
@@ -534,6 +592,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
         }
         #endregion
+
 
         private UserRegisterDto CreateValidUserRegisterDto()
         {

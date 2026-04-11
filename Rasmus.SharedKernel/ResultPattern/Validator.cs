@@ -14,6 +14,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             return !(id is string str && string.IsNullOrWhiteSpace(str) ||
                 id is Guid guid && guid == Guid.Empty ||
+                id is int intId && intId <= 0 ||
                 id.Equals(default(TKey)));
         }
 
