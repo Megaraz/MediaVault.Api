@@ -36,7 +36,6 @@ namespace media_vault_app.Application.Validators.User
         }
         public bool IsValidRegisterDto(UserRegisterDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
-            //validationErrors = new List<ValidationError>();
             var internalErrors = new List<ValidationError>();
 
             if (createDto.IsNull(errorContext, out ValidationError nullValueError))
@@ -60,12 +59,24 @@ namespace media_vault_app.Application.Validators.User
                 internalErrors.AddRange(nullOrEmptyErrors);
             }
 
-            if (!createDto.Email.Matches(createDto.ConfirmEmail, errorContext, out ValidationError notMatchingEmailError))
+            var matchingEmailErrorContext = errorContext with
+            {
+                FieldName = nameof(createDto.Email),
+                ConfirmFieldName = nameof(createDto.ConfirmEmail)
+            };
+
+            if (!createDto.Email.Matches(createDto.ConfirmEmail, matchingEmailErrorContext, out ValidationError notMatchingEmailError))
             {
                 internalErrors.Add(notMatchingEmailError);
             }
 
-            if (!createDto.Password.Matches(createDto.ConfirmPassword, errorContext, out ValidationError notMatchingPasswordError))
+            var matchingPasswordErrorContext = errorContext with
+            {
+                FieldName = nameof(createDto.Password),
+                ConfirmFieldName = nameof(createDto.ConfirmPassword)
+            };
+
+            if (!createDto.Password.Matches(createDto.ConfirmPassword, matchingPasswordErrorContext, out ValidationError notMatchingPasswordError))
             {
                 internalErrors.Add(notMatchingPasswordError);
             }
@@ -79,5 +90,6 @@ namespace media_vault_app.Application.Validators.User
         {
             throw new NotImplementedException();
         }
+
     }
 }

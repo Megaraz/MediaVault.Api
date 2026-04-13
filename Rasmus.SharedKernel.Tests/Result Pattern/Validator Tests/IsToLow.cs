@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
 {
     public class IsToLow
     {
-
         [Fact]
-        public void Should_Return_False_When_Value_Is_Below_MinValue()
+        public void Should_Return_False_And_Error_When_Value_Is_Below_MinValue()
         {
             // Arrange
             int value = 3;
@@ -17,74 +14,19 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
             var errorContext = DefineErrorContext("Age");
 
             // Act
-            var result = ValidatorExtensions.IsToLow(value, minValue, errorContext, out _);
+            var result = ValidatorExtensions.IsToLow(value, minValue, errorContext, out var error);
 
             // Assert
             Assert.False(result);
+            Assert.NotNull(error);
+            Assert.False(string.IsNullOrWhiteSpace(error.Code));
+            Assert.NotEqual(ErrorType.None, error.Type);
+            Assert.False(string.IsNullOrWhiteSpace(error.Description));
+            Assert.Equal(ValidationErrorType.TooShort, error.ValidationErrorType);
         }
 
         [Fact]
-        public void Should_RefOut_ValidationError_When_Value_Is_Below_MinValue()
-        {
-            // Arrange
-            int value = 3;
-            int minValue = 5;
-            var errorContext = DefineErrorContext("Age");
-
-            // Act
-            ValidatorExtensions.IsToLow(value, minValue, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotNull(validationError);
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationErrors_With_NonEmptyErrorCode_When_Value_Is_Below_MinValue()
-        {
-            // Arrange
-            int value = 3;
-            int minValue = 5;
-            var errorContext = DefineErrorContext("Age");
-
-            // Act
-            ValidatorExtensions.IsToLow(value, minValue, errorContext, out var validationError);
-
-            // Assert
-            Assert.False(string.IsNullOrWhiteSpace(validationError.Code));
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_With_ErrorTypeNotNone_When_Value_Is_Below_MinValue()
-        {
-            // Arrange
-            int value = 3;
-            int minValue = 5;
-            var errorContext = DefineErrorContext("Age");
-
-            // Act
-            ValidatorExtensions.IsToLow(value, minValue, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotEqual(ErrorType.None, validationError.Type);
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_With_DescriptionNotNullOrWhiteSpace_When_Value_Is_Below_MinValue()
-        {
-            // Arrange
-            int value = 3;
-            int minValue = 5;
-            var errorContext = DefineErrorContext("Age");
-
-            // Act
-            ValidatorExtensions.IsToLow(value, minValue, errorContext, out var validationError);
-
-            // Assert
-            Assert.False(string.IsNullOrWhiteSpace(validationError.Description));
-        }
-
-        [Fact]
-        public void Should_Return_False_When_Value_Is_Negative()
+        public void Should_Return_False_And_Error_When_Value_Is_Negative()
         {
             // Arrange
             int value = -1;
@@ -92,74 +34,36 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
             var errorContext = DefineErrorContext("Age");
 
             // Act
-            var result = ValidatorExtensions.IsToLow(value, minValue, errorContext, out _);
+            var result = ValidatorExtensions.IsToLow(value, minValue, errorContext, out var error);
 
             // Assert
             Assert.False(result);
+            Assert.NotNull(error);
+            Assert.False(string.IsNullOrWhiteSpace(error.Code));
+            Assert.NotEqual(ErrorType.None, error.Type);
+            Assert.False(string.IsNullOrWhiteSpace(error.Description));
+            Assert.Equal(ValidationErrorType.TooShort, error.ValidationErrorType);
         }
 
         [Fact]
-        public void Should_RefOut_ValidationError_When_Value_Is_Negative()
+        public void Should_Return_False_And_Error_When_Value_Is_One_Below_MinValue()
         {
             // Arrange
-            int value = -1;
-            int minValue = 0;
+            int value = 4;
+            int minValue = 5;
             var errorContext = DefineErrorContext("Age");
 
             // Act
-            ValidatorExtensions.IsToLow(value, minValue, errorContext, out var validationError);
+            var result = ValidatorExtensions.IsToLow(value, minValue, errorContext, out var error);
 
             // Assert
-            Assert.NotNull(validationError);
+            Assert.False(result);
+            Assert.NotNull(error);
+            Assert.Equal(ValidationErrorType.TooShort, error.ValidationErrorType);
         }
 
         [Fact]
-        public void Should_RefOut_ValidationErrors_With_NonEmptyErrorCode_When_Value_Is_Negative()
-        {
-            // Arrange
-            int value = -1;
-            int minValue = 0;
-            var errorContext = DefineErrorContext("Age");
-
-            // Act
-            ValidatorExtensions.IsToLow(value, minValue, errorContext, out var validationError);
-
-            // Assert
-            Assert.False(string.IsNullOrWhiteSpace(validationError.Code));
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_With_ErrorTypeNotNone_When_Value_Is_Negative()
-        {
-            // Arrange
-            int value = -1;
-            int minValue = 0;
-            var errorContext = DefineErrorContext("Age");
-
-            // Act
-            ValidatorExtensions.IsToLow(value, minValue, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotEqual(ErrorType.None, validationError.Type);
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_With_DescriptionNotNullOrWhiteSpace_When_Value_Is_Negative()
-        {
-            // Arrange
-            int value = -1;
-            int minValue = 0;
-            var errorContext = DefineErrorContext("Age");
-
-            // Act
-            ValidatorExtensions.IsToLow(value, minValue, errorContext, out var validationError);
-
-            // Assert
-            Assert.False(string.IsNullOrWhiteSpace(validationError.Description));
-        }
-
-        [Fact]
-        public void Should_Return_True_When_Value_Equals_MinValue()
+        public void Should_Return_True_And_No_Error_When_Value_Equals_MinValue()
         {
             // Arrange
             int value = 5;
@@ -167,14 +71,15 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
             var errorContext = DefineErrorContext("Age");
 
             // Act
-            var result = ValidatorExtensions.IsToLow(value, minValue, errorContext, out _);
+            var result = ValidatorExtensions.IsToLow(value, minValue, errorContext, out var error);
 
             // Assert
             Assert.True(result);
+            Assert.Null(error);
         }
 
         [Fact]
-        public void Should_Return_True_When_Value_Is_Above_MinValue()
+        public void Should_Return_True_And_No_Error_When_Value_Is_Above_MinValue()
         {
             // Arrange
             int value = 10;
@@ -182,12 +87,12 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
             var errorContext = DefineErrorContext("Age");
 
             // Act
-            var result = ValidatorExtensions.IsToLow(value, minValue, errorContext, out _);
+            var result = ValidatorExtensions.IsToLow(value, minValue, errorContext, out var error);
 
             // Assert
             Assert.True(result);
+            Assert.Null(error);
         }
-
 
 
         private ErrorContext DefineErrorContext(string? fieldName = null)

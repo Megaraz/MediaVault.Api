@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-
 namespace Rasmus.SharedKernel.ResultPattern
 {
-    public class ErrorContext
+    public record ErrorContext
     {
         public string Layer { get; }
         public string ServiceName { get; }
@@ -19,7 +17,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         public string? DescriptionSuffix
         {
             get { return _descriptionSuffix; }
-            set { _descriptionSuffix = new StringBuilder(value).ToString(); } // TODO: Add "Reason: " prefix to description suffix and make sure it is included in the final error description when creating errors using this context
+            set { _descriptionSuffix = value is not null ? $"{Environment.NewLine}Reason: {value}" : null; }
         }
 
         //public string DescriptionPrefix => $"An error occurred in {Layer} layer, in service {ServiceName}, method {MethodName}, during {Operation} operation on entity {EntityName}.";
@@ -39,7 +37,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         private static string FormatDescriptionPrefix(string layer, string serviceName, string methodName, OperationType operation, string entityName)
         {
             //return $"An error occurred in {layer} layer, in service {serviceName}, method {methodName}, during {operation} operation on entity {entityName}.";
-            return $"An error occurred during {operation} on entity {entityName}: {Environment.NewLine} Layer: {layer}{Environment.NewLine} Service: {serviceName}{Environment.NewLine} Method: {methodName}";
+            return $"An error occurred during {operation} on entity {entityName}: {Environment.NewLine}Layer: {layer}{Environment.NewLine}Service: {serviceName}{Environment.NewLine}Method: {methodName}";
         }
 
 

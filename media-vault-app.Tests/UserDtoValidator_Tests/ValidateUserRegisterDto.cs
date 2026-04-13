@@ -20,578 +20,282 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
 
         [Fact]
-        public void Should_ReturnFalse_For_NonMatching_Password_And_ConfirmPassword()
+        public void Should_ReturnFalse_And_Errors_For_NonMatching_Password_And_ConfirmPassword()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
 
             UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@4321", "Test@1234");
 
-            var errorContext = DefineErrorContext();
+            var errorContext = DefineErrorContext(fieldName: "Password", confirmFieldName: "ConfirmPassword");
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
+            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
+            Assert.NotNull(errors);
 
+            var nonMatchingError = Assert.Single(errors);
+
+            Assert.False(string.IsNullOrWhiteSpace(nonMatchingError.Code));
+            Assert.NotEqual(ErrorType.None, nonMatchingError.Type);
+            Assert.False(string.IsNullOrWhiteSpace(nonMatchingError.Description));
+            Assert.Equal(ValidationErrorType.NonMatchingValues, nonMatchingError.ValidationErrorType);
+
+            _output.WriteLine(nonMatchingError.Code);
+            _output.WriteLine(nonMatchingError.Description);
         }
 
         [Fact]
-        public void Should_RefOut_ValidationError_For_NonMatching_Password_And_ConfirmPassword()
+        public void Should_ReturnFalse_And_Errors_For_NonMatching_Email_And_ConfirmEmail()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
 
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@4321", "Test@1234");
+            UserRegisterDto userDto = new("Testuser", "test@mail.com", "t@mail.com", "Test@1234", "Test@1234");
 
             var errorContext = DefineErrorContext();
 
             // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
+            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
 
             // Assert
-            Assert.NotNull(validationError);
+            Assert.False(result);
+            Assert.NotNull(errors);
 
-        }
+            var nonMatchingError = Assert.Single(errors);
 
-        [Fact]
-        public void Should_RefOut_ValidationError_With_ValidationErrorType_NonMatchingValues_For_NonMatching_Password_And_ConfirmPassword()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
+            Assert.False(string.IsNullOrWhiteSpace(nonMatchingError.Code));
+            Assert.NotEqual(ErrorType.None, nonMatchingError.Type);
+            Assert.False(string.IsNullOrWhiteSpace(nonMatchingError.Description));
+            Assert.Equal(ValidationErrorType.NonMatchingValues, nonMatchingError.ValidationErrorType);
 
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@4321", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
-
-            // Assert
-            Assert.Contains(validationError, error => error.ValidationErrorType == ValidationErrorType.NonMatchingValues);
-
+            _output.WriteLine(nonMatchingError.Code);
+            _output.WriteLine(nonMatchingError.Description);
         }
 
 
-        #region UserRegisterDto Validation Tests
 
         [Fact]
-        // Happy Path
-        public void Should_ReturnTrue_When_UserRegisterDtoIsNotNull_And_AllRequiredFieldsAreProvided()
+        public void Should_ReturnTrue_And_NoErrors_When_AllFieldsAreValid()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
             var errorContext = DefineErrorContext();
             var userDto = CreateValidUserRegisterDto();
 
-
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
+            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.True(result);
+            Assert.Empty(errors);
         }
 
         [Fact]
-        // Happy Path
-        public void Should_RefOut_EmptyCollectionOfValidationErrors_When_UserRegisterDtoIsNotNull_And_AllRequiredFieldsAreProvided()
+        public void Should_ReturnFalse_And_Errors_When_UserRegisterDtoIsNull()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
-            var errorContext = DefineErrorContext();
-            var userDto = CreateValidUserRegisterDto();
-
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationErrors);
-
-            // Assert
-            Assert.Empty(validationErrors);
-        }
-
-        [Fact]
-        public void Should_ReturnFalse_When_UserRegisterDtoIsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
             UserRegisterDto? userDto = null;
-
             var errorContext = DefineErrorContext();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto!, errorContext, out _);
+            var result = userDtoValidator.IsValidRegisterDto(userDto!, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
+            Assert.NotEmpty(errors);
+            Assert.All(errors, error =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(error.Code));
+                Assert.NotEqual(ErrorType.None, error.Type);
+                Assert.False(string.IsNullOrWhiteSpace(error.Description));
+            });
+            var requiredError = Assert.Single(errors, error => error.Type == ErrorType.Validation && error.ValidationErrorType == ValidationErrorType.Required);
+
+            Assert.NotNull(requiredError);
+
+            _output.WriteLine(requiredError.Code);
+            _output.WriteLine(requiredError.Description);
 
         }
 
 
-        [Fact]
-        public void Should_RefOut_ValidationErrors_When_UserRegisterDto_IsNull()
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public void Should_ReturnFalse_And_Errors_When_ConfirmPassword_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto? userDto = null;
-
+            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@1234", value!);
             var errorContext = DefineErrorContext();
 
             // Act
-            userDtoValidator.IsValidRegisterDto(userDto!, errorContext, out var validationErrors);
-
-            // Assert
-            Assert.NotEmpty(validationErrors);
-
-        }
-
-
-        [Fact]
-        public void Should_RefOut_ValidationErrors_With_NonEmptyErrorCode_When_UserRegisterDto_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto? userDto = null;
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto!, errorContext, out var validationErrors);
-
-            // Assert
-            Assert.All(validationErrors, error => Assert.False(string.IsNullOrWhiteSpace(error.Code)));
-
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationErrors_With_ErrorTypeNotNone_When_UserRegisterDto_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto? userDto = null;
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto!, errorContext, out var validationErrors);
-
-            // Assert
-            Assert.All(validationErrors, error => Assert.NotEqual(ErrorType.None, error.Type));
-
-        }
-
-
-        [Fact]
-        public void Should_RefOut_ValidationErrors_With_DescriptionNotNullOrWhiteSpace_When_UserRegisterDto_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto? userDto = null;
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto!, errorContext, out var validationErrors);
-
-            // Assert
-            Assert.All(validationErrors, error => Assert.False(string.IsNullOrWhiteSpace(error.Description)));
-
-        }
-
-        #endregion
-
-        #region ConfirmPassword Validation Tests
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_ConfirmPassword_IsEmpty()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@1234", string.Empty);
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotNull(validationError);
-
-        }
-
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_ConfirmPassword_IsEmpty()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@1234", string.Empty);
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
+            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
+            Assert.NotNull(errors);
+            Assert.NotEmpty(errors);
+
+            Assert.All(errors, error =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(error.Code));
+                Assert.NotEqual(ErrorType.None, error.Type);
+                Assert.False(string.IsNullOrWhiteSpace(error.Description));
+            });
+
+            var requiredError = Assert.Single(errors, error => error.Type == ErrorType.Validation && error.ValidationErrorType == ValidationErrorType.Required);
+
+            Assert.NotNull(requiredError);
+
+            _output.WriteLine(requiredError.Code);
+            _output.WriteLine(requiredError.Description);
 
         }
 
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_ConfirmPassword_IsNull()
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public void Should_ReturnFalse_And_Errors_When_Password_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@1234", null!);
-
+            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", value!, "Test@1234");
             var errorContext = DefineErrorContext();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
+            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
+            Assert.NotNull(errors);
+            Assert.NotEmpty(errors);
+
+            Assert.All(errors, error =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(error.Code));
+                Assert.NotEqual(ErrorType.None, error.Type);
+                Assert.False(string.IsNullOrWhiteSpace(error.Description));
+            });
+
+            var requiredError = Assert.Single(errors, error => error.Type == ErrorType.Validation && error.ValidationErrorType == ValidationErrorType.Required);
+
+            Assert.NotNull(requiredError);
+
+            _output.WriteLine(requiredError.Code);
+            _output.WriteLine(requiredError.Description);
 
         }
 
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_ConfirmPassword_IsNull()
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public void Should_ReturnFalse_And_Errors_When_ConfirmEmail_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@1234", null!);
-
+            UserRegisterDto userDto = new("Testuser", "test@mail.com", value!, "Test@1234", "Test@1234");
             var errorContext = DefineErrorContext();
 
             // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotNull(validationError);
-
-        }
-        #endregion
-
-        #region Password Validation Tests
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_Password_IsEmpty()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", string.Empty, "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
+            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
+            Assert.NotNull(errors);
+            Assert.NotEmpty(errors);
+
+            Assert.All(errors, error =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(error.Code));
+                Assert.NotEqual(ErrorType.None, error.Type);
+                Assert.False(string.IsNullOrWhiteSpace(error.Description));
+            });
+
+            var requiredError = Assert.Single(errors, error => error.Type == ErrorType.Validation && error.ValidationErrorType == ValidationErrorType.Required);
+
+            Assert.NotNull(requiredError);
+
+            _output.WriteLine(requiredError.Code);
+            _output.WriteLine(requiredError.Description);
 
         }
 
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_Password_IsEmpty()
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public void Should_ReturnFalse_And_Errors_When_Email_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", string.Empty, "Test@1234");
-
+            UserRegisterDto userDto = new("Testuser", value!, "test@mail.com", "Test@1234", "Test@1234");
             var errorContext = DefineErrorContext();
 
             // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotNull(validationError);
-
-        }
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_Password_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", null!, "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
-
-            // Assert
-            Assert.False(result);
-
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_Password_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", null!, "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotNull(validationError);
-
-        }
-
-        #endregion
-
-        #region ConfirmEmail Validation Tests
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_ConfirmEmail_IsEmpty()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", string.Empty, "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
+            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
+            Assert.NotNull(errors);
+            Assert.NotEmpty(errors);
 
+            Assert.All(errors, error =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(error.Code));
+                Assert.NotEqual(ErrorType.None, error.Type);
+                Assert.False(string.IsNullOrWhiteSpace(error.Description));
+            });
+
+            var requiredError = Assert.Single(errors, error => error.Type == ErrorType.Validation && error.ValidationErrorType == ValidationErrorType.Required);
+
+            Assert.NotNull(requiredError);
+
+            _output.WriteLine(requiredError.Code);
+            _output.WriteLine(requiredError.Description);
         }
 
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_ConfirmEmail_IsEmpty()
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public void Should_ReturnFalse_And_Errors_When_UserName_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", string.Empty, "Test@1234", "Test@1234");
-
+            UserRegisterDto userDto = new(value!, "test@mail.com", "test@mail.com", "Test@1234", "Test@1234");
             var errorContext = DefineErrorContext();
 
             // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotNull(validationError);
-
-        }
-
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_ConfirmEmail_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", null!, "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
+            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
+            Assert.NotNull(errors);
+            Assert.NotEmpty(errors);
 
+            Assert.All(errors, error =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(error.Code));
+                Assert.NotEqual(ErrorType.None, error.Type);
+                Assert.False(string.IsNullOrWhiteSpace(error.Description));
+            });
+
+            var requiredError = Assert.Single(errors, error => error.Type == ErrorType.Validation && error.ValidationErrorType == ValidationErrorType.Required);
+
+            Assert.NotNull(requiredError);
+
+            _output.WriteLine(requiredError.Code);
+            _output.WriteLine(requiredError.Description);
         }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_ConfirmEmail_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", null!, "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotNull(validationError);
-
-        }
-        #endregion
-
-        #region Email Validation Tests
-
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_Email_IsEmpty()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", string.Empty, "test@mail.com", "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
-
-            // Assert
-            Assert.False(result);
-
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_Email_IsEmpty()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", string.Empty, "test@mail.com", "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotNull(validationError);
-
-        }
-
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_Email_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", null!, "test@mail.com", "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
-
-            // Assert
-            Assert.False(result);
-
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_Email_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", null!, "test@mail.com", "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationError);
-
-            // Assert
-            Assert.NotNull(validationError);
-
-        }
-        #endregion
-
-        #region UserName Validation Tests
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_UserName_IsEmpty()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new(string.Empty, "test@mail.com", "test@mail.com", "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
-
-            // Assert
-            Assert.False(result);
-
-        }
-
-        [Fact]
-        public void Should_RefOut_NoValidationErrors_When_RequiredField_UserName_IsNotEmpty()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationErrors);
-
-            // Assert
-            Assert.Empty(validationErrors);
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_UserName_IsEmpty()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new(string.Empty, "test@mail.com", "test@mail.com", "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationErrors);
-
-            // Assert
-            Assert.NotNull(validationErrors);
-            Assert.NotEmpty(validationErrors);
-        }
-
-        [Fact]
-        public void Should_ReturnFalse_When_RequiredField_UserName_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new(null!, "test@mail.com", "test@mail.com", "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out _);
-
-            // Assert
-            Assert.False(result);
-
-        }
-
-        [Fact]
-        public void Should_RefOut_ValidationError_When_RequiredField_UserName_IsNull()
-        {
-            // Arrange
-            var userDtoValidator = new UserDtoValidator();
-
-            UserRegisterDto userDto = new(null!, "test@mail.com", "test@mail.com", "Test@1234", "Test@1234");
-
-            var errorContext = DefineErrorContext();
-
-            // Act
-            userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var validationErrors);
-
-            // Assert
-            Assert.NotEmpty(validationErrors);
-
-        }
-        #endregion
 
 
         private UserRegisterDto CreateValidUserRegisterDto()
@@ -605,7 +309,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
                 );
         }
 
-        private ErrorContext DefineErrorContext()
+        private ErrorContext DefineErrorContext(string? fieldName = null, string? confirmFieldName = null)
         {
             return new ErrorContext(
                 layer: "Service",
@@ -613,8 +317,8 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
                 methodName: "RegisterUserAsync",
                 operation: OperationType.Create,
                 entityName: "User",
-                fieldName: null,
-                confirmFieldName: null);
+                fieldName: fieldName,
+                confirmFieldName: confirmFieldName);
         }
     }
 }
