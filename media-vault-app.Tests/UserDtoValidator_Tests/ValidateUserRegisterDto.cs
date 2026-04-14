@@ -20,7 +20,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
 
         [Fact]
-        public void Should_ReturnFalse_And_Errors_For_NonMatching_Password_And_ConfirmPassword()
+        public void IsValidRegisterDto_Should_ReturnFalse_And_Errors_For_NonMatching_Password_And_ConfirmPassword()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -48,7 +48,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         }
 
         [Fact]
-        public void Should_ReturnFalse_And_Errors_For_NonMatching_Email_And_ConfirmEmail()
+        public void IsValidRegisterDto_Should_ReturnFalse_And_Errors_For_NonMatching_Email_And_ConfirmEmail()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -78,7 +78,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
 
         [Fact]
-        public void Should_ReturnTrue_And_NoErrors_When_AllFieldsAreValid()
+        public void IsValidRegisterDto_Should_ReturnTrue_And_NoErrors_When_AllFieldsAreValid()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -94,7 +94,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         }
 
         [Fact]
-        public void Should_ReturnFalse_And_Errors_When_UserRegisterDtoIsNull()
+        public void IsValidRegisterDto_Should_ReturnFalse_And_Errors_When_UserRegisterDtoIsNull()
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -127,7 +127,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         [InlineData("")]
         [InlineData("   ")]
         [InlineData(null)]
-        public void Should_ReturnFalse_And_Errors_When_ConfirmPassword_IsNullOrWhiteSpace(string? value)
+        public void IsValidRegisterDto_Should_ReturnFalse_And_Errors_When_ConfirmPassword_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -162,7 +162,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         [InlineData("")]
         [InlineData("   ")]
         [InlineData(null)]
-        public void Should_ReturnFalse_And_Errors_When_Password_IsNullOrWhiteSpace(string? value)
+        public void IsValidRegisterDto_Should_ReturnFalse_And_Errors_When_Password_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -197,7 +197,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         [InlineData("")]
         [InlineData("   ")]
         [InlineData(null)]
-        public void Should_ReturnFalse_And_Errors_When_ConfirmEmail_IsNullOrWhiteSpace(string? value)
+        public void IsValidRegisterDto_Should_ReturnFalse_And_Errors_When_ConfirmEmail_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -233,7 +233,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         [InlineData("")]
         [InlineData("   ")]
         [InlineData(null)]
-        public void Should_ReturnFalse_And_Errors_When_Email_IsNullOrWhiteSpace(string? value)
+        public void IsValidRegisterDto_Should_ReturnFalse_And_Errors_When_Email_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();
@@ -267,7 +267,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         [InlineData("")]
         [InlineData("   ")]
         [InlineData(null)]
-        public void Should_ReturnFalse_And_Errors_When_UserName_IsNullOrWhiteSpace(string? value)
+        public void IsValidRegisterDto_Should_ReturnFalse_And_Errors_When_UserName_IsNullOrWhiteSpace(string? value)
         {
             // Arrange
             var userDtoValidator = new UserDtoValidator();

@@ -12,59 +12,69 @@ namespace media_vault_app.Application.Validators.MediaEntry
     {
         public bool IsValidRegisterDto(MediaEntryCreateDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
-            validationErrors = new List<ValidationError>();
+            List<ValidationError> internalErrors = new();
 
             if (ValidatorExtensions.IsNull(createDto, errorContext, out ValidationError nullValueError))
             {
-                validationErrors = validationErrors.Append(nullValueError);
+                internalErrors.Add(nullValueError);
+                validationErrors = internalErrors;
                 return false;
             }
 
-            errorContext.FieldName = nameof(createDto.Title);
-            if (ValidatorExtensions.IsNullOrWhiteSpace(createDto.Title, errorContext, out ValidationError nullOrEmptyError))
+            var titleErrorContext = errorContext with { FieldName = nameof(createDto.Title) };
+
+            if (ValidatorExtensions.IsNullOrWhiteSpace(createDto.Title, titleErrorContext, out ValidationError nullOrEmptyError))
             {
-                validationErrors = validationErrors.Append(nullOrEmptyError);
+                internalErrors.Add(nullOrEmptyError);
             }
 
-            validationErrors = ValidateRating(createDto.Rating, errorContext, validationErrors);
-
+            //validationErrors = ValidateRating(createDto.Rating, errorContext, internalErrors);
+            validationErrors = internalErrors;
             return !validationErrors.Any();
 
         }
 
         public bool IsValidUpdateDto(MediaEntryUpdateDto updateDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
-            validationErrors = new List<ValidationError>();
+            List<ValidationError> internalErrors = new();
 
             if (updateDto.IsNull(errorContext, out ValidationError nullValueError))
             {
-                validationErrors = validationErrors.Append(nullValueError);
+                internalErrors.Add(nullValueError);
+                validationErrors = internalErrors;
                 return false;
             }
 
-            errorContext.FieldName = nameof(updateDto.Title);
-            if (updateDto.Title.IsNullOrWhiteSpace(errorContext, out ValidationError nullOrEmptyError))
+            var titleErrorContext = errorContext with { FieldName = nameof(updateDto.Title) };
+
+            if (updateDto.Title.IsNullOrWhiteSpace(titleErrorContext, out ValidationError nullOrEmptyError))
             {
-                validationErrors = validationErrors.Append(nullOrEmptyError);
+                internalErrors.Add(nullOrEmptyError);
             }
 
-            validationErrors = ValidateRating(updateDto.Rating, errorContext, validationErrors);
-
+            //validationErrors = ValidateRating(updateDto.Rating, errorContext, internalErrors);
+            validationErrors= internalErrors;
             return !validationErrors.Any();
         }
 
-        private static IEnumerable<ValidationError> ValidateRating(decimal rating, ErrorContext errorContext, IEnumerable<ValidationError> validationErrors)
+        private void CheckAndFixRating(ref decimal rating)
         {
-            errorContext.FieldName = "Rating";
+            var clamped = Math.Clamp(rating, 0m, 5m);
+            rating = Math.Round(clamped * 2, MidpointRounding.AwayFromZero) / 2;
+        }
+
+        private static List<ValidationError> ValidateRating(decimal rating, ErrorContext errorContext, List<ValidationError> validationErrors)
+        {
+            var ratingErrorContext = errorContext with { FieldName = "Rating" };
 
             if (rating < 0m || rating > 5m)
             {
-                validationErrors = validationErrors.Append(ValidationError.OutOfRange(errorContext, "0 to 5"));
+                validationErrors.Add(ValidationError.OutOfRange(ratingErrorContext, "0 to 5"));
             }
 
             if (rating * 2m != decimal.Truncate(rating * 2m))
             {
-                validationErrors = validationErrors.Append(ValidationError.InvalidFormat(errorContext, "0.5 increments between 0 and 5"));
+                validationErrors.Add(ValidationError.InvalidFormat(ratingErrorContext, "0.5 increments between 0 and 5"));
             }
 
             return validationErrors;
