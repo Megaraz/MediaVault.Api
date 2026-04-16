@@ -24,9 +24,8 @@ namespace media_vault_app.Application.Services.MediaEntry
 
         public MediaEntryReadService(
             IMediaEntryRepo mediaEntryRepo,
-            IMapEntityToDto<MediaEntryEntity, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto> entityToDtoMapper,
             IUserRepo ownerRepo
-            ) : base(mediaEntryRepo, entityToDtoMapper, ownerRepo)
+            ) : base(mediaEntryRepo, new MediaEntryEntityMapper(), ownerRepo)
         {
             _mediaEntryRepo = mediaEntryRepo;
         }

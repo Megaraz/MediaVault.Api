@@ -87,10 +87,11 @@ namespace media_vault_app.API
 
             builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
-            builder.Services.AddScoped<IGenericRepo<User, Guid>, UserRepo>();
+            //builder.Services.AddScoped<IGenericRepo<User, Guid>, UserRepo>();
             builder.Services.AddScoped<IUserRepo, UserRepo>();
 
-            builder.Services.AddScoped<IGenericRepo<MediaEntry, Guid>, MediaEntryRepo>();
+            //builder.Services.AddScoped<IGenericRepo<MediaEntry, Guid>, MediaEntryRepo>();
+            //builder.Services.AddScoped<IOwnedEntityGenericRepo<User, Guid, MediaEntry, Guid>, MediaEntryRepo>();
             builder.Services.AddScoped<IMediaEntryRepo, MediaEntryRepo>();
 
             builder.Services.AddScoped<IMediaEntryReadService, MediaEntryReadService>();

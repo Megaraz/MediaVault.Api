@@ -20,11 +20,8 @@ namespace media_vault_app.Application.Services.User
         : WriteServiceBase<UserEntitiy, Guid, UserRegisterDto, UserUpdateDto, UserDetailedDto>, IUserWriteService
     {
         public UserWriteService(
-            IGenericRepo<UserEntitiy, Guid> repo, 
-            IMapEntityToDetailedDto<UserEntitiy, UserDetailedDto> entityToDtoMapper, 
-            IMapDtoToEntity<UserEntitiy, UserDetailedDto, UserRegisterDto, UserUpdateDto, Guid> dtoToEntityMapper, 
-            IDtoValidator<Guid, UserRegisterDto, UserUpdateDto> dtoValidator
-            ) : base(repo, entityToDtoMapper, dtoToEntityMapper, dtoValidator)
+            IUserRepo repo
+            ) : base(repo, new UserEntityMapper(), new UserDtoMapper(), new UserDtoValidator())
         {
         }
     }

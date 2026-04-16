@@ -21,12 +21,9 @@ namespace media_vault_app.Application.Services.MediaEntry
         IMediaEntryWriteService
     {
         public MediaEntryWriteService(
-            IOwnedEntityGenericRepo<UserEntity, Guid, MediaEntryEntity, Guid> ownedEntityRepo, 
-            IGenericRepo<UserEntity, Guid> ownerRepo, 
-            IMapEntityToDetailedDto<MediaEntryEntity, MediaEntryDetailedDto> entityToDtoMapper, 
-            IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, MediaEntryUpdateDto, Guid> dtoToEntityMapper, 
-            IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto> dtoValidator
-            ) : base(ownedEntityRepo, ownerRepo, entityToDtoMapper, dtoToEntityMapper, dtoValidator)
+            IMediaEntryRepo ownedEntityRepo,
+            IUserRepo ownerRepo
+            ) : base(ownedEntityRepo, ownerRepo, new MediaEntryEntityMapper(), new MediaEntryDtoMapper(), new MediaEntryDtoValidator())
         {
         }
     }
