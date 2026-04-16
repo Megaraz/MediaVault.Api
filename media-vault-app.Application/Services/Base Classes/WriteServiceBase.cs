@@ -11,22 +11,23 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services
 {
-    public class WriteServiceBase<TEntity, TKey, TCreateDto, TDetailedDto>
-        : IWriteService<TEntity, TKey, TCreateDto, TDetailedDto>
+    public class WriteServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
+        : IWriteService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
             where TEntity : class, IEntityId<TKey>
             where TDetailedDto : IDtoID<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
-        private readonly IGenericRepo<TEntity, TKey> _repo;
+        private protected readonly IGenericRepo<TEntity, TKey> _repo;
 
-        private readonly IMapEntityToDetailedDto<TEntity, TDetailedDto> _entityToDtoMapper;
-        private readonly IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TKey> _dtoToEntityMapper;
-        private readonly IDtoValidator<TKey, TCreateDto> _dtoValidator;
+        private protected readonly IMapEntityToDetailedDto<TEntity, TDetailedDto> _entityToDtoMapper;
+        private protected readonly IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TUpdateDto, TKey> _dtoToEntityMapper;
+        private protected readonly IDtoValidator<TKey, TCreateDto, TUpdateDto> _dtoValidator;
 
         public WriteServiceBase(
             IGenericRepo<TEntity, TKey> repo,
             IMapEntityToDetailedDto<TEntity, TDetailedDto> entityToDtoMapper,
-            IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TKey> dtoToEntityMapper,
-            IDtoValidator<TKey, TCreateDto> dtoValidator)
+            IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TUpdateDto, TKey> dtoToEntityMapper,
+            IDtoValidator<TKey, TCreateDto, TUpdateDto> dtoValidator)
         {
             _repo = repo;
             _entityToDtoMapper = entityToDtoMapper;
@@ -61,22 +62,28 @@ namespace media_vault_app.Application.Services
             return await _repo.DeleteAsync(id, ct);
         }
 
-        //public async Task<Result> UpdateAsync(TKey id, TUpdateDto updateDto, Func<TEntity, TEntity, bool> shouldUpdate, CancellationToken ct)
-        //{
-        //    var errorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
+        public async Task<Result> UpdateAsync(TKey id, TUpdateDto updateDto, CancellationToken ct)
+        {
+            var baseErrorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
 
-        //    if (!id.IsValidId(errorContext, out var idError))
-        //        return Result.Failure(idError, errorContext.DescriptionSuffix!);
+            List<ValidationError> validationErrors = new();
 
-        //    if (!_dtoValidator.IsValidUpdateDto(id, updateDto, errorContext, out var validationErrors))
-        //        return Result.ValidationFailure(validationErrors, errorContext.DescriptionSuffix!);
+            if (!id.IsValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
+                validationErrors.Add(idError);
 
-        //    var entity = _dtoToEntityMapper.ToEntity(updateDto);
+            if (!_dtoValidator.IsValidUpdateDto(updateDto, baseErrorContext, out var updateValidationErrors))
+                validationErrors.AddRange(updateValidationErrors);
 
+            if (validationErrors.Count > 0)
+                return Result.ValidationFailure(validationErrors, "Validation Errors occurred, see validationErrors for details.");
 
-        //}
+            var entity = _dtoToEntityMapper.ToEntity(id, updateDto);
 
-        private ErrorContext DefineErrorContext(string methodName, OperationType operation)
+            return await _repo.UpdateAsync(entity, ct);
+
+        }
+
+        protected private ErrorContext DefineErrorContext(string methodName, OperationType operation)
         {
             return new ErrorContext(
                 layer: "Service",

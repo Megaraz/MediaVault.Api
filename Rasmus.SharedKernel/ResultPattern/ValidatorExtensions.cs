@@ -98,7 +98,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             if (value < minValue)
             {
                 errorContext.DescriptionSuffix = $"The field '{errorContext.FieldName}' must be greater than or equal to {minValue} for the entity '{errorContext.EntityName}'.";
-                toLowError = ValidationError.TooShort(errorContext, $"Greater than or equal to {minValue}");
+                toLowError = ValidationError.OutOfRange(errorContext, $"Greater than or equal to {minValue}");
                 return false;
             }
             else

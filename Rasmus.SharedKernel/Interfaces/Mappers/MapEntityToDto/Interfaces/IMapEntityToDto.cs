@@ -13,6 +13,7 @@ namespace Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces
         where TEntity : class, IEntityId<TKey>
         where TDetailedDto : IDtoID<TKey>
         where TMinimalDto : IDtoID<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
     }
 }

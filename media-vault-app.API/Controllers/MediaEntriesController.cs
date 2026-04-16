@@ -74,7 +74,7 @@ namespace media_vault_app.API.Controllers
             if (!TryGetCurrentUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _readService.GetDetailedCollectionAsync(userId, pageNumber, pageSize, ct);
+            var result = await _readService.GetDetailedCollectionByOwnerIdAsync(userId, pageNumber, pageSize, ct);
 
             return this.ToActionResult(result);
         }

@@ -6,6 +6,6 @@ namespace Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces
 {
     public interface IMapUpdateDtoToEntity<TEntity, TKey, TUpdateDto>
     {
-        TEntity MapToEntity(TKey id, TUpdateDto updateDto);
+        TEntity ToEntity(TKey id, TUpdateDto updateDto);
     }
 }

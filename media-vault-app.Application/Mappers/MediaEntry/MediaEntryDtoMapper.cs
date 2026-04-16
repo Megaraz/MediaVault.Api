@@ -10,7 +10,7 @@ using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 namespace media_vault_app.Application.Mappers.MediaEntry
 {
     public class MediaEntryDtoMapper :
-        IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, Guid>,
+        IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, MediaEntryUpdateDto, Guid>,
         IMapUpdateDtoToEntity<MediaEntryEntity, Guid, MediaEntryUpdateDto>
     {
         public MediaEntryEntity ToEntity(MediaEntryCreateDto createDto)
@@ -55,7 +55,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
         public IEnumerable<MediaEntryEntity> ToEntities(IEnumerable<MediaEntryDetailedDto> detailedDtos) =>
             detailedDtos.Select(ToEntity);
 
-        public MediaEntryEntity MapToEntity(Guid id, MediaEntryUpdateDto updateDto)
+        public MediaEntryEntity ToEntity(Guid id, MediaEntryUpdateDto updateDto)
         {
             var entity = CreateMediaEntryInstance();
 

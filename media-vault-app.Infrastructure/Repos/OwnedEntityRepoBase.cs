@@ -2,22 +2,26 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
 {
-    public class OwnedEntityRepoBase<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> : GenericRepoBase<TEntityOwned, TKeyOwned>
-         where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
-         where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
-         where TKeyOwner : notnull, IEquatable<TKeyOwner>
-         where TKeyOwned : notnull, IEquatable<TKeyOwned>
+
+    public class OwnedEntityRepoBase<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+        : GenericRepoBase<TEntityOwned, TKeyOwned>,
+        IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+            where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
+            where TKeyOwner : notnull, IEquatable<TKeyOwner>
+            where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+            where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
         public OwnedEntityRepoBase(AppDbContext appDbContext) : base(appDbContext)
         {
         }
 
-        public async Task<Result<IReadOnlyList<TEntityOwned>>> GetCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 25, CancellationToken ct = default)
+        public async Task<Result<IReadOnlyList<TEntityOwned>>> GetCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetCollectionByOwnerIdAsync), OperationType.GetCollection);
 
@@ -53,21 +57,16 @@ namespace media_vault_app.Infrastructure.Repos
 
             var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
-            var ownerIdValidationErrorContext = baseErrorContext with { FieldName = nameof(ownerId) };
+            List<ValidationError> validationErrors = new();
 
-            if (!ownerId.IsValidId(ownerIdValidationErrorContext, out var ownerIdError))
-            {
-                return Result<TEntityOwned>.ValidationFailure([ownerIdError], ownerIdValidationErrorContext.DescriptionSuffix!);
-            }
+            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+                validationErrors.Add(ownerIdError);
 
-            var ownedEntityIdValidationErrorContext = baseErrorContext
-                with
-            { FieldName = nameof(ownedEntityId) };
+            if (!ownedEntityId.IsValidId(baseErrorContext with { FieldName = nameof(ownedEntityId) }, out var ownedEntityIdError))
+                validationErrors.Add(ownedEntityIdError);
 
-            if (!ownedEntityId.IsValidId(ownedEntityIdValidationErrorContext, out var ownedEntityIdError))
-            {
-                return Result<TEntityOwned>.ValidationFailure([ownedEntityIdError], ownedEntityIdValidationErrorContext.DescriptionSuffix!);
-            }
+            if (validationErrors.Count > 0)
+                return Result<TEntityOwned>.ValidationFailure(validationErrors, "Validation Errors occurred, see validationErrors for details.");
 
             try
             {
@@ -78,11 +77,11 @@ namespace media_vault_app.Infrastructure.Repos
                 if (ownedEntity is null)
                 {
 
-                    var notFoundErrorContext = baseErrorContext;
+                    var notFoundErrorContext = baseErrorContext with { DescriptionSuffix = "Owned entity not found." };
 
                     return Result<TEntityOwned>.Failure(
                         Error.NotFound(notFoundErrorContext),
-                        "Owned entity not found.");
+                        notFoundErrorContext.DescriptionSuffix);
                 }
 
                 return Result<TEntityOwned>.Success(ownedEntity);
@@ -174,7 +173,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (ownedEntity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound(baseErrorContext with { DescriptionSuffix = "Owned entity not found." }),
+                        Error.NotFound(baseErrorContext),
                         "Owned entity not found.");
                 }
 
@@ -196,16 +195,6 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
-        {
-            return new ErrorContext(
-                layer: "Infrastructure",
-                serviceName: this.GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: typeof(TEntityOwned).Name,
-                fieldName: fieldName);
-        }
 
     }
 }

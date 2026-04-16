@@ -11,6 +11,7 @@ namespace Rasmus.SharedKernel.Interfaces.Services
         where TEntity : class, IEntityId<TKey>
         where TDetailedDto : IDtoID<TKey>
         where TMinimalDto : IDtoID<TKey>
+        where TKey : notnull, IEquatable<TKey>
 
     {
     }

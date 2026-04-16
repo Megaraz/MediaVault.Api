@@ -14,10 +14,12 @@ namespace media_vault_app.Application.Services
             where TEntity : class, IEntityId<TKey>
             where TDetailedDto : IDtoID<TKey>
             where TMinimalDto : IDtoID<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
 
-        private readonly IGenericRepo<TEntity, TKey> _repo;
-        private readonly IMapEntityToDto<TEntity, TKey, TDetailedDto, TMinimalDto> _entityToDtoMapper;
+        private protected readonly IGenericRepo<TEntity, TKey> _repo;
+        private protected readonly IMapEntityToDto<TEntity, TKey, TDetailedDto, TMinimalDto> _entityToDtoMapper;
+
 
         public ReadServiceBase(IGenericRepo<TEntity, TKey> repo, IMapEntityToDto<TEntity, TKey, TDetailedDto, TMinimalDto> entityToDtoMapper)
         {
@@ -27,7 +29,7 @@ namespace media_vault_app.Application.Services
 
         public async Task<Result<TDetailedDto>> GetByIdAsync(TKey id, CancellationToken ct)
         {
-            var errorContext = CreateErrorContext(nameof(GetByIdAsync), OperationType.Get);
+            var errorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
             if (!id.IsValidId(errorContext, out var idNotValidError))
                 return Result<TDetailedDto>.ValidationFailure([idNotValidError], errorContext.DescriptionSuffix!);
@@ -40,32 +42,7 @@ namespace media_vault_app.Application.Services
 
         public async Task<Result<IEnumerable<TDetailedDto>>> GetDetailedCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
-            var errorContext = CreateErrorContext(nameof(GetDetailedCollectionAsync), OperationType.GetCollection);
-
-            IEnumerable<ValidationError> validationErrors = new List<ValidationError>();
-
-            if (pageNumber < 1)
-            {
-                errorContext.DescriptionSuffix = $"Page number must be greater than 0.";
-                errorContext.FieldName = nameof(pageNumber);
-
-                var pageNumberError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                validationErrors = validationErrors.Append(pageNumberError);
-
-            }
-            if (pageSize < 1)
-            {
-                errorContext.DescriptionSuffix = $"Page size must be greater than 0.";
-                errorContext.FieldName = nameof(pageSize);
-
-                var pageSizeError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                validationErrors = validationErrors.Append(pageSizeError);
-            }
-
-            if (validationErrors.Any())
-            {
-                return Result<IEnumerable<TDetailedDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
-            }
+            ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
             var repoResult = await _repo.GetCollectionAsync(pageNumber, pageSize, ct);
 
@@ -75,46 +52,30 @@ namespace media_vault_app.Application.Services
 
         public async Task<Result<IEnumerable<TMinimalDto>>> GetMinimalCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
-            var errorContext = CreateErrorContext(nameof(GetMinimalCollectionAsync), OperationType.GetCollection);
-
-            IEnumerable<ValidationError> validationErrors = new List<ValidationError>();
-
-            if (pageNumber < 1)
-            {
-                errorContext.DescriptionSuffix = $"Page number must be greater than 0.";
-                errorContext.FieldName = nameof(pageNumber);
-
-                var pageNumberError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                validationErrors = validationErrors.Append(pageNumberError);
-
-            }
-            if (pageSize < 1)
-            {
-                errorContext.DescriptionSuffix = $"Page size must be greater than 0.";
-                errorContext.FieldName = nameof(pageSize);
-
-                var pageSizeError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                validationErrors = validationErrors.Append(pageSizeError);
-            }
-
-            if (validationErrors.Any())
-            {
-                return Result<IEnumerable<TMinimalDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
-            }
+            ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
             var repoResult = await _repo.GetCollectionAsync(pageNumber, pageSize, ct);
 
             return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
         }
 
-        private ErrorContext CreateErrorContext(string methodName, OperationType operation)
+        protected virtual void ValidateAndAdjustPaginationParameters(ref int pageNumber, ref int pageSize)
+        {
+            if (pageNumber < 1)
+                pageNumber = 1; // Default to page 1 if the provided page number is too low
+            if (pageSize < 1)
+                pageSize = 1; // Default to a minimum page size of 1 if the provided page size is too low
+        }
+
+        protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
                 layer: "Service",
-                serviceName: GetType().Name,
+                serviceName: this.GetType().Name,
                 methodName: methodName,
                 operation: operation,
-                entityName: typeof(TEntity).Name);
+                entityName: typeof(TEntity).Name,
+                fieldName: fieldName);
         }
     }
 }

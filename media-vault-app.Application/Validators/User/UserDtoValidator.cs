@@ -7,7 +7,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Validators.User
 {
-    public class UserDtoValidator : IDtoValidator<Guid, UserRegisterDto>
+    public class UserDtoValidator : IDtoValidator<Guid, UserRegisterDto, UserUpdateDto>
     {
         public bool IsValidLoginDto(UserLoginDto loginDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
