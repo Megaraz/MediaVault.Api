@@ -21,7 +21,7 @@ namespace media_vault_app.Infrastructure
             modelBuilder.Entity<User>()
                 .HasMany(u => u.MediaEntries)
                 .WithOne()
-                .HasForeignKey(me => me.UserId);
+                .HasForeignKey(me => me.OwnerId);
 
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)

@@ -1,14 +1,13 @@
 ﻿using media_vault_app.Domain.Enums;
-using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Domain.Entities
 {
-    public abstract class MediaEntry : IEntityId<Guid>, ICreatedAtUtc
+    public abstract class MediaEntry : IOwnedEntity<User, Guid, MediaEntry, Guid>
     {
         public Guid Id { get; set; }
         public string? IdExternal { get; set; }
-        public Guid UserId { get; set; }
+        public Guid OwnerId { get; set; }
         public Status Status { get; set; }
         public string? Title { get; set; }
 

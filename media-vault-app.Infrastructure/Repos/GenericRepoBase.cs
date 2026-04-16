@@ -11,13 +11,14 @@ namespace media_vault_app.Infrastructure.Repos
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TKey"></typeparam>
     /// <remarks> This class implements the generic repository interface <see cref="IGenericRepo{TEntity, TKey}"/></remarks>
-    public class GenericRepoEFCore<TEntity, TKey> :
+    public class GenericRepoBase<TEntity, TKey> :
         IGenericRepo<TEntity, TKey> where TEntity : class, IEntityId<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         protected readonly AppDbContext _appDbContext;
         protected readonly DbSet<TEntity> _dbSet;
 
-        public GenericRepoEFCore(AppDbContext appDbContext)
+        public GenericRepoBase(AppDbContext appDbContext)
         {
             _appDbContext = appDbContext;
             _dbSet = _appDbContext.Set<TEntity>();
@@ -183,14 +184,15 @@ namespace media_vault_app.Infrastructure.Repos
             }
 
         }
-        private ErrorContext DefineErrorContext(string methodName, OperationType operation)
+        protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
                 layer: "Infrastructure",
                 serviceName: this.GetType().Name,
                 methodName: methodName,
                 operation: operation,
-                entityName: typeof(TEntity).Name);
+                entityName: typeof(TEntity).Name,
+                fieldName: fieldName);
         }
     }
 }

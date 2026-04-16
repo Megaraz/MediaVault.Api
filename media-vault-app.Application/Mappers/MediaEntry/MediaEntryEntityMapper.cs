@@ -15,7 +15,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             {
                 Id = entity.Id,
                 IdExternal = entity.IdExternal,
-                UserId = entity.UserId,
+                UserId = entity.OwnerId,
                 Status = entity.Status,
                 Title = entity.Title,
                 Rating = entity.Rating,

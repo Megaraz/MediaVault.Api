@@ -11,7 +11,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
 {
-    public class UserRepo : GenericRepoEFCore<User, Guid>, IUserRepo
+    public class UserRepo : GenericRepoBase<User, Guid>, IUserRepo
     {
         public UserRepo(AppDbContext appDbContext) : base(appDbContext)
         {

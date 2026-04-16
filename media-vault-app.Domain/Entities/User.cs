@@ -1,9 +1,8 @@
-﻿using Rasmus.SharedKernel.Interfaces;
-using Rasmus.SharedKernel.Interfaces.Identifiers;
+﻿using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Domain.Entities
 {
-    public class User : IEntityId<Guid>, ICreatedAtUtc
+    public class User : IOwnerEntity<User, Guid>
     {
         public Guid Id { get; set; }
         public string Username { get; set; } = string.Empty;

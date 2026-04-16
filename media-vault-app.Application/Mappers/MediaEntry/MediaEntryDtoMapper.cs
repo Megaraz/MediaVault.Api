@@ -38,7 +38,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
 
             entity.Id = detailedDto.Id;
             entity.IdExternal = detailedDto.IdExternal;
-            entity.UserId = detailedDto.UserId;
+            entity.OwnerId = detailedDto.UserId;
             entity.Status = detailedDto.Status;
             entity.Title = detailedDto.Title;
             entity.Rating = detailedDto.Rating;

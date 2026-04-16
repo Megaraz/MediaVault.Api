@@ -56,7 +56,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             }
 
             var entity = _dtoToEntityMapper.ToEntity(createDto);
-            entity.UserId = userId;
+            entity.OwnerId = userId;
 
             var repoResult = await _mediaEntryRepo.CreateAsync(entity, ct);
             return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
@@ -90,7 +90,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             }
 
             var updatedEntity = _dtoToEntityMapper.MapToEntity(mediaEntryId, updateDto);
-            updatedEntity.UserId = userId;
+            updatedEntity.OwnerId = userId;
 
             return await _mediaEntryRepo.UpdateAsync(userId, updatedEntity, ct);
         }

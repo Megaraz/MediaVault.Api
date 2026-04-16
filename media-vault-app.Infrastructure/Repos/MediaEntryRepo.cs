@@ -6,7 +6,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
 {
-    public class MediaEntryRepo : GenericRepoEFCore<MediaEntry, Guid>, IMediaEntryRepo
+    public class MediaEntryRepo : GenericRepoBase<MediaEntry, Guid>, IMediaEntryRepo
     {
         public MediaEntryRepo(AppDbContext appDbContext) : base(appDbContext)
         {
@@ -21,7 +21,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 var mediaEntries = await _dbSet
                     .AsNoTracking()
-                    .Where(mediaEntry => mediaEntry.UserId == userId && !string.IsNullOrWhiteSpace(mediaEntry.Title) && mediaEntry.Title.Contains(query))
+                    .Where(mediaEntry => mediaEntry.OwnerId == userId && !string.IsNullOrWhiteSpace(mediaEntry.Title) && mediaEntry.Title.Contains(query))
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync(ct);
@@ -50,7 +50,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 var mediaEntries = await _dbSet
                     .AsNoTracking()
-                    .Where(mediaEntry => mediaEntry.UserId == userId)
+                    .Where(mediaEntry => mediaEntry.OwnerId == userId)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync(ct);
@@ -85,7 +85,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 var mediaEntry = await _dbSet
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(currentMediaEntry => currentMediaEntry.Id == mediaEntryId && currentMediaEntry.UserId == userId, ct);
+                    .FirstOrDefaultAsync(currentMediaEntry => currentMediaEntry.Id == mediaEntryId && currentMediaEntry.OwnerId == userId, ct);
 
                 if (mediaEntry is null)
                 {
@@ -122,7 +122,7 @@ namespace media_vault_app.Infrastructure.Repos
             try
             {
                 var existingEntity = await _dbSet
-                    .FirstOrDefaultAsync(currentMediaEntry => currentMediaEntry.Id == updatedEntity.Id && currentMediaEntry.UserId == userId, ct);
+                    .FirstOrDefaultAsync(currentMediaEntry => currentMediaEntry.Id == updatedEntity.Id && currentMediaEntry.OwnerId == userId, ct);
 
                 if (existingEntity is null)
                 {
@@ -159,7 +159,7 @@ namespace media_vault_app.Infrastructure.Repos
             try
             {
                 var mediaEntry = await _dbSet
-                    .FirstOrDefaultAsync(currentMediaEntry => currentMediaEntry.Id == mediaEntryId && currentMediaEntry.UserId == userId, ct);
+                    .FirstOrDefaultAsync(currentMediaEntry => currentMediaEntry.Id == mediaEntryId && currentMediaEntry.OwnerId == userId, ct);
 
                 if (mediaEntry is null)
                 {
