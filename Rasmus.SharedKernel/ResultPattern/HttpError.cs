@@ -20,15 +20,15 @@ namespace Rasmus.SharedKernel.ResultPattern
     public record HttpError : Error
     {
         public HttpErrorType HttpErrorType { get; }
-        public HttpError(string Code, string Description, ErrorType Type, Exception? exception = null) : base(Code, Description, Type, exception)
+        public HttpError(string Code, string Description, ErrorType Type, string UserMessage = "", Exception? exception = null) : base(Code, Description, Type, UserMessage, exception)
         {
         }
 
 
         // Private constructor to enforce the use of static factory methods for creating HttpError instances
         // Sets the ErrorType of base-class to HttpError for all instances of HttpError
-        private HttpError(string code, string description, HttpErrorType type)
-            : base(code, description, ErrorType.HttpError)
+        private HttpError(string code, string description, HttpErrorType type, string userMessage)
+            : base(code, description, ErrorType.HttpError, userMessage)
         {
             HttpErrorType = type;
         }
@@ -42,7 +42,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Custom);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Custom, defaultDescriptionSuffix);
         }
 
         public static HttpError UnprocessableContent(ErrorContext errorContext)
@@ -52,7 +52,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             string defaultDescriptionSuffix = $"Unprocessable Content";
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.UnprocessableContent);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.UnprocessableContent, defaultDescriptionSuffix);
         }
 
         public static HttpError BadRequest(ErrorContext errorContext)
@@ -63,7 +63,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.BadRequest);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.BadRequest, defaultDescriptionSuffix);
         }
 
         public new static HttpError Unauthorized(ErrorContext errorContext)
@@ -74,7 +74,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Unauthorized);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Unauthorized, defaultDescriptionSuffix);
         }
 
 
@@ -85,7 +85,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             string defaultDescriptionSuffix = $"Forbidden";
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Forbidden);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Forbidden, defaultDescriptionSuffix);
         }
 
 
@@ -96,7 +96,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             string defaultDescriptionSuffix = $"Not Found";
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.NotFound);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.NotFound, defaultDescriptionSuffix);
         }
 
         public static new HttpError Conflict(ErrorContext errorContext)
@@ -107,7 +107,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Conflict);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Conflict, defaultDescriptionSuffix);
         }
 
         public static HttpError InternalServerError(ErrorContext errorContext)
@@ -117,7 +117,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             string defaultDescriptionSuffix = $"Internal Server Error";
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.InternalServerError);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.InternalServerError, defaultDescriptionSuffix);
         }
 
     }

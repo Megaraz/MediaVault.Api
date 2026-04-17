@@ -7,8 +7,8 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Repos
 {
-    public interface IMediaEntryRepo : IOwnedEntityGenericRepo<User, Guid, MediaEntry, Guid>
+    public interface IMediaEntryRepo : IOwnedEntityRepo<User, Guid, MediaEntry, Guid>
     {
-        Task<Result<IReadOnlyList<MediaEntry>>> SearchMediaEntriesAsync(Guid userId, string query, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default);
+        Task<Result<IReadOnlyList<MediaEntry>>> SearchMediaEntriesAsync(Guid userId, string query, int pageNumber, int pageSize, CancellationToken ct = default);
     }
 }

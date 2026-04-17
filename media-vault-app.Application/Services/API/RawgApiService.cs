@@ -25,8 +25,7 @@ namespace media_vault_app.Application.Services.API
 
             if (!id.IsValidId(idValidationErrorContext, out var idError))
             {
-                idValidationErrorContext.DescriptionSuffix = $"Invalid game ID: {id}.";
-                return Result<SearchResultDto>.ValidationFailure([idError], idValidationErrorContext.DescriptionSuffix);
+                return Result<SearchResultDto>.ValidationFailure([idError]);
             }
 
             var result = await _client.GetGameAsync(id, cancellationToken);
@@ -46,29 +45,12 @@ namespace media_vault_app.Application.Services.API
             var errorContext = DefineErrorContext(nameof(SearchGamesAsync), OperationType.GetCollection);
             List<ValidationError> errors = new();
 
-            errorContext.FieldName = nameof(search);
-            if (search.IsNullOrWhiteSpace(errorContext, out var searchError))
+            if (search.IsNullOrWhiteSpace(errorContext with { FieldName = nameof(search) }, out var searchError))
             {
                 errors.Add(searchError);
             }
 
-            if (page < 1)
-            {
-                errorContext.DescriptionSuffix = "Page number must be greater than 0.";
-                errorContext.FieldName = nameof(page);
-
-                var pageError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                errors.Add(pageError);
-            }
-
-            if (pageSize < 1)
-            {
-                errorContext.DescriptionSuffix = "Page size must be greater than 0.";
-                errorContext.FieldName = nameof(pageSize);
-
-                var pageSizeError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                errors.Add(pageSizeError);
-            }
+            Validator.ValidateAndAdjustPaginationParameters(ref page, ref pageSize);
 
             if (errors.Any())
             {
@@ -108,12 +90,12 @@ namespace media_vault_app.Application.Services.API
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                layer: "Application",
-                serviceName: GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: entityName ?? "Rawg Game",
-                fieldName: fieldName);
+                Layer: "Application",
+                ServiceName: GetType().Name,
+                MethodName: methodName,
+                Operation: operation,
+                EntityName: entityName ?? "Rawg Game",
+                FieldName: fieldName);
         }
 
         private static IReadOnlyList<SearchResultDto> MapToGameSearchResult(IReadOnlyList<RawgGameResponse>? rawgGames)

@@ -36,6 +36,12 @@ namespace media_vault_app.Infrastructure.API_Clients
 
         public async Task<Result<TmdbResult>> GetByIdAsync(int id, MediaEntryType mediaType, CancellationToken cancellationToken = default)
         {
+            var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
+
+            if (!id.IsValidId(baseErrorContext, out var idValidationError))
+            {
+                return Result<TmdbResult>.ValidationFailure([idValidationError]);
+            }
 
             string? endpoint = mediaType switch
             {
@@ -44,11 +50,14 @@ namespace media_vault_app.Infrastructure.API_Clients
                 _ => null
             };
 
+
             if (endpoint is null)
             {
-                var mediaTypeErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get, fieldName: $"{nameof(mediaType)}");
-
-                mediaTypeErrorContext.DescriptionSuffix = "Failed to determine API endpoint for media type.";
+                var mediaTypeErrorContext = baseErrorContext with 
+                { 
+                    FieldName = $"{nameof(mediaType)}",
+                    DescriptionSuffix = "Failed to determine API endpoint for media type."
+                };
 
                 var invalidMediaTypeError = ValidationError.InvalidFormat(mediaTypeErrorContext, $"Unsupported media type: {mediaType}");
 
@@ -57,7 +66,10 @@ namespace media_vault_app.Infrastructure.API_Clients
 
             using var response = await _httpClient.GetAsync(BuildRequestUri($"{endpoint}"), cancellationToken);
 
-            var httpResponseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get, fieldName: $"{id}");
+            var httpResponseErrorContext = baseErrorContext with 
+            { 
+                FieldName = $"{id}"
+            };
 
             return await response.MapAsync<TmdbResult>(httpResponseErrorContext, cancellationToken);
         }
@@ -68,6 +80,7 @@ namespace media_vault_app.Infrastructure.API_Clients
             MediaEntryType mediaType,
             CancellationToken cancellationToken = default)
         {
+            var baseErrorContext = DefineErrorContext(nameof(SearchAsync), OperationType.GetCollection);
 
             string? endpoint = mediaType switch
             {
@@ -78,9 +91,11 @@ namespace media_vault_app.Infrastructure.API_Clients
 
             if (endpoint is null)
             {
-                var mediaTypeErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get, fieldName: $"{nameof(mediaType)}");
-
-                mediaTypeErrorContext.DescriptionSuffix = "Failed to determine API endpoint for media type.";
+                var mediaTypeErrorContext = baseErrorContext with 
+                { 
+                    FieldName = $"{nameof(mediaType)}",
+                    DescriptionSuffix = "Failed to determine API endpoint for media type."
+                };
 
                 var invalidMediaTypeError = ValidationError.InvalidFormat(mediaTypeErrorContext, $"Unsupported media type: {mediaType}");
 
@@ -91,9 +106,7 @@ namespace media_vault_app.Infrastructure.API_Clients
 
             using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
 
-            var httpResponseErrorContext = DefineErrorContext(nameof(SearchAsync), OperationType.GetCollection);
-
-            return await response.MapAsync<TmdbSearchResponse>(httpResponseErrorContext, cancellationToken);
+            return await response.MapAsync<TmdbSearchResponse>(baseErrorContext, cancellationToken);
         }
 
         private static string BuildRequestUri(string pathAndQuery)
@@ -105,12 +118,12 @@ namespace media_vault_app.Infrastructure.API_Clients
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                layer: "Infrastructure",
-                serviceName: GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: entityName ?? "Tmdb",
-                fieldName: fieldName);
+                Layer: "Infrastructure",
+                ServiceName: GetType().Name,
+                MethodName: methodName,
+                Operation: operation,
+                EntityName: entityName ?? "Tmdb",
+                FieldName: fieldName);
         }
 
     }

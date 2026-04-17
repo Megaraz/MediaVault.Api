@@ -114,13 +114,13 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
         private ErrorContext DefineErrorContext(string? fieldName = null, string? confirmFieldName = null)
         {
             return new ErrorContext(
-                layer: "ResultPattern",
-                serviceName: "ValidatorExtensions",
-                methodName: "Test",
-                operation: OperationType.Create,
-                entityName: "User",
-                fieldName: fieldName,
-                confirmFieldName: confirmFieldName);
+                Layer: "ResultPattern",
+                ServiceName: "ValidatorExtensions",
+                MethodName: "Test",
+                Operation: OperationType.Create,
+                EntityName: "User",
+                FieldName: fieldName,
+                ConfirmFieldName: confirmFieldName);
         }
     }
 }

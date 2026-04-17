@@ -28,9 +28,9 @@ namespace media_vault_app.Application.Services.Auth
 
         public async Task<Result<UserDetailedDto>> LoginAsync(UserLoginDto loginDto, CancellationToken ct = default)
         {
-            var errorContext = DefineErrorContext(nameof(LoginAsync), OperationType.Login);
+            var baseErrorContext = DefineErrorContext(nameof(LoginAsync), OperationType.Login);
 
-            if (!_dtoValidator.IsValidLoginDto(loginDto, errorContext, out var validationErrors))
+            if (!_dtoValidator.IsValidLoginDto(loginDto, baseErrorContext, out var validationErrors))
             {
                 return Result<UserDetailedDto>.ValidationFailure(validationErrors, "Invalid username/email or password.");
             }
@@ -46,8 +46,7 @@ namespace media_vault_app.Application.Services.Auth
 
             if (!passwordIsValid)
             {
-                var invalidPasswordErrorContext = DefineErrorContext(nameof(LoginAsync), OperationType.Login, nameof(UserLoginDto.Password));
-                invalidPasswordErrorContext.FieldName = "Password";
+                var invalidPasswordErrorContext = baseErrorContext with { FieldName = nameof(UserLoginDto.Password) };
                 var unauthorizedError = Error.Unauthorized(invalidPasswordErrorContext);
 
                 return Result<UserDetailedDto>.Failure(unauthorizedError, "Invalid username/email or password.");
@@ -58,9 +57,9 @@ namespace media_vault_app.Application.Services.Auth
 
         public async Task<Result> RegisterUserAsync(UserRegisterDto registerDto, CancellationToken ct = default)
         {
-            var dtoValidationErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
+            var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
 
-            if (!_dtoValidator.IsValidCreateDto(registerDto, dtoValidationErrorContext, out var dtoValidationErrors))
+            if (!_dtoValidator.IsValidCreateDto(registerDto, baseErrorContext, out var dtoValidationErrors))
             {
                 return Result.ValidationFailure(dtoValidationErrors, "User register validation failed.");
             }
@@ -79,13 +78,13 @@ namespace media_vault_app.Application.Services.Auth
 
             if (!availabilityResult.Value.IsUserNameAvailable)
             {
-                var userNameErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create, nameof(UserRegisterDto.Username));
+                var userNameErrorContext = baseErrorContext with { FieldName = nameof(UserRegisterDto.Username) };
                 registrationValidationErrors.Add(ValidationError.AlreadyExists(userNameErrorContext));
             }
 
             if (!availabilityResult.Value.IsEmailAvailable)
             {
-                var emailErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create, nameof(UserRegisterDto.Email));
+                var emailErrorContext = baseErrorContext with { FieldName = nameof(UserRegisterDto.Email) };
                 registrationValidationErrors.Add(ValidationError.AlreadyExists(emailErrorContext));
             }
 
@@ -115,13 +114,13 @@ namespace media_vault_app.Application.Services.Auth
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null, string? confirmFieldName = null)
         {
             return new ErrorContext(
-                layer: "Service",
-                serviceName: GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: "User",
-                fieldName: fieldName,
-                confirmFieldName: confirmFieldName);
+                Layer: "Service",
+                ServiceName: GetType().Name,
+                MethodName: methodName,
+                Operation: operation,
+                EntityName: "User",
+                FieldName: fieldName,
+                ConfirmFieldName: confirmFieldName);
         }
     }
 }

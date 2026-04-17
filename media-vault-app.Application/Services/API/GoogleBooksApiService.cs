@@ -22,10 +22,9 @@ namespace media_vault_app.Application.Services.API
 
             if (string.IsNullOrWhiteSpace(volumeId))
             {
-                errorContext.FieldName = nameof(volumeId);
-                errorContext.DescriptionSuffix = "Volume ID must not be empty.";
-                var error = ValidationError.Required(errorContext);
-                return Result<SearchResultDto>.ValidationFailure([error], errorContext.DescriptionSuffix);
+                var volumeIdErrorContext = errorContext with { FieldName = nameof(volumeId), DescriptionSuffix = "Volume ID must not be empty." };
+                var error = ValidationError.Required(volumeIdErrorContext);
+                return Result<SearchResultDto>.ValidationFailure([error], volumeIdErrorContext.DescriptionSuffix);
             }
 
             var result = await _client.GetBookAsync(volumeId, cancellationToken);
@@ -42,29 +41,12 @@ namespace media_vault_app.Application.Services.API
             var errorContext = DefineErrorContext(nameof(SearchBooksAsync), OperationType.GetCollection);
             List<ValidationError> errors = new();
 
-            errorContext.FieldName = nameof(search);
-            if (search.IsNullOrWhiteSpace(errorContext, out var searchError))
+            if (search.IsNullOrWhiteSpace(errorContext with { FieldName = nameof(search) }, out var searchError))
             {
                 errors.Add(searchError);
             }
 
-            if (page < 1)
-            {
-                errorContext.DescriptionSuffix = "Page number must be greater than 0.";
-                errorContext.FieldName = nameof(page);
-
-                var pageError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                errors.Add(pageError);
-            }
-
-            if (pageSize < 1)
-            {
-                errorContext.DescriptionSuffix = "Page size must be greater than 0.";
-                errorContext.FieldName = nameof(pageSize);
-
-                var pageSizeError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                errors.Add(pageSizeError);
-            }
+            Validator.ValidateAndAdjustPaginationParameters(ref page, ref pageSize);
 
             if (errors.Any())
             {
@@ -88,12 +70,12 @@ namespace media_vault_app.Application.Services.API
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                layer: "Application",
-                serviceName: GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: entityName ?? "Google Books Volume",
-                fieldName: fieldName);
+                Layer: "Application",
+                ServiceName: GetType().Name,
+                MethodName: methodName,
+                Operation: operation,
+                EntityName: entityName ?? "Google Books Volume",
+                FieldName: fieldName);
         }
 
         private static IReadOnlyList<SearchResultDto> MapToSearchResults(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)

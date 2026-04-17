@@ -126,12 +126,12 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
         {
             return new ErrorContext
             (
-                layer: "Application",
-                serviceName: "MediaEntryWriteService",
-                methodName: "CreateMediaEntryAsync",
-                operation: OperationType.Create,
-                entityName: "MediaEntry",
-                fieldName: fieldName
+                Layer: "Application",
+                ServiceName: "MediaEntryWriteService",
+                MethodName: "CreateMediaEntryAsync",
+                Operation: OperationType.Create,
+                EntityName: "MediaEntry",
+                FieldName: fieldName
             );
 
         }

@@ -7,19 +7,26 @@ namespace Rasmus.SharedKernel.ResultPattern
     public static class ValidatorExtensions
     {
 
-        public static bool IsValidId<TKey>(this TKey id, ErrorContext errorContext, out ValidationError idError)
+        /// <summary>
+        /// Validates if the provided ID is valid.
+        /// And creates a ValidationError if the ID is invalid, with a description that includes the field name (if provided) and the entity name from the error context.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the ID.</typeparam>
+        /// <param name="id">The ID to validate.</param>
+        /// <param name="errorContext">The error context for validation.</param>
+        /// <param name="idValidationError">The validation error if the ID is invalid.</param>
+        /// <returns>True if the ID is valid; otherwise, false.</returns>
+        /// <out name="idValidationError">The validation error if the ID is invalid.</out>
+        public static bool IsValidId<TKey>(this TKey id, ErrorContext errorContext, out ValidationError idValidationError)
         {
-            idError = default!;
+            idValidationError = default!;
 
             if (!Validator.IsValidId(id))
             {
-                if (string.IsNullOrWhiteSpace(errorContext.FieldName))
-                {
-                    errorContext.FieldName = nameof(id);
-                }
-                errorContext.DescriptionSuffix = $"A valid {errorContext.FieldName} is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
+                string fieldName = string.IsNullOrWhiteSpace(errorContext.FieldName) ? nameof(id) : errorContext.FieldName;
+                string descriptionSuffix = $"A valid {fieldName} is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
 
-                idError = ValidationError.Required(errorContext);
+                idValidationError = ValidationError.Required(errorContext with { FieldName = fieldName, DescriptionSuffix = descriptionSuffix });
                 return false;
             }
             return true;
@@ -32,9 +39,11 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             if (value is null)
             {
-                errorContext.DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty.";
+                nullValueError = ValidationError.Required(errorContext with
+                {
+                    DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty."
+                });
 
-                nullValueError = ValidationError.Required(errorContext);
                 return true;
             }
             else
@@ -70,9 +79,14 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                errorContext.FieldName = string.IsNullOrWhiteSpace(fieldName) ? nameof(value) : fieldName;
-                errorContext.DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
-                nullOrEmptyError = ValidationError.Required(errorContext);
+                string localFieldName = string.IsNullOrWhiteSpace(fieldName) ? nameof(value) : fieldName;
+                var localErrorContext = errorContext with
+                {
+                    FieldName = localFieldName,
+                    DescriptionSuffix = $"The field '{localFieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty."
+                };
+
+                nullOrEmptyError = ValidationError.Required(localErrorContext);
                 return true;
             }
             else
@@ -84,8 +98,12 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                errorContext.DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
-                nullOrEmptyError = ValidationError.Required(errorContext);
+                var localErrorContext = errorContext with 
+                { 
+                    DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty." 
+                };
+
+                nullOrEmptyError = ValidationError.Required(localErrorContext);
                 return true;
             }
             else
@@ -97,8 +115,12 @@ namespace Rasmus.SharedKernel.ResultPattern
             toLowError = default!;
             if (value < minValue)
             {
-                errorContext.DescriptionSuffix = $"The field '{errorContext.FieldName}' must be greater than or equal to {minValue} for the entity '{errorContext.EntityName}'.";
-                toLowError = ValidationError.OutOfRange(errorContext, $"Greater than or equal to {minValue}");
+                var localErrorContext = errorContext with
+                {
+                    DescriptionSuffix = $"The field '{errorContext.FieldName}' must be greater than or equal to {minValue} for the entity '{errorContext.EntityName}'."
+                };
+
+                toLowError = ValidationError.OutOfRange(localErrorContext, $"Greater than or equal to {minValue}");
                 return false;
             }
             else
@@ -111,8 +133,12 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             if (!string.Equals(value1, value2, StringComparison.Ordinal))
             {
-                errorContext.DescriptionSuffix = $"The fields '{errorContext.FieldName}' and '{errorContext.ConfirmFieldName}' must match for the entity '{errorContext.EntityName}'.";
-                notMatchingError = ValidationError.NonMatchingValues(errorContext);
+                var localErrorContext = errorContext with
+                {
+                    DescriptionSuffix = $"The fields '{errorContext.FieldName}' and '{errorContext.ConfirmFieldName}' must match for the entity '{errorContext.EntityName}'."
+                };
+
+                notMatchingError = ValidationError.NonMatchingValues(localErrorContext);
                 return false;
             }
             else

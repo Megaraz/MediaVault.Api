@@ -17,13 +17,13 @@ namespace media_vault_app.Application.Services
             where TDetailedDto : IDtoID<TKey>
             where TKey : notnull, IEquatable<TKey>
     {
-        private protected readonly IGenericRepo<TEntity, TKey> _repo;
-        private protected readonly IMapEntityToDetailedDto<TEntity, TDetailedDto> _entityToDtoMapper;
-        private protected readonly IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TUpdateDto, TKey> _dtoToEntityMapper;
-        private protected readonly IDtoValidator<TKey, TCreateDto, TUpdateDto> _dtoValidator;
+        protected readonly IRepo<TEntity, TKey> _repo;
+        protected readonly IMapEntityToDetailedDto<TEntity, TDetailedDto> _entityToDtoMapper;
+        protected readonly IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TUpdateDto, TKey> _dtoToEntityMapper;
+        protected readonly IDtoValidator<TKey, TCreateDto, TUpdateDto> _dtoValidator;
 
         protected WriteServiceBase(
-            IGenericRepo<TEntity, TKey> repo,
+            IRepo<TEntity, TKey> repo,
             IMapEntityToDetailedDto<TEntity, TDetailedDto> entityToDtoMapper,
             IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TUpdateDto, TKey> dtoToEntityMapper,
             IDtoValidator<TKey, TCreateDto, TUpdateDto> dtoValidator)
@@ -36,11 +36,11 @@ namespace media_vault_app.Application.Services
 
         public virtual async Task<Result<TDetailedDto>> CreateAsync(TCreateDto createDto, CancellationToken ct)
         {
-            var errorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
+            var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
 
-            if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
+            if (!_dtoValidator.IsValidCreateDto(createDto, baseErrorContext, out var validationErrors))
             {
-                return Result<TDetailedDto>.ValidationFailure(validationErrors, errorContext.DescriptionPrefix);
+                return Result<TDetailedDto>.ValidationFailure(validationErrors);
             }
 
             var entity = _dtoToEntityMapper.ToEntity(createDto);
@@ -53,10 +53,10 @@ namespace media_vault_app.Application.Services
 
         public async Task<Result> DeleteAsync(TKey id, CancellationToken ct)
         {
-            var errorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
+            var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
-            if (!id.IsValidId(errorContext, out var idNotValidError))
-                return Result.ValidationFailure([idNotValidError], errorContext.DescriptionSuffix!);
+            if (!id.IsValidId(baseErrorContext, out var idNotValidError))
+                return Result.ValidationFailure([idNotValidError]);
 
             return await _repo.DeleteAsync(id, ct);
         }
@@ -74,7 +74,7 @@ namespace media_vault_app.Application.Services
                 validationErrors.AddRange(updateValidationErrors);
 
             if (validationErrors.Count > 0)
-                return Result.ValidationFailure(validationErrors, "Validation Errors occurred, see validationErrors for details.");
+                return Result.ValidationFailure(validationErrors);
 
             var entity = _dtoToEntityMapper.ToEntity(id, updateDto);
 
@@ -82,14 +82,15 @@ namespace media_vault_app.Application.Services
 
         }
 
-        protected private ErrorContext DefineErrorContext(string methodName, OperationType operation)
+        protected private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                layer: "Service",
-                serviceName: GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: typeof(TEntity).Name);
+                Layer: "Service",
+                ServiceName: GetType().Name,
+                MethodName: methodName,
+                Operation: operation,
+                EntityName: typeof(TEntity).Name,
+                FieldName: fieldName);
         }
     }
 }

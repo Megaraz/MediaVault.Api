@@ -26,14 +26,14 @@ namespace media_vault_app.Application.Services.Base_Classes
             where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
 
-        private protected readonly IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> _ownedEntityRepo;
-        private protected readonly IGenericRepo<TEntityOwner, TKeyOwner> _ownerRepo;
-        private protected readonly IMapEntityToDto<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto> _entityToDtoMapper;
+        protected readonly IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> _ownedEntityRepo;
+        protected readonly IRepo<TEntityOwner, TKeyOwner> _ownerRepo;
+        protected readonly IMapEntityToDto<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto> _entityToDtoMapper;
 
         protected OwnedEntityReadServiceBase(
-            IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> ownedEntityRepo,
+            IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> ownedEntityRepo,
             IMapEntityToDto<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto> entityToDtoMapper,
-            IGenericRepo<TEntityOwner, TKeyOwner> ownerRepo)
+            IRepo<TEntityOwner, TKeyOwner> ownerRepo)
         {
             _ownedEntityRepo = ownedEntityRepo;
             _entityToDtoMapper = entityToDtoMapper;
@@ -136,12 +136,12 @@ namespace media_vault_app.Application.Services.Base_Classes
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                layer: "Service",
-                serviceName: this.GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: typeof(TEntityOwned).Name,
-                fieldName: fieldName);
+                Layer: "Service",
+                ServiceName: this.GetType().Name,
+                MethodName: methodName,
+                Operation: operation,
+                EntityName: typeof(TEntityOwned).Name,
+                FieldName: fieldName);
         }
     }
 }

@@ -11,12 +11,12 @@ namespace media_vault_app.Application.Validators.User
     {
         public bool IsValidLoginDto(UserLoginDto loginDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
-            var internalValidationErrors = new List<ValidationError>();
+            var localValidationErrors = new List<ValidationError>();
 
             if (loginDto.IsNull(errorContext, out ValidationError nullValueError))
             {
-                internalValidationErrors.Add(nullValueError);
-                validationErrors = internalValidationErrors;
+                localValidationErrors.Add(nullValueError);
+                validationErrors = localValidationErrors;
                 return false;
             }
 
@@ -28,10 +28,10 @@ namespace media_vault_app.Application.Validators.User
 
             if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IEnumerable<ValidationError> nullOrEmptyErrors))
             {
-                internalValidationErrors.AddRange(nullOrEmptyErrors);
+                localValidationErrors.AddRange(nullOrEmptyErrors);
             }
 
-            validationErrors = internalValidationErrors;
+            validationErrors = localValidationErrors;
             return !validationErrors.Any();
         }
         public bool IsValidCreateDto(UserRegisterDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)

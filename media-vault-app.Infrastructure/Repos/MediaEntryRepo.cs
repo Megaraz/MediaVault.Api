@@ -6,38 +6,34 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
 {
-    public class MediaEntryRepo : OwnedEntityGenericRepoBase<User, Guid, MediaEntry, Guid>, IMediaEntryRepo
+    public class MediaEntryRepo : OwnedEntityRepoBase<User, Guid, MediaEntry, Guid>, IMediaEntryRepo
     {
         public MediaEntryRepo(AppDbContext appDbContext) : base(appDbContext)
         {
         }
 
-        public async Task<Result<IReadOnlyList<MediaEntry>>> SearchMediaEntriesAsync(Guid ownerId, string query, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<Result<IReadOnlyList<MediaEntry>>> SearchMediaEntriesAsync(Guid ownerId, string query, int pageNumber, int pageSize, CancellationToken ct = default)
         {
-
-            var baseErrorContext = DefineErrorContext(nameof(SearchMediaEntriesAsync), OperationType.GetCollection);
-
             try
             {
                 var mediaEntries = await _dbSet
                     .AsNoTracking()
-                    .Where(mediaEntry => mediaEntry.OwnerId == ownerId && !string.IsNullOrWhiteSpace(mediaEntry.Title) && mediaEntry.Title.Contains(query))
+                    .Where(mediaEntry => mediaEntry.OwnerId == ownerId && mediaEntry.Title.Contains(query))
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
-                    .ToListAsync(ct);
+                    .ToListAsync(ct).ConfigureAwait(false);
 
                 return Result<IReadOnlyList<MediaEntry>>.Success(mediaEntries);
             }
+            catch (OperationCanceledException)
+            {
+                var baseErrorContext = DefineErrorContext(nameof(SearchMediaEntriesAsync), OperationType.GetCollection);
+                return Result<IReadOnlyList<MediaEntry>>.Failure(DatabaseError.Cancelled(baseErrorContext));
+            }
             catch (Exception ex)
             {
-                var dbExceptionErrorContext = baseErrorContext with
-                {
-                    DescriptionSuffix = $"An error occurred while searching for MediaEntries with query '{query}'."
-                };
-
-                return Result<IReadOnlyList<MediaEntry>>.Failure(
-                    Error.DbGetCollectionFailure(dbExceptionErrorContext, ex),
-                    dbExceptionErrorContext.DescriptionSuffix);
+                var baseErrorContext = DefineErrorContext(nameof(SearchMediaEntriesAsync), OperationType.GetCollection);
+                return Result<IReadOnlyList<MediaEntry>>.Failure(DatabaseError.GetCollectionFailure(baseErrorContext, ex));
             }
         }
 

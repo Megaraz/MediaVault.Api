@@ -28,15 +28,15 @@ namespace media_vault_app.Application.Services.Base_Classes
             where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
 
-        private protected readonly IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> _ownedEntityRepo;
-        private protected readonly IGenericRepo<TEntityOwner, TKeyOwner> _ownerRepo;
-        private protected readonly IMapEntityToDetailedDto<TEntityOwned, TDetailedDto> _entityToDtoMapper;
-        private protected readonly IMapDtoToEntity<TEntityOwned, TDetailedDto, TCreateDto, TUpdateDto, TKeyOwned> _dtoToEntityMapper;
-        private protected readonly IDtoValidator<TKeyOwned, TCreateDto, TUpdateDto> _dtoValidator;
+        protected readonly IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> _ownedEntityRepo;
+        protected readonly IRepo<TEntityOwner, TKeyOwner> _ownerRepo;
+        protected readonly IMapEntityToDetailedDto<TEntityOwned, TDetailedDto> _entityToDtoMapper;
+        protected readonly IMapDtoToEntity<TEntityOwned, TDetailedDto, TCreateDto, TUpdateDto, TKeyOwned> _dtoToEntityMapper;
+        protected readonly IDtoValidator<TKeyOwned, TCreateDto, TUpdateDto> _dtoValidator;
 
         protected OwnedEntityWriteServiceBase(
-            IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> ownedEntityRepo,
-            IGenericRepo<TEntityOwner, TKeyOwner> ownerRepo,
+            IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> ownedEntityRepo,
+            IRepo<TEntityOwner, TKeyOwner> ownerRepo,
             IMapEntityToDetailedDto<TEntityOwned, TDetailedDto> entityToDtoMapper,
             IMapDtoToEntity<TEntityOwned, TDetailedDto, TCreateDto, TUpdateDto, TKeyOwned> dtoToEntityMapper,
             IDtoValidator<TKeyOwned, TCreateDto, TUpdateDto> dtoValidator)
@@ -61,7 +61,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 errors.AddRange(validationErrors);
 
             if (errors.Count > 0)
-                return Result<TDetailedDto>.ValidationFailure(errors, "Validation Errors occurred, see validationErrors for details.");
+                return Result<TDetailedDto>.ValidationFailure(errors);
 
             var ownerExistsResult = await EnsureOwnerExistsAsync(ownerId, ct);
 
@@ -146,12 +146,12 @@ namespace media_vault_app.Application.Services.Base_Classes
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                layer: "Service",
-                serviceName: this.GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: typeof(TEntityOwned).Name,
-                fieldName: fieldName);
+                Layer: "Service",
+                ServiceName: this.GetType().Name,
+                MethodName: methodName,
+                Operation: operation,
+                EntityName: typeof(TEntityOwned).Name,
+                FieldName: fieldName);
         }
     }
 }

@@ -63,12 +63,12 @@ namespace media_vault_app.Infrastructure.API_Clients
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                layer: "Infrastructure",
-                serviceName: GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: entityName ?? "Rawg Game",
-                fieldName: fieldName);
+                Layer: "Infrastructure",
+                ServiceName: GetType().Name,
+                MethodName: methodName,
+                Operation: operation,
+                EntityName: entityName ?? "Rawg Game",
+                FieldName: fieldName);
         }
 
     }

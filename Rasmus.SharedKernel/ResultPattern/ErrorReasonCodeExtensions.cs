@@ -20,6 +20,9 @@ namespace Rasmus.SharedKernel.ResultPattern
             ErrorReasonCode.ValidationTooLong => "TooLong",
 
             ErrorReasonCode.DatabaseFailure => "DbFailure",
+            ErrorReasonCode.DatabaseConcurrencyFailure => "DbConcurrencyFailure",
+
+            ErrorReasonCode.OperationCancelled => "Cancelled",
 
             ErrorReasonCode.GeneralFailure => "Failure",
             ErrorReasonCode.GeneralNotFound => "NotFound",

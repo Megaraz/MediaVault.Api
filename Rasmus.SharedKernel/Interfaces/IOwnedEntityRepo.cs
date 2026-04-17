@@ -6,7 +6,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Interfaces
 {
-    public interface IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> 
+    public interface IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> 
         where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
         where TKeyOwner : notnull, IEquatable<TKeyOwner>
         where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>

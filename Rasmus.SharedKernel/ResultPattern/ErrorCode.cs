@@ -28,6 +28,9 @@ namespace Rasmus.SharedKernel.ResultPattern
         ValidationTooLong = 105,
 
         DatabaseFailure = 200,
+        DatabaseConcurrencyFailure = 201,
+
+        OperationCancelled = 250,
 
         GeneralFailure = 300,
         GeneralNotFound = 301,

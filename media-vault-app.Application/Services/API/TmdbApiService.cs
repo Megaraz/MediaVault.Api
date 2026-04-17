@@ -22,8 +22,7 @@ namespace media_vault_app.Application.Services.API
 
             if (!id.IsValidId(idValidationErrorContext, out var idError))
             {
-                idValidationErrorContext.DescriptionSuffix = $"Invalid ID: {id}.";
-                return Result<SearchResultDto>.ValidationFailure([idError], idValidationErrorContext.DescriptionSuffix);
+                return Result<SearchResultDto>.ValidationFailure([idError]);
             }
 
             var result = await _client.GetByIdAsync(id, mediaType, cancellationToken);
@@ -38,32 +37,16 @@ namespace media_vault_app.Application.Services.API
             string? ordering = null,
             CancellationToken cancellationToken = default)
         {
-            var errorContext = DefineErrorContext(nameof(SearchAsync), OperationType.GetCollection);
+            var baseErrorContext = DefineErrorContext(nameof(SearchAsync), OperationType.GetCollection);
+
             List<ValidationError> errors = new();
 
-            errorContext.FieldName = nameof(search);
-            if (search.IsNullOrWhiteSpace(errorContext, out var searchError))
+            if (search.IsNullOrWhiteSpace(baseErrorContext with { FieldName = nameof(search) }, out var searchError))
             {
                 errors.Add(searchError);
             }
 
-            if (page < 1)
-            {
-                errorContext.DescriptionSuffix = "Page number must be greater than 0.";
-                errorContext.FieldName = nameof(page);
-
-                var pageError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                errors.Add(pageError);
-            }
-
-            if (pageSize < 1)
-            {
-                errorContext.DescriptionSuffix = "Page size must be greater than 0.";
-                errorContext.FieldName = nameof(pageSize);
-
-                var pageSizeError = ValidationError.OutOfRange(errorContext, "Greater than 0");
-                errors.Add(pageSizeError);
-            }
+            Validator.ValidateAndAdjustPaginationParameters(ref page, ref pageSize);
 
             if (errors.Any())
             {
@@ -84,12 +67,12 @@ namespace media_vault_app.Application.Services.API
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                layer: "Application",
-                serviceName: GetType().Name,
-                methodName: methodName,
-                operation: operation,
-                entityName: entityName ?? "Tmdb",
-                fieldName: fieldName);
+                Layer: "Application",
+                ServiceName: GetType().Name,
+                MethodName: methodName,
+                Operation: operation,
+                EntityName: entityName ?? "Tmdb",
+                FieldName: fieldName);
         }
 
         private static IReadOnlyList<SearchResultDto> MapToSearchResults(IReadOnlyList<TmdbResult>? results, MediaEntryType mediaType)

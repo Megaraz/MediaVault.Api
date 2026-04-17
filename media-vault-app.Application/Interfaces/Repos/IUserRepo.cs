@@ -5,7 +5,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Repos
 {
-    public interface IUserRepo : IGenericRepo<User, Guid>
+    public interface IUserRepo : IRepo<User, Guid>
     {
         Task<Result> RegisterUserAsync(User entity, CancellationToken ct = default);
         Task<Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>> CheckRegistrationAvailabilityAsync(string username, string email, CancellationToken ct = default);

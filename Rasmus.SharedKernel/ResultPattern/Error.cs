@@ -14,7 +14,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
     }
 
-    public record Error(string Code, string Description, ErrorType Type, Exception? exception = null)
+    public record Error(string Code, string Description, ErrorType Type, string UserMessage = "", Exception? exception = null)
     {
 
         public static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
@@ -22,61 +22,6 @@ namespace Rasmus.SharedKernel.ResultPattern
         public override string ToString()
         {
             return $"Error Code: {Code}{Environment.NewLine}Description: {Description}";
-        }
-
-        public static Error DbCreateFailure(ErrorContext errorContext, Exception exception)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
-
-            string defaultDescriptionSuffix = $"A database failure occurred while creating the entity {errorCode.NameOfEntity} in the database.";
-
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
-        }
-
-        public static Error DbGetFailure(ErrorContext errorContext, Exception exception)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
-
-            string defaultDescriptionSuffix = $"A database failure occurred while getting the entity {errorCode.NameOfEntity} from the database.";
-
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
-        }
-
-        public static Error DbGetCollectionFailure(ErrorContext errorContext, Exception exception)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
-
-            string defaultDescriptionSuffix = $"A database failure occurred while getting the list of entities {errorCode.NameOfEntity} from the database.";
-
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
-        }
-
-        public static Error DbDeleteFailure(ErrorContext errorContext, Exception exception)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
-
-            string defaultDescriptionSuffix = $"A database failure occurred while deleting the entity {errorCode.NameOfEntity} from the database.";
-
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
-        }
-
-        public static Error DbUpdateFailure(ErrorContext errorContext, Exception exception)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
-
-            string defaultDescriptionSuffix = $"A database failure occurred while updating the entity {errorCode.NameOfEntity} in the database.";
-
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Database, exception);
         }
 
         public static Error NotFound(ErrorContext errorContext)
@@ -87,7 +32,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.NotFound);
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.NotFound, defaultDescriptionSuffix);
         }
 
         public static Error Conflict(ErrorContext errorContext)
@@ -98,7 +43,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Conflict);
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Conflict, defaultDescriptionSuffix);
         }
 
         public static Error Unauthorized(ErrorContext errorContext)
@@ -109,7 +54,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Unauthorized);
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Unauthorized, defaultDescriptionSuffix);
         }
 
         public static Error Failure(ErrorContext errorContext, string? descriptionSuffix = null, Exception? exception = null)
@@ -122,22 +67,12 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Failure, exception);
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Failure, defaultDescriptionSuffix, exception);
         }
-
-
-        //public static Error Forbidden(ErrorCode code, string description) =>
-        //    new(code.Code, description, ErrorType.Forbidden);
-
-        //public static Error Failure(ErrorCode code, string description) =>
-        //    new(code.Code, description, ErrorType.Failure);
 
         protected static string FormatDescription(ErrorContext errorContext, string defaultDescriptionSuffix)
         {
-            if (string.IsNullOrWhiteSpace(errorContext.DescriptionSuffix))
-                errorContext.DescriptionSuffix = defaultDescriptionSuffix;
-
-            return $"{errorContext.DescriptionPrefix}: {errorContext.DescriptionSuffix}";
+            return $"{errorContext.DescriptionPrefix}: {(string.IsNullOrWhiteSpace(errorContext.DescriptionSuffix) ? defaultDescriptionSuffix : errorContext.DescriptionSuffix)}";
         }
 
     }

@@ -22,8 +22,8 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         // Private constructor to enforce the use of static factory methods for creating ValidationError instances
         // Sets the ErrorType of base-class to Validation for all instances of ValidationError
-        private ValidationError(string code, string description, ValidationErrorType type)
-            : base(code, description, ErrorType.Validation)
+        private ValidationError(string code, string description, ValidationErrorType type, string userMessage)
+            : base(code, description, ErrorType.Validation, userMessage)
         {
             ValidationErrorType = type;
         }
@@ -36,7 +36,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.AlreadyExists);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.AlreadyExists, defaultDescriptionSuffix);
         }
 
         public static ValidationError InvalidFormat(ErrorContext errorContext, string expectedFormat)
@@ -47,7 +47,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.InvalidFormat);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.InvalidFormat, defaultDescriptionSuffix);
         }
 
         public static ValidationError Required(ErrorContext errorContext)
@@ -60,7 +60,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Required);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Required, defaultDescriptionSuffix);
         }
 
         public static ValidationError TooLong(ErrorContext errorContext, string range)
@@ -71,7 +71,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooLong);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooLong, defaultDescriptionSuffix);
         }
 
         public static ValidationError OutOfRange(ErrorContext errorContext, string range)
@@ -82,7 +82,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.OutOfRange);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.OutOfRange, defaultDescriptionSuffix);
         }
 
         public static ValidationError TooShort(ErrorContext errorContext, string range)
@@ -93,7 +93,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooShort);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooShort, defaultDescriptionSuffix);
         }
 
         public static ValidationError NonMatchingValues(ErrorContext errorContext)
@@ -106,7 +106,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.NonMatchingValues);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.NonMatchingValues, defaultDescriptionSuffix);
         }
 
         public static ValidationError Custom(ErrorContext errorContext)
@@ -117,7 +117,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Custom);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Custom, defaultDescriptionSuffix);
         }
     }
 }

@@ -63,7 +63,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             var localErrorContext = CloneErrorContext(errorContext);
 
             if (response is null)
-                return Result.Failure(Error.Failure(localErrorContext, CreateTransportFailureMessage()), CreateTransportFailureMessage());
+                return Result.Failure(Error.Failure(localErrorContext, CreateTransportFailureMessage()));
 
             if (response.IsSuccessStatusCode)
             {
@@ -78,13 +78,13 @@ namespace Rasmus.SharedKernel.ResultPattern
         private static ErrorContext CloneErrorContext(ErrorContext errorContext)
         {
             return new ErrorContext(
-                layer: errorContext.Layer,
-                serviceName: errorContext.ServiceName,
-                methodName: errorContext.MethodName,
-                operation: errorContext.Operation,
-                entityName: errorContext.EntityName,
-                fieldName: errorContext.FieldName,
-                confirmFieldName: errorContext.ConfirmFieldName)
+                Layer: errorContext.Layer,
+                ServiceName: errorContext.ServiceName,
+                MethodName: errorContext.MethodName,
+                Operation: errorContext.Operation,
+                EntityName: errorContext.EntityName,
+                FieldName: errorContext.FieldName,
+                ConfirmFieldName: errorContext.ConfirmFieldName)
             {
                 DescriptionSuffix = errorContext.DescriptionSuffix,
             };
@@ -92,19 +92,19 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         private static Result<TValue> CreateFailureResult<TValue>(ErrorContext errorContext, string message, Exception? exception = null)
         {
-            return Result<TValue>.Failure(Error.Failure(errorContext, message, exception), message);
+            return Result<TValue>.Failure(Error.Failure(errorContext, message, exception));
         }
 
         private static Result<TValue> CreateHttpFailureResult<TValue>(HttpStatusCode statusCode, ErrorContext errorContext, string message)
         {
-            errorContext.DescriptionSuffix = message;
-            return Result<TValue>.Failure(MapHttpError(statusCode, errorContext), message);
+            var localErrorContext = errorContext with { DescriptionSuffix = message };
+            return Result<TValue>.Failure(MapHttpError(statusCode, localErrorContext));
         }
 
         private static Result CreateHttpFailureResult(HttpStatusCode statusCode, ErrorContext errorContext, string message)
         {
-            errorContext.DescriptionSuffix = message;
-            return Result.Failure(MapHttpError(statusCode, errorContext), message);
+            var localErrorContext = errorContext with { DescriptionSuffix = message };
+            return Result.Failure(MapHttpError(statusCode, localErrorContext));
         }
 
         private static HttpError MapHttpError(HttpStatusCode statusCode, ErrorContext errorContext)

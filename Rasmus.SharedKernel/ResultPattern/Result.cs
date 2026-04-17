@@ -143,6 +143,14 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         // Convenience Failure factory method, for creating a failed Result with a single error and a message
         /// <summary>
+        /// Creates a failure result using the error's <see cref="Error.UserMessage"/> as the result message.
+        /// </summary>
+        /// <param name="primaryError">The main error for the failure.</param>
+        /// <returns>A failed <see cref="Result"/>.</returns>
+        public static Result Failure(Error primaryError) => Failure(primaryError, primaryError.UserMessage);
+
+        // Convenience Failure factory method, for creating a failed Result with a single error and a message
+        /// <summary>
         /// Creates a failure result.
         /// </summary>
         /// <param name="primaryError">The main error for the failure.</param>
@@ -250,6 +258,14 @@ namespace Rasmus.SharedKernel.ResultPattern
                 validationErrors: normalizedValidationErrors,
                 primaryError: normalizedValidationErrors.First());
         }
+
+        // Failure factory method, for creating a failed Result using the error's UserMessage
+        /// <summary>
+        /// Creates a failure result using the error's <see cref="Error.UserMessage"/> as the result message.
+        /// </summary>
+        /// <param name="primaryError">The main error for the failure.</param>
+        /// <returns>A failed <see cref="Result{TValue}"/>.</returns>
+        public new static Result<TValue> Failure(Error primaryError) => Failure(primaryError, primaryError.UserMessage);
 
         // Failure factory method, for creating a failed Result with a single error and a message
         /// <summary>
