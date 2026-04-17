@@ -10,27 +10,33 @@ using Rasmus.SharedKernel.ResultPattern;
 namespace media_vault_app.Application.Services.Base_Classes
 {
 
-    public abstract class OwnedEntityReadServiceBase<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto>
-            : ReadServiceBase<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto>,
-            IOwnedEntityReadService<TKeyOwner, TKeyOwned, TDetailedDto, TMinimalDto>
-                where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
-                where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
-                where TDetailedDto : IDtoID<TKeyOwned>
-                where TMinimalDto : IDtoID<TKeyOwned>
-                where TKeyOwner : notnull, IEquatable<TKeyOwner>
-                where TKeyOwned : notnull, IEquatable<TKeyOwned>
+    public abstract class OwnedEntityReadServiceBase<
+        TEntityOwner,
+        TKeyOwner,
+        TEntityOwned,
+        TKeyOwned,
+        TDetailedDto,
+        TMinimalDto>
+        : IOwnedEntityReadService<TKeyOwner, TKeyOwned, TDetailedDto, TMinimalDto>
+            where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
+            where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+            where TDetailedDto : IDtoID<TKeyOwned>
+            where TMinimalDto : IDtoID<TKeyOwned>
+            where TKeyOwner : notnull, IEquatable<TKeyOwner>
+            where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
 
         private protected readonly IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> _ownedEntityRepo;
         private protected readonly IGenericRepo<TEntityOwner, TKeyOwner> _ownerRepo;
+        private protected readonly IMapEntityToDto<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto> _entityToDtoMapper;
 
-        public OwnedEntityReadServiceBase(
+        protected OwnedEntityReadServiceBase(
             IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> ownedEntityRepo,
             IMapEntityToDto<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto> entityToDtoMapper,
-            IGenericRepo<TEntityOwner, TKeyOwner> ownerRepo
-            ) : base(ownedEntityRepo, entityToDtoMapper)
+            IGenericRepo<TEntityOwner, TKeyOwner> ownerRepo)
         {
             _ownedEntityRepo = ownedEntityRepo;
+            _entityToDtoMapper = entityToDtoMapper;
             _ownerRepo = ownerRepo;
         }
 
@@ -117,6 +123,25 @@ namespace media_vault_app.Application.Services.Base_Classes
         protected async Task<Result<bool>> EnsureOwnerExistsAsync(TKeyOwner ownerId, CancellationToken ct)
         {
             return await _ownerRepo.ExistsAsync(ownerId, ct);
+        }
+
+        protected virtual void ValidateAndAdjustPaginationParameters(ref int pageNumber, ref int pageSize)
+        {
+            if (pageNumber < 1)
+                pageNumber = 1; // Default to page 1 if the provided page number is too low
+            if (pageSize < 1)
+                pageSize = 1; // Default to a minimum page size of 1 if the provided page size is too low
+        }
+
+        protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
+        {
+            return new ErrorContext(
+                layer: "Service",
+                serviceName: this.GetType().Name,
+                methodName: methodName,
+                operation: operation,
+                entityName: typeof(TEntityOwned).Name,
+                fieldName: fieldName);
         }
     }
 }

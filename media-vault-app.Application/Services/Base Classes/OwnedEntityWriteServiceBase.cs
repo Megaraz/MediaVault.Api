@@ -12,9 +12,15 @@ using Rasmus.SharedKernel.ResultPattern;
 namespace media_vault_app.Application.Services.Base_Classes
 {
 
-    public abstract class OwnedEntityWriteServiceBase<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>
-        : WriteServiceBase<TEntityOwned, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>, 
-        IOwnedEntityWriteService<TKeyOwner, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto> 
+    public abstract class OwnedEntityWriteServiceBase<
+        TEntityOwner, 
+        TKeyOwner, 
+        TEntityOwned, 
+        TKeyOwned, 
+        TCreateDto, 
+        TUpdateDto, 
+        TDetailedDto>
+        : IOwnedEntityWriteService<TKeyOwner, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>
             where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
             where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
             where TDetailedDto : IDtoID<TKeyOwned>
@@ -24,17 +30,22 @@ namespace media_vault_app.Application.Services.Base_Classes
 
         private protected readonly IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> _ownedEntityRepo;
         private protected readonly IGenericRepo<TEntityOwner, TKeyOwner> _ownerRepo;
+        private protected readonly IMapEntityToDetailedDto<TEntityOwned, TDetailedDto> _entityToDtoMapper;
+        private protected readonly IMapDtoToEntity<TEntityOwned, TDetailedDto, TCreateDto, TUpdateDto, TKeyOwned> _dtoToEntityMapper;
+        private protected readonly IDtoValidator<TKeyOwned, TCreateDto, TUpdateDto> _dtoValidator;
 
         protected OwnedEntityWriteServiceBase(
             IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> ownedEntityRepo,
             IGenericRepo<TEntityOwner, TKeyOwner> ownerRepo,
             IMapEntityToDetailedDto<TEntityOwned, TDetailedDto> entityToDtoMapper,
             IMapDtoToEntity<TEntityOwned, TDetailedDto, TCreateDto, TUpdateDto, TKeyOwned> dtoToEntityMapper,
-            IDtoValidator<TKeyOwned, TCreateDto, TUpdateDto> dtoValidator
-            ) : base(ownedEntityRepo, entityToDtoMapper, dtoToEntityMapper, dtoValidator)
+            IDtoValidator<TKeyOwned, TCreateDto, TUpdateDto> dtoValidator)
         {
             _ownedEntityRepo = ownedEntityRepo;
             _ownerRepo = ownerRepo;
+            _dtoToEntityMapper = dtoToEntityMapper;
+            _dtoValidator = dtoValidator;
+            _entityToDtoMapper = entityToDtoMapper;
         }
 
         public virtual async Task<Result<TDetailedDto>> CreateAsync(TKeyOwner ownerId, TCreateDto createDto, CancellationToken ct)
@@ -130,6 +141,17 @@ namespace media_vault_app.Application.Services.Base_Classes
         protected async Task<Result<bool>> EnsureOwnerExistsAsync(TKeyOwner ownerId, CancellationToken ct)
         {
             return await _ownerRepo.ExistsAsync(ownerId, ct);
+        }
+
+        protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
+        {
+            return new ErrorContext(
+                layer: "Service",
+                serviceName: this.GetType().Name,
+                methodName: methodName,
+                operation: operation,
+                entityName: typeof(TEntityOwned).Name,
+                fieldName: fieldName);
         }
     }
 }

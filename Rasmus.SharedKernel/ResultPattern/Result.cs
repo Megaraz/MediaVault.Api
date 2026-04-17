@@ -123,7 +123,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <returns>A failed <see cref="Result"/> with validation errors.</returns>
         public static Result ValidationFailure(
             IEnumerable<ValidationError> validationErrors,
-            string message)
+            string? message = null)
         {
 
             ArgumentNullException.ThrowIfNull(validationErrors);
@@ -135,7 +135,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             return new Result(
                 isSuccess: false,
-                message: message,
+                message: message ?? "Validation Errors occurred, see validation errors for details.",
                 validationErrors: normalizedValidationErrors,
                 primaryError: normalizedValidationErrors.First());
         }
@@ -236,7 +236,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <exception cref="ArgumentException">Thrown if the validation errors collection is empty.</exception>
         public new static Result<TValue> ValidationFailure(
             IEnumerable<ValidationError> validationErrors,
-            string message)
+            string? message = null)
         {
             ArgumentNullException.ThrowIfNull(validationErrors);
 
@@ -246,7 +246,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             var normalizedValidationErrors = validationErrors.ToList();
 
             return new Result<TValue>(
-                message: message,
+                message: message ?? "Validation errors occurred, see validation errors for details.",
                 validationErrors: normalizedValidationErrors,
                 primaryError: normalizedValidationErrors.First());
         }
@@ -274,23 +274,6 @@ namespace Rasmus.SharedKernel.ResultPattern
                 primaryError: primaryError);
 
         }
-
-        //public static Result<TOut> From<TOut, TIn>(Result<TIn> result)
-        //{
-        //    return new Result<TOut>(
-        //        message: result.Message,
-        //        validationErrors: result.ValidationErrors,
-        //        primaryError: result.PrimaryError);
-
-        //}
-
-        //public Result<TOut> Map<TOut>(Func<TValue, TOut> map)
-        //{
-        //    if (IsFailure)
-        //        return Result<TOut>.From<TOut, TValue>(this);
-
-        //    return Result<TOut>.Success(map(Value));
-        //}
 
         // Implicit conversions for cleaner syntax
         /// <summary>

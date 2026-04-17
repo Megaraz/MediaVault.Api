@@ -25,17 +25,15 @@ namespace media_vault_app.Infrastructure.Repos
         }
         public virtual async Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default)
         {
-            // Define error handling context
-            var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
+            ArgumentNullException.ThrowIfNull(entity);
 
-            if (entity.IsNull(baseErrorContext, out var nullValueError))
-                return Result<TEntity>.ValidationFailure([nullValueError], baseErrorContext.DescriptionSuffix!);
+            var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
 
             try
             {
+                entity.CreatedAtUtc = DateTime.UtcNow;
                 _dbSet.Add(entity);
-                await _appDbContext.SaveChangesAsync(ct);
-                entity.CreatedAtUtc = DateTime.UtcNow; // Set CreatedAtUtc after saving to ensure it has a value
+                await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result<TEntity>.Success(entity);
             }
             catch (Exception ex)
@@ -54,17 +52,14 @@ namespace media_vault_app.Infrastructure.Repos
 
         public virtual async Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken ct = default)
         {
-            // Define error handling context
-            var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
+            if (!Validator.IsValidId(id))
+                throw new ArgumentException("ID is not valid.", nameof(id));
 
-            if (!id.IsValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
-            {
-                return Result<TEntity>.ValidationFailure([idError], baseErrorContext.DescriptionSuffix!);
-            }
+            var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
             try
             {
-                var entity = await _dbSet.FindAsync(new object[] { id! }, ct);
+                var entity = await _dbSet.FindAsync(new object[] { id! }, ct).ConfigureAwait(false);
                 if (entity is null)
                 {
                     var notFoundErrorContext = baseErrorContext with { DescriptionSuffix = $"{baseErrorContext.EntityName} with the specified ID was not found." };
@@ -88,8 +83,9 @@ namespace media_vault_app.Infrastructure.Repos
 
         public virtual async Task<Result<IReadOnlyList<TEntity>>> GetCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
-            // Define error handling context
             var baseErrorContext = DefineErrorContext(nameof(GetCollectionAsync), OperationType.GetCollection);
+
+            ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
             try
             {
@@ -97,7 +93,7 @@ namespace media_vault_app.Infrastructure.Repos
                     .AsNoTracking()
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
-                    .ToListAsync(ct);
+                    .ToListAsync(ct).ConfigureAwait(false);
 
                 return Result<IReadOnlyList<TEntity>>.Success(entities);
             }
@@ -113,15 +109,14 @@ namespace media_vault_app.Infrastructure.Repos
 
         public virtual async Task<Result> DeleteAsync(TKey id, CancellationToken ct = default)
         {
-            // Define error handling context
-            var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
+            if (!Validator.IsValidId(id))
+                throw new ArgumentException("ID is not valid.", nameof(id));
 
-            if (!id.IsValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
-                return Result.ValidationFailure([idError], baseErrorContext.DescriptionSuffix!);
+            var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
             try
             {
-                var entity = await _dbSet.FindAsync(new object[] { id! }, ct);
+                var entity = await _dbSet.FindAsync(new object[] { id! }, ct).ConfigureAwait(false);
 
                 if (entity is null)
                 {
@@ -133,7 +128,7 @@ namespace media_vault_app.Infrastructure.Repos
                 }
 
                 _dbSet.Remove(entity);
-                await _appDbContext.SaveChangesAsync(ct);
+                await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
             }
             catch (Exception ex)
@@ -150,20 +145,16 @@ namespace media_vault_app.Infrastructure.Repos
             TEntity updatedEntity,
             CancellationToken ct = default)
         {
+            ArgumentNullException.ThrowIfNull(updatedEntity);
 
-            // Define error handling context
+            if (!Validator.IsValidId(updatedEntity.Id))
+                throw new ArgumentException("Entity ID is not valid.", nameof(updatedEntity));
+
             var baseErrorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
-
-            if (updatedEntity.IsNull(baseErrorContext, out var nullValueError))
-                return Result.ValidationFailure([nullValueError], baseErrorContext.DescriptionSuffix!);
-
-            if (!updatedEntity.Id.IsValidId(baseErrorContext with { FieldName = nameof(updatedEntity.Id) }, out var idError))
-                return Result.ValidationFailure([idError], baseErrorContext.DescriptionSuffix!);
 
             try
             {
-
-                var oldEntity = await _dbSet.FindAsync(new object[] { updatedEntity.Id! }, ct);
+                var oldEntity = await _dbSet.FindAsync(new object[] { updatedEntity.Id! }, ct).ConfigureAwait(false);
 
                 if (oldEntity is null)
                 {
@@ -176,7 +167,7 @@ namespace media_vault_app.Infrastructure.Repos
                 }
 
                 _appDbContext.Entry(oldEntity).CurrentValues.SetValues(updatedEntity);
-                await _appDbContext.SaveChangesAsync(ct);
+                await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
 
                 return Result.Success();
 
@@ -195,16 +186,14 @@ namespace media_vault_app.Infrastructure.Repos
 
         public virtual async Task<Result<bool>> ExistsAsync(TKey id, CancellationToken ct = default)
         {
-            var baseErrorContext = DefineErrorContext(nameof(ExistsAsync), OperationType.Get);
+            if (!Validator.IsValidId(id))
+                throw new ArgumentException("ID is not valid.", nameof(id));
 
-            if (!id.IsValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
-            {
-                return Result<bool>.ValidationFailure([idError], baseErrorContext.DescriptionSuffix!);
-            }
+            var baseErrorContext = DefineErrorContext(nameof(ExistsAsync), OperationType.Get);
 
             try
             {
-                var exists = await _dbSet.AnyAsync(entity => entity.Id.Equals(id), ct);
+                var exists = await _dbSet.AnyAsync(entity => entity.Id.Equals(id), ct).ConfigureAwait(false);
 
                 if (!exists)
                 {
@@ -242,6 +231,14 @@ namespace media_vault_app.Infrastructure.Repos
                 operation: operation,
                 entityName: typeof(TEntity).Name,
                 fieldName: fieldName);
+        }
+
+        protected virtual void ValidateAndAdjustPaginationParameters(ref int pageNumber, ref int pageSize)
+        {
+            if (pageNumber < 1)
+                pageNumber = 1; // Default to page 1 if the provided page number is too low
+            if (pageSize < 1)
+                pageSize = 1; // Default to a minimum page size of 1 if the provided page size is too low
         }
     }
 }

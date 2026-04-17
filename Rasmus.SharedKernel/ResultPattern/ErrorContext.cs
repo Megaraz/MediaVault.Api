@@ -20,8 +20,9 @@ namespace Rasmus.SharedKernel.ResultPattern
             set { _descriptionSuffix = value is not null ? $"{Environment.NewLine}Reason: {value}" : null; }
         }
 
-        //public string DescriptionPrefix => $"An error occurred in {Layer} layer, in service {ServiceName}, method {MethodName}, during {Operation} operation on entity {EntityName}.";
         public string DescriptionPrefix { get; init; }
+        public string FullDescription => $"{DescriptionPrefix}{DescriptionSuffix}";
+
         public ErrorContext(string layer, string serviceName, string methodName, OperationType operation, string entityName, string? fieldName = null, string? confirmFieldName = null)
         {
             Layer = layer;

@@ -19,6 +19,11 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         public static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
 
+        public override string ToString()
+        {
+            return $"Error Code: {Code}{Environment.NewLine}Description: {Description}";
+        }
+
         public static Error DbCreateFailure(ErrorContext errorContext, Exception exception)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);

@@ -6,11 +6,6 @@ using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Mappers.MediaEntry;
 using media_vault_app.Application.Services.Base_Classes;
 using media_vault_app.Application.Validators.MediaEntry;
-using Rasmus.SharedKernel.Interfaces;
-using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
-using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
-using Rasmus.SharedKernel.Interfaces.Validators;
-using Rasmus.SharedKernel.ResultPattern;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using UserEntity = media_vault_app.Domain.Entities.User;
 

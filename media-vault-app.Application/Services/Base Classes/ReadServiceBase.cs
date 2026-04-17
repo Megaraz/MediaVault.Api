@@ -9,19 +9,20 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services
 {
-    public class ReadServiceBase<TEntity, TKey, TDetailedDto, TMinimalDto>
+    public abstract class ReadServiceBase<TEntity, TKey, TDetailedDto, TMinimalDto>
         : IReadService<TEntity, TKey, TDetailedDto, TMinimalDto>
             where TEntity : class, IEntityId<TKey>
             where TDetailedDto : IDtoID<TKey>
             where TMinimalDto : IDtoID<TKey>
-        where TKey : notnull, IEquatable<TKey>
+            where TKey : notnull, IEquatable<TKey>
     {
 
         private protected readonly IGenericRepo<TEntity, TKey> _repo;
         private protected readonly IMapEntityToDto<TEntity, TKey, TDetailedDto, TMinimalDto> _entityToDtoMapper;
 
-
-        public ReadServiceBase(IGenericRepo<TEntity, TKey> repo, IMapEntityToDto<TEntity, TKey, TDetailedDto, TMinimalDto> entityToDtoMapper)
+        protected ReadServiceBase(
+            IGenericRepo<TEntity, TKey> repo, 
+            IMapEntityToDto<TEntity, TKey, TDetailedDto, TMinimalDto> entityToDtoMapper)
         {
             _repo = repo;
             _entityToDtoMapper = entityToDtoMapper;

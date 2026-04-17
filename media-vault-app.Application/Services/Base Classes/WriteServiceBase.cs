@@ -11,19 +11,18 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services
 {
-    public class WriteServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
+    public abstract class WriteServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
         : IWriteService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
             where TEntity : class, IEntityId<TKey>
             where TDetailedDto : IDtoID<TKey>
-        where TKey : notnull, IEquatable<TKey>
+            where TKey : notnull, IEquatable<TKey>
     {
         private protected readonly IGenericRepo<TEntity, TKey> _repo;
-
         private protected readonly IMapEntityToDetailedDto<TEntity, TDetailedDto> _entityToDtoMapper;
         private protected readonly IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TUpdateDto, TKey> _dtoToEntityMapper;
         private protected readonly IDtoValidator<TKey, TCreateDto, TUpdateDto> _dtoValidator;
 
-        public WriteServiceBase(
+        protected WriteServiceBase(
             IGenericRepo<TEntity, TKey> repo,
             IMapEntityToDetailedDto<TEntity, TDetailedDto> entityToDtoMapper,
             IMapDtoToEntity<TEntity, TDetailedDto, TCreateDto, TUpdateDto, TKey> dtoToEntityMapper,

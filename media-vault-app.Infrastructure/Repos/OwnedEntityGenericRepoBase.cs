@@ -9,25 +9,71 @@ using Rasmus.SharedKernel.ResultPattern;
 namespace media_vault_app.Infrastructure.Repos
 {
 
-    public class OwnedEntityGenericRepoBase<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
-        : GenericRepoBase<TEntityOwned, TKeyOwned>,
-        IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+    public abstract class OwnedEntityGenericRepoBase<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+        : IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
             where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
             where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
             where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
-        public OwnedEntityGenericRepoBase(AppDbContext appDbContext) : base(appDbContext)
+
+        protected readonly AppDbContext _appDbContext;
+        protected readonly DbSet<TEntityOwned> _dbSet;
+
+        protected OwnedEntityGenericRepoBase(AppDbContext appDbContext)
         {
+            _appDbContext = appDbContext;
+            _dbSet = _appDbContext.Set<TEntityOwned>();
         }
 
-        public async Task<Result<IReadOnlyList<TEntityOwned>>> GetCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public virtual async Task<Result<TEntityOwned>> CreateAsync(TEntityOwned entity, CancellationToken ct = default)
+        {
+            var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
+
+            if (!entity.IsNull(baseErrorContext, out var nullValueError))
+                throw new ArgumentNullException(nameof(entity), nullValueError.ToString());
+
+
+            if (!entity.OwnerId.IsValidId(baseErrorContext with
+            {
+                FieldName = nameof(entity.OwnerId)
+
+            }, out var invalidOwnerIdError))
+            {
+                throw new ArgumentException(invalidOwnerIdError.ToString(), nameof(entity));
+            }
+
+
+            try
+            {
+                entity.CreatedAtUtc = DateTime.UtcNow;
+                _dbSet.Add(entity);
+                await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+                return Result<TEntityOwned>.Success(entity);
+            }
+            catch (Exception ex)
+            {
+                var dbExceptionErrorContext = baseErrorContext
+                    with
+                { DescriptionSuffix = $"An error occurred while creating the {baseErrorContext.EntityName}." };
+
+                Error dbCreateFailure = Error.DbCreateFailure(dbExceptionErrorContext, ex);
+
+                return Result<TEntityOwned>.Failure(dbCreateFailure, dbExceptionErrorContext.DescriptionSuffix);
+            }
+
+        }
+
+        public virtual async Task<Result<IReadOnlyList<TEntityOwned>>> GetCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetCollectionByOwnerIdAsync), OperationType.GetCollection);
 
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var idError))
+            if (!ownerId.IsValidId(baseErrorContext with
             {
-                return Result<IReadOnlyList<TEntityOwned>>.ValidationFailure([idError], baseErrorContext.DescriptionSuffix!);
+                FieldName = nameof(ownerId)
+            }, out var invalidOwnerIdError))
+            {
+                throw new ArgumentException(invalidOwnerIdError.ToString(), nameof(ownerId));
             }
 
             try
@@ -37,7 +83,7 @@ namespace media_vault_app.Infrastructure.Repos
                     .Where(ownedEntity => ownedEntity.OwnerId.Equals(ownerId))
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
-                    .ToListAsync(ct);
+                    .ToListAsync(ct).ConfigureAwait(false);
 
                 return Result<IReadOnlyList<TEntityOwned>>.Success(ownedEntities);
             }
@@ -52,27 +98,25 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        public async Task<Result<TEntityOwned>> GetByIdAsync(TKeyOwner ownerId, TKeyOwned ownedEntityId, CancellationToken ct = default)
+        public virtual async Task<Result<TEntityOwned>> GetByIdAsync(TKeyOwner ownerId, TKeyOwned ownedEntityId, CancellationToken ct = default)
         {
-
             var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
-            List<ValidationError> validationErrors = new();
+            if (!Validator.IsValidId(ownerId))
+                throw new ArgumentException("Owner ID is not valid.", nameof(ownerId));
 
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
-                validationErrors.Add(ownerIdError);
+            if (!Validator.IsValidId(ownedEntityId))
+                throw new ArgumentException("Owned entity ID is not valid.", nameof(ownedEntityId));
 
-            if (!ownedEntityId.IsValidId(baseErrorContext with { FieldName = nameof(ownedEntityId) }, out var ownedEntityIdError))
-                validationErrors.Add(ownedEntityIdError);
-
-            if (validationErrors.Count > 0)
-                return Result<TEntityOwned>.ValidationFailure(validationErrors, "Validation Errors occurred, see validationErrors for details.");
 
             try
             {
                 var ownedEntity = await _dbSet
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(currentOwnedEntity => currentOwnedEntity.Id.Equals(ownedEntityId) && currentOwnedEntity.OwnerId.Equals(ownerId), ct);
+                    .FirstOrDefaultAsync(currentOwnedEntity =>
+                        currentOwnedEntity.Id.Equals(ownedEntityId) &&
+                        currentOwnedEntity.OwnerId.Equals(ownerId), ct)
+                    .ConfigureAwait(false);
 
                 if (ownedEntity is null)
                 {
@@ -98,32 +142,25 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        public async Task<Result> UpdateAsync(TKeyOwner ownerId, TEntityOwned updatedOwnedEntity, CancellationToken ct = default)
+        public virtual async Task<Result> UpdateAsync(TKeyOwner ownerId, TEntityOwned updatedOwnedEntity, CancellationToken ct = default)
         {
+            if (!Validator.IsValidId(ownerId))
+                throw new ArgumentException("Owner ID is not valid.", nameof(ownerId));
+
+            ArgumentNullException.ThrowIfNull(updatedOwnedEntity);
+
+            if (!Validator.IsValidId(updatedOwnedEntity.Id))
+                throw new ArgumentException("Entity ID is not valid.", nameof(updatedOwnedEntity));
+
             var baseErrorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
-
-            List<ValidationError> validationErrors = new();
-
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
-                validationErrors.Add(ownerIdError);
-
-            if (updatedOwnedEntity.IsNull(baseErrorContext with { FieldName = nameof(updatedOwnedEntity) }, out var requiredValueError))
-            {
-                validationErrors.Add(requiredValueError);
-
-                return Result.ValidationFailure(validationErrors, "Validation Errors occurred, see validationErrors for details.");
-            }
-
-            if (!updatedOwnedEntity.Id.IsValidId(baseErrorContext with { FieldName = nameof(updatedOwnedEntity.Id) }, out var updatedOwnedEntityIdError))
-                validationErrors.Add(updatedOwnedEntityIdError);
-
-            if (validationErrors.Count > 0)
-                return Result.ValidationFailure(validationErrors, "Validation Errors occurred, see validationErrors for details.");
 
             try
             {
                 var existingOwnedEntity = await _dbSet
-                    .FirstOrDefaultAsync(currentOwnedEntity => currentOwnedEntity.Id.Equals(updatedOwnedEntity.Id) && currentOwnedEntity.OwnerId.Equals(ownerId), ct);
+                    .FirstOrDefaultAsync(currentOwnedEntity =>
+                        currentOwnedEntity.Id.Equals(updatedOwnedEntity.Id) &&
+                        currentOwnedEntity.OwnerId.Equals(ownerId), ct)
+                    .ConfigureAwait(false);
 
                 if (existingOwnedEntity is null)
                 {
@@ -133,7 +170,7 @@ namespace media_vault_app.Infrastructure.Repos
                 }
 
                 _appDbContext.Entry(existingOwnedEntity).CurrentValues.SetValues(updatedOwnedEntity);
-                await _appDbContext.SaveChangesAsync(ct);
+                await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
 
                 return Result.Success();
             }
@@ -150,25 +187,20 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        public async Task<Result> DeleteAsync(TKeyOwner ownerId, TKeyOwned ownedEntityId, CancellationToken ct = default)
+        public virtual async Task<Result> DeleteAsync(TKeyOwner ownerId, TKeyOwned ownedEntityId, CancellationToken ct = default)
         {
+            if (!Validator.IsValidId(ownerId))
+                throw new ArgumentException("Owner ID is not valid.", nameof(ownerId));
+
+            if (!Validator.IsValidId(ownedEntityId))
+                throw new ArgumentException("Owned entity ID is not valid.", nameof(ownedEntityId));
+
             var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
-
-            List<ValidationError> validationErrors = new();
-
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
-                validationErrors.Add(ownerIdError);
-
-            if (!ownedEntityId.IsValidId(baseErrorContext with { FieldName = nameof(ownedEntityId) }, out var ownedEntityIdError))
-                validationErrors.Add(ownedEntityIdError);
-
-            if (validationErrors.Count > 0)
-                return Result.ValidationFailure(validationErrors, "Validation Errors occurred, see validationErrors for details.");
 
             try
             {
                 var ownedEntity = await _dbSet
-                    .FirstOrDefaultAsync(currentOwnedEntity => currentOwnedEntity.Id.Equals(ownedEntityId) && currentOwnedEntity.OwnerId.Equals(ownerId), ct);
+                    .FirstOrDefaultAsync(currentOwnedEntity => currentOwnedEntity.Id.Equals(ownedEntityId) && currentOwnedEntity.OwnerId.Equals(ownerId), ct).ConfigureAwait(false);
 
                 if (ownedEntity is null)
                 {
@@ -178,7 +210,7 @@ namespace media_vault_app.Infrastructure.Repos
                 }
 
                 _dbSet.Remove(ownedEntity);
-                await _appDbContext.SaveChangesAsync(ct);
+                await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
 
                 return Result.Success();
             }
@@ -195,6 +227,17 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
+
+        protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
+        {
+            return new ErrorContext(
+                layer: "Infrastructure",
+                serviceName: this.GetType().Name,
+                methodName: methodName,
+                operation: operation,
+                entityName: typeof(TEntityOwned).Name,
+                fieldName: fieldName);
+        }
 
     }
 }

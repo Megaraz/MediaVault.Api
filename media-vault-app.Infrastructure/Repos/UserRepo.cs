@@ -49,19 +49,19 @@ namespace media_vault_app.Infrastructure.Repos
 
         public async Task<Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>> CheckRegistrationAvailabilityAsync(string username, string email, CancellationToken ct = default)
         {
-            var errorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
+            var baseErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
             var validationErrors = new List<ValidationError>();
 
-            var usernameErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get, "Username");
+            var usernameErrorContext = baseErrorContext with { FieldName = "Username" };
             if (username.IsNullOrWhiteSpace(usernameErrorContext, out var usernameRequiredError))
                 validationErrors.Add(usernameRequiredError);
 
-            var emailErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get, "Email");
+            var emailErrorContext = baseErrorContext with { FieldName = "Email" };
             if (email.IsNullOrWhiteSpace(emailErrorContext, out var emailRequiredError))
                 validationErrors.Add(emailRequiredError);
 
             if (validationErrors.Count > 0)
-                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.ValidationFailure(validationErrors, errorContext.DescriptionSuffix!);
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.ValidationFailure(validationErrors);
 
             try
             {
@@ -81,19 +81,19 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                errorContext.DescriptionSuffix = "An error occurred while checking the username and email.";
+                baseErrorContext.DescriptionSuffix = "An error occurred while checking the username and email.";
                 return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(
-                    Error.DbGetFailure(errorContext, ex),
-                    errorContext.DescriptionSuffix);
+                    Error.DbGetFailure(baseErrorContext, ex),
+                    baseErrorContext.DescriptionSuffix);
             }
         }
 
         public async Task<Result<User>> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken ct = default)
         {
-            var errorContext = DefineErrorContext(nameof(GetByUsernameOrEmailAsync), OperationType.Get);
+            var baseErrorContext = DefineErrorContext(nameof(GetByUsernameOrEmailAsync), OperationType.Get, "UsernameOrEmail");
 
-            if (usernameOrEmail.IsNullOrWhiteSpace(errorContext, out var requiredValueError))
-                return Result<User>.ValidationFailure([requiredValueError], errorContext.DescriptionSuffix!);
+            if (usernameOrEmail.IsNullOrWhiteSpace(baseErrorContext, out var requiredValueError))
+                return Result<User>.ValidationFailure([requiredValueError]);
 
             try
             {
@@ -108,7 +108,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (user is null)
                 {
                     return Result<User>.Failure(
-                        Error.Unauthorized(errorContext),
+                        Error.Unauthorized(baseErrorContext),
                         "Invalid username/email or password.");
                 }
 
@@ -116,11 +116,11 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                errorContext.DescriptionSuffix = "An error occurred while retrieving the User.";
+                var dbGeneralExceptionErrorContext = baseErrorContext with { DescriptionSuffix = "An error occurred while retrieving the User." };
 
                 return Result<User>.Failure(
-                    Error.DbGetFailure(errorContext, ex),
-                    errorContext.DescriptionSuffix);
+                    Error.DbGetFailure(dbGeneralExceptionErrorContext, ex),
+                    dbGeneralExceptionErrorContext.DescriptionSuffix);
             }
         }
 
