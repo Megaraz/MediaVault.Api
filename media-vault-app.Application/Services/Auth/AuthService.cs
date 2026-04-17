@@ -60,7 +60,7 @@ namespace media_vault_app.Application.Services.Auth
         {
             var dtoValidationErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
 
-            if (!_dtoValidator.IsValidRegisterDto(registerDto, dtoValidationErrorContext, out var dtoValidationErrors))
+            if (!_dtoValidator.IsValidCreateDto(registerDto, dtoValidationErrorContext, out var dtoValidationErrors))
             {
                 return Result.ValidationFailure(dtoValidationErrors, "User register validation failed.");
             }

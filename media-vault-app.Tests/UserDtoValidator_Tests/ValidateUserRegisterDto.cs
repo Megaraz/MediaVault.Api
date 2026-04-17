@@ -30,7 +30,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var errorContext = DefineErrorContext(fieldName: "Password", confirmFieldName: "ConfirmPassword");
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
+            var result = userDtoValidator.IsValidCreateDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
@@ -58,7 +58,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var errorContext = DefineErrorContext();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
+            var result = userDtoValidator.IsValidCreateDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
@@ -86,7 +86,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var userDto = CreateValidUserRegisterDto();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
+            var result = userDtoValidator.IsValidCreateDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.True(result);
@@ -102,7 +102,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var errorContext = DefineErrorContext();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto!, errorContext, out var errors);
+            var result = userDtoValidator.IsValidCreateDto(userDto!, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
@@ -135,7 +135,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var errorContext = DefineErrorContext();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
+            var result = userDtoValidator.IsValidCreateDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
@@ -170,7 +170,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var errorContext = DefineErrorContext();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
+            var result = userDtoValidator.IsValidCreateDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
@@ -205,7 +205,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var errorContext = DefineErrorContext();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
+            var result = userDtoValidator.IsValidCreateDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
@@ -241,7 +241,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var errorContext = DefineErrorContext();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
+            var result = userDtoValidator.IsValidCreateDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
@@ -275,7 +275,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var errorContext = DefineErrorContext();
 
             // Act
-            var result = userDtoValidator.IsValidRegisterDto(userDto, errorContext, out var errors);
+            var result = userDtoValidator.IsValidCreateDto(userDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);

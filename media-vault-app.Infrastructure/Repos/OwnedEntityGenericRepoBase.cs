@@ -9,7 +9,7 @@ using Rasmus.SharedKernel.ResultPattern;
 namespace media_vault_app.Infrastructure.Repos
 {
 
-    public class OwnedEntityRepoBase<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+    public class OwnedEntityGenericRepoBase<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
         : GenericRepoBase<TEntityOwned, TKeyOwned>,
         IOwnedEntityGenericRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
             where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
@@ -17,7 +17,7 @@ namespace media_vault_app.Infrastructure.Repos
             where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
             where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
-        public OwnedEntityRepoBase(AppDbContext appDbContext) : base(appDbContext)
+        public OwnedEntityGenericRepoBase(AppDbContext appDbContext) : base(appDbContext)
         {
         }
 

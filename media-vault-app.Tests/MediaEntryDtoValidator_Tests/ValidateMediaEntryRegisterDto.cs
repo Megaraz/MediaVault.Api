@@ -38,7 +38,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 );
 
             // Act
-            var result = mediaEntryDtoValidator.IsValidRegisterDto(mediaEntryDto, errorContext, out var errors);
+            var result = mediaEntryDtoValidator.IsValidCreateDto(mediaEntryDto, errorContext, out var errors);
 
             // Assert
             Assert.True(result);
@@ -54,7 +54,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
             MediaEntryCreateDto? mediaEntryDto = null;
 
             // Act
-            var result = mediaEntryDtoValidator.IsValidRegisterDto(mediaEntryDto!, errorContext, out var errors);
+            var result = mediaEntryDtoValidator.IsValidCreateDto(mediaEntryDto!, errorContext, out var errors);
 
             // Assert
             Assert.False(result);
@@ -98,7 +98,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
             );
 
             // Act
-            var result = mediaEntryDtoValidator.IsValidRegisterDto(mediaEntryDto, errorContext, out var errors);
+            var result = mediaEntryDtoValidator.IsValidCreateDto(mediaEntryDto, errorContext, out var errors);
 
             // Assert
             Assert.False(result);

@@ -17,7 +17,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 {
                     errorContext.FieldName = nameof(id);
                 }
-                errorContext.DescriptionSuffix = $"A valid Id is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
+                errorContext.DescriptionSuffix = $"A valid {errorContext.FieldName} is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
 
                 idError = ValidationError.Required(errorContext);
                 return false;

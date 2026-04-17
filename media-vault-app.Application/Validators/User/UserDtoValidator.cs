@@ -34,7 +34,7 @@ namespace media_vault_app.Application.Validators.User
             validationErrors = internalValidationErrors;
             return !validationErrors.Any();
         }
-        public bool IsValidRegisterDto(UserRegisterDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidCreateDto(UserRegisterDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
             var internalErrors = new List<ValidationError>();
 

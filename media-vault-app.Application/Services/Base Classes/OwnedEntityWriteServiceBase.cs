@@ -5,13 +5,16 @@ using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.Base_Classes
 {
+
     public abstract class OwnedEntityWriteServiceBase<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>
-        : WriteServiceBase<TEntityOwned, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>
+        : WriteServiceBase<TEntityOwned, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>, 
+        IOwnedEntityWriteService<TKeyOwner, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto> 
             where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
             where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
             where TDetailedDto : IDtoID<TKeyOwned>
@@ -43,7 +46,7 @@ namespace media_vault_app.Application.Services.Base_Classes
             if (!ownerId.IsValidId(errorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
                 errors.Add(ownerIdNotValidError);
 
-            if (!_dtoValidator.IsValidRegisterDto(createDto, errorContext, out var validationErrors))
+            if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
                 errors.AddRange(validationErrors);
 
             if (errors.Count > 0)
@@ -71,8 +74,6 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             List<ValidationError> errors = new();
 
-            Task<Result<bool>> OwnerExistsTask = EnsureOwnerExistsAsync(ownerId, ct);
-
             if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
                 errors.Add(ownerIdNotValidError);
 
@@ -84,15 +85,14 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (errors.Count > 0)
             {
-                ct = CancellationToken.None; // Cancel any ongoing operations since we already know we will return a failure result due to validation errors.
-
                 return Result.ValidationFailure(errors, "Validation Errors occurred, see validationErrors for details.");
             }
 
-            var ownerExistsResult = await OwnerExistsTask;
+            var ownerExistsResult = await EnsureOwnerExistsAsync(ownerId, ct);
+
             if (ownerExistsResult.IsFailure)
             {
-                return ownerExistsResult.From<bool, TDetailedDto>();
+                return ownerExistsResult.From();
             }
 
 
@@ -121,7 +121,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                return ownerExistsResult.From<bool, TDetailedDto>();
+                return ownerExistsResult.From();
             }
 
             return await _ownedEntityRepo.DeleteAsync(ownerId, ownedId, ct);

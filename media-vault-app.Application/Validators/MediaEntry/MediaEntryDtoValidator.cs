@@ -10,7 +10,7 @@ namespace media_vault_app.Application.Validators.MediaEntry
 {
     public class MediaEntryDtoValidator : IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto>
     {
-        public bool IsValidRegisterDto(MediaEntryCreateDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidCreateDto(MediaEntryCreateDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
             List<ValidationError> internalErrors = new();
 
