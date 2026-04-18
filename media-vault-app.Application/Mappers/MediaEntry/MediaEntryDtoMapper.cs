@@ -19,11 +19,11 @@ namespace media_vault_app.Application.Mappers.MediaEntry
 
             entity.Id = Guid.NewGuid();
             entity.IdExternal = createDto.IdExternal;
-            entity.SetStatus(createDto.Status);
+            entity.Status = createDto.Status;
             entity.Title = createDto.Title;
             entity.Rating = createDto.Rating;
             entity.Review = createDto.Review;
-            entity.Genre = createDto.Genre;
+            entity.Genres = createDto.Genres;
             entity.ReleaseYear = createDto.ReleaseYear ?? 0;
             entity.ImageUrl = createDto.ImageUrl;
             entity.MediaType = createDto.MediaType;
@@ -43,7 +43,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Title = detailedDto.Title;
             entity.Rating = detailedDto.Rating;
             entity.Review = detailedDto.Review;
-            entity.Genre = detailedDto.Genre;
+            entity.Genres = detailedDto.Genres;
             entity.ReleaseYear = detailedDto.ReleaseYear;
             entity.ImageUrl = detailedDto.ImageUrl;
             entity.MediaType = detailedDto.MediaType;
@@ -65,7 +65,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Title = updateDto.Title;
             entity.Rating = updateDto.Rating;
             entity.Review = updateDto.Review;
-            entity.Genre = updateDto.Genre;
+            entity.Genres = updateDto.Genres;
             entity.ReleaseYear = updateDto.ReleaseYear ?? 0;
             entity.ImageUrl = updateDto.ImageUrl;
             entity.MediaType = updateDto.MediaType;

@@ -20,7 +20,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Title = entity.Title,
                 Rating = entity.Rating,
                 Review = entity.Review,
-                Genre = entity.Genre,
+                Genres = entity.Genres,
                 ReleaseYear = entity.ReleaseYear,
                 ImageUrl = entity.ImageUrl,
                 MediaType = entity.MediaType,
@@ -43,7 +43,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 entity.Title ?? string.Empty,
                 entity.Rating,
                 entity.Review,
-                entity.Genre,
+                entity.Genres,
                 entity.ReleaseYear,
                 entity.ImageUrl,
                 entity.MediaType);

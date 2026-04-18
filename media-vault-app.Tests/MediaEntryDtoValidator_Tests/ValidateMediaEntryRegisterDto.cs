@@ -31,7 +31,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Title: "Test Media Entry",
                 Rating: 4.5m,
                 Review: "Great media entry!",
-                Genre: null,
+                Genres: null,
                 ReleaseYear: null,
                 ImageUrl: null,
                 MediaType: MediaEntryType.MovieEntry
@@ -91,7 +91,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Title: value!,
                 Rating: 4.5m,
                 Review: "Great media entry!",
-                Genre: null,
+                Genres: null,
                 ReleaseYear: null,
                 ImageUrl: null,
                 MediaType: MediaEntryType.MovieEntry

@@ -12,7 +12,7 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Request
         string Title,
         decimal Rating,
         string? Review,
-        string? Genre,
+        ICollection<string>? Genres,
         int? ReleaseYear,
         string? ImageUrl,
         MediaEntryType MediaType

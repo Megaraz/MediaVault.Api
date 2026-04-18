@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Rasmus.SharedKernel\Rasmus.SharedKernel.csproj" />
   </ItemGroup>
 

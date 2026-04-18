@@ -9,8 +9,8 @@ namespace Rasmus.SharedKernel.Interfaces.Services
     public interface IOwnedEntityReadService<TKeyOwner, TKeyOwned, TDetailedDto, TMinimalDto>
         where TKeyOwner : notnull, IEquatable<TKeyOwner>
         where TKeyOwned : notnull, IEquatable<TKeyOwned>
-        where TDetailedDto : IDtoID<TKeyOwned>
-        where TMinimalDto : IDtoID<TKeyOwned>
+        where TDetailedDto : IDtoIdentifiable<TKeyOwned>
+        where TMinimalDto : IDtoIdentifiable<TKeyOwned>
     {
         Task<Result<TDetailedDto>> GetByIdAsync(TKeyOwner ownerId, TKeyOwned id, CancellationToken ct = default);
         Task<Result<IEnumerable<TDetailedDto>>> GetDetailedCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default);

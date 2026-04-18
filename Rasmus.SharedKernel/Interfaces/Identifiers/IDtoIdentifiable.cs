@@ -4,7 +4,8 @@ using System.Text;
 
 namespace Rasmus.SharedKernel.Interfaces.Identifiers
 {
-    public interface IDtoID<TKey>
+    public interface IDtoIdentifiable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         TKey Id { get; init; }
     }

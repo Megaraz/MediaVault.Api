@@ -4,7 +4,7 @@ using Rasmus.SharedKernel.ResultPattern;
 namespace Rasmus.SharedKernel.Interfaces
 {
     public interface IRepo<TEntity, TKey> 
-        where TEntity : class, IEntityId<TKey>
+        where TEntity : class, IWriteableEntity<TKey>
         where TKey : notnull, IEquatable<TKey>
     {
         Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default);

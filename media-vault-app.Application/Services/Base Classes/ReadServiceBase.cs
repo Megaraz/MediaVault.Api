@@ -11,9 +11,9 @@ namespace media_vault_app.Application.Services
 {
     public abstract class ReadServiceBase<TEntity, TKey, TDetailedDto, TMinimalDto>
         : IReadService<TEntity, TKey, TDetailedDto, TMinimalDto>
-            where TEntity : class, IEntityId<TKey>
-            where TDetailedDto : IDtoID<TKey>
-            where TMinimalDto : IDtoID<TKey>
+            where TEntity : class, IWriteableEntity<TKey>
+            where TDetailedDto : IDtoIdentifiable<TKey>
+            where TMinimalDto : IDtoIdentifiable<TKey>
             where TKey : notnull, IEquatable<TKey>
     {
 

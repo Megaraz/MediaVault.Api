@@ -22,8 +22,8 @@ namespace media_vault_app.Application.Services.Base_Classes
         TDetailedDto>
         : IOwnedEntityWriteService<TKeyOwner, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>
             where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
-            where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
-            where TDetailedDto : IDtoID<TKeyOwned>
+            where TEntityOwned : class, IOwnableEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+            where TDetailedDto : IDtoIdentifiable<TKeyOwned>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
             where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {

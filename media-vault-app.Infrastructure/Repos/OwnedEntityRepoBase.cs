@@ -13,7 +13,7 @@ namespace media_vault_app.Infrastructure.Repos
         : IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
             where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
-            where TEntityOwned : class, IOwnedEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+            where TEntityOwned : class, IOwnableEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
             where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
 

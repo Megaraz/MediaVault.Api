@@ -6,7 +6,7 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Application.DTOs.MediaEntry.Response
 {
-    public record MediaEntryDetailedDto : IDtoID<Guid>
+    public record MediaEntryDetailedDto : IDtoIdentifiable<Guid>
     {
         public Guid Id { get; init; }
         public string? IdExternal { get; init; }
@@ -16,7 +16,7 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Response
         public decimal Rating { get; init; }
 
         public string? Review { get; init; }
-        public string? Genre { get; init; }
+        public ICollection<string>? Genres { get; init; }
         public int ReleaseYear { get; init; }
         public string? ImageUrl { get; init; }
         public MediaEntryType MediaType { get; init; }

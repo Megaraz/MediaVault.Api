@@ -14,6 +14,6 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Response
         string? ImageUrl
 
 
-    ) : IDtoID<Guid>;
+    ) : IDtoIdentifiable<Guid>;
 
 }

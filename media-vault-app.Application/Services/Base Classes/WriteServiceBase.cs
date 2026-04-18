@@ -13,8 +13,8 @@ namespace media_vault_app.Application.Services
 {
     public abstract class WriteServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
         : IWriteService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
-            where TEntity : class, IEntityId<TKey>
-            where TDetailedDto : IDtoID<TKey>
+            where TEntity : class, IWriteableEntity<TKey>
+            where TDetailedDto : IDtoIdentifiable<TKey>
             where TKey : notnull, IEquatable<TKey>
     {
         protected readonly IRepo<TEntity, TKey> _repo;

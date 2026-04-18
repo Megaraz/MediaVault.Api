@@ -9,7 +9,7 @@ namespace Rasmus.SharedKernel.Interfaces.Services
     public interface IOwnedEntityWriteService<TKeyOwner, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>
         where TKeyOwner : notnull, IEquatable<TKeyOwner>
         where TKeyOwned : notnull, IEquatable<TKeyOwned>
-        where TDetailedDto : IDtoID<TKeyOwned>
+        where TDetailedDto : IDtoIdentifiable<TKeyOwned>
     {
         Task<Result<TDetailedDto>> CreateAsync(TKeyOwner ownerId, TCreateDto createDto, CancellationToken ct);
         Task<Result> DeleteAsync(TKeyOwner ownerId, TKeyOwned ownedId, CancellationToken ct = default);
