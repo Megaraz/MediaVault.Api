@@ -14,7 +14,6 @@ The main goal of the project is to demonstrate:
 - Clear and maintainable code
 
 ## Constraints
-- Time limit: 4 weeks
 - Solo project
 - Focus is on learning AND delivering a working system
 
@@ -31,7 +30,7 @@ The main goal of the project is to demonstrate:
 - Use Result pattern for operation outcomes and error handling
 
 ## What Copilot should optimize for
-- Suggest solutions that are realistic within a 4-week scope
+- Suggest solutions that are realistic within the current project scope
 - Prefer simple, explicit code over highly generic abstractions
 - Help structure code, but avoid unnecessary complexity
 - Highlight tradeoffs when suggesting patterns or abstractions
@@ -59,4 +58,4 @@ The main goal of the project is to demonstrate:
 ## Response style
 - Be concise but clear
 - Suggest one primary approach, optionally mention alternatives
-- Explain *why* something is done, not just *what*
+- Explain *why* something is done, not just *what*- Explain *why* something is done, not just *what*

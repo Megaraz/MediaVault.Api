@@ -19,7 +19,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
 
             entity.Id = Guid.NewGuid();
             entity.IdExternal = createDto.IdExternal;
-            entity.Status = createDto.Status;
+            entity.SetStatus(createDto.Status);
             entity.Title = createDto.Title;
             entity.Rating = createDto.Rating;
             entity.Review = createDto.Review;

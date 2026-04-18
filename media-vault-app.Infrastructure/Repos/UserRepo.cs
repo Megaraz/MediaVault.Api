@@ -19,7 +19,6 @@ namespace media_vault_app.Infrastructure.Repos
 
         public async Task<Result> RegisterUserAsync(User entity, CancellationToken ct = default)
         {
-
             try
             {
                 _dbSet.Add(entity);

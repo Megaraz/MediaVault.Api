@@ -1,4 +1,5 @@
 ﻿using media_vault_app.Domain.Entities;
+using media_vault_app.Domain.Value_Objects;
 using Microsoft.EntityFrameworkCore;
 
 namespace media_vault_app.Infrastructure
@@ -34,6 +35,12 @@ namespace media_vault_app.Infrastructure
             modelBuilder.Entity<MediaEntry>()
                 .Property(x => x.Rating)
                 .HasPrecision(3, 1);
+
+            modelBuilder.Entity<MediaEntry>()
+                .Property(e => e.Rating)
+                .HasConversion(
+                    rating => rating.Value,
+                    value => new Rating(value));
 
             modelBuilder.Entity<MediaEntry>()
                 .ToTable(t =>
