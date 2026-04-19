@@ -6,7 +6,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
 {
-    public class MediaEntryRepo : OwnedEntityRepoBase<User, Guid, MediaEntry, Guid>, IMediaEntryRepo
+    public class MediaEntryRepo : OwnedEntityRepoBase<MediaEntry, Guid, Guid>, IMediaEntryRepo
     {
         public MediaEntryRepo(AppDbContext appDbContext) : base(appDbContext)
         {
@@ -18,7 +18,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 var mediaEntries = await _dbSet
                     .AsNoTracking()
-                    .Where(mediaEntry => mediaEntry.OwnerId == ownerId && mediaEntry.Title.Contains(query))
+                    .Where(mediaEntry => mediaEntry.UserId == ownerId && mediaEntry.Title.Contains(query))
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync(ct).ConfigureAwait(false);

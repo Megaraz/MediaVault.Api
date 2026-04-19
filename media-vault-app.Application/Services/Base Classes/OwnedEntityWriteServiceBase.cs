@@ -13,29 +13,29 @@ namespace media_vault_app.Application.Services.Base_Classes
 {
 
     public abstract class OwnedEntityWriteServiceBase<
-        TEntityOwner, 
-        TKeyOwner, 
+        TEntityOwner,
         TEntityOwned, 
+        TKeyOwner, 
         TKeyOwned, 
         TCreateDto, 
         TUpdateDto, 
         TDetailedDto>
         : IOwnedEntityWriteService<TKeyOwner, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>
-            where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
-            where TEntityOwned : class, IOwnableEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+            where TEntityOwner : class, IWriteableEntity<TKeyOwner>
+            where TEntityOwned : class, IOwnableEntity<TKeyOwner, TKeyOwned>
             where TDetailedDto : IDtoIdentifiable<TKeyOwned>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
             where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
 
-        protected readonly IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> _ownedEntityRepo;
+        protected readonly IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned> _ownedEntityRepo;
         protected readonly IRepo<TEntityOwner, TKeyOwner> _ownerRepo;
         protected readonly IMapEntityToDetailedDto<TEntityOwned, TDetailedDto> _entityToDtoMapper;
         protected readonly IMapDtoToEntity<TEntityOwned, TDetailedDto, TCreateDto, TUpdateDto, TKeyOwned> _dtoToEntityMapper;
         protected readonly IDtoValidator<TKeyOwned, TCreateDto, TUpdateDto> _dtoValidator;
 
         protected OwnedEntityWriteServiceBase(
-            IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> ownedEntityRepo,
+            IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned> ownedEntityRepo,
             IRepo<TEntityOwner, TKeyOwner> ownerRepo,
             IMapEntityToDetailedDto<TEntityOwned, TDetailedDto> entityToDtoMapper,
             IMapDtoToEntity<TEntityOwned, TDetailedDto, TCreateDto, TUpdateDto, TKeyOwned> dtoToEntityMapper,

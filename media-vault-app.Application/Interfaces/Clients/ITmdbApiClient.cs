@@ -9,10 +9,10 @@ namespace media_vault_app.Application.Interfaces.Clients
 {
     public interface ITmdbApiClient
     {
-        Task<Result<TmdbResult>> GetByIdAsync(int id, MediaEntryType mediaType, CancellationToken cancellationToken = default);
+        Task<Result<TmdbResult>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default);
         Task<Result<TmdbSearchResponse>> SearchAsync(
             List<string> queryParameters,
-            MediaEntryType mediaType,
+            MediaType mediaType,
             CancellationToken cancellationToken = default);
     }
 }

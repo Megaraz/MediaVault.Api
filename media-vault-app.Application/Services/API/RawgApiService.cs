@@ -109,7 +109,7 @@ namespace media_vault_app.Application.Services.API
                 rawgGame.Id.ToString(),
                 rawgGame.Name ?? string.Empty,
                 rawgGame.BackgroundImage,
-                MediaEntryType.GameEntry);
+                MediaType.Game);
         }
 
     }

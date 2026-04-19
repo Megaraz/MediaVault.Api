@@ -107,7 +107,7 @@ namespace media_vault_app.Application.Services.API
                 volume.Id,
                 volume.VolumeInfo?.Title ?? string.Empty,
                 thumbnailUrl,
-                MediaEntryType.BookEntry);
+                MediaType.Book);
         }
     }
 }

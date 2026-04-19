@@ -6,10 +6,9 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Interfaces
 {
-    public interface IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> 
-        where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
+    public interface IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned> 
+        where TEntityOwned : class, IOwnableEntity<TKeyOwner, TKeyOwned>
         where TKeyOwner : notnull, IEquatable<TKeyOwner>
-        where TEntityOwned : class, IOwnableEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
         where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
 

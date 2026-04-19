@@ -26,7 +26,7 @@ namespace media_vault_app.API.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] string? ordering = null)
         {
-            var result = await _tmdbApiService.SearchAsync(request.Query, MediaEntryType.MovieEntry, page, pageSize, ordering, ct);
+            var result = await _tmdbApiService.SearchAsync(request.Query, MediaType.Movie, page, pageSize, ordering, ct);
             return this.ToActionResult(result);
         }
 
@@ -35,7 +35,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] int id,
             CancellationToken ct)
         {
-            var result = await _tmdbApiService.GetByIdAsync(id, MediaEntryType.MovieEntry, ct);
+            var result = await _tmdbApiService.GetByIdAsync(id, MediaType.Movie, ct);
             return this.ToActionResult(result);
         }
 
@@ -47,7 +47,7 @@ namespace media_vault_app.API.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] string? ordering = null)
         {
-            var result = await _tmdbApiService.SearchAsync(request.Query, MediaEntryType.SeriesEntry, page, pageSize, ordering, ct);
+            var result = await _tmdbApiService.SearchAsync(request.Query, MediaType.TvSeries, page, pageSize, ordering, ct);
             return this.ToActionResult(result);
         }
 
@@ -56,7 +56,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] int id,
             CancellationToken ct)
         {
-            var result = await _tmdbApiService.GetByIdAsync(id, MediaEntryType.SeriesEntry, ct);
+            var result = await _tmdbApiService.GetByIdAsync(id, MediaType.TvSeries, ct);
             return this.ToActionResult(result);
         }
     }

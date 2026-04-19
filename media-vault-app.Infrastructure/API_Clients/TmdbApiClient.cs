@@ -34,7 +34,7 @@ namespace media_vault_app.Infrastructure.API_Clients
             _options = options.Value;
         }
 
-        public async Task<Result<TmdbResult>> GetByIdAsync(int id, MediaEntryType mediaType, CancellationToken cancellationToken = default)
+        public async Task<Result<TmdbResult>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
@@ -45,8 +45,8 @@ namespace media_vault_app.Infrastructure.API_Clients
 
             string? endpoint = mediaType switch
             {
-                MediaEntryType.MovieEntry => $"movie/{id}",
-                MediaEntryType.SeriesEntry => $"tv/{id}",
+                MediaType.Movie => $"movie/{id}",
+                MediaType.TvSeries => $"tv/{id}",
                 _ => null
             };
 
@@ -77,15 +77,15 @@ namespace media_vault_app.Infrastructure.API_Clients
 
         public async Task<Result<TmdbSearchResponse>> SearchAsync(
             List<string> queryParameters,
-            MediaEntryType mediaType,
+            MediaType mediaType,
             CancellationToken cancellationToken = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(SearchAsync), OperationType.GetCollection);
 
             string? endpoint = mediaType switch
             {
-                MediaEntryType.MovieEntry => $"movie?{string.Join("&", queryParameters)}",
-                MediaEntryType.SeriesEntry => $"tv?{string.Join("&", queryParameters)}",
+                MediaType.Movie => $"movie?{string.Join("&", queryParameters)}",
+                MediaType.TvSeries => $"tv?{string.Join("&", queryParameters)}",
                 _ => null
             };
 

@@ -10,7 +10,7 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Response
     (
         Guid Id,
         string? Title,
-        MediaEntryType MediaType,
+        MediaType MediaType,
         string? ImageUrl
 
 

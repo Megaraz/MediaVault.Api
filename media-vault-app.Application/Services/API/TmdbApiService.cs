@@ -16,7 +16,7 @@ namespace media_vault_app.Application.Services.API
             _client = client;
         }
 
-        public async Task<Result<SearchResultDto>> GetByIdAsync(int id, MediaEntryType mediaType, CancellationToken cancellationToken = default)
+        public async Task<Result<SearchResultDto>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default)
         {
             var idValidationErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
@@ -31,7 +31,7 @@ namespace media_vault_app.Application.Services.API
 
         public async Task<Result<IReadOnlyList<SearchResultDto>>> SearchAsync(
             string search,
-            MediaEntryType mediaType,
+            MediaType mediaType,
             int page = 1,
             int pageSize = 10,
             string? ordering = null,
@@ -75,12 +75,12 @@ namespace media_vault_app.Application.Services.API
                 FieldName: fieldName);
         }
 
-        private static IReadOnlyList<SearchResultDto> MapToSearchResults(IReadOnlyList<TmdbResult>? results, MediaEntryType mediaType)
+        private static IReadOnlyList<SearchResultDto> MapToSearchResults(IReadOnlyList<TmdbResult>? results, MediaType mediaType)
         {
             return results?.Select(r => MapToSearchResult(r, mediaType)).ToArray() ?? Array.Empty<SearchResultDto>();
         }
 
-        private static SearchResultDto MapToSearchResult(TmdbResult result, MediaEntryType mediaType)
+        private static SearchResultDto MapToSearchResult(TmdbResult result, MediaType mediaType)
         {
             return new SearchResultDto(
                 result.Id.ToString(),

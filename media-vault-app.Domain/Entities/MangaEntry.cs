@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using media_vault_app.Domain.Interfaces;
+﻿using media_vault_app.Domain.Enums;
 
 namespace media_vault_app.Domain.Entities
 {
-    public sealed record MangaEntry : MediaEntry, IAuthorable
+    public sealed record MangaEntry : AuthoredEntry
     {
-        public Guid AuthorId { get; set; }
-        public required Author Author { get; set; }
+        public MangaEntry()
+        {
+            MediaType = MediaType.Manga;
+        }
     }
 }

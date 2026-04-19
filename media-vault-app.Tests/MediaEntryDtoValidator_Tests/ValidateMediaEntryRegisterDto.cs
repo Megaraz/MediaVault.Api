@@ -34,7 +34,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Genres: null,
                 ReleaseYear: null,
                 ImageUrl: null,
-                MediaType: MediaEntryType.MovieEntry
+                MediaType: MediaType.Movie
                 );
 
             // Act
@@ -94,7 +94,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Genres: null,
                 ReleaseYear: null,
                 ImageUrl: null,
-                MediaType: MediaEntryType.MovieEntry
+                MediaType: MediaType.Movie
             );
 
             // Act

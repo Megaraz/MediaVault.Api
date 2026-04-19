@@ -38,7 +38,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
 
             entity.Id = detailedDto.Id;
             entity.IdExternal = detailedDto.IdExternal;
-            entity.OwnerId = detailedDto.UserId;
+            entity.UserId = detailedDto.UserId;
             entity.Status = detailedDto.Status;
             entity.Title = detailedDto.Title;
             entity.Rating = detailedDto.Rating;
@@ -73,6 +73,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             return entity;
         }
 
-        private static MediaEntryEntity CreateMediaEntryInstance() => new MovieEntry();
+        private static MediaEntryEntity CreateMediaEntryInstance() => new MovieEntry { Title = string.Empty };
     }
 }

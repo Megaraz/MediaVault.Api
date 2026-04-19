@@ -4,13 +4,21 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Domain.Entities
 {
-    public abstract record MediaEntry : IOwnableEntity<User, Guid, MediaEntry, Guid>
+    public abstract record MediaEntry : IOwnableEntity<Guid, Guid>
     {
         public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+
+        // Satisfies the interface, but routes to UserId
+        Guid IOwnableEntity<Guid, Guid>.OwnerId
+        {
+            get => UserId;
+            set => UserId = value;
+        }
+        
         public string? IdExternal { get; set; }
-        public Guid OwnerId { get; set; }
         public Status Status { get; set; }
-        public string? Title { get; set; }
+        public required string Title { get; set; }
         public Rating Rating { get; set; }
         public string? Review { get; set; }
         public ICollection<string>? Genres { get; set; }
@@ -23,7 +31,7 @@ namespace media_vault_app.Domain.Entities
         }
 
         public string? ImageUrl { get; set; }
-        public MediaEntryType MediaType { get; set; }
+        public MediaType MediaType { get; set; }
         public DateTime CreatedAtUtc { get; set; }
         public DateTime UpdatedAtUtc { get; set; }
 

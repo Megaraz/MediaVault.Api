@@ -12,26 +12,26 @@ namespace media_vault_app.Application.Services.Base_Classes
 
     public abstract class OwnedEntityReadServiceBase<
         TEntityOwner,
-        TKeyOwner,
         TEntityOwned,
+        TKeyOwner,
         TKeyOwned,
         TDetailedDto,
         TMinimalDto>
         : IOwnedEntityReadService<TKeyOwner, TKeyOwned, TDetailedDto, TMinimalDto>
-            where TEntityOwner : class, IOwnerEntity<TEntityOwner, TKeyOwner>
-            where TEntityOwned : class, IOwnableEntity<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned>
+            where TEntityOwner : class, IWriteableEntity<TKeyOwner>
+            where TEntityOwned : class, IOwnableEntity<TKeyOwner, TKeyOwned>
             where TDetailedDto : IDtoIdentifiable<TKeyOwned>
             where TMinimalDto : IDtoIdentifiable<TKeyOwned>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
             where TKeyOwned : notnull, IEquatable<TKeyOwned>
     {
 
-        protected readonly IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> _ownedEntityRepo;
+        protected readonly IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned> _ownedEntityRepo;
         protected readonly IRepo<TEntityOwner, TKeyOwner> _ownerRepo;
         protected readonly IMapEntityToDto<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto> _entityToDtoMapper;
 
         protected OwnedEntityReadServiceBase(
-            IOwnedEntityRepo<TEntityOwner, TKeyOwner, TEntityOwned, TKeyOwned> ownedEntityRepo,
+            IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned> ownedEntityRepo,
             IMapEntityToDto<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto> entityToDtoMapper,
             IRepo<TEntityOwner, TKeyOwner> ownerRepo)
         {

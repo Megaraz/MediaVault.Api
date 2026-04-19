@@ -4,9 +4,8 @@ using System.Text;
 
 namespace Rasmus.SharedKernel.Interfaces.Identifiers
 {
-    public interface IOwnerEntity<TEntityOwner, TKeyOwner> 
+    public interface IOwnerEntity<TKeyOwner> 
         : IWriteableEntity<TKeyOwner>
-            where TEntityOwner : IWriteableEntity<TKeyOwner>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
     {
     }

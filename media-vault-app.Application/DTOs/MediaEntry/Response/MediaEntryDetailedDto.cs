@@ -19,7 +19,7 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Response
         public ICollection<string>? Genres { get; init; }
         public int ReleaseYear { get; init; }
         public string? ImageUrl { get; init; }
-        public MediaEntryType MediaType { get; init; }
+        public MediaType MediaType { get; init; }
         public DateTime CreatedAtUtc { get; init; }
 
     }

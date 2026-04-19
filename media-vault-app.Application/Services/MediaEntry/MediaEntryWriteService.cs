@@ -12,7 +12,7 @@ using UserEntity = media_vault_app.Domain.Entities.User;
 namespace media_vault_app.Application.Services.MediaEntry
 {
     public class MediaEntryWriteService
-        : OwnedEntityWriteServiceBase<UserEntity, Guid, MediaEntryEntity, Guid, MediaEntryCreateDto, MediaEntryUpdateDto, MediaEntryDetailedDto>,
+        : OwnedEntityWriteServiceBase<UserEntity, MediaEntryEntity, Guid, Guid, MediaEntryCreateDto, MediaEntryUpdateDto, MediaEntryDetailedDto>,
         IMediaEntryWriteService
     {
         public MediaEntryWriteService(

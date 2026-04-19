@@ -10,6 +10,6 @@ namespace media_vault_app.Application.DTOs.ExternalAPIs
         string ExternalId,
         string Title,
         string? CoverImageUrl,
-        MediaEntryType MediaType
+        MediaType MediaType
         );
 }

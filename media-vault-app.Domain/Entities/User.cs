@@ -2,7 +2,7 @@
 
 namespace media_vault_app.Domain.Entities
 {
-    public class User : IOwnerEntity<User, Guid>
+    public class User : IOwnerEntity<Guid>
     {
         public Guid Id { get; set; }
         public string Username { get; set; } = string.Empty;
