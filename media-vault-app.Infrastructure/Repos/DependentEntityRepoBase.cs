@@ -9,23 +9,23 @@ using Rasmus.SharedKernel.ResultPattern;
 namespace media_vault_app.Infrastructure.Repos
 {
 
-    public abstract class OwnedEntityRepoBase<TEntityOwned, TKeyOwner, TKeyOwned>
-        : IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned>
-            where TEntityOwned : class, IOwnableEntity<TKeyOwner, TKeyOwned>
+    public abstract class DependentEntityRepoBase<TEntityDependent, TKeyOwner, TKeyDependent>
+        : IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent>
+            where TEntityDependent : class, IDependentEntity<TKeyOwner, TKeyDependent>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
-            where TKeyOwned : notnull, IEquatable<TKeyOwned>
+            where TKeyDependent : notnull, IEquatable<TKeyDependent>
     {
 
         protected readonly AppDbContext _appDbContext;
-        protected readonly DbSet<TEntityOwned> _dbSet;
+        protected readonly DbSet<TEntityDependent> _dbSet;
 
-        protected OwnedEntityRepoBase(AppDbContext appDbContext)
+        protected DependentEntityRepoBase(AppDbContext appDbContext)
         {
             _appDbContext = appDbContext;
-            _dbSet = _appDbContext.Set<TEntityOwned>();
+            _dbSet = _appDbContext.Set<TEntityDependent>();
         }
 
-        public virtual async Task<Result<TEntityOwned>> CreateAsync(TEntityOwned entity, CancellationToken ct = default)
+        public virtual async Task<Result<TEntityDependent>> CreateAsync(TEntityDependent entity, CancellationToken ct = default)
         {
 
             try
@@ -33,109 +33,109 @@ namespace media_vault_app.Infrastructure.Repos
                 entity.CreatedAtUtc = DateTime.UtcNow;
                 _dbSet.Add(entity);
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
-                return Result<TEntityOwned>.Success(entity);
+                return Result<TEntityDependent>.Success(entity);
             }
             catch (DbUpdateConcurrencyException ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
-                return Result<TEntityOwned>.Failure(DatabaseError.ConcurrencyFailure(baseErrorContext, ex));
+                return Result<TEntityDependent>.Failure(DatabaseError.ConcurrencyFailure(baseErrorContext, ex));
             }
             catch (DbUpdateException ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
-                return Result<TEntityOwned>.Failure(DatabaseError.CreateFailure(baseErrorContext, ex));
+                return Result<TEntityDependent>.Failure(DatabaseError.CreateFailure(baseErrorContext, ex));
             }
             catch (OperationCanceledException)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
-                return Result<TEntityOwned>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<TEntityDependent>.Failure(DatabaseError.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
-                return Result<TEntityOwned>.Failure(DatabaseError.CreateFailure(baseErrorContext, ex));
+                return Result<TEntityDependent>.Failure(DatabaseError.CreateFailure(baseErrorContext, ex));
             }
 
         }
 
-        public virtual async Task<Result<IReadOnlyList<TEntityOwned>>> GetCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber, int pageSize, CancellationToken ct = default)
+        public virtual async Task<Result<IReadOnlyList<TEntityDependent>>> GetCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber, int pageSize, CancellationToken ct = default)
         {
 
             try
             {
-                var ownedEntities = await _dbSet
+                var dependentEntities = await _dbSet
                     .AsNoTracking()
-                    .Where(ownedEntity => ownedEntity.OwnerId.Equals(ownerId))
+                    .Where(dependentEntity => dependentEntity.OwnerId.Equals(ownerId))
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync(ct).ConfigureAwait(false);
 
-                return Result<IReadOnlyList<TEntityOwned>>.Success(ownedEntities);
+                return Result<IReadOnlyList<TEntityDependent>>.Success(dependentEntities);
             }
             catch (OperationCanceledException)
             {
                 var baseErrorContext = DefineErrorContext(nameof(GetCollectionByOwnerIdAsync), OperationType.GetCollection);
-                return Result<IReadOnlyList<TEntityOwned>>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<IReadOnlyList<TEntityDependent>>.Failure(DatabaseError.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(GetCollectionByOwnerIdAsync), OperationType.GetCollection);
-                return Result<IReadOnlyList<TEntityOwned>>.Failure(DatabaseError.GetCollectionFailure(baseErrorContext, ex));
+                return Result<IReadOnlyList<TEntityDependent>>.Failure(DatabaseError.GetCollectionFailure(baseErrorContext, ex));
             }
         }
 
-        public virtual async Task<Result<TEntityOwned>> GetByIdAsync(TKeyOwner ownerId, TKeyOwned entityId, CancellationToken ct = default)
+        public virtual async Task<Result<TEntityDependent>> GetByIdAsync(TKeyOwner ownerId, TKeyDependent entityId, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
             try
             {
-                var ownedEntity = await _dbSet
+                var dependentEntity = await _dbSet
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(currentOwnedEntity =>
-                        currentOwnedEntity.Id.Equals(entityId) &&
-                        currentOwnedEntity.OwnerId.Equals(ownerId), ct)
+                    .FirstOrDefaultAsync(currentDependentEntity =>
+                        currentDependentEntity.Id.Equals(entityId) &&
+                        currentDependentEntity.OwnerId.Equals(ownerId), ct)
                     .ConfigureAwait(false);
 
-                if (ownedEntity is null)
+                if (dependentEntity is null)
                 {
-                    return Result<TEntityOwned>.Failure(
+                    return Result<TEntityDependent>.Failure(
                         Error.NotFound(baseErrorContext));
                 }
 
-                return Result<TEntityOwned>.Success(ownedEntity);
+                return Result<TEntityDependent>.Success(dependentEntity);
             }
             catch (OperationCanceledException)
             {
-                return Result<TEntityOwned>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<TEntityDependent>.Failure(DatabaseError.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
-                return Result<TEntityOwned>.Failure(DatabaseError.GetFailure(baseErrorContext, ex));
+                return Result<TEntityDependent>.Failure(DatabaseError.GetFailure(baseErrorContext, ex));
             }
         }
 
-        public virtual async Task<Result> UpdateAsync(TKeyOwner ownerId, TEntityOwned updatedOwnedEntity, CancellationToken ct = default)
+        public virtual async Task<Result> UpdateAsync(TKeyOwner ownerId, TEntityDependent updatedDependentEntity, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
 
             try
             {
-                var existingOwnedEntity = await _dbSet
-                    .FirstOrDefaultAsync(currentOwnedEntity =>
-                        currentOwnedEntity.Id.Equals(updatedOwnedEntity.Id) &&
-                        currentOwnedEntity.OwnerId.Equals(ownerId), ct)
+                var existingDependentEntity = await _dbSet
+                    .FirstOrDefaultAsync(currentDependentEntity =>
+                        currentDependentEntity.Id.Equals(updatedDependentEntity.Id) &&
+                        currentDependentEntity.OwnerId.Equals(ownerId), ct)
                     .ConfigureAwait(false);
 
-                if (existingOwnedEntity is null)
+                if (existingDependentEntity is null)
                 {
                     return Result.Failure(
                         Error.NotFound(baseErrorContext));
                 }
 
-                var createdAt = existingOwnedEntity.CreatedAtUtc;
-                _appDbContext.Entry(existingOwnedEntity).CurrentValues.SetValues(updatedOwnedEntity);
-                existingOwnedEntity.CreatedAtUtc = createdAt;
+                var createdAt = existingDependentEntity.CreatedAtUtc;
+                _appDbContext.Entry(existingDependentEntity).CurrentValues.SetValues(updatedDependentEntity);
+                existingDependentEntity.CreatedAtUtc = createdAt;
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
 
                 return Result.Success();
@@ -158,25 +158,25 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        public virtual async Task<Result> DeleteAsync(TKeyOwner ownerId, TKeyOwned ownedEntityId, CancellationToken ct = default)
+        public virtual async Task<Result> DeleteAsync(TKeyOwner ownerId, TKeyDependent dependentEntityId, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
             try
             {
-                var ownedEntity = await _dbSet
-                    .FirstOrDefaultAsync(currentOwnedEntity =>
-                        currentOwnedEntity.Id.Equals(ownedEntityId) &&
-                        currentOwnedEntity.OwnerId.Equals(ownerId), ct)
+                var dependentEntity = await _dbSet
+                    .FirstOrDefaultAsync(currentDependentEntity =>
+                        currentDependentEntity.Id.Equals(dependentEntityId) &&
+                        currentDependentEntity.OwnerId.Equals(ownerId), ct)
                     .ConfigureAwait(false);
 
-                if (ownedEntity is null)
+                if (dependentEntity is null)
                 {
                     return Result.Failure(
                         Error.NotFound(baseErrorContext));
                 }
 
-                _dbSet.Remove(ownedEntity);
+                _dbSet.Remove(dependentEntity);
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
 
                 return Result.Success();
@@ -207,7 +207,7 @@ namespace media_vault_app.Infrastructure.Repos
                 ServiceName: this.GetType().Name,
                 MethodName: methodName,
                 Operation: operation,
-                EntityName: typeof(TEntityOwned).Name,
+                EntityName: typeof(TEntityDependent).Name,
                 FieldName: fieldName);
         }
 

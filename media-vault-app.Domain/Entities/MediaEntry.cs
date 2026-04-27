@@ -4,13 +4,13 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Domain.Entities
 {
-    public abstract record MediaEntry : IOwnableEntity<Guid, Guid>
+    public abstract record MediaEntry : IDependentEntity<Guid, Guid>
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
 
         // Satisfies the interface, but routes to UserId
-        Guid IOwnableEntity<Guid, Guid>.OwnerId
+        Guid IDependentEntity<Guid, Guid>.OwnerId
         {
             get => UserId;
             set => UserId = value;

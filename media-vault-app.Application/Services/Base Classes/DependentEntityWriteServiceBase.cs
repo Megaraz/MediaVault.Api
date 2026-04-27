@@ -12,36 +12,36 @@ using Rasmus.SharedKernel.ResultPattern;
 namespace media_vault_app.Application.Services.Base_Classes
 {
 
-    public abstract class OwnedEntityWriteServiceBase<
+    public abstract class DependentEntityWriteServiceBase<
         TEntityOwner,
-        TEntityOwned, 
+        TEntityDependent, 
         TKeyOwner, 
-        TKeyOwned, 
+        TKeyDependent, 
         TCreateDto, 
         TUpdateDto, 
         TDetailedDto>
-        : IOwnedEntityWriteService<TKeyOwner, TKeyOwned, TCreateDto, TUpdateDto, TDetailedDto>
+        : IDependentEntityWriteService<TKeyOwner, TKeyDependent, TCreateDto, TUpdateDto, TDetailedDto>
             where TEntityOwner : class, IWriteableEntity<TKeyOwner>
-            where TEntityOwned : class, IOwnableEntity<TKeyOwner, TKeyOwned>
-            where TDetailedDto : IDtoIdentifiable<TKeyOwned>
+            where TEntityDependent : class, IDependentEntity<TKeyOwner, TKeyDependent>
+            where TDetailedDto : IDtoIdentifiable<TKeyDependent>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
-            where TKeyOwned : notnull, IEquatable<TKeyOwned>
+            where TKeyDependent : notnull, IEquatable<TKeyDependent>
     {
 
-        protected readonly IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned> _ownedEntityRepo;
+        protected readonly IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent> _dependentEntityRepo;
         protected readonly IRepo<TEntityOwner, TKeyOwner> _ownerRepo;
-        protected readonly IMapEntityToDetailedDto<TEntityOwned, TDetailedDto> _entityToDtoMapper;
-        protected readonly IMapDtoToEntity<TEntityOwned, TDetailedDto, TCreateDto, TUpdateDto, TKeyOwned> _dtoToEntityMapper;
-        protected readonly IDtoValidator<TKeyOwned, TCreateDto, TUpdateDto> _dtoValidator;
+        protected readonly IMapEntityToDetailedDto<TEntityDependent, TDetailedDto> _entityToDtoMapper;
+        protected readonly IMapDtoToEntity<TEntityDependent, TDetailedDto, TCreateDto, TUpdateDto, TKeyDependent> _dtoToEntityMapper;
+        protected readonly IDtoValidator<TKeyDependent, TCreateDto, TUpdateDto> _dtoValidator;
 
-        protected OwnedEntityWriteServiceBase(
-            IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned> ownedEntityRepo,
+        protected DependentEntityWriteServiceBase(
+            IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent> dependentEntityRepo,
             IRepo<TEntityOwner, TKeyOwner> ownerRepo,
-            IMapEntityToDetailedDto<TEntityOwned, TDetailedDto> entityToDtoMapper,
-            IMapDtoToEntity<TEntityOwned, TDetailedDto, TCreateDto, TUpdateDto, TKeyOwned> dtoToEntityMapper,
-            IDtoValidator<TKeyOwned, TCreateDto, TUpdateDto> dtoValidator)
+            IMapEntityToDetailedDto<TEntityDependent, TDetailedDto> entityToDtoMapper,
+            IMapDtoToEntity<TEntityDependent, TDetailedDto, TCreateDto, TUpdateDto, TKeyDependent> dtoToEntityMapper,
+            IDtoValidator<TKeyDependent, TCreateDto, TUpdateDto> dtoValidator)
         {
-            _ownedEntityRepo = ownedEntityRepo;
+            _dependentEntityRepo = dependentEntityRepo;
             _ownerRepo = ownerRepo;
             _dtoToEntityMapper = dtoToEntityMapper;
             _dtoValidator = dtoValidator;
@@ -73,13 +73,13 @@ namespace media_vault_app.Application.Services.Base_Classes
             var entity = _dtoToEntityMapper.ToEntity(createDto);
             entity.OwnerId = ownerId;
 
-            var repoResult = await _ownedEntityRepo.CreateAsync(entity, ct);
+            var repoResult = await _dependentEntityRepo.CreateAsync(entity, ct);
 
             return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
 
         }
 
-        public async Task<Result> UpdateAsync(TKeyOwner ownerId, TKeyOwned id, TUpdateDto updateDto, CancellationToken ct = default)
+        public async Task<Result> UpdateAsync(TKeyOwner ownerId, TKeyDependent id, TUpdateDto updateDto, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
 
@@ -110,10 +110,10 @@ namespace media_vault_app.Application.Services.Base_Classes
             var updatedEntity = _dtoToEntityMapper.ToEntity(id, updateDto);
             updatedEntity.OwnerId = ownerId;
 
-            return await _ownedEntityRepo.UpdateAsync(ownerId, updatedEntity, ct);
+            return await _dependentEntityRepo.UpdateAsync(ownerId, updatedEntity, ct);
         }
 
-        public async Task<Result> DeleteAsync(TKeyOwner ownerId, TKeyOwned ownedId, CancellationToken ct = default)
+        public async Task<Result> DeleteAsync(TKeyOwner ownerId, TKeyDependent dependentId, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
@@ -122,8 +122,8 @@ namespace media_vault_app.Application.Services.Base_Classes
             if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
                 errors.Add(ownerIdNotValidError);
 
-            if (!ownedId.IsValidId(baseErrorContext with { FieldName = nameof(ownedId) }, out var ownedIdNotValidError))
-                errors.Add(ownedIdNotValidError);
+            if (!dependentId.IsValidId(baseErrorContext with { FieldName = nameof(dependentId) }, out var dependentIdNotValidError))
+                errors.Add(dependentIdNotValidError);
 
             if (errors.Count > 0)
                 return Result.ValidationFailure(errors, "Validation Errors occurred, see validationErrors for details.");
@@ -135,7 +135,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 return ownerExistsResult.From();
             }
 
-            return await _ownedEntityRepo.DeleteAsync(ownerId, ownedId, ct);
+            return await _dependentEntityRepo.DeleteAsync(ownerId, dependentId, ct);
         }
 
         protected async Task<Result<bool>> EnsureOwnerExistsAsync(TKeyOwner ownerId, CancellationToken ct)
@@ -150,7 +150,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 ServiceName: this.GetType().Name,
                 MethodName: methodName,
                 Operation: operation,
-                EntityName: typeof(TEntityOwned).Name,
+                EntityName: typeof(TEntityDependent).Name,
                 FieldName: fieldName);
         }
     }

@@ -6,7 +6,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
 {
-    public class MediaEntryRepo : OwnedEntityRepoBase<MediaEntry, Guid, Guid>, IMediaEntryRepo
+    public class MediaEntryRepo : DependentEntityRepoBase<MediaEntry, Guid, Guid>, IMediaEntryRepo
     {
         public MediaEntryRepo(AppDbContext appDbContext) : base(appDbContext)
         {

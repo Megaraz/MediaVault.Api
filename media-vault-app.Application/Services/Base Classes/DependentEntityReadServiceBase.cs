@@ -10,37 +10,37 @@ using Rasmus.SharedKernel.ResultPattern;
 namespace media_vault_app.Application.Services.Base_Classes
 {
 
-    public abstract class OwnedEntityReadServiceBase<
+    public abstract class DependentEntityReadServiceBase<
         TEntityOwner,
-        TEntityOwned,
+        TEntityDependent,
         TKeyOwner,
-        TKeyOwned,
+        TKeyDependent,
         TDetailedDto,
         TMinimalDto>
-        : IOwnedEntityReadService<TKeyOwner, TKeyOwned, TDetailedDto, TMinimalDto>
+        : IDependentEntityReadService<TKeyOwner, TKeyDependent, TDetailedDto, TMinimalDto>
             where TEntityOwner : class, IWriteableEntity<TKeyOwner>
-            where TEntityOwned : class, IOwnableEntity<TKeyOwner, TKeyOwned>
-            where TDetailedDto : IDtoIdentifiable<TKeyOwned>
-            where TMinimalDto : IDtoIdentifiable<TKeyOwned>
+            where TEntityDependent : class, IDependentEntity<TKeyOwner, TKeyDependent>
+            where TDetailedDto : IDtoIdentifiable<TKeyDependent>
+            where TMinimalDto : IDtoIdentifiable<TKeyDependent>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
-            where TKeyOwned : notnull, IEquatable<TKeyOwned>
+            where TKeyDependent : notnull, IEquatable<TKeyDependent>
     {
 
-        protected readonly IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned> _ownedEntityRepo;
+        protected readonly IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent> _dependentEntityRepo;
         protected readonly IRepo<TEntityOwner, TKeyOwner> _ownerRepo;
-        protected readonly IMapEntityToDto<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto> _entityToDtoMapper;
+        protected readonly IMapEntityToDto<TEntityDependent, TKeyDependent, TDetailedDto, TMinimalDto> _entityToDtoMapper;
 
-        protected OwnedEntityReadServiceBase(
-            IOwnedEntityRepo<TEntityOwned, TKeyOwner, TKeyOwned> ownedEntityRepo,
-            IMapEntityToDto<TEntityOwned, TKeyOwned, TDetailedDto, TMinimalDto> entityToDtoMapper,
+        protected DependentEntityReadServiceBase(
+            IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent> dependentEntityRepo,
+            IMapEntityToDto<TEntityDependent, TKeyDependent, TDetailedDto, TMinimalDto> entityToDtoMapper,
             IRepo<TEntityOwner, TKeyOwner> ownerRepo)
         {
-            _ownedEntityRepo = ownedEntityRepo;
+            _dependentEntityRepo = dependentEntityRepo;
             _entityToDtoMapper = entityToDtoMapper;
             _ownerRepo = ownerRepo;
         }
 
-        public async Task<Result<TDetailedDto>> GetByIdAsync(TKeyOwner ownerId, TKeyOwned id, CancellationToken ct = default)
+        public async Task<Result<TDetailedDto>> GetByIdAsync(TKeyOwner ownerId, TKeyDependent id, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
@@ -62,7 +62,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 return ownerExistsResult.From<bool, TDetailedDto>();
             }
 
-            var repoResult = await _ownedEntityRepo.GetByIdAsync(ownerId, id, ct);
+            var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct);
 
             return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
 
@@ -89,7 +89,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
-            var repoResult = await _ownedEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pageNumber, pageSize, ct);
+            var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pageNumber, pageSize, ct);
 
             return repoResult.Map(_entityToDtoMapper.ToDetailedDtoCollection);
 
@@ -115,7 +115,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
-            var repoResult = await _ownedEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pageNumber, pageSize, ct);
+            var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pageNumber, pageSize, ct);
 
             return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
         }
@@ -140,7 +140,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 ServiceName: this.GetType().Name,
                 MethodName: methodName,
                 Operation: operation,
-                EntityName: typeof(TEntityOwned).Name,
+                EntityName: typeof(TEntityDependent).Name,
                 FieldName: fieldName);
         }
     }

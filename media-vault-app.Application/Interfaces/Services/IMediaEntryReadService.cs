@@ -7,7 +7,7 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Services
 {
-    public interface IMediaEntryReadService : IOwnedEntityReadService<Guid, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto>
+    public interface IMediaEntryReadService : IDependentEntityReadService<Guid, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto>
     {
         Task<Result<IEnumerable<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
             Guid ownerId,

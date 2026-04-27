@@ -16,7 +16,7 @@ using UserEntity = media_vault_app.Domain.Entities.User;
 namespace media_vault_app.Application.Services.MediaEntry
 {
     public class MediaEntryReadService
-        : OwnedEntityReadServiceBase<UserEntity, MediaEntryEntity, Guid, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto>,
+        : DependentEntityReadServiceBase<UserEntity, MediaEntryEntity, Guid, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto>,
         IMediaEntryReadService
     {
 

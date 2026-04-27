@@ -7,13 +7,13 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Domain.Entities
 {
-    public sealed record Season : IOwnableEntity<Guid, Guid>
+    public sealed record Season : IDependentEntity<Guid, Guid>
     {
         public Guid Id { get; set; }
         public Guid TvSeriesId { get; set; }
 
         // Satisfies the interface, but routes to TvSeriesEntry
-        Guid IOwnableEntity<Guid, Guid>.OwnerId
+        Guid IDependentEntity<Guid, Guid>.OwnerId
         {
             get => TvSeriesId;
             set => TvSeriesId = value;
