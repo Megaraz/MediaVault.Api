@@ -10,7 +10,7 @@ namespace Rasmus.SharedKernel.Interfaces.Services
         ICreateService<TCreateDto, TDetailedDto>,
         IUpdateService<TKey, TUpdateDto>,
         IDeleteService<TKey>
-        where TEntity : class, IWriteableEntity<TKey>
+        where TEntity : class, IEntity<TKey>
         where TDetailedDto : IDtoIdentifiable<TKey>
         where TKey : notnull, IEquatable<TKey>
 

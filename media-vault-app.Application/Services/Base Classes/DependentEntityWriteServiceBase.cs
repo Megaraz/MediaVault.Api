@@ -21,7 +21,7 @@ namespace media_vault_app.Application.Services.Base_Classes
         TUpdateDto, 
         TDetailedDto>
         : IDependentEntityWriteService<TKeyOwner, TKeyDependent, TCreateDto, TUpdateDto, TDetailedDto>
-            where TEntityOwner : class, IWriteableEntity<TKeyOwner>
+            where TEntityOwner : class, IEntity<TKeyOwner>
             where TEntityDependent : class, IDependentEntity<TKeyOwner, TKeyDependent>
             where TDetailedDto : IDtoIdentifiable<TKeyDependent>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>

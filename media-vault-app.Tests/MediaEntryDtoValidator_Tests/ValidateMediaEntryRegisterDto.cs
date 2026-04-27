@@ -25,17 +25,18 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
             var mediaEntryDtoValidator = new MediaEntryDtoValidator();
             var errorContext = DefineErrorContext();
 
-            var mediaEntryDto = new MediaEntryCreateDto(
-                IdExternal: null,
-                Status: Status.Completed,
-                Title: "Test Media Entry",
-                Rating: 4.5m,
-                Review: "Great media entry!",
-                Genres: null,
-                ReleaseYear: null,
-                ImageUrl: null,
-                MediaType: MediaType.Movie
-                );
+            var mediaEntryDto = new MovieEntryCreateDto
+            {
+                IdExternal = null,
+                Status = Status.Completed,
+                Title = "Test Media Entry",
+                Rating = 4.5m,
+                Review = "Great media entry!",
+                Genres = null,
+                ReleaseYear = null,
+                ImageUrl = null,
+                RuntimeMinutes = 120
+            };
 
             // Act
             var result = mediaEntryDtoValidator.IsValidCreateDto(mediaEntryDto, errorContext, out var errors);
@@ -85,17 +86,18 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
             var mediaEntryDtoValidator = new MediaEntryDtoValidator();
             var errorContext = DefineErrorContext();
 
-            var mediaEntryDto = new MediaEntryCreateDto(
-                IdExternal: null,
-                Status: Status.Completed,
-                Title: value!,
-                Rating: 4.5m,
-                Review: "Great media entry!",
-                Genres: null,
-                ReleaseYear: null,
-                ImageUrl: null,
-                MediaType: MediaType.Movie
-            );
+            var mediaEntryDto = new MovieEntryCreateDto
+            {
+                IdExternal = null,
+                Status = Status.Completed,
+                Title = value!,
+                Rating = 4.5m,
+                Review = "Great media entry!",
+                Genres = null,
+                ReleaseYear = null,
+                ImageUrl = null,
+                RuntimeMinutes = 120
+            };
 
             // Act
             var result = mediaEntryDtoValidator.IsValidCreateDto(mediaEntryDto, errorContext, out var errors);

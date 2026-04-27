@@ -4,6 +4,7 @@ using System.Linq;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Domain.Entities;
+using media_vault_app.Domain.Enums;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 
@@ -15,40 +16,17 @@ namespace media_vault_app.Application.Mappers.MediaEntry
     {
         public MediaEntryEntity ToEntity(MediaEntryCreateDto createDto)
         {
-            var entity = CreateMediaEntryInstance();
-
-            entity.Id = Guid.NewGuid();
-            entity.IdExternal = createDto.IdExternal;
-            entity.Status = createDto.Status;
-            entity.Title = createDto.Title;
-            entity.Rating = createDto.Rating;
-            entity.Review = createDto.Review;
-            entity.Genres = createDto.Genres;
-            entity.ReleaseYear = createDto.ReleaseYear ?? 0;
-            entity.ImageUrl = createDto.ImageUrl;
-            entity.MediaType = createDto.MediaType;
-            entity.CreatedAtUtc = DateTime.UtcNow;
-
+            var entity = CreateEntityFromMediaType(createDto.MediaType);
+            MapCommonPropertiesFromCreate(entity, createDto);
+            MapTypeSpecificPropertiesFromCreate(entity, createDto);
             return entity;
         }
 
         public MediaEntryEntity ToEntity(MediaEntryDetailedDto detailedDto)
         {
-            var entity = CreateMediaEntryInstance();
-
-            entity.Id = detailedDto.Id;
-            entity.IdExternal = detailedDto.IdExternal;
-            entity.UserId = detailedDto.UserId;
-            entity.Status = detailedDto.Status;
-            entity.Title = detailedDto.Title;
-            entity.Rating = detailedDto.Rating;
-            entity.Review = detailedDto.Review;
-            entity.Genres = detailedDto.Genres;
-            entity.ReleaseYear = detailedDto.ReleaseYear;
-            entity.ImageUrl = detailedDto.ImageUrl;
-            entity.MediaType = detailedDto.MediaType;
-            entity.CreatedAtUtc = detailedDto.CreatedAtUtc;
-
+            var entity = CreateEntityFromMediaType(detailedDto.MediaType);
+            MapCommonPropertiesFromDetailed(entity, detailedDto);
+            MapTypeSpecificPropertiesFromDetailed(entity, detailedDto);
             return entity;
         }
 
@@ -57,22 +35,143 @@ namespace media_vault_app.Application.Mappers.MediaEntry
 
         public MediaEntryEntity ToEntity(Guid id, MediaEntryUpdateDto updateDto)
         {
-            var entity = CreateMediaEntryInstance();
-
+            var entity = CreateEntityFromMediaType(updateDto.MediaType);
             entity.Id = id;
-            entity.IdExternal = updateDto.IdExternal;
-            entity.Status = updateDto.Status;
-            entity.Title = updateDto.Title;
-            entity.Rating = updateDto.Rating;
-            entity.Review = updateDto.Review;
-            entity.Genres = updateDto.Genres;
-            entity.ReleaseYear = updateDto.ReleaseYear ?? 0;
-            entity.ImageUrl = updateDto.ImageUrl;
-            entity.MediaType = updateDto.MediaType;
-
+            MapCommonPropertiesFromUpdate(entity, updateDto);
+            MapTypeSpecificPropertiesFromUpdate(entity, updateDto);
             return entity;
         }
 
-        private static MediaEntryEntity CreateMediaEntryInstance() => new MovieEntry { Title = string.Empty };
+        // Factory method
+        private static MediaEntryEntity CreateEntityFromMediaType(MediaType mediaType) => mediaType switch
+        {
+            MediaType.Movie => new MovieEntry(),
+            MediaType.TvSeries => new TvSeriesEntry(),
+            MediaType.Game => new GameEntry(),
+            MediaType.Book => new BookEntry(),
+            MediaType.Manga => new MangaEntry(),
+            _ => throw new NotSupportedException($"Unknown media type: {mediaType}")
+        };
+
+        // Common property mapping helpers
+        private static void MapCommonPropertiesFromCreate(MediaEntryEntity entity, MediaEntryCreateDto dto)
+        {
+            entity.Id = Guid.NewGuid();
+            entity.IdExternal = dto.IdExternal;
+            entity.Status = dto.Status;
+            entity.Title = dto.Title;
+            entity.Rating = dto.Rating;
+            entity.Review = dto.Review;
+            entity.Genres = dto.Genres;
+            entity.ReleaseYear = dto.ReleaseYear ?? 0;
+            entity.ImageUrl = dto.ImageUrl;
+            entity.CreatedAtUtc = DateTime.UtcNow;
+        }
+
+        private static void MapCommonPropertiesFromDetailed(MediaEntryEntity entity, MediaEntryDetailedDto dto)
+        {
+            entity.Id = dto.Id;
+            entity.IdExternal = dto.IdExternal;
+            entity.UserId = dto.UserId;
+            entity.Status = dto.Status;
+            entity.Title = dto.Title;
+            entity.Rating = dto.Rating;
+            entity.Review = dto.Review;
+            entity.Genres = dto.Genres;
+            entity.ReleaseYear = dto.ReleaseYear;
+            entity.ImageUrl = dto.ImageUrl;
+            entity.CreatedAtUtc = dto.CreatedAtUtc;
+        }
+
+        private static void MapCommonPropertiesFromUpdate(MediaEntryEntity entity, MediaEntryUpdateDto dto)
+        {
+            entity.IdExternal = dto.IdExternal;
+            entity.Status = dto.Status;
+            entity.Title = dto.Title;
+            entity.Rating = dto.Rating;
+            entity.Review = dto.Review;
+            entity.Genres = dto.Genres;
+            entity.ReleaseYear = dto.ReleaseYear ?? 0;
+            entity.ImageUrl = dto.ImageUrl;
+        }
+
+        // Type-specific property mapping
+        private static void MapTypeSpecificPropertiesFromCreate(MediaEntryEntity entity, MediaEntryCreateDto dto)
+        {
+            switch (entity)
+            {
+                case MovieEntry movie when dto is MovieEntryCreateDto movieDto:
+                    movie.RuntimeMinutes = movieDto.RuntimeMinutes;
+                    break;
+                case TvSeriesEntry tvSeries when dto is TvSeriesEntryCreateDto tvDto:
+                    tvSeries.TotalEpisodes = tvDto.TotalEpisodes;
+                    tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
+                    break;
+                case GameEntry game when dto is GameEntryCreateDto gameDto:
+                    game.DevStudioName = gameDto.DevStudioName;
+                    game.HoursPlayed = gameDto.HoursPlayed;
+                    break;
+                case BookEntry book when dto is BookEntryCreateDto bookDto:
+                    book.AuthorId = bookDto.AuthorId;
+                    book.Author = null!;
+                    break;
+                case MangaEntry manga when dto is MangaEntryCreateDto mangaDto:
+                    manga.AuthorId = mangaDto.AuthorId;
+                    manga.Author = null!;
+                    break;
+            }
+        }
+
+        private static void MapTypeSpecificPropertiesFromDetailed(MediaEntryEntity entity, MediaEntryDetailedDto dto)
+        {
+            switch (entity)
+            {
+                case MovieEntry movie when dto is MovieEntryDetailedDto movieDto:
+                    movie.RuntimeMinutes = movieDto.RuntimeMinutes;
+                    break;
+                case TvSeriesEntry tvSeries when dto is TvSeriesEntryDetailedDto tvDto:
+                    tvSeries.TotalEpisodes = tvDto.TotalEpisodes;
+                    tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
+                    break;
+                case GameEntry game when dto is GameEntryDetailedDto gameDto:
+                    game.DevStudioName = gameDto.DevStudioName;
+                    game.HoursPlayed = gameDto.HoursPlayed;
+                    break;
+                case BookEntry book when dto is BookEntryDetailedDto bookDto:
+                    book.AuthorId = bookDto.AuthorId;
+                    book.Author = null!;
+                    break;
+                case MangaEntry manga when dto is MangaEntryDetailedDto mangaDto:
+                    manga.AuthorId = mangaDto.AuthorId;
+                    manga.Author = null!;
+                    break;
+            }
+        }
+
+        private static void MapTypeSpecificPropertiesFromUpdate(MediaEntryEntity entity, MediaEntryUpdateDto dto)
+        {
+            switch (entity)
+            {
+                case MovieEntry movie when dto is MovieEntryUpdateDto movieDto:
+                    movie.RuntimeMinutes = movieDto.RuntimeMinutes;
+                    break;
+                case TvSeriesEntry tvSeries when dto is TvSeriesEntryUpdateDto tvDto:
+                    tvSeries.TotalEpisodes = tvDto.TotalEpisodes;
+                    tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
+                    break;
+                case GameEntry game when dto is GameEntryUpdateDto gameDto:
+                    game.DevStudioName = gameDto.DevStudioName;
+                    game.HoursPlayed = gameDto.HoursPlayed;
+                    break;
+                case BookEntry book when dto is BookEntryUpdateDto bookDto:
+                    book.AuthorId = bookDto.AuthorId;
+                    book.Author = null!;
+                    break;
+                case MangaEntry manga when dto is MangaEntryUpdateDto mangaDto:
+                    manga.AuthorId = mangaDto.AuthorId;
+                    manga.Author = null!;
+                    break;
+            }
+        }
     }
 }

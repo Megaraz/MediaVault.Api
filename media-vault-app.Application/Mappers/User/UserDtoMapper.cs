@@ -9,8 +9,7 @@ using UserEntity = media_vault_app.Domain.Entities.User;
 namespace media_vault_app.Application.Mappers.User
 {
     public class UserDtoMapper :
-        IMapDtoToEntity<UserEntity, UserDetailedDto, UserRegisterDto, UserUpdateDto, Guid>,
-        IMapUpdateDtoToEntity<UserEntity, Guid, UserUpdateDto>
+        IMapDtoToEntity<UserEntity, UserDetailedDto, UserRegisterDto, UserUpdateDto, Guid>
     {
         public UserEntity ToEntity(UserRegisterDto createDto) =>
             new()

@@ -24,9 +24,11 @@ namespace media_vault_app.API.Controllers
             _writeService = writeService;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<MediaEntryDetailedDto>> CreateMediaEntry(
-            [FromBody] MediaEntryCreateDto createDto,
+        #region Create Operations - Type-Specific Endpoints
+
+        [HttpPost("movies")]
+        public async Task<ActionResult<MediaEntryDetailedDto>> CreateMovie(
+            [FromBody] MovieEntryCreateDto createDto,
             CancellationToken ct)
         {
             if (!TryGetCurrentUserId(out var userId))
@@ -36,6 +38,136 @@ namespace media_vault_app.API.Controllers
 
             return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
+
+        [HttpPost("tv-series")]
+        public async Task<ActionResult<MediaEntryDetailedDto>> CreateTvSeries(
+            [FromBody] TvSeriesEntryCreateDto createDto,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _writeService.CreateAsync(userId, createDto, ct);
+
+            return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
+        }
+
+        [HttpPost("games")]
+        public async Task<ActionResult<MediaEntryDetailedDto>> CreateGame(
+            [FromBody] GameEntryCreateDto createDto,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _writeService.CreateAsync(userId, createDto, ct);
+
+            return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
+        }
+
+        [HttpPost("books")]
+        public async Task<ActionResult<MediaEntryDetailedDto>> CreateBook(
+            [FromBody] BookEntryCreateDto createDto,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _writeService.CreateAsync(userId, createDto, ct);
+
+            return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
+        }
+
+        [HttpPost("manga")]
+        public async Task<ActionResult<MediaEntryDetailedDto>> CreateManga(
+            [FromBody] MangaEntryCreateDto createDto,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _writeService.CreateAsync(userId, createDto, ct);
+
+            return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
+        }
+
+        #endregion
+
+        #region Update Operations - Type-Specific Endpoints
+
+        [HttpPut("movies/{id:Guid}")]
+        public async Task<IActionResult> UpdateMovie(
+            [FromRoute] Guid id,
+            [FromBody] MovieEntryUpdateDto updateDto,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+
+            return this.ToNoContentResult(result);
+        }
+
+        [HttpPut("tv-series/{id:Guid}")]
+        public async Task<IActionResult> UpdateTvSeries(
+            [FromRoute] Guid id,
+            [FromBody] TvSeriesEntryUpdateDto updateDto,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+
+            return this.ToNoContentResult(result);
+        }
+
+        [HttpPut("games/{id:Guid}")]
+        public async Task<IActionResult> UpdateGame(
+            [FromRoute] Guid id,
+            [FromBody] GameEntryUpdateDto updateDto,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+
+            return this.ToNoContentResult(result);
+        }
+
+        [HttpPut("books/{id:Guid}")]
+        public async Task<IActionResult> UpdateBook(
+            [FromRoute] Guid id,
+            [FromBody] BookEntryUpdateDto updateDto,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+
+            return this.ToNoContentResult(result);
+        }
+
+        [HttpPut("manga/{id:Guid}")]
+        public async Task<IActionResult> UpdateManga(
+            [FromRoute] Guid id,
+            [FromBody] MangaEntryUpdateDto updateDto,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+
+            return this.ToNoContentResult(result);
+        }
+
+        #endregion
+
+        #region Read Operations - Shared Endpoints
 
         [HttpPost("search")]
         public async Task<ActionResult<IEnumerable<MediaEntryMinimalDto>>> SearchMediaEntries(
@@ -50,7 +182,6 @@ namespace media_vault_app.API.Controllers
             var result = await _readService.SearchMediaEntriesAsync(userId, request, page, pageSize, ct);
             return this.ToActionResult(result);
         }
-
 
         [HttpGet("{id:Guid}")]
         public async Task<ActionResult<MediaEntryDetailedDto>> GetMediaEntryById(
@@ -79,19 +210,9 @@ namespace media_vault_app.API.Controllers
             return this.ToActionResult(result);
         }
 
-        [HttpPut("{id:Guid}")]
-        public async Task<IActionResult> UpdateMediaEntry(
-            [FromRoute] Guid id,
-            [FromBody] MediaEntryUpdateDto updateDto,
-            CancellationToken ct)
-        {
-            if (!TryGetCurrentUserId(out var userId))
-                return Unauthorized();
+        #endregion
 
-            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
-
-            return this.ToNoContentResult(result);
-        }
+        #region Delete Operations - Shared Endpoint
 
         [HttpDelete("{id:Guid}")]
         public async Task<IActionResult> DeleteMediaEntry(
@@ -105,6 +226,8 @@ namespace media_vault_app.API.Controllers
 
             return this.ToNoContentResult(result);
         }
+
+        #endregion
 
         private bool TryGetCurrentUserId(out Guid userId)
         {

@@ -18,7 +18,7 @@ namespace media_vault_app.Application.Services.Base_Classes
         TDetailedDto,
         TMinimalDto>
         : IDependentEntityReadService<TKeyOwner, TKeyDependent, TDetailedDto, TMinimalDto>
-            where TEntityOwner : class, IWriteableEntity<TKeyOwner>
+            where TEntityOwner : class, IEntity<TKeyOwner>
             where TEntityDependent : class, IDependentEntity<TKeyOwner, TKeyDependent>
             where TDetailedDto : IDtoIdentifiable<TKeyDependent>
             where TMinimalDto : IDtoIdentifiable<TKeyDependent>

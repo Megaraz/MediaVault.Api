@@ -15,6 +15,18 @@ using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Services.API;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
+using media_vault_app.Application.Mappers.MediaEntry;
+using media_vault_app.Application.DTOs.MediaEntry.Response;
+using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
+using media_vault_app.Application.DTOs.MediaEntry.Request;
+using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
+using media_vault_app.Application.Mappers.User;
+using media_vault_app.Application.DTOs.User.Response;
+using media_vault_app.Application.DTOs.User.Request;
+using Rasmus.SharedKernel.Interfaces.Validators;
+using media_vault_app.Application.Validators.User;
+using media_vault_app.Application.Validators.MediaEntry;
+using System.Text.Json.Serialization;
 
 namespace media_vault_app.API
 {
@@ -87,11 +99,42 @@ namespace media_vault_app.API
 
             builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
-            //builder.Services.AddScoped<IGenericRepo<User, Guid>, UserRepo>();
+            #region Mappers
+
+            builder.Services.AddScoped<
+                IMapEntityToDto<MediaEntry, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto>,
+                MediaEntryEntityMapper>();
+
+            builder.Services.AddScoped<
+                IMapDtoToEntity<MediaEntry, MediaEntryDetailedDto, MediaEntryCreateDto, MediaEntryUpdateDto, Guid>,
+                MediaEntryDtoMapper>();
+
+            builder.Services.AddScoped<
+                IMapEntityToDto<User, Guid, UserDetailedDto, UserMinimalDto>,
+                UserEntityMapper>();
+
+            builder.Services.AddScoped<
+                IMapDtoToEntity<User, UserDetailedDto, UserRegisterDto, UserUpdateDto, Guid>,
+                UserDtoMapper>();
+
+
+            #endregion
+
+            #region Validators
+
+            builder.Services.AddScoped<
+                IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto>,
+                MediaEntryDtoValidator>();
+
+            builder.Services.AddScoped<
+                IDtoValidator<Guid, UserRegisterDto, UserUpdateDto>,
+                UserDtoValidator>();
+
+            #endregion
+
+
             builder.Services.AddScoped<IUserRepo, UserRepo>();
 
-            //builder.Services.AddScoped<IGenericRepo<MediaEntry, Guid>, MediaEntryRepo>();
-            //builder.Services.AddScoped<IOwnedEntityGenericRepo<User, Guid, MediaEntry, Guid>, MediaEntryRepo>();
             builder.Services.AddScoped<IMediaEntryRepo, MediaEntryRepo>();
 
             builder.Services.AddScoped<IMediaEntryReadService, MediaEntryReadService>();
@@ -109,7 +152,13 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IGoogleBooksApiService, GoogleBooksApiService>();
 
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    // Allow enum values as strings (e.g., "Completed" instead of 1)
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
+
             builder.Services.AddOpenApi();
 
             builder.Services

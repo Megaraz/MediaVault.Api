@@ -1,7 +1,7 @@
 @media_vault_app.API_HostAddress = https://localhost:7121
-@username = testuser
+@username = jd
 @email = testuser@example.com
-@password = Test123!
+@password = abc123
 @updatedUsername = testuser-updated
 @updatedEmail = testuser-updated@example.com
 
@@ -87,5 +87,369 @@ Accept: application/json
 ### TMDB - Get TV Series by ID
 GET {{media_vault_app.API_HostAddress}}/TmdbApi/tv/1396
 Accept: application/json
+
+###
+
+###############################################
+### MEDIA ENTRIES - TYPE-SPECIFIC ENDPOINTS
+###############################################
+
+@movieEntryId = 00000000-0000-0000-0000-000000000000
+@tvSeriesEntryId = 00000000-0000-0000-0000-000000000000
+@gameEntryId = 00000000-0000-0000-0000-000000000000
+@bookEntryId = 00000000-0000-0000-0000-000000000000
+@mangaEntryId = 00000000-0000-0000-0000-000000000000
+@authorId = 00000000-0000-0000-0000-000000000000
+
+###############################################
+### CREATE OPERATIONS (Type-Specific Endpoints)
+###############################################
+
+### Create Movie Entry
+# @name createMovie
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/movies
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Inception",
+  "review": "A thief who steals corporate secrets through dream-sharing technology.",
+  "releaseYear": 2010,
+  "genres": ["Action", "Science Fiction", "Thriller"],
+  "rating": 4.5,
+  "imageUrl": "https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg",
+  "status": "Completed",
+  "runtimeMinutes": 148
+}
+
+###
+
+### Create TV Series Entry
+# @name createTvSeries
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/tv-series
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Breaking Bad",
+  "review": "A high school chemistry teacher turned meth manufacturer.",
+  "releaseYear": 2008,
+  "genres": ["Drama", "Crime", "Thriller"],
+  "rating": 5.0,
+  "imageUrl": "https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
+  "status": "Completed",
+  "totalEpisodes": 62,
+  "totalWatchedEpisodes": 62
+}
+
+###
+
+### Create Game Entry
+# @name createGame
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/games
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "The Witcher 3: Wild Hunt",
+  "review": "Epic RPG with monster hunting.",
+  "releaseYear": 2015,
+  "genres": ["RPG", "Action", "Adventure"],
+  "rating": 5.0,
+  "imageUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg",
+  "status": "InProgress",
+  "devStudioName": "CD Projekt Red",
+  "hoursPlayed": 127.5
+}
+
+###
+
+### Create Book Entry (requires Author)
+# @name createBook
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/books
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "1984",
+  "review": "A dystopian social science fiction novel.",
+  "releaseYear": 1949,
+  "genres": ["Dystopian", "Political Fiction"],
+  "rating": 4.5,
+  "imageUrl": "https://covers.openlibrary.org/b/id/7222246-L.jpg",
+  "status": "Completed",
+  "authorId": "{{authorId}}"
+}
+
+###
+
+### Create Manga Entry (requires Author)
+# @name createManga
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/manga
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Berserk",
+  "review": "Dark fantasy manga with incredible artwork.",
+  "releaseYear": 1989,
+  "genres": ["Dark Fantasy", "Action", "Horror"],
+  "rating": 5.0,
+  "imageUrl": "https://upload.wikimedia.org/wikipedia/en/6/6b/Berserk_vol01_cover.jpg",
+  "status": "InProgress",
+  "authorId": "{{authorId}}"
+}
+
+###
+
+###############################################
+### READ OPERATIONS
+###############################################
+
+### Get All Media Entries (All Types)
+GET {{media_vault_app.API_HostAddress}}/MediaEntries?pageNumber=1&pageSize=25
+Accept: application/json
+
+###
+
+### Get Movie Entry by ID
+GET {{media_vault_app.API_HostAddress}}/MediaEntries/{{movieEntryId}}
+Accept: application/json
+
+###
+
+### Get TV Series Entry by ID
+GET {{media_vault_app.API_HostAddress}}/MediaEntries/{{tvSeriesEntryId}}
+Accept: application/json
+
+###
+
+### Get Game Entry by ID
+GET {{media_vault_app.API_HostAddress}}/MediaEntries/{{gameEntryId}}
+Accept: application/json
+
+###
+
+### Get Book Entry by ID
+GET {{media_vault_app.API_HostAddress}}/MediaEntries/{{bookEntryId}}
+Accept: application/json
+
+###
+
+### Get Manga Entry by ID
+GET {{media_vault_app.API_HostAddress}}/MediaEntries/{{mangaEntryId}}
+Accept: application/json
+
+###
+
+### Search Media Entries (Cross-type search)
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/search?page=1&pageSize=10
+Content-Type: application/json
+Accept: application/json
+
+{
+  "query": "Inception"
+}
+
+###
+
+###############################################
+### UPDATE OPERATIONS (Type-Specific Endpoints)
+###############################################
+
+### Update Movie Entry
+PUT {{media_vault_app.API_HostAddress}}/MediaEntries/movies/{{movieEntryId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Inception (Updated)",
+  "review": "Mind-bending masterpiece",
+  "releaseYear": 2010,
+  "genres": ["Action", "Science Fiction", "Thriller"],
+  "rating": 5.0,
+  "imageUrl": "https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg",
+  "status": "Completed",
+  "runtimeMinutes": 148
+}
+
+###
+
+### Update TV Series Entry
+PUT {{media_vault_app.API_HostAddress}}/MediaEntries/tv-series/{{tvSeriesEntryId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Breaking Bad (Completed)",
+  "review": "Best TV series ever made",
+  "releaseYear": 2008,
+  "genres": ["Drama", "Crime", "Thriller"],
+  "rating": 5.0,
+  "imageUrl": "https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
+  "status": "Completed",
+  "totalEpisodes": 62,
+  "totalWatchedEpisodes": 62
+}
+
+###
+
+### Update Game Entry
+PUT {{media_vault_app.API_HostAddress}}/MediaEntries/games/{{gameEntryId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "The Witcher 3: Wild Hunt",
+  "review": "Finished all side quests!",
+  "releaseYear": 2015,
+  "genres": ["RPG", "Action", "Adventure"],
+  "rating": 5.0,
+  "imageUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg",
+  "status": "Completed",
+  "devStudioName": "CD Projekt Red",
+  "hoursPlayed": 175.0
+}
+
+###
+
+### Update Book Entry
+PUT {{media_vault_app.API_HostAddress}}/MediaEntries/books/{{bookEntryId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "1984 (George Orwell)",
+  "review": "A dystopian masterpiece - reread and loved it even more.",
+  "releaseYear": 1949,
+  "genres": ["Dystopian", "Political Fiction"],
+  "rating": 5.0,
+  "imageUrl": "https://covers.openlibrary.org/b/id/7222246-L.jpg",
+  "status": "Completed",
+  "authorId": "{{authorId}}"
+}
+
+###
+
+### Update Manga Entry
+PUT {{media_vault_app.API_HostAddress}}/MediaEntries/manga/{{mangaEntryId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Berserk (Still Reading)",
+  "review": "Making progress - story keeps getting darker.",
+  "releaseYear": 1989,
+  "genres": ["Dark Fantasy", "Action", "Horror"],
+  "rating": 5.0,
+  "imageUrl": "https://upload.wikimedia.org/wikipedia/en/6/6b/Berserk_vol01_cover.jpg",
+  "status": "InProgress",
+  "authorId": "{{authorId}}"
+}
+
+###
+
+###############################################
+### DELETE OPERATIONS
+###############################################
+
+### Delete Movie Entry
+DELETE {{media_vault_app.API_HostAddress}}/MediaEntries/{{movieEntryId}}
+Accept: application/json
+
+###
+
+### Delete TV Series Entry
+DELETE {{media_vault_app.API_HostAddress}}/MediaEntries/{{tvSeriesEntryId}}
+Accept: application/json
+
+###
+
+### Delete Game Entry
+DELETE {{media_vault_app.API_HostAddress}}/MediaEntries/{{gameEntryId}}
+Accept: application/json
+
+###
+
+### Delete Book Entry
+DELETE {{media_vault_app.API_HostAddress}}/MediaEntries/{{bookEntryId}}
+Accept: application/json
+
+###
+
+### Delete Manga Entry
+DELETE {{media_vault_app.API_HostAddress}}/MediaEntries/{{mangaEntryId}}
+Accept: application/json
+
+###
+
+###############################################
+### EDGE CASES & VALIDATION TESTS
+###############################################
+
+### Test: Create Movie with Invalid Rating (should fail)
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/movies
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Test Movie",
+  "review": "Testing validation",
+  "releaseYear": 2024,
+  "genres": ["Action"],
+  "rating": 6.0,
+  "status": "Planned",
+  "runtimeMinutes": 120
+}
+
+###
+
+### Test: Create Movie with Missing Required Title (should fail)
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/movies
+Content-Type: application/json
+Accept: application/json
+
+{
+  "review": "Missing title field",
+  "releaseYear": 2024,
+  "genres": ["Action"],
+  "rating": 4.0,
+  "status": "Planned",
+  "runtimeMinutes": 120
+}
+
+###
+
+### Test: Create Game with Negative Hours (edge case)
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/games
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Test Game",
+  "review": "Testing negative hours",
+  "releaseYear": 2024,
+  "genres": ["Action"],
+  "rating": 4.0,
+  "status": "InProgress",
+  "devStudioName": "Test Studio",
+  "hoursPlayed": -10.0
+}
+
+###
+
+### Test: Create Book without AuthorId (should fail for authored entries)
+POST {{media_vault_app.API_HostAddress}}/MediaEntries/books
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Test Book",
+  "review": "Missing author",
+  "releaseYear": 2024,
+  "genres": ["Fiction"],
+  "rating": 4.0,
+  "status": "Planned"
+}
 
 ###

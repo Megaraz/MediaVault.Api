@@ -18,7 +18,7 @@ namespace media_vault_app.Domain.Entities
         
         public string? IdExternal { get; set; }
         public Status Status { get; set; }
-        public required string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         public Rating Rating { get; set; }
         public string? Review { get; set; }
         public ICollection<string>? Genres { get; set; }

@@ -3,9 +3,10 @@ using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
-using media_vault_app.Application.Mappers.MediaEntry;
 using media_vault_app.Application.Services.Base_Classes;
-using media_vault_app.Application.Validators.MediaEntry;
+using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Validators;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using UserEntity = media_vault_app.Domain.Entities.User;
 
@@ -17,8 +18,11 @@ namespace media_vault_app.Application.Services.MediaEntry
     {
         public MediaEntryWriteService(
             IMediaEntryRepo ownedEntityRepo,
-            IUserRepo ownerRepo
-            ) : base(ownedEntityRepo, ownerRepo, new MediaEntryEntityMapper(), new MediaEntryDtoMapper(), new MediaEntryDtoValidator())
+            IUserRepo ownerRepo,
+            IMapEntityToDto<MediaEntryEntity, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto> entityMapper,
+            IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, MediaEntryUpdateDto, Guid> dtoMapper,
+            IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto> validator
+            ) : base(ownedEntityRepo, ownerRepo, entityMapper, dtoMapper, validator)
         {
         }
     }
