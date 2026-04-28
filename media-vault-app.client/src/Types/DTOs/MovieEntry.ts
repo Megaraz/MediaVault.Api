@@ -1,6 +1,7 @@
 import type {
     MediaEntryDetailedDto,
-    MediaEntryCreateDto
+    MediaEntryCreateDto,
+    MediaEntryUpdateDto
 } from "./MediaEntryBase";
 
 export interface MovieEntryDetailedDto extends MediaEntryDetailedDto {
@@ -8,5 +9,9 @@ export interface MovieEntryDetailedDto extends MediaEntryDetailedDto {
 }
 
 export interface MovieEntryCreateDto extends MediaEntryCreateDto {
+    runtimeMinutes: number;
+}
+
+export interface MovieEntryUpdateDto extends MediaEntryUpdateDto {
     runtimeMinutes: number;
 }

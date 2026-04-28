@@ -27,6 +27,19 @@ export interface MediaEntryCreateDto {
   // mediaType is implicit — determined by which endpoint you call
 }
 
+// Base update (same shape as create)
+export interface MediaEntryUpdateDto {
+  idExternal?: string | null;
+  status: number;
+  title: string;
+  rating: number;
+  review?: string | null;
+  genres?: string[] | null;
+  releaseYear?: number | null;
+  imageUrl?: string | null;
+}
+
+// Kept for backward compatibility while components are migrated
 export type MediaEntrySubmitDto = MediaEntryCreateDto;
 
 export type MediaEntryMinimalDto = {

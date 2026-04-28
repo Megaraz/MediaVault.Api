@@ -2,27 +2,11 @@ import type {
     MediaEntryDetailedDto,
     MediaEntryMinimalDto,
     MediaEntrySearchRequestDto,
-    MediaEntrySubmitDto
 } from "../Types/DTOs/MediaEntryBase";
 
 
 export default class MediaEntriesClient {
     private baseUrl = "/mediaentries";
-
-    async createMediaEntry(entry: MediaEntrySubmitDto): Promise<MediaEntryDetailedDto> {
-        const response = await fetch(this.baseUrl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(entry),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to create media entry: " + errorMessage);
-        }
-        return response.json();
-    }
 
     async searchMediaEntries(
         request: MediaEntrySearchRequestDto,
@@ -68,20 +52,6 @@ export default class MediaEntriesClient {
             throw new Error("Failed to fetch media entry: " + errorMessage);
         }
         return response.json();
-    }
-
-    async updateMediaEntry(entryId: string, updatedEntry: MediaEntrySubmitDto): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/${entryId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedEntry),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to update media entry: " + errorMessage);
-        }
     }
 
     async deleteMediaEntry(entryId: string): Promise<void> {

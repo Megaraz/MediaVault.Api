@@ -1,13 +1,17 @@
 import type {
     MediaEntryDetailedDto,
-    MediaEntryCreateDto
+    MediaEntryCreateDto,
+    MediaEntryUpdateDto
 } from "./MediaEntryBase";
 
-
 export interface MangaEntryDetailedDto extends MediaEntryDetailedDto {
-    author?: string;
+    author: string | null;
 }
 
 export interface MangaEntryCreateDto extends MediaEntryCreateDto {
-    author?: string;
+    author?: string | null;
+}
+
+export interface MangaEntryUpdateDto extends MediaEntryUpdateDto {
+    author?: string | null;
 }
