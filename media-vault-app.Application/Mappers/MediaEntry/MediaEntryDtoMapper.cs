@@ -112,12 +112,10 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     game.HoursPlayed = gameDto.HoursPlayed;
                     break;
                 case BookEntry book when dto is BookEntryCreateDto bookDto:
-                    book.AuthorId = bookDto.AuthorId;
-                    book.Author = null!;
+                    book.Author = bookDto.Author;
                     break;
                 case MangaEntry manga when dto is MangaEntryCreateDto mangaDto:
-                    manga.AuthorId = mangaDto.AuthorId;
-                    manga.Author = null!;
+                    manga.Author = mangaDto.Author;
                     break;
             }
         }
@@ -138,12 +136,10 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     game.HoursPlayed = gameDto.HoursPlayed;
                     break;
                 case BookEntry book when dto is BookEntryDetailedDto bookDto:
-                    book.AuthorId = bookDto.AuthorId;
-                    book.Author = null!;
+                    book.Author = bookDto.Author;
                     break;
                 case MangaEntry manga when dto is MangaEntryDetailedDto mangaDto:
-                    manga.AuthorId = mangaDto.AuthorId;
-                    manga.Author = null!;
+                    manga.Author = mangaDto.Author;
                     break;
             }
         }
@@ -164,12 +160,10 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     game.HoursPlayed = gameDto.HoursPlayed;
                     break;
                 case BookEntry book when dto is BookEntryUpdateDto bookDto:
-                    book.AuthorId = bookDto.AuthorId;
-                    book.Author = null!;
+                    book.Author = bookDto.Author;
                     break;
                 case MangaEntry manga when dto is MangaEntryUpdateDto mangaDto:
-                    manga.AuthorId = mangaDto.AuthorId;
-                    manga.Author = null!;
+                    manga.Author = mangaDto.Author;
                     break;
             }
         }

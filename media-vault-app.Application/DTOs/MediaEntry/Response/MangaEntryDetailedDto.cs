@@ -7,7 +7,6 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Response;
 
 public sealed record MangaEntryDetailedDto : MediaEntryDetailedDto
 {
-    public Guid AuthorId { get; init; }
-    public string? AuthorName { get; init; }
+    public string? Author { get; init; }
     public override MediaType MediaType => MediaType.Manga;
 }

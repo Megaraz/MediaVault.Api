@@ -18,7 +18,6 @@ namespace media_vault_app.Infrastructure
         public DbSet<TvSeriesEntry> TvSeriesEntries { get; set; }
         public DbSet<BookEntry> BookEntries { get; set; }
         public DbSet<MangaEntry> MangaEntries { get; set; }
-        public DbSet<Author> Authors { get; set; }
         public DbSet<Season> Seasons { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -64,12 +63,6 @@ namespace media_vault_app.Infrastructure
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
-
-            // === Author relationship (only for AuthoredEntry subclasses) ===
-            modelBuilder.Entity<AuthoredEntry>()
-                .HasOne(ae => ae.Author)
-                .WithMany(a => a.AuthoredEntries)
-                .HasForeignKey(ae => ae.AuthorId);
 
             // === TvSeriesEntry → Seasons relationship ===
             modelBuilder.Entity<TvSeriesEntry>()

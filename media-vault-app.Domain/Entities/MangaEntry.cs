@@ -1,9 +1,11 @@
 ﻿using media_vault_app.Domain.Enums;
+using media_vault_app.Domain.Interfaces;
 
 namespace media_vault_app.Domain.Entities
 {
-    public sealed record MangaEntry : AuthoredEntry
+    public sealed record MangaEntry : MediaEntry, IHasAuthor
     {
+        public string? Author { get; set; }
         public MangaEntry()
         {
             MediaType = MediaType.Manga;

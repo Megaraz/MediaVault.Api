@@ -78,10 +78,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 ReleaseYear = book.ReleaseYear,
                 ImageUrl = book.ImageUrl,
                 CreatedAtUtc = book.CreatedAtUtc,
-                AuthorId = book.AuthorId,
-                AuthorName = book.Author != null 
-                    ? $"{book.Author.FirstName} {book.Author.LastName}".Trim() 
-                    : null
+                Author = book.Author,
             },
             MangaEntity manga => new MangaEntryDetailedDto
             {
@@ -96,10 +93,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 ReleaseYear = manga.ReleaseYear,
                 ImageUrl = manga.ImageUrl,
                 CreatedAtUtc = manga.CreatedAtUtc,
-                AuthorId = manga.AuthorId,
-                AuthorName = manga.Author != null 
-                    ? $"{manga.Author.FirstName} {manga.Author.LastName}".Trim() 
-                    : null
+                Author = manga.Author,
             },
             _ => throw new NotSupportedException($"Unknown entity type: {entity.GetType().Name}")
         };
@@ -195,7 +189,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Genres = book.Genres,
                 ReleaseYear = book.ReleaseYear,
                 ImageUrl = book.ImageUrl,
-                AuthorId = book.AuthorId
+                Author = book.Author
             },
             MangaEntity manga => new MangaEntryUpdateDto
             {
@@ -207,7 +201,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Genres = manga.Genres,
                 ReleaseYear = manga.ReleaseYear,
                 ImageUrl = manga.ImageUrl,
-                AuthorId = manga.AuthorId
+                Author = manga.Author
             },
             _ => throw new NotSupportedException($"Unknown entity type: {entity.GetType().Name}")
         };

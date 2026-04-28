@@ -1,4 +1,4 @@
-import { MediaType, StatusType } from "../Clients/MediaEntriesClient";
+import { MediaType, StatusType } from "../Types/DTOs/MediaEntryBase";
 
 export const mediaSections = [
   { type: MediaType.All, title: "All" },

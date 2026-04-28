@@ -7,6 +7,6 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Request;
 
 public sealed record BookEntryCreateDto : MediaEntryCreateDto
 {
-    public Guid AuthorId { get; init; }
+    public string? Author { get; init; }
     public override MediaType MediaType => MediaType.Book;
 }

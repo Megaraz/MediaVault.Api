@@ -12,6 +12,8 @@ namespace media_vault_app.Domain.Entities
         public ICollection<Season>? Seasons { get; set; }
         public int TotalEpisodes { get; set; }
         public int TotalWatchedEpisodes { get; set; }
+        public int TotalSeasons => Seasons?.Count ?? 0;
+
 
         public TvSeriesEntry()
         {

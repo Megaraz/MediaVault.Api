@@ -23,6 +23,8 @@ namespace media_vault_app.Domain.Entities
 
         public int WatchedEpisodes { get; set; }
         public int Episodes { get; set; }
+
+        public bool Watched { get; set; }
         public Status Status { get; set; }
         public Rating Rating { get; set; }
 

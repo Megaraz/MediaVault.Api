@@ -7,7 +7,6 @@ namespace media_vault_app.Domain.Interfaces
 {
     public interface IHasAuthor
     {
-        public Guid AuthorId { get; set; }
-        Author Author { get; set; }
+        public string? Author { get; set; }
     }
 }
