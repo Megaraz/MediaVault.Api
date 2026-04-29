@@ -1,3 +1,5 @@
+// Handles create and update API calls for Book entries.
+// Hits /mediaentries/books which expects BookEntryCreateDto / BookEntryUpdateDto.
 import type { BookEntryCreateDto, BookEntryDetailedDto, BookEntryUpdateDto } from "../Types/DTOs/BookEntry";
 
 export default class BookEntriesClient {

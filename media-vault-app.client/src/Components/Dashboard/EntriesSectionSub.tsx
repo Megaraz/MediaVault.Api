@@ -1,3 +1,5 @@
+// Compact list-style section used exclusively for the Backlog status.
+// Uses MediaItemCompact instead of the card-grid MediaItem.
 import { MediaType } from "../../Clients/MediaEntriesClient";
 import type { MediaEntryDetailedDto } from "../../Clients/MediaEntriesClient";
 import { mediaSections } from "../../Shared/mediaConstants";

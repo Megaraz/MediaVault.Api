@@ -1,3 +1,5 @@
+// Handles create and update API calls for TV Series entries.
+// Hits /mediaentries/tv-series which expects TvSeriesEntryCreateDto / TvSeriesEntryUpdateDto.
 import type { TvSeriesEntryCreateDto, TvSeriesEntryDetailedDto, TvSeriesEntryUpdateDto } from "../Types/DTOs/TvSeriesEntry";
 
 export default class TvSeriesEntriesClient {

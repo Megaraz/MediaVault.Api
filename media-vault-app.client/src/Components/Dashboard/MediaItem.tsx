@@ -1,3 +1,5 @@
+// Card used in the grid sections (On Going, Completed, etc.).
+// Shows a poster image, title, media type badge, and rating.
 import type { MediaEntryDetailedDto } from "../../Clients/MediaEntriesClient";
 import MediaTypeBadge from "../Shared/MediaTypeBadge";
 

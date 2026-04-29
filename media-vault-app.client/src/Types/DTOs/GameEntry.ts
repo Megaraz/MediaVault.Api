@@ -4,6 +4,7 @@ import type {
     MediaEntryUpdateDto
 } from "./MediaEntryBase";
 
+// Game-specific fields on top of the shared base types.
 export interface GameEntryDetailedDto extends MediaEntryDetailedDto {
     devStudioName: string | null;
     hoursPlayed: number;

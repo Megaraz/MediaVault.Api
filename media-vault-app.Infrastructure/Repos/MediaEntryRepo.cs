@@ -18,7 +18,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 var mediaEntries = await _dbSet
                     .AsNoTracking()
-                    .Where(mediaEntry => mediaEntry.UserId == ownerId && mediaEntry.Title.Contains(query))
+                    .Where(mediaEntry => mediaEntry.OwnerId == ownerId && mediaEntry.Title.Contains(query))
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync(ct).ConfigureAwait(false);

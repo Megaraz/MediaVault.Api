@@ -1,3 +1,5 @@
+// Compact list-row card used in the Backlog section.
+// Shows a small thumbnail, title, and key metadata in a single row.
 import type { MediaEntryDetailedDto } from "../../Clients/MediaEntriesClient";
 import MediaTypeBadge from "../Shared/MediaTypeBadge";
 
@@ -6,8 +8,10 @@ type MediaItemCompactProps = {
 	onClickEntry: (entry: MediaEntryDetailedDto) => void;
 };
 
+// Builds the small subtitle line shown under the title.
+// Uses the first genre (if any) and the release year.
 function getCompactMeta(entry: MediaEntryDetailedDto) {
-	const details = [entry.genre, entry.releaseYear > 0 ? String(entry.releaseYear) : null]
+	const details = [entry.genres[0] ?? null, (entry.releaseYear ?? 0) > 0 ? String(entry.releaseYear) : null]
 		.filter(Boolean)
 		.join(" • ");
 

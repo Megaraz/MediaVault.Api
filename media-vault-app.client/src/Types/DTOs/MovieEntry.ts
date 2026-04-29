@@ -4,6 +4,7 @@ import type {
     MediaEntryUpdateDto
 } from "./MediaEntryBase";
 
+// Movie-specific fields on top of the shared base types.
 export interface MovieEntryDetailedDto extends MediaEntryDetailedDto {
     runtimeMinutes: number;
 }

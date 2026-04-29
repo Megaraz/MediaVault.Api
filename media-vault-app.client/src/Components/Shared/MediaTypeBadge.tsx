@@ -1,3 +1,5 @@
+// Small coloured pill that displays the media type label (Movie, Game, etc.).
+// Each type has its own colour defined in mediaTypeBadgeStyles.
 import {
   MediaType,
   MediaTypeLabels,

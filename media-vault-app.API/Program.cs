@@ -152,12 +152,7 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IGoogleBooksApiService, GoogleBooksApiService>();
 
 
-            builder.Services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    // Allow enum values as strings (e.g., "Completed" instead of 1)
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                });
+            builder.Services.AddControllers();
 
             builder.Services.AddOpenApi();
 

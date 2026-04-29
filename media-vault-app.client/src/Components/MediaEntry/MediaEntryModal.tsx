@@ -1,36 +1,67 @@
+// ─────────────────────────────────────────────────────────────
+// MediaEntryModal.tsx
+//
+// The modal dialog used for both creating and editing a media entry.
+// It owns the form state and handles the submit/delete flow.
+//
+// When opened for editing, detailedEntry is provided and the form
+// is pre-populated from it (including type-specific fields).
+// When opened for creating, detailedEntry is undefined.
+//
+// After a successful save or delete, a brief success screen is shown
+// before the modal closes automatically.
+// ─────────────────────────────────────────────────────────────
 import { useState } from "react";
-import type {
-  MediaEntrySubmitDto,
-  MediaEntryDetailedDto,
-} from "../../Clients/MediaEntriesClient";
+import type { MediaEntryDetailedDto } from "../../Clients/MediaEntriesClient";
+import type { GameEntryDetailedDto } from "../../Types/DTOs/GameEntry";
+import type { MovieEntryDetailedDto } from "../../Types/DTOs/MovieEntry";
+import type { TvSeriesEntryDetailedDto } from "../../Types/DTOs/TvSeriesEntry";
+import type { BookEntryDetailedDto } from "../../Types/DTOs/BookEntry";
+import type { MangaEntryDetailedDto } from "../../Types/DTOs/MangaEntry";
 import DetailedHeader from "./DetailedHeader";
 import MediaEntryForm from "./MediaEntryForm";
 import type { MediaEntryFormData } from "./MediaEntryForm";
 import FormFooter from "./FormFooter";
 import ModalWindow from "../Shared/ModalWindow";
 
+// How long to show the success screen before closing the modal.
 const SUCCESS_STATE_DELAY_MS = 1000;
 
 type MediaEntryProps = {
   detailedEntry?: MediaEntryDetailedDto;
   onSubmit: (
-    updatedEntry: MediaEntrySubmitDto,
+    formData: MediaEntryFormData,
     entryId?: string,
   ) => Promise<void> | void;
   onDelete: (id: string) => Promise<void> | void;
   onCancel: () => void;
 };
 
+// Pre-populate form data from an existing entry when in edit mode.
+// We cast the base entry to each specific sub-type to safely read
+// type-specific fields — fields that don't exist will simply be undefined.
 function buildInitialFormData(
   entry?: MediaEntryDetailedDto,
 ): MediaEntryFormData {
+  const movie = entry as MovieEntryDetailedDto | undefined;
+  const series = entry as TvSeriesEntryDetailedDto | undefined;
+  const game = entry as GameEntryDetailedDto | undefined;
+  const book = entry as BookEntryDetailedDto | undefined;
+  const manga = entry as MangaEntryDetailedDto | undefined;
+
   return {
     title: entry?.title ?? "",
     imageUrl: entry?.imageUrl ?? "",
-    mediaType: entry?.mediaType ?? 0,
+    mediaType: entry?.mediaType ?? -1,  // -1 = not yet selected (new entry)
     status: entry?.status ?? 0,
     rating: entry?.rating ?? 0,
     review: entry?.review ?? "",
+    runtimeMinutes: movie?.runtimeMinutes?.toString() ?? "",
+    totalEpisodes: series?.totalEpisodes?.toString() ?? "",
+    totalWatchedEpisodes: series?.totalWatchedEpisodes?.toString() ?? "",
+    devStudioName: game?.devStudioName ?? "",
+    hoursPlayed: game?.hoursPlayed?.toString() ?? "",
+    author: book?.author ?? manga?.author ?? "",
   };
 }
 
@@ -53,7 +84,9 @@ export default function MediaEntryModal({
   const [showSuccessState, setShowSuccessState] = useState(false);
   const [deleteSuccessState, setDeleteSuccessState] = useState(false);
 
+  // isEditMode = true when we opened the modal by clicking an existing entry.
   const isEditMode = detailedEntry != null && detailedEntry.id != null;
+  // isBusy prevents closing the modal while an async operation is running.
   const isBusy = isSubmitting || showSuccessState || deleteSuccessState;
 
   const handleChange = (
@@ -68,17 +101,8 @@ export default function MediaEntryModal({
     setIsSubmitting(true);
     setShowSuccessState(false);
 
-    const dto: MediaEntrySubmitDto = {
-      title: formData.title,
-      mediaType: formData.mediaType,
-      status: formData.status,
-      rating: formData.rating,
-      imageUrl: formData.imageUrl.trim() || null,
-      review: formData.review || null,
-    };
-
     try {
-      await onSubmit(dto, detailedEntry?.id);
+      await onSubmit(formData, detailedEntry?.id);
       setIsSubmitting(false);
       setShowSuccessState(true);
       await new Promise((resolve) => {

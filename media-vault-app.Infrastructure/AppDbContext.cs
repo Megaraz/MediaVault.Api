@@ -54,7 +54,7 @@ namespace media_vault_app.Infrastructure
             modelBuilder.Entity<User>()
                 .HasMany(u => u.MediaEntries)
                 .WithOne()
-                .HasForeignKey(me => me.UserId);
+                .HasForeignKey(me => me.OwnerId);
 
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
@@ -68,7 +68,7 @@ namespace media_vault_app.Infrastructure
             modelBuilder.Entity<TvSeriesEntry>()
                 .HasMany(tv => tv.Seasons)
                 .WithOne()
-                .HasForeignKey(s => s.TvSeriesId)
+                .HasForeignKey(s => s.OwnerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // === Season configuration ===

@@ -1,3 +1,5 @@
+// Handles create and update API calls for Manga entries.
+// Hits /mediaentries/manga which expects MangaEntryCreateDto / MangaEntryUpdateDto.
 import type { MangaEntryCreateDto, MangaEntryDetailedDto, MangaEntryUpdateDto } from "../Types/DTOs/MangaEntry";
 
 export default class MangaEntriesClient {

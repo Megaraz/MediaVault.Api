@@ -4,6 +4,7 @@ import type {
     MediaEntryUpdateDto
 } from "./MediaEntryBase";
 
+// Manga-specific fields on top of the shared base types.
 export interface MangaEntryDetailedDto extends MediaEntryDetailedDto {
     author: string | null;
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using media_vault_app.Infrastructure;
 
@@ -11,9 +12,11 @@ using media_vault_app.Infrastructure;
 namespace media_vault_app.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428085513_bug_fix")]
+    partial class bug_fix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,9 +47,6 @@ namespace media_vault_app.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("int");
 
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<decimal>("Rating")
                         .HasPrecision(3, 1)
                         .HasColumnType("decimal(3,1)");
@@ -67,9 +67,12 @@ namespace media_vault_app.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("MediaEntries", t =>
                         {
@@ -93,9 +96,6 @@ namespace media_vault_app.Infrastructure.Migrations
                     b.Property<int>("Episodes")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<decimal>("Rating")
                         .HasPrecision(3, 1)
                         .HasColumnType("decimal(3,1)");
@@ -106,6 +106,9 @@ namespace media_vault_app.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("TvSeriesId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -114,7 +117,7 @@ namespace media_vault_app.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("TvSeriesId");
 
                     b.ToTable("Seasons", t =>
                         {
@@ -245,7 +248,7 @@ namespace media_vault_app.Infrastructure.Migrations
                 {
                     b.HasOne("media_vault_app.Domain.Entities.User", null)
                         .WithMany("MediaEntries")
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -254,7 +257,7 @@ namespace media_vault_app.Infrastructure.Migrations
                 {
                     b.HasOne("media_vault_app.Domain.Entities.TvSeriesEntry", null)
                         .WithMany("Seasons")
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("TvSeriesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

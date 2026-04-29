@@ -10,21 +10,11 @@ namespace media_vault_app.Domain.Entities
     public sealed record Season : IDependentEntity<Guid, Guid>
     {
         public Guid Id { get; set; }
-        public Guid TvSeriesId { get; set; }
-
-        // Satisfies the interface, but routes to TvSeriesEntry
-        Guid IDependentEntity<Guid, Guid>.OwnerId
-        {
-            get => TvSeriesId;
-            set => TvSeriesId = value;
-        }
-
+        public Guid OwnerId { get; set; }
         public int? ReleaseYear { get; set; }
-
         public int WatchedEpisodes { get; set; }
         public int Episodes { get; set; }
 
-        public bool Watched { get; set; }
         public Status Status { get; set; }
         public Rating Rating { get; set; }
 

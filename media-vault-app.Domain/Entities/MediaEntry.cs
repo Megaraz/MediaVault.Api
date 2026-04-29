@@ -7,15 +7,7 @@ namespace media_vault_app.Domain.Entities
     public abstract record MediaEntry : IDependentEntity<Guid, Guid>
     {
         public Guid Id { get; set; }
-        public Guid UserId { get; set; }
-
-        // Satisfies the interface, but routes to UserId
-        Guid IDependentEntity<Guid, Guid>.OwnerId
-        {
-            get => UserId;
-            set => UserId = value;
-        }
-        
+        public Guid OwnerId { get; set; }
         public string? IdExternal { get; set; }
         public Status Status { get; set; }
         public string Title { get; set; } = string.Empty;

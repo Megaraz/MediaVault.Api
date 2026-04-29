@@ -1,8 +1,34 @@
+// ─────────────────────────────────────────────────────────────
+// MediaEntriesClient.ts
+//
+// Handles the shared (type-agnostic) API operations:
+//   - GET all entries
+//   - GET entry by ID
+//   - POST search
+//   - DELETE
+//
+// Create and update are intentionally NOT here because they are
+// type-specific — each media type has its own endpoint and DTO.
+// See MovieEntriesClient, GameEntriesClient etc. for those.
+//
+// Also re-exports shared types and constants from MediaEntryBase
+// so other files can do a single import from this module.
+// ─────────────────────────────────────────────────────────────
 import type {
     MediaEntryDetailedDto,
     MediaEntryMinimalDto,
     MediaEntrySearchRequestDto,
 } from "../Types/DTOs/MediaEntryBase";
+
+// Re-export shared types and constants so existing component imports keep working
+export type {
+    MediaEntryDetailedDto,
+    MediaEntryMinimalDto,
+    MediaEntrySearchRequestDto,
+    MediaEntryCreateDto,
+    MediaEntryUpdateDto,
+} from "../Types/DTOs/MediaEntryBase";
+export { StatusLabels, MediaTypeLabels, StatusType, MediaType } from "../Types/DTOs/MediaEntryBase";
 
 
 export default class MediaEntriesClient {

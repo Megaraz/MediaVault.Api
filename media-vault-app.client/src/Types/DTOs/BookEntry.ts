@@ -4,6 +4,7 @@ import type {
     MediaEntryUpdateDto
 } from "./MediaEntryBase";
 
+// Book-specific fields on top of the shared base types.
 export interface BookEntryDetailedDto extends MediaEntryDetailedDto {
     author: string | null;
 }

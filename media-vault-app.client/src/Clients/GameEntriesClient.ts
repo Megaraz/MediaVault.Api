@@ -1,3 +1,5 @@
+// Handles create and update API calls for Game entries.
+// Hits /mediaentries/games which expects GameEntryCreateDto / GameEntryUpdateDto.
 import type { GameEntryCreateDto, GameEntryDetailedDto, GameEntryUpdateDto } from "../Types/DTOs/GameEntry";
 
 export default class GameEntriesClient {

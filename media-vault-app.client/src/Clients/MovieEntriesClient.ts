@@ -1,3 +1,5 @@
+// Handles create and update API calls for Movie entries.
+// Hits /mediaentries/movies which expects MovieEntryCreateDto / MovieEntryUpdateDto.
 import type { MovieEntryCreateDto, MovieEntryDetailedDto, MovieEntryUpdateDto } from "../Types/DTOs/MovieEntry";
 
 export default class MovieEntriesClient {

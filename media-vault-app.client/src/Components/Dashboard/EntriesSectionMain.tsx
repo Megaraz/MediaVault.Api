@@ -1,3 +1,7 @@
+// Grid-style section used for On Going, Completed, Caught Up, and Dropped.
+// Supports sorting (by rating or date added) and filtering by media type.
+// The media type filter is driven externally by the sidebar but can also
+// be overridden locally within this section via a dropdown.
 import type { MediaEntryDetailedDto } from "../../Clients/MediaEntriesClient";
 import MediaItem from "./MediaItem";
 import { MediaType } from "../../Clients/MediaEntriesClient";

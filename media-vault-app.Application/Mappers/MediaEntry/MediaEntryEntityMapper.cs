@@ -22,7 +22,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             {
                 Id = movie.Id,
                 IdExternal = movie.IdExternal,
-                UserId = movie.UserId,
+                UserId = movie.OwnerId,
                 Status = movie.Status,
                 Title = movie.Title,
                 Rating = movie.Rating,
@@ -37,7 +37,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             {
                 Id = tvSeries.Id,
                 IdExternal = tvSeries.IdExternal,
-                UserId = tvSeries.UserId,
+                UserId = tvSeries.OwnerId,
                 Status = tvSeries.Status,
                 Title = tvSeries.Title,
                 Rating = tvSeries.Rating,
@@ -53,7 +53,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             {
                 Id = game.Id,
                 IdExternal = game.IdExternal,
-                UserId = game.UserId,
+                UserId = game.OwnerId,
                 Status = game.Status,
                 Title = game.Title,
                 Rating = game.Rating,
@@ -69,7 +69,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             {
                 Id = book.Id,
                 IdExternal = book.IdExternal,
-                UserId = book.UserId,
+                UserId = book.OwnerId,
                 Status = book.Status,
                 Title = book.Title,
                 Rating = book.Rating,
@@ -84,7 +84,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             {
                 Id = manga.Id,
                 IdExternal = manga.IdExternal,
-                UserId = manga.UserId,
+                UserId = manga.OwnerId,
                 Status = manga.Status,
                 Title = manga.Title,
                 Rating = manga.Rating,

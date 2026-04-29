@@ -1,20 +1,32 @@
-// Base response
+// ─────────────────────────────────────────────────────────────
+// MediaEntryBase.ts
+//
+// Shared base types for all media entries.
+// The backend uses an abstract base record + concrete sub-types
+// for each media type (Movie, TvSeries, Book, etc.).
+// We mirror that same hierarchy here in TypeScript.
+// ─────────────────────────────────────────────────────────────
+
+// The full details of a media entry as returned from GET endpoints.
+// Concrete sub-types (e.g. MovieEntryDetailedDto) extend this.
 export interface MediaEntryDetailedDto {
   id: string;
-  idExternal: string | null;
+  idExternal: string | null; // ID from an external API (e.g. TMDB, RAWG)
   userId: string;
-  status: number;
+  status: number;            // Maps to StatusType constants below
   title: string;
   rating: number;
   review: string | null;
-  genres: string[] | null;   // note: your backend now uses ICollection<string>
+  genres: string[] | null;
   releaseYear: number | null;
   imageUrl: string | null;
-  mediaType: number;
-  createdAtUtc: string;
+  mediaType: number;         // Maps to MediaType constants below
+  createdAtUtc: string;      // ISO 8601 date string from the server
 }
 
-// Base create
+// The shape sent to POST (create) endpoints.
+// mediaType is NOT included — it is determined by which endpoint you call
+// (e.g. POST /mediaentries/movies vs /mediaentries/games).
 export interface MediaEntryCreateDto {
   idExternal?: string | null;
   status: number;
@@ -24,10 +36,9 @@ export interface MediaEntryCreateDto {
   genres?: string[] | null;
   releaseYear?: number | null;
   imageUrl?: string | null;
-  // mediaType is implicit — determined by which endpoint you call
 }
 
-// Base update (same shape as create)
+// The shape sent to PUT (update) endpoints. Same fields as create.
 export interface MediaEntryUpdateDto {
   idExternal?: string | null;
   status: number;
@@ -39,9 +50,7 @@ export interface MediaEntryUpdateDto {
   imageUrl?: string | null;
 }
 
-// Kept for backward compatibility while components are migrated
-export type MediaEntrySubmitDto = MediaEntryCreateDto;
-
+// Lightweight shape returned by the search endpoint — just enough to show in a list.
 export type MediaEntryMinimalDto = {
     id: string;
     title: string;
@@ -49,10 +58,12 @@ export type MediaEntryMinimalDto = {
     imageUrl: string | null;
 };
 
+// Request body for the search endpoint.
 export type MediaEntrySearchRequestDto = {
     query: string;
 };
 
+// Human-readable labels for status values, used in dropdowns and badges.
 export const StatusLabels: Record<number, string> = {
     0: "OnGoing",
     1: "Completed",
@@ -61,16 +72,16 @@ export const StatusLabels: Record<number, string> = {
     4: "Caught Up"
 };
 
+// Human-readable labels for media type values.
 export const MediaTypeLabels: Record<number, string> = {
-    0: "All",
-    1: "Movie",
-    2: "Series",
-    3: "Book",
-    4: "Manga",
-    5: "Game",
+    0: "Movie",
+    1: "Series",
+    2: "Book",
+    3: "Manga",
+    4: "Game",
 };
 
-
+// Named constants for status values — use these instead of raw numbers in code.
 export const StatusType = {
     OnGoing: 0,
     Completed: 1,
@@ -79,11 +90,16 @@ export const StatusType = {
     CaughtUp: 4,
 } as const;
 
+// Named constants for media type values.
+// NOTE: The values here must match the backend MediaType enum exactly:
+//   Movie=0, TvSeries=1, Book=2, Manga=3, Game=4
+// "All" is a frontend-only sentinel value (-1) used for "show everything" filters.
+// It is never sent to the backend.
 export const MediaType = {
-    All: 0,
-    Movie: 1,
-    Series: 2,
-    Book: 3,
-    Manga: 4,
-    Game: 5,
+    All: -1,
+    Movie: 0,
+    Series: 1,
+    Book: 2,
+    Manga: 3,
+    Game: 4,
 } as const;
