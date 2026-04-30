@@ -1,4 +1,4 @@
-using media_vault_app.Application.DTOs.ExternalAPIs;
+using media_vault_app.Application.DTOs;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;

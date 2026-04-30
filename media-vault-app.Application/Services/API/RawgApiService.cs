@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using media_vault_app.Application.DTOs.ExternalAPIs;
+using media_vault_app.Application.DTOs;
+using media_vault_app.Application.DTOs.External_API_Contracts.Rawg;
 using media_vault_app.Application.DTOs.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;

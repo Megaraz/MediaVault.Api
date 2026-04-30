@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace media_vault_app.Application.DTOs.Tmdb
+namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared
 {
     public class TmdbSearchResponse
     {
@@ -18,6 +18,6 @@ namespace media_vault_app.Application.DTOs.Tmdb
         public int? TotalResults { get; set; }
 
         [JsonPropertyName("results")]
-        public IReadOnlyList<TmdbResult>? Results { get; set; }
+        public IReadOnlyList<TmdbSearchResult>? Results { get; set; }
     }
 }

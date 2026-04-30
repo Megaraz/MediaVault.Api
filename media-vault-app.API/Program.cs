@@ -10,8 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Rasmus.SharedKernel.Interfaces;
 using media_vault_app.Application.Services.Auth;
-using media_vault_app.Infrastructure.API_Clients;
-using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Services.API;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
@@ -27,6 +25,8 @@ using Rasmus.SharedKernel.Interfaces.Validators;
 using media_vault_app.Application.Validators.User;
 using media_vault_app.Application.Validators.MediaEntry;
 using System.Text.Json.Serialization;
+using media_vault_app.Infrastructure.API.Clients;
+using media_vault_app.Application.Interfaces.Clients;
 
 namespace media_vault_app.API
 {

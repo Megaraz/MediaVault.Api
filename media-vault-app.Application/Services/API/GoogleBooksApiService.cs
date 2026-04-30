@@ -1,5 +1,7 @@
-using media_vault_app.Application.DTOs.ExternalAPIs;
+using media_vault_app.Application.DTOs;
+using media_vault_app.Application.DTOs.External_API_Contracts.GoogleBooks;
 using media_vault_app.Application.DTOs.GoogleBooks;
+using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
@@ -85,8 +87,6 @@ namespace media_vault_app.Application.Services.API
 
         private static SearchResultDto MapToSearchResult(GoogleBooksVolumeResponse volume)
         {
-            //var thumbnailUrl = volume.VolumeInfo?.ImageLinks?.Thumbnail;
-
             var thumbnailUrl = volume.VolumeInfo?.ImageLinks is null
                 ? null
                 : volume.VolumeInfo.ImageLinks.Small

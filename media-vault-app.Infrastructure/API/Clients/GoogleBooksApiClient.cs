@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using media_vault_app.Application.DTOs.GoogleBooks;
+using media_vault_app.Application.DTOs.External_API_Contracts.GoogleBooks;
 using media_vault_app.Application.Interfaces.Clients;
 using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.ResultPattern;
 
-namespace media_vault_app.Infrastructure.API_Clients
+namespace media_vault_app.Infrastructure.API.Clients
 {
 
     public sealed class GoogleBooksApiOptions

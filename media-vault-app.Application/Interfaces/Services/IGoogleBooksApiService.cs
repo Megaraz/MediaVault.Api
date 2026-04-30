@@ -1,4 +1,4 @@
-using media_vault_app.Application.DTOs.ExternalAPIs;
+using media_vault_app.Application.DTOs;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Services

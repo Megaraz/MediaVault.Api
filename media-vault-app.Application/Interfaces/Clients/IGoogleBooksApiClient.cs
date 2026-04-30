@@ -1,4 +1,4 @@
-using media_vault_app.Application.DTOs.GoogleBooks;
+using media_vault_app.Infrastructure.API.Contracts.GoogleBooks;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Clients

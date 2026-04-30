@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using media_vault_app.Application.DTOs.Tmdb;
+using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.ResultPattern;
 
-namespace media_vault_app.Infrastructure.API_Clients
+namespace media_vault_app.Infrastructure.API.Clients
 {
     public sealed class TmdbApiOptions
     {
@@ -34,13 +34,13 @@ namespace media_vault_app.Infrastructure.API_Clients
             _options = options.Value;
         }
 
-        public async Task<Result<TmdbResult>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default)
+        public async Task<Result<TmdbSearchResult>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
             if (!id.IsValidId(baseErrorContext, out var idValidationError))
             {
-                return Result<TmdbResult>.ValidationFailure([idValidationError]);
+                return Result<TmdbSearchResult>.ValidationFailure([idValidationError]);
             }
 
             string? endpoint = mediaType switch
@@ -61,7 +61,7 @@ namespace media_vault_app.Infrastructure.API_Clients
 
                 var invalidMediaTypeError = ValidationError.InvalidFormat(mediaTypeErrorContext, $"Unsupported media type: {mediaType}");
 
-                return Result<TmdbResult>.ValidationFailure([invalidMediaTypeError], mediaTypeErrorContext.DescriptionSuffix);
+                return Result<TmdbSearchResult>.ValidationFailure([invalidMediaTypeError], mediaTypeErrorContext.DescriptionSuffix);
             }
 
             using var response = await _httpClient.GetAsync(BuildRequestUri($"{endpoint}"), cancellationToken);
@@ -71,7 +71,7 @@ namespace media_vault_app.Infrastructure.API_Clients
                 FieldName = $"{id}"
             };
 
-            return await response.MapAsync<TmdbResult>(httpResponseErrorContext, cancellationToken);
+            return await response.MapAsync<TmdbSearchResult>(httpResponseErrorContext, cancellationToken);
         }
 
 

@@ -15,6 +15,9 @@ namespace media_vault_app.Domain.Entities
         public string? Review { get; set; }
         public ICollection<string>? Genres { get; set; }
 
+        public string? Overview { get; set; }
+
+
         private int _releaseYear;
         public int ReleaseYear
         {

@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using media_vault_app.Application.DTOs.Rawg;
+using media_vault_app.Application.DTOs.External_API_Contracts.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
 using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.ResultPattern;
 
-namespace media_vault_app.Infrastructure.API_Clients
+namespace media_vault_app.Infrastructure.API.Clients
 {
     public sealed class RawgApiOptions
     {

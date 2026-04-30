@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using media_vault_app.Application.DTOs.ExternalAPIs;
+using media_vault_app.Application.DTOs;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.ResultPattern;

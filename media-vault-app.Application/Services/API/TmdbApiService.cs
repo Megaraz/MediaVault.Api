@@ -1,5 +1,5 @@
-using media_vault_app.Application.DTOs.ExternalAPIs;
-using media_vault_app.Application.DTOs.Tmdb;
+using media_vault_app.Application.DTOs;
+using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
@@ -75,12 +75,12 @@ namespace media_vault_app.Application.Services.API
                 FieldName: fieldName);
         }
 
-        private static IReadOnlyList<SearchResultDto> MapToSearchResults(IReadOnlyList<TmdbResult>? results, MediaType mediaType)
+        private static IReadOnlyList<SearchResultDto> MapToSearchResults(IReadOnlyList<TmdbSearchResult>? results, MediaType mediaType)
         {
             return results?.Select(r => MapToSearchResult(r, mediaType)).ToArray() ?? Array.Empty<SearchResultDto>();
         }
 
-        private static SearchResultDto MapToSearchResult(TmdbResult result, MediaType mediaType)
+        private static SearchResultDto MapToSearchResult(TmdbSearchResult result, MediaType mediaType)
         {
             return new SearchResultDto(
                 result.Id.ToString(),
