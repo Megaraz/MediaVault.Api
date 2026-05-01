@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 
-namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb
+namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie
 {
     public sealed record TmdbMovieDetailedResult
     {

@@ -17,6 +17,9 @@ namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared
         [JsonPropertyName("title")]
         public string? Title { get; init; }
 
+        [JsonPropertyName("name")]
+        public string? Name { get; init; }
+
         [JsonPropertyName("overview")]
         public string? Overview { get; init; }
 
@@ -26,8 +29,8 @@ namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared
         [JsonPropertyName("genre_ids")]
         public IReadOnlyList<int> GenreIds { get; init; } = new List<int>();
 
-        //public bool adult { get; set; }
-
     }
+
+
 
 }

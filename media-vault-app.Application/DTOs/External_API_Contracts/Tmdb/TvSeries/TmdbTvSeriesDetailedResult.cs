@@ -43,14 +43,14 @@ namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries
         public string? PosterPath { get; set; }
 
         [JsonPropertyName("seasons")]
-        public Season[]? Seasons { get; set; }
+        public TmdbSeason[]? Seasons { get; set; }
 
 
         [JsonPropertyName("status")]
         public string? Status { get; set; }
     }
 
-    public class Season
+    public class TmdbSeason
     {
         [JsonPropertyName("air_date")]
         public string? AirDate { get; set; }

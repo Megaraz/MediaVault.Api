@@ -11,4 +11,8 @@
     <ProjectReference Include="..\media-vault-app.Domain\media-vault-app.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\External_API_Contracts\Tmdb\Test\" />
+  </ItemGroup>
+
 </Project>

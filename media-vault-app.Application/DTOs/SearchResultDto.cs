@@ -4,7 +4,7 @@ using System.Text;
 using media_vault_app.Domain.Enums;
 
 
-namespace media_vault_app.Application.DTOs.ExternalAPIs
+namespace media_vault_app.Application.DTOs
 {
     public record SearchResultDto(
         string ExternalId,
