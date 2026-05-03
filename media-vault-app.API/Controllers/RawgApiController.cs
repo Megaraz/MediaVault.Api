@@ -19,7 +19,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
-        public async Task<ActionResult<IReadOnlyList<SearchResultDto>>> SearchGames(
+        public async Task<ActionResult<IReadOnlyList<MediaEntrySearchResultDto>>> SearchGames(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
@@ -33,7 +33,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<SearchResultDto>> GetGameById(
+        public async Task<ActionResult<MediaEntrySearchResultDto>> GetGameById(
             [FromRoute] int id,
             CancellationToken ct)
         {

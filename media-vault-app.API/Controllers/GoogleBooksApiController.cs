@@ -18,7 +18,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
-        public async Task<ActionResult<IReadOnlyList<SearchResultDto>>> SearchBooks(
+        public async Task<ActionResult<IReadOnlyList<MediaEntrySearchResultDto>>> SearchBooks(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
@@ -29,7 +29,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{volumeId}")]
-        public async Task<ActionResult<SearchResultDto>> GetBookById(
+        public async Task<ActionResult<MediaEntrySearchResultDto>> GetBookById(
             [FromRoute] string volumeId,
             CancellationToken ct)
         {

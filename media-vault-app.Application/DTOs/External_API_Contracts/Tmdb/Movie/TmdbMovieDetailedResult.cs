@@ -18,6 +18,9 @@ namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie
         [JsonPropertyName("poster_path")]
         public string? PosterPath { get; init; }
 
+        [JsonPropertyName("runtime")]
+        public int RunTime { get; init; }
+
         [JsonPropertyName("title")]
         public string? Title { get; init; }
 

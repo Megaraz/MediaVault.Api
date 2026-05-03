@@ -5,7 +5,7 @@ using media_vault_app.Domain.Enums;
 
 namespace media_vault_app.Application.DTOs.Tmdb
 {
-    public sealed record TmdbSearchResultDto : SearchResultDto
+    public sealed record TmdbSearchResultDto : MediaEntrySearchResultDto
     {
         public string? Name { get; init; }
         public string? Overview { get; init; }

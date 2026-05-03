@@ -7,7 +7,7 @@ namespace Rasmus.SharedKernel.ResultPattern
     {
         private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
-        public static async Task<Result<TValue>> MapAsync<TValue>(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
+        public static async Task<Result<TValue>> MapToResultAsync<TValue>(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
         {
             var localErrorContext = CloneErrorContext(errorContext);
 
@@ -58,7 +58,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             }
         }
 
-        public static async Task<Result> Map(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
+        public static async Task<Result> MapToResult(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
         {
             var localErrorContext = CloneErrorContext(errorContext);
 

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
+using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Options;
@@ -34,45 +36,81 @@ namespace media_vault_app.Infrastructure.API.Clients
             _options = options.Value;
         }
 
-        public async Task<Result<TmdbSearchResult>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default)
+        public async Task<Result<TmdbTvSeriesDetailedResult>> GetTvSeriesByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
+            var baseErrorContext = DefineErrorContext(nameof(GetTvSeriesByIdAsync), OperationType.Get);
 
             if (!id.IsValidId(baseErrorContext, out var idValidationError))
             {
-                return Result<TmdbSearchResult>.ValidationFailure([idValidationError]);
+                return Result<TmdbTvSeriesDetailedResult>.ValidationFailure([idValidationError]);
             }
 
-            string? endpoint = mediaType switch
-            {
-                MediaType.Movie => $"movie/{id}",
-                MediaType.TvSeries => $"tv/{id}",
-                _ => null
-            };
-
-
-            if (endpoint is null)
-            {
-                var mediaTypeErrorContext = baseErrorContext with 
-                { 
-                    FieldName = $"{nameof(mediaType)}",
-                    DescriptionSuffix = "Failed to determine API endpoint for media type."
-                };
-
-                var invalidMediaTypeError = ValidationError.InvalidFormat(mediaTypeErrorContext, $"Unsupported media type: {mediaType}");
-
-                return Result<TmdbSearchResult>.ValidationFailure([invalidMediaTypeError], mediaTypeErrorContext.DescriptionSuffix);
-            }
-
-            using var response = await _httpClient.GetAsync(BuildRequestUri($"{endpoint}"), cancellationToken);
+            using var response = await _httpClient.GetAsync(BuildRequestUri($"tv/{id}"), cancellationToken);
 
             var httpResponseErrorContext = baseErrorContext with 
             { 
                 FieldName = $"{id}"
             };
 
-            return await response.MapAsync<TmdbSearchResult>(httpResponseErrorContext, cancellationToken);
+            return await response.MapToResultAsync<TmdbTvSeriesDetailedResult>(httpResponseErrorContext, cancellationToken);
         }
+        public async Task<Result<TmdbMovieDetailedResult>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var baseErrorContext = DefineErrorContext(nameof(GetMovieByIdAsync), OperationType.Get);
+
+            if (!id.IsValidId(baseErrorContext, out var idValidationError))
+            {
+                return Result<TmdbMovieDetailedResult>.ValidationFailure([idValidationError]);
+            }
+
+            using var response = await _httpClient.GetAsync(BuildRequestUri($"movie/{id}"), cancellationToken);
+
+            var httpResponseErrorContext = baseErrorContext with 
+            { 
+                FieldName = $"{id}"
+            };
+
+            return await response.MapToResultAsync<TmdbMovieDetailedResult>(httpResponseErrorContext, cancellationToken);
+        }
+        //public async Task<Result<TmdbSearchResult>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default)
+        //{
+        //    var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
+
+        //    if (!id.IsValidId(baseErrorContext, out var idValidationError))
+        //    {
+        //        return Result<TmdbSearchResult>.ValidationFailure([idValidationError]);
+        //    }
+
+        //    string? endpoint = mediaType switch
+        //    {
+        //        MediaType.Movie => $"movie/{id}",
+        //        MediaType.TvSeries => $"tv/{id}",
+        //        _ => null
+        //    };
+
+
+        //    if (endpoint is null)
+        //    {
+        //        var mediaTypeErrorContext = baseErrorContext with 
+        //        { 
+        //            FieldName = $"{nameof(mediaType)}",
+        //            DescriptionSuffix = "Failed to determine API endpoint for media type."
+        //        };
+
+        //        var invalidMediaTypeError = ValidationError.InvalidFormat(mediaTypeErrorContext, $"Unsupported media type: {mediaType}");
+
+        //        return Result<TmdbSearchResult>.ValidationFailure([invalidMediaTypeError], mediaTypeErrorContext.DescriptionSuffix);
+        //    }
+
+        //    using var response = await _httpClient.GetAsync(BuildRequestUri($"{endpoint}"), cancellationToken);
+
+        //    var httpResponseErrorContext = baseErrorContext with 
+        //    { 
+        //        FieldName = $"{id}"
+        //    };
+
+        //    return await response.MapToResultAsync<TmdbSearchResult>(httpResponseErrorContext, cancellationToken);
+        //}
 
 
         public async Task<Result<TmdbSearchResponse>> SearchAsync(
@@ -106,7 +144,7 @@ namespace media_vault_app.Infrastructure.API.Clients
 
             using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
 
-            return await response.MapAsync<TmdbSearchResponse>(baseErrorContext, cancellationToken);
+            return await response.MapToResultAsync<TmdbSearchResponse>(baseErrorContext, cancellationToken);
         }
 
         private static string BuildRequestUri(string pathAndQuery)

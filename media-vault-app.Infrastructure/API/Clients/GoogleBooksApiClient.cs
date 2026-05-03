@@ -35,7 +35,7 @@ namespace media_vault_app.Infrastructure.API.Clients
 
             using var response = await _httpClient.GetAsync(BuildRequestUri($"volumes/{volumeId}"), cancellationToken);
 
-            return await response.MapAsync<GoogleBooksVolumeResponse>(errorContext, cancellationToken);
+            return await response.MapToResultAsync<GoogleBooksVolumeResponse>(errorContext, cancellationToken);
         }
 
         public async Task<Result<GoogleBooksSearchResponse>> SearchBooksAsync(
@@ -48,7 +48,7 @@ namespace media_vault_app.Infrastructure.API.Clients
 
             using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
 
-            return await response.MapAsync<GoogleBooksSearchResponse>(errorContext, cancellationToken);
+            return await response.MapToResultAsync<GoogleBooksSearchResponse>(errorContext, cancellationToken);
         }
 
 

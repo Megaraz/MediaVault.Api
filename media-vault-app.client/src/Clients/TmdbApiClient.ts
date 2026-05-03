@@ -1,20 +1,23 @@
-export type TmdbSearchResultDto = {
-    externalId: string;
-    title: string;
-    coverImageUrl: string | null;
-};
+import type { MediaEntrySearchResultDto, SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
+import type { TmdbMovieDetailedDto } from "../Types/DTOs/MovieEntry";
 
-export type TmdbSearchRequestDto = {
-    query: string;
-};
+// export type TmdbSearchResultDto = {
+//     externalId: string;
+//     title: string;
+//     coverImageUrl: string | null;
+// };
+
+// export type TmdbSearchRequestDto = {
+//     query: string;
+// };
 
 export default class TmdbApiClient {
     private baseUrl = "/tmdbapi";
 
     async searchMovies(
-        request: TmdbSearchRequestDto,
+        request: SearchRequestDto,
         page: number = 1,
-    ): Promise<TmdbSearchResultDto[]> {
+    ): Promise<MediaEntrySearchResultDto[]> {
         const params = new URLSearchParams();
         params.set("page", page.toString());
 
@@ -35,7 +38,7 @@ export default class TmdbApiClient {
         return response.json();
     }
 
-    async getMovieById(id: number): Promise<TmdbSearchResultDto> {
+    async getMovieById(id: number): Promise<TmdbMovieDetailedDto> {
         const response = await fetch(`${this.baseUrl}/movie/${id}`, {
             credentials: "include",
         });
@@ -49,9 +52,9 @@ export default class TmdbApiClient {
     }
 
     async searchTvSeries(
-        request: TmdbSearchRequestDto,
+        request: SearchRequestDto,
         page: number = 1,
-    ): Promise<TmdbSearchResultDto[]> {
+    ): Promise<MediaEntrySearchResultDto[]> {
         const params = new URLSearchParams();
         params.set("page", page.toString());
 
@@ -72,16 +75,16 @@ export default class TmdbApiClient {
         return response.json();
     }
 
-    async getTvSeriesById(id: number): Promise<TmdbSearchResultDto> {
-        const response = await fetch(`${this.baseUrl}/tv/${id}`, {
-            credentials: "include",
-        });
+    // async getTvSeriesById(id: number): Promise<TmdbSearchResultDto> {
+    //     const response = await fetch(`${this.baseUrl}/tv/${id}`, {
+    //         credentials: "include",
+    //     });
 
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to fetch TV series: " + errorMessage);
-        }
+    //     if (!response.ok) {
+    //         const errorMessage = await response.text();
+    //         throw new Error("Failed to fetch TV series: " + errorMessage);
+    //     }
 
-        return response.json();
-    }
+    //     return response.json();
+    // }
 }

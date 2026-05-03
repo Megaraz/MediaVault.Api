@@ -5,7 +5,7 @@ using media_vault_app.Domain.Enums;
 
 namespace media_vault_app.Application.DTOs.Rawg
 {
-    public sealed record RawgSearchResultDto : SearchResultDto
+    public sealed record RawgSearchResultDto : MediaEntrySearchResultDto
     {
         public RawgSearchResultDto(
             string externalId, 

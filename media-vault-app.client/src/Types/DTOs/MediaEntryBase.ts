@@ -38,6 +38,17 @@ export interface MediaEntryCreateDto {
   imageUrl?: string | null;
 }
 
+
+export interface MediaEntrySearchResultDto {
+    externalId: string;
+    title: string;
+    coverImageUrl: string | null;
+};
+
+export interface SearchRequestDto  {
+    query: string;
+};
+
 // The shape sent to PUT (update) endpoints. Same fields as create.
 export interface MediaEntryUpdateDto {
   idExternal?: string | null;

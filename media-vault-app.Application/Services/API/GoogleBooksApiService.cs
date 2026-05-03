@@ -18,7 +18,7 @@ namespace media_vault_app.Application.Services.API
             _client = client;
         }
 
-        public async Task<Result<SearchResultDto>> GetBookByIdAsync(string volumeId, CancellationToken cancellationToken = default)
+        public async Task<Result<GoogleBooksDetailedDto>> GetBookByIdAsync(string volumeId, CancellationToken cancellationToken = default)
         {
             var errorContext = DefineErrorContext(nameof(GetBookByIdAsync), OperationType.Get);
 
@@ -26,7 +26,7 @@ namespace media_vault_app.Application.Services.API
             {
                 var volumeIdErrorContext = errorContext with { FieldName = nameof(volumeId), DescriptionSuffix = "Volume ID must not be empty." };
                 var error = ValidationError.Required(volumeIdErrorContext);
-                return Result<SearchResultDto>.ValidationFailure([error], volumeIdErrorContext.DescriptionSuffix);
+                return Result<MediaEntrySearchResultDto>.ValidationFailure([error], volumeIdErrorContext.DescriptionSuffix);
             }
 
             var result = await _client.GetBookAsync(volumeId, cancellationToken);
@@ -34,7 +34,7 @@ namespace media_vault_app.Application.Services.API
             return result.Map(MapToSearchResult);
         }
 
-        public async Task<Result<IReadOnlyList<SearchResultDto>>> SearchBooksAsync(
+        public async Task<Result<IReadOnlyList<MediaEntrySearchResultDto>>> SearchBooksAsync(
             string search,
             int page = 1,
             int pageSize = 10,
@@ -52,7 +52,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                return Result<IReadOnlyList<SearchResultDto>>.ValidationFailure(errors, "Google Books search validation failed.");
+                return Result<IReadOnlyList<MediaEntrySearchResultDto>>.ValidationFailure(errors, "Google Books search validation failed.");
             }
 
             var startIndex = (page - 1) * pageSize;
@@ -80,12 +80,12 @@ namespace media_vault_app.Application.Services.API
                 FieldName: fieldName);
         }
 
-        private static IReadOnlyList<SearchResultDto> MapToSearchResults(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)
+        private static IReadOnlyList<MediaEntrySearchResultDto> MapToSearchResults(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)
         {
-            return volumes?.Select(MapToSearchResult).ToArray() ?? Array.Empty<SearchResultDto>();
+            return volumes?.Select(MapToSearchResult).ToArray() ?? Array.Empty<MediaEntrySearchResultDto>();
         }
 
-        private static SearchResultDto MapToSearchResult(GoogleBooksVolumeResponse volume)
+        private static MediaEntrySearchResultDto MapToSearchResult(GoogleBooksVolumeResponse volume)
         {
             var thumbnailUrl = volume.VolumeInfo?.ImageLinks is null
                 ? null
@@ -103,7 +103,7 @@ namespace media_vault_app.Application.Services.API
                 thumbnailUrl = "https://" + thumbnailUrl.Substring("http://".Length);
             }
 
-            return new SearchResultDto(
+            return new MediaEntrySearchResultDto(
                 volume.Id,
                 volume.VolumeInfo?.Title ?? string.Empty,
                 thumbnailUrl,

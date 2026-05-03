@@ -37,7 +37,7 @@ namespace media_vault_app.Infrastructure.API.Clients
             var httpResponseErrorContext = DefineErrorContext(nameof(GetGameAsync), OperationType.Get, fieldName: $"{id}");
 
 
-            return await response.MapAsync<RawgGameResponse>(httpResponseErrorContext, cancellationToken);
+            return await response.MapToResultAsync<RawgGameResponse>(httpResponseErrorContext, cancellationToken);
         }
 
         public async Task<Result<RawgSearchResponse>> SearchGamesAsync(
@@ -50,7 +50,7 @@ namespace media_vault_app.Infrastructure.API.Clients
 
             using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
 
-            return await response.MapAsync<RawgSearchResponse>(errorContext, cancellationToken);
+            return await response.MapToResultAsync<RawgSearchResponse>(errorContext, cancellationToken);
         }
 
         private string BuildRequestUri(string pathAndQuery)

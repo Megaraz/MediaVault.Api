@@ -1,4 +1,5 @@
 using media_vault_app.Application.DTOs;
+using media_vault_app.Application.DTOs.Tmdb;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +20,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("movie/search")]
-        public async Task<ActionResult<IReadOnlyList<SearchResultDto>>> SearchMovies(
+        public async Task<ActionResult<IReadOnlyList<MediaEntrySearchResultDto>>> SearchMovies(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
@@ -31,16 +32,16 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("movie/{id:int}")]
-        public async Task<ActionResult<SearchResultDto>> GetMovieById(
+        public async Task<ActionResult<TmdbMovieDetailedDto>> GetMovieById(
             [FromRoute] int id,
             CancellationToken ct)
         {
-            var result = await _tmdbApiService.GetByIdAsync(id, MediaType.Movie, ct);
+            var result = await _tmdbApiService.GetMovieByIdAsync(id, ct);
             return this.ToActionResult(result);
         }
 
         [HttpPost("tv/search")]
-        public async Task<ActionResult<IReadOnlyList<SearchResultDto>>> SearchTvSeries(
+        public async Task<ActionResult<IReadOnlyList<MediaEntrySearchResultDto>>> SearchTvSeries(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
@@ -52,11 +53,11 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("tv/{id:int}")]
-        public async Task<ActionResult<SearchResultDto>> GetTvSeriesById(
+        public async Task<ActionResult<TmdbTvSeriesDetailedDto>> GetTvSeriesById(
             [FromRoute] int id,
             CancellationToken ct)
         {
-            var result = await _tmdbApiService.GetByIdAsync(id, MediaType.TvSeries, ct);
+            var result = await _tmdbApiService.GetTvSeriesByIdAsync(id, ct);
             return this.ToActionResult(result);
         }
     }

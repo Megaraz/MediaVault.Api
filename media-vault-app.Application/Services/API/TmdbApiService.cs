@@ -1,5 +1,8 @@
 using media_vault_app.Application.DTOs;
+using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
+using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries;
+using media_vault_app.Application.DTOs.Tmdb;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
@@ -16,20 +19,32 @@ namespace media_vault_app.Application.Services.API
             _client = client;
         }
 
-        public async Task<Result<SearchResultDto>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default)
+        public async Task<Result<TmdbTvSeriesDetailedDto>> GetTvSeriesByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var idValidationErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
+            var idValidationErrorContext = DefineErrorContext(nameof(GetTvSeriesByIdAsync), OperationType.Get);
 
             if (!id.IsValidId(idValidationErrorContext, out var idError))
             {
-                return Result<SearchResultDto>.ValidationFailure([idError]);
+                return Result<TmdbTvSeriesDetailedDto>.ValidationFailure([idError]);
             }
 
-            var result = await _client.GetByIdAsync(id, mediaType, cancellationToken);
-            return result.Map(r => MapToSearchResult(r, mediaType));
+            var result = await _client.GetTvSeriesByIdAsync(id, cancellationToken);
+            return result.Map(ToDetailedDto);
+        }
+        public async Task<Result<TmdbMovieDetailedDto>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var idValidationErrorContext = DefineErrorContext(nameof(GetMovieByIdAsync), OperationType.Get);
+
+            if (!id.IsValidId(idValidationErrorContext, out var idError))
+            {
+                return Result<TmdbMovieDetailedDto>.ValidationFailure([idError]);
+            }
+
+            var result = await _client.GetMovieByIdAsync(id, cancellationToken);
+            return result.Map(ToDetailedDto);
         }
 
-        public async Task<Result<IReadOnlyList<SearchResultDto>>> SearchAsync(
+        public async Task<Result<IReadOnlyList<MediaEntrySearchResultDto>>> SearchAsync(
             string search,
             MediaType mediaType,
             int page = 1,
@@ -50,7 +65,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                return Result<IReadOnlyList<SearchResultDto>>.ValidationFailure(errors, "TMDB search validation failed.");
+                return Result<IReadOnlyList<MediaEntrySearchResultDto>>.ValidationFailure(errors, "TMDB search validation failed.");
             }
 
             var queryParameters = new List<string>
@@ -75,14 +90,67 @@ namespace media_vault_app.Application.Services.API
                 FieldName: fieldName);
         }
 
-        private static IReadOnlyList<SearchResultDto> MapToSearchResults(IReadOnlyList<TmdbSearchResult>? results, MediaType mediaType)
+        private static IReadOnlyList<MediaEntrySearchResultDto> MapToSearchResults(IReadOnlyList<TmdbSearchResult>? results, MediaType mediaType)
         {
-            return results?.Select(r => MapToSearchResult(r, mediaType)).ToArray() ?? Array.Empty<SearchResultDto>();
+            return results?.Select(r => MapToSearchResult(r, mediaType)).ToArray() ?? Array.Empty<MediaEntrySearchResultDto>();
         }
 
-        private static SearchResultDto MapToSearchResult(TmdbSearchResult result, MediaType mediaType)
+        private static TmdbTvSeriesDetailedDto ToDetailedDto(TmdbTvSeriesDetailedResult tvSeriesResult)
         {
-            return new SearchResultDto(
+            return new TmdbTvSeriesDetailedDto
+            (
+                TmdbBackdropPath: BuildImageUrl(tvSeriesResult.BackdropPath),
+                TmdbFirstAirDate: tvSeriesResult.FirstAirDate ?? string.Empty,
+                TmdbGenres: tvSeriesResult.Genres?.Select(g =>
+                    new TmdbGenreDto
+                    (
+                        TmdbGenreId: g.Id,
+                        TmdbGenreName: g.Name
+                    )).ToArray(),
+                TmdbTvSeriesId: tvSeriesResult.Id,
+                TmdbLastAirDate: tvSeriesResult.LastAirDate ?? string.Empty,
+                TmdbName: tvSeriesResult.Name ?? string.Empty,
+                TmdbNumberOfEpisodes: tvSeriesResult.NumberOfEpisodes,
+                TmdbNumberOfSeasons: tvSeriesResult.NumberOfSeasons,
+                TmdbOverview: tvSeriesResult.Overview ?? string.Empty,
+                TmdbPosterPath: BuildImageUrl(tvSeriesResult.PosterPath),
+                TmdbSeasons: tvSeriesResult.Seasons?.Select(s =>
+                    new TmdbSeasonDto
+                    (
+                        TmdbAirDate: s.AirDate ?? string.Empty,
+                        TmdbEpisodeCount: s.EpisodeCount,
+                        TmdbName: s.Name ?? string.Empty,
+                        TmdbOverview: s.Overview ?? string.Empty,
+                        TmdbPosterPath: BuildImageUrl(s.PosterPath),
+                        TmdbSeasonNumber: s.SeasonNumber
+                    )).ToArray(),
+                TmdbStatus: tvSeriesResult.Status ?? string.Empty
+            );
+        }
+
+        private static TmdbMovieDetailedDto ToDetailedDto(TmdbMovieDetailedResult movieResult)
+        {
+            return new TmdbMovieDetailedDto
+            (
+                TmdbBackdropPath: BuildImageUrl(movieResult.PosterPath),
+                TmdbReleaseDate: movieResult.ReleaseDate ?? string.Empty,
+                TmdbGenres: movieResult.Genres.Select(g =>
+                    new TmdbGenreDto
+                    (
+                        TmdbGenreId: g.Id,
+                        TmdbGenreName: g.Name
+                    )).ToArray(),
+                TmdbMovieId: movieResult.Id,
+                TmdbOverview: movieResult.Overview ?? string.Empty,
+                TmdbPosterPath: BuildImageUrl(movieResult.PosterPath),
+                TmdbTitle: movieResult.Title ?? string.Empty,
+                TmdbRunTimeMinutes: movieResult.RunTime
+            );
+        }
+
+        private static MediaEntrySearchResultDto MapToSearchResult(TmdbSearchResult result, MediaType mediaType)
+        {
+            return new MediaEntrySearchResultDto(
                 result.Id.ToString(),
                 result.Title ?? result.Name ?? string.Empty,
                 BuildImageUrl(result.PosterPath),

@@ -22,27 +22,33 @@ import SelectOption from "../../Components/Shared/SelectOption";
 import StarRating from "../../Components/Shared/StarRating";
 import TitleSearchInput from "./TitleSearchInput";
 import type { SearchResult } from "./TitleSearchInput";
+import { useState } from "react";
+import TmdbApiClient from "../../Clients/TmdbApiClient";
 
 // All form fields in a single flat object.
 // Type-specific fields (runtimeMinutes, author, etc.) are always present
 // but only rendered and populated when the matching media type is selected.
 export type MediaEntryFormData = {
-  title: string;
-  imageUrl: string;
+  title?: string;
+  imageUrl?: string;
+  backdropUrl?: string;
   mediaType: number;
   status: number;
   rating: number;
   review: string;
+  releaseDate?: string;
+  genres: string[];
+  overview?: string;
   // Movie-specific
-  runtimeMinutes: string;
+  runtimeMinutes?: string;
   // TV Series-specific
-  totalEpisodes: string;
-  totalWatchedEpisodes: string;
+  totalEpisodes?: string;
+  totalWatchedEpisodes?: string;
   // Game-specific
-  devStudioName: string;
-  hoursPlayed: string;
+  devStudioName?: string;
+  hoursPlayed?: string;
   // Book / Manga-specific
-  author: string;
+  author?: string;
 };
 
 type MediaEntryFormProps = {
@@ -66,6 +72,8 @@ export default function MediaEntryForm({
   onChange,
   isEditMode,
 }: MediaEntryFormProps) {
+  const [tmdbClient] = useState(() => new TmdbApiClient());
+
   // Step 1: if no type chosen yet, only show the type selector.
   // mediaType -1 is the "not selected" sentinel set in buildInitialFormData.
   if (formData.mediaType < 0) {
@@ -83,6 +91,32 @@ export default function MediaEntryForm({
     );
   }
 
+  const handleSelectResult = (result: SearchResult) => {
+    // When a result is picked from the dropdown, also fill in the cover image
+    onChange("title", result.title);
+    if (result.coverImageUrl) onChange("imageUrl", result.coverImageUrl);
+
+    if (formData.mediaType === MediaType.Movie) {
+      tmdbClient.getMovieById(Number(result.externalId)).then((movie) => {
+        if (movie.tmdbRunTimeMinutes)
+          onChange("runtimeMinutes", movie.tmdbRunTimeMinutes.toString());
+
+        if (movie.tmdbBackdropPath) onChange("backdropUrl", movie.tmdbBackdropPath);
+
+        if (movie.tmdbReleaseDate) onChange("releaseDate", movie.tmdbReleaseDate);
+
+        if (movie.tmdbGenres)
+          onChange(
+            "genres",
+            movie.tmdbGenres.map((g) => g.tmdbGenreName || "").join(", "),
+          );
+
+        if (movie.tmdbOverview) onChange("overview", movie.tmdbOverview);
+
+      });
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Title */}
@@ -96,11 +130,7 @@ export default function MediaEntryForm({
           onChange={(value) => onChange("title", value)}
           mediaType={formData.mediaType}
           isEditMode={isEditMode}
-          onSelectResult={(result: SearchResult) => {
-            // When a result is picked from the dropdown, also fill in the cover image
-            onChange("title", result.title);
-            if (result.coverImageUrl) onChange("imageUrl", result.coverImageUrl);
-          }}
+          onSelectResult={handleSelectResult}
         />
       </div>
 
@@ -167,17 +197,62 @@ export default function MediaEntryForm({
 
       {/* Movie-specific fields */}
       {formData.mediaType === MediaType.Movie && (
-        <div>
-          <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-            Runtime (minutes)
-          </label>
-          <InputText
-            type="number"
-            value={formData.runtimeMinutes}
-            placeholder="e.g. 148"
-            onChange={(val) => onChange("runtimeMinutes", val)}
-          />
-        </div>
+        <>
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Runtime (minutes)
+            </label>
+            <InputText
+              type="number"
+              value={formData.runtimeMinutes}
+              placeholder="e.g. 148"
+              onChange={(val) => onChange("runtimeMinutes", val)}
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Release Date
+            </label>
+            <InputText
+              type="date"
+              value={formData.releaseDate}
+              onChange={(val) => onChange("releaseDate", val)}
+            />
+          </div>
+          <div className="col-span-full">
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Genres
+            </label>
+            <InputText
+              value={Array.isArray(formData.genres) ? formData.genres.join(", ") : formData.genres}
+              placeholder="e.g. Action, Drama"
+              onChange={(val) => onChange("genres", val)}
+            />
+          </div>
+          <div className="col-span-full">
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Overview
+            </label>
+            <textarea
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none"
+              placeholder="Short description of the movie..."
+              rows={3}
+              value={formData.overview ?? ""}
+              onChange={(e) => onChange("overview", e.target.value)}
+            />
+          </div>
+          <div className="col-span-full">
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Backdrop URL
+            </label>
+            <InputText
+              type="url"
+              value={formData.backdropUrl}
+              placeholder="https://example.com/backdrop.jpg"
+              onChange={(val) => onChange("backdropUrl", val)}
+            />
+          </div>
+        </>
       )}
 
       {/* TV Series-specific fields */}

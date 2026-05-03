@@ -52,10 +52,14 @@ function buildInitialFormData(
   return {
     title: entry?.title ?? "",
     imageUrl: entry?.imageUrl ?? "",
-    mediaType: entry?.mediaType ?? -1,  // -1 = not yet selected (new entry)
+    backdropUrl: "",
+    mediaType: entry?.mediaType ?? 0,  // 0 = Movie is the default for new entries
     status: entry?.status ?? 0,
     rating: entry?.rating ?? 0,
     review: entry?.review ?? "",
+    releaseDate: "",
+    genres: [],
+    overview: "",
     runtimeMinutes: movie?.runtimeMinutes?.toString() ?? "",
     totalEpisodes: series?.totalEpisodes?.toString() ?? "",
     totalWatchedEpisodes: series?.totalWatchedEpisodes?.toString() ?? "",

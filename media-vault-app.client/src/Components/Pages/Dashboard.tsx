@@ -119,10 +119,10 @@ export default function Dashboard() {
 
     // Fields shared by all media types.
     const baseFields = {
-      title: formData.title,
+      title: formData.title ?? "",
       status: formData.status,
       rating: formData.rating,
-      imageUrl: formData.imageUrl.trim() || null,
+      imageUrl: formData.imageUrl?.trim() || null,
       review: formData.review || null,
     };
 
@@ -292,9 +292,9 @@ export default function Dashboard() {
               onSelectSearchResult={handleSelectSearchResult}
             />
 
-            // Each section shows entries for one status value.
-  // Backlog gets a compact "list" view; all other statuses get the card grid.
-  {entries.length > 0 && (
+            {/* Each section shows entries for one status value.
+                Backlog gets a compact "list" view; all other statuses get the card grid. */}
+            {entries.length > 0 && (
               <>
                 {statusSections.map(({ type, title }) => {
                   const sectionEntriesByStatus = entries.filter(
