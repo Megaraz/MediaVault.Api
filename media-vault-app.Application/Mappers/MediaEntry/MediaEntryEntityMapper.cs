@@ -10,6 +10,7 @@ using TvSeriesEntity = media_vault_app.Domain.Entities.TvSeriesEntry;
 using GameEntity = media_vault_app.Domain.Entities.GameEntry;
 using BookEntity = media_vault_app.Domain.Entities.BookEntry;
 using MangaEntity = media_vault_app.Domain.Entities.MangaEntry;
+using media_vault_app.Domain.Entities;
 
 namespace media_vault_app.Application.Mappers.MediaEntry
 {
@@ -28,6 +29,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Rating = movie.Rating,
                 Review = movie.Review,
                 Genres = movie.Genres,
+                Overview = movie.Overview,
                 ReleaseYear = movie.ReleaseYear,
                 ImageUrl = movie.ImageUrl,
                 CreatedAtUtc = movie.CreatedAtUtc,
@@ -62,8 +64,19 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 ReleaseYear = game.ReleaseYear,
                 ImageUrl = game.ImageUrl,
                 CreatedAtUtc = game.CreatedAtUtc,
-                DevStudioName = game.DevStudioName,
-                HoursPlayed = game.HoursPlayed
+                //DevStudioName = game.DevStudioName,
+                HoursPlayed = game.HoursPlayed,
+                MetacriticRating = game.MetacriticRating,
+                Website = game.Website,
+                PcRequirements = game.PcRequirements is not null ? new GamePcRequirementsDto
+                (
+                    Minimum:  game.PcRequirements.Minimum,
+                    Recommended: game.PcRequirements.Recommended,
+                    High: game.PcRequirements.High,
+                    VeryHigh: game.PcRequirements.VeryHigh,
+                    Ultra: game.PcRequirements.Ultra
+                ) : null
+
             },
             BookEntity book => new BookEntryDetailedDto
             {

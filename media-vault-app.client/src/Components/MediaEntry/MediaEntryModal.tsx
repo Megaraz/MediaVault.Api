@@ -28,9 +28,7 @@ import FormFooter from "./FormFooter";
 import ModalWindow from "../Shared/ModalWindow";
 import type { SearchResult } from "./TitleSearchInput";
 import TmdbApiClient from "../../Clients/TmdbApiClient";
-import {
-  type GoogleBooksDetailedDto,
-} from "../../Clients/GoogleBooksApiClient";
+import { type GoogleBooksDetailedDto } from "../../Clients/GoogleBooksApiClient";
 import RawgApiClient from "../../Clients/RawgApiClient";
 
 // How long to show the success screen before closing the modal.
@@ -72,8 +70,10 @@ function buildInitialFormData(
     runtimeMinutes: movie?.runtimeMinutes?.toString() ?? "",
     totalEpisodes: series?.totalEpisodes?.toString() ?? "",
     totalWatchedEpisodes: series?.totalWatchedEpisodes?.toString() ?? "",
-    devStudioName: game?.devStudioName ?? "",
+    metaCriticRating: game?.metaCriticRating ?? 0,
     hoursPlayed: game?.hoursPlayed?.toString() ?? "",
+    platforms: game?.platforms?.join(", ") ?? "",
+    website: game?.website ?? "",
     author: book?.author ?? manga?.author ?? "",
   };
 }
@@ -172,8 +172,18 @@ export default function MediaEntryModal({
 
     if (formData.mediaType === MediaType.Game) {
       rawgClient.getGameById(Number(result.externalId)).then((game) => {
-        if (game.devStudioName)
-          handleChange("devStudioName", game.devStudioName);
+        if (game.RawgDescription)
+          handleChange("overview", game.RawgDescription);
+        if (game.RawgReleased)
+          handleChange("releaseDate", game.RawgReleased);
+        if (game.RawgBackgroundImage)
+          handleChange("backdropUrl", game.RawgBackgroundImage);
+        if (game.RawgMetacritic)
+          handleChange("metaCriticRating", game.RawgMetacritic);
+        if (game.RawgPlatforms)
+          handleChange("platforms", game.RawgPlatforms.join(", "));
+        if (game.RawgWebsite)
+          handleChange("website", game.RawgWebsite);
       });
     }
 

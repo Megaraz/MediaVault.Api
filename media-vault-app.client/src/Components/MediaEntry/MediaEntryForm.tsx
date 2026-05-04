@@ -43,8 +43,10 @@ export type MediaEntryFormData = {
   totalEpisodes?: string;
   totalWatchedEpisodes?: string;
   // Game-specific
-  devStudioName?: string;
+  metaCriticRating?: number;
   hoursPlayed?: string;
+  platforms?: string;
+  website?: string;
   // Book / Manga-specific
   author?: string;
 };
@@ -269,16 +271,6 @@ export default function MediaEntryForm({
         <>
           <div>
             <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Developer Studio
-            </label>
-            <InputText
-              value={formData.devStudioName}
-              placeholder="e.g. FromSoftware"
-              onChange={(val) => onChange("devStudioName", val)}
-            />
-          </div>
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
               Hours Played
             </label>
             <InputText
@@ -286,6 +278,38 @@ export default function MediaEntryForm({
               value={formData.hoursPlayed}
               placeholder="e.g. 80"
               onChange={(val) => onChange("hoursPlayed", val)}
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Metacritic Rating
+            </label>
+            <InputText
+              type="number"
+              value={formData.metaCriticRating?.toString()}
+              placeholder="e.g. 87"
+              onChange={(val) => onChange("metaCriticRating", Number(val))}
+            />
+          </div>
+          <div className="col-span-full">
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Platforms
+            </label>
+            <InputText
+              value={formData.platforms}
+              placeholder="e.g. PC, PlayStation 5"
+              onChange={(val) => onChange("platforms", val)}
+            />
+          </div>
+          <div className="col-span-full">
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Website
+            </label>
+            <InputText
+              type="url"
+              value={formData.website}
+              placeholder="https://example.com"
+              onChange={(val) => onChange("website", val)}
             />
           </div>
         </>

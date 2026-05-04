@@ -1,11 +1,24 @@
 import type { MediaEntrySearchResultDto, SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
 
-export interface RawgGameDetailedDto extends MediaEntrySearchResultDto {
-    externalId: string;
-    title: string;
-    coverImageUrl: string | null;
-    //slug: string;
-};
+export interface RawgGameDetailedDto {
+    RawgId: number;
+    RawgSlug?: string;
+    RawgName?: string;
+    RawgDescription?: string;
+    RawgMetacritic: number;
+    RawgReleased?: string;
+    RawgBackgroundImage?: string;
+    RawgWebsite?: string;
+    RawgPlatforms?: string[];
+    RawgRequirements?: GamePcRequirementsDto;
+}
+export interface GamePcRequirementsDto {
+    Minimum?: string;
+    Recommended?: string;
+    High?: string;
+    VeryHigh?: string;
+    Ultra?: string;
+}
 
 
 export default class RawgApiClient {
