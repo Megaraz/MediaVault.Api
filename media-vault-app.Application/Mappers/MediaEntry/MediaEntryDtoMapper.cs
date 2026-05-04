@@ -77,6 +77,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Status = dto.Status;
             entity.Title = dto.Title;
             entity.Rating = dto.Rating;
+            entity.Overview = dto.Overview;
             entity.Review = dto.Review;
             entity.Genres = dto.Genres;
             entity.ReleaseYear = dto.ReleaseYear;
@@ -90,6 +91,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Status = dto.Status;
             entity.Title = dto.Title;
             entity.Rating = dto.Rating;
+            entity.Overview = dto.Overview;
             entity.Review = dto.Review;
             entity.Genres = dto.Genres;
             entity.ReleaseYear = dto.ReleaseYear ?? 0;
@@ -103,21 +105,36 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             {
                 case MovieEntry movie when dto is MovieEntryCreateDto movieDto:
                     movie.RuntimeMinutes = movieDto.RuntimeMinutes;
-                    break;
+                break;
+
                 case TvSeriesEntry tvSeries when dto is TvSeriesEntryCreateDto tvDto:
                     tvSeries.TotalEpisodes = tvDto.TotalEpisodes;
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
-                    break;
+                break;
+
                 case GameEntry game when dto is GameEntryCreateDto gameDto:
                     //game.DevStudioName = gameDto.DevStudioName;
                     game.HoursPlayed = gameDto.HoursPlayed;
-                    break;
+                    game.MetacriticRating = gameDto.MetacriticRating;
+                    game.Platforms = gameDto.Platforms;
+                    game.Website = gameDto.Website;
+                    game.PcRequirements = gameDto.PcRequirements != null ? new GamePcRequirements
+                    (
+                        Minimum: gameDto.PcRequirements.Minimum,
+                        Recommended: gameDto.PcRequirements.Recommended,
+                        High: gameDto.PcRequirements.High,
+                        VeryHigh: gameDto.PcRequirements.VeryHigh,
+                        Ultra: gameDto.PcRequirements.Ultra
+                    ) : null;
+                break;
+
                 case BookEntry book when dto is BookEntryCreateDto bookDto:
                     book.Author = bookDto.Author;
-                    break;
+                break;
+
                 case MangaEntry manga when dto is MangaEntryCreateDto mangaDto:
                     manga.Author = mangaDto.Author;
-                    break;
+                break;
             }
         }
 
@@ -127,21 +144,36 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             {
                 case MovieEntry movie when dto is MovieEntryDetailedDto movieDto:
                     movie.RuntimeMinutes = movieDto.RuntimeMinutes;
-                    break;
+                break;
+
                 case TvSeriesEntry tvSeries when dto is TvSeriesEntryDetailedDto tvDto:
                     tvSeries.TotalEpisodes = tvDto.TotalEpisodes;
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
-                    break;
+                break;
+
                 case GameEntry game when dto is GameEntryDetailedDto gameDto:
-                    game.DevStudioName = gameDto.DevStudioName;
+                    //game.DevStudioName = gameDto.DevStudioName;
                     game.HoursPlayed = gameDto.HoursPlayed;
-                    break;
+                    game.MetacriticRating = gameDto.MetacriticRating;
+                    game.Platforms = gameDto.Platforms;
+                    game.Website = gameDto.Website;
+                    game.PcRequirements = gameDto.PcRequirements != null ? new GamePcRequirements
+                    (
+                        Minimum: gameDto.PcRequirements.Minimum,
+                        Recommended: gameDto.PcRequirements.Recommended,
+                        High: gameDto.PcRequirements.High,
+                        VeryHigh: gameDto.PcRequirements.VeryHigh,
+                        Ultra: gameDto.PcRequirements.Ultra
+                    ) : null;
+                break;
+
                 case BookEntry book when dto is BookEntryDetailedDto bookDto:
                     book.Author = bookDto.Author;
-                    break;
+                break;
+
                 case MangaEntry manga when dto is MangaEntryDetailedDto mangaDto:
                     manga.Author = mangaDto.Author;
-                    break;
+                break;
             }
         }
 
@@ -151,21 +183,36 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             {
                 case MovieEntry movie when dto is MovieEntryUpdateDto movieDto:
                     movie.RuntimeMinutes = movieDto.RuntimeMinutes;
-                    break;
+                break;
+
                 case TvSeriesEntry tvSeries when dto is TvSeriesEntryUpdateDto tvDto:
                     tvSeries.TotalEpisodes = tvDto.TotalEpisodes;
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
-                    break;
+                break;
+
                 case GameEntry game when dto is GameEntryUpdateDto gameDto:
-                    game.DevStudioName = gameDto.DevStudioName;
+                    //game.DevStudioName = gameDto.DevStudioName;
                     game.HoursPlayed = gameDto.HoursPlayed;
-                    break;
+                    game.MetacriticRating = gameDto.MetacriticRating;
+                    game.Platforms = gameDto.Platforms;
+                    game.Website = gameDto.Website;
+                    game.PcRequirements = gameDto.PcRequirements != null ? new GamePcRequirements
+                    (
+                        Minimum: gameDto.PcRequirements.Minimum,
+                        Recommended: gameDto.PcRequirements.Recommended,
+                        High: gameDto.PcRequirements.High,
+                        VeryHigh: gameDto.PcRequirements.VeryHigh,
+                        Ultra: gameDto.PcRequirements.Ultra
+                    ) : null;
+                break;
+
                 case BookEntry book when dto is BookEntryUpdateDto bookDto:
                     book.Author = bookDto.Author;
-                    break;
+                break;
+
                 case MangaEntry manga when dto is MangaEntryUpdateDto mangaDto:
                     manga.Author = mangaDto.Author;
-                    break;
+                break;
             }
         }
     }

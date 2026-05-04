@@ -1,25 +1,24 @@
-export type GameSearchResultDto = {
+import type { MediaEntrySearchResultDto, SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
+
+export interface RawgGameDetailedDto extends MediaEntrySearchResultDto {
     externalId: string;
     title: string;
     coverImageUrl: string | null;
     //slug: string;
 };
 
-export type GameSearchRequestDto = {
-    query: string;
-};
 
 export default class RawgApiClient {
     private baseUrl = "/rawgapi";
 
     async searchGames(
-        request: GameSearchRequestDto,
+        request: SearchRequestDto,
         page: number = 1,
         pageSize: number = 10,
         searchPrecise?: boolean,
         searchExact?: boolean,
         ordering?: string
-    ): Promise<GameSearchResultDto[]> {
+    ): Promise<MediaEntrySearchResultDto[]> {
         const params = new URLSearchParams();
         params.set("page", page.toString());
         params.set("pageSize", pageSize.toString());
@@ -44,7 +43,7 @@ export default class RawgApiClient {
         return response.json();
     }
 
-    async getGameById(id: number): Promise<GameSearchResultDto> {
+    async getGameById(id: number): Promise<RawgGameDetailedDto> {
         const response = await fetch(`${this.baseUrl}/${id}`, {
             credentials: "include",
         });

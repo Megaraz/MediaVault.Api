@@ -176,7 +176,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Genres = game.Genres,
                 ReleaseYear = game.ReleaseYear,
                 ImageUrl = game.ImageUrl,
-                DevStudioName = game.DevStudioName,
+                //DevStudioName = game.DevStudioName,
                 HoursPlayed = game.HoursPlayed
             },
             BookEntity book => new BookEntryUpdateDto

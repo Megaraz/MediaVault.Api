@@ -1,15 +1,6 @@
 import type { MediaEntrySearchResultDto, SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
 import type { TmdbMovieDetailedDto } from "../Types/DTOs/MovieEntry";
 
-// export type TmdbSearchResultDto = {
-//     externalId: string;
-//     title: string;
-//     coverImageUrl: string | null;
-// };
-
-// export type TmdbSearchRequestDto = {
-//     query: string;
-// };
 
 export default class TmdbApiClient {
     private baseUrl = "/tmdbapi";

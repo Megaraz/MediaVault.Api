@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using media_vault_app.Application.DTOs;
 using media_vault_app.Application.DTOs.External_API_Contracts.Rawg;
+using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.DTOs.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
@@ -106,6 +107,15 @@ namespace media_vault_app.Application.Services.API
 
         private static RawgGameDetailedDto ToDetailedDto(RawgGameDetailedResponse rawgGame)
         {
+            var rawgPlatforms = rawgGame.Platforms?
+                .Select(p => p.Platform1?.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => name!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray() ?? Array.Empty<string>();
+
+            var rawgRequirements = MapRequirements(rawgGame.Platforms);
+
             return new RawgGameDetailedDto(
                 RawgId: rawgGame.Id,
                 RawgSlug: rawgGame.Slug,
@@ -115,19 +125,41 @@ namespace media_vault_app.Application.Services.API
                 RawgReleased: rawgGame.Released,
                 RawgBackgroundImage: rawgGame.BackgroundImage,
                 RawgWebsite: rawgGame.Website,
-                RawgPlatforms: rawgGame.Platforms?.Select(p => new RawgPlatformDto(
-                    Platform1: new RawgPlatform1Dto(
-                        RawgPlatform1Id: p?.Platform1?.Id ?? 0,
-                        RawgPlatform1Name: p?.Platform1?.Name,
-                        RawgPlatform1Slug: p?.Platform1?.Slug
-                    ),
-                    RawgReleasedAt: p?.ReleasedAt,
-                    RawgRequirements: p?.Requirements != null ? new RawgRequirementsDto(
-                        RawgRequirementsMinimum: p.Requirements.Minimum,
-                        RawgRequirementsRecommended: p.Requirements.Recommended
-                    ) : null
-                )).ToArray()
-                );
+                RawgPlatforms: rawgPlatforms,
+                RawgRequirements: rawgRequirements
+            );
+        }
+
+        private static GamePcRequirementsDto? MapRequirements(IEnumerable<Platform>? platforms)
+        {
+            var selectedPlatform = platforms?
+                .FirstOrDefault(platform =>
+                    string.Equals(platform.Platform1?.Name, "PC", StringComparison.OrdinalIgnoreCase)
+                    && HasRequirements(platform.Requirements))
+                ?? platforms?.FirstOrDefault(platform => HasRequirements(platform.Requirements));
+
+            if (selectedPlatform?.Requirements is null)
+            {
+                return null;
+            }
+
+            return new GamePcRequirementsDto(
+                Minimum: NullIfWhiteSpace(selectedPlatform.Requirements.Minimum),
+                Recommended: NullIfWhiteSpace(selectedPlatform.Requirements.Recommended),
+                High: null,
+                VeryHigh: null,
+                Ultra: null);
+        }
+
+        private static bool HasRequirements(Requirements? requirements)
+        {
+            return !string.IsNullOrWhiteSpace(requirements?.Minimum)
+                || !string.IsNullOrWhiteSpace(requirements?.Recommended);
+        }
+
+        private static string? NullIfWhiteSpace(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value;
         }
 
         private static MediaEntrySearchResultDto MapToGameSearchResult(RawgGameSearchResult rawgGame)
