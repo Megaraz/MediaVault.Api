@@ -26,18 +26,18 @@ namespace media_vault_app.Application.Services.API
             {
                 var volumeIdErrorContext = errorContext with { FieldName = nameof(volumeId), DescriptionSuffix = "Volume ID must not be empty." };
                 var error = ValidationError.Required(volumeIdErrorContext);
-                return Result<MediaEntrySearchResultDto>.ValidationFailure([error], volumeIdErrorContext.DescriptionSuffix);
+                return Result<GoogleBooksDetailedDto>.ValidationFailure([error], volumeIdErrorContext.DescriptionSuffix);
             }
 
-            var result = await _client.GetBookAsync(volumeId, cancellationToken);
+            var result = await _client.GetBookByIdAsync(volumeId, cancellationToken);
 
-            return result.Map(MapToSearchResult);
+            return result.Map(ToDetailedDto);
         }
 
-        public async Task<Result<IReadOnlyList<MediaEntrySearchResultDto>>> SearchBooksAsync(
+        public async Task<Result<IReadOnlyList<GoogleBooksDetailedDto>>> SearchBooksAsync(
             string search,
             int page = 1,
-            int pageSize = 10,
+            int pageSize = 8,
             CancellationToken cancellationToken = default)
         {
             var errorContext = DefineErrorContext(nameof(SearchBooksAsync), OperationType.GetCollection);
@@ -52,7 +52,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                return Result<IReadOnlyList<MediaEntrySearchResultDto>>.ValidationFailure(errors, "Google Books search validation failed.");
+                return Result<IReadOnlyList<GoogleBooksDetailedDto>>.ValidationFailure(errors, "Google Books search validation failed.");
             }
 
             var startIndex = (page - 1) * pageSize;
@@ -66,7 +66,7 @@ namespace media_vault_app.Application.Services.API
 
             var result = await _client.SearchBooksAsync(queryParameters, cancellationToken);
 
-            return result.Map(searchResponse => MapToSearchResults(searchResponse.Items));
+            return result.Map(searchResponse => ToDetailedDto(searchResponse.Items));
         }
 
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
@@ -83,6 +83,37 @@ namespace media_vault_app.Application.Services.API
         private static IReadOnlyList<MediaEntrySearchResultDto> MapToSearchResults(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)
         {
             return volumes?.Select(MapToSearchResult).ToArray() ?? Array.Empty<MediaEntrySearchResultDto>();
+        }
+
+        private static IReadOnlyList<GoogleBooksDetailedDto> ToDetailedDto(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)
+        {
+            return volumes?.Select(ToDetailedDto).ToArray() ?? Array.Empty<GoogleBooksDetailedDto>();
+        }
+
+        private static GoogleBooksDetailedDto ToDetailedDto(GoogleBooksVolumeResponse volume)
+        {
+            var thumbnailUrl = volume.VolumeInfo?.ImageLinks is null
+                ? null
+                : volume.VolumeInfo.ImageLinks.Small
+                    ?? volume.VolumeInfo.ImageLinks.Thumbnail
+                    ?? volume.VolumeInfo.ImageLinks.Medium
+                    ?? volume.VolumeInfo.ImageLinks.SmallThumbnail
+                    ?? volume.VolumeInfo.ImageLinks.Large
+                    ?? volume.VolumeInfo.ImageLinks.ExtraLarge
+                    ?? null;
+            // Google Books may return http:// URLs — upgrade to https://
+            if (thumbnailUrl != null && thumbnailUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            {
+                thumbnailUrl = "https://" + thumbnailUrl.Substring("http://".Length);
+            }
+            return new GoogleBooksDetailedDto(
+                Author: volume.VolumeInfo?.Authors != null && volume.VolumeInfo.Authors.Any()
+                    ? string.Join(", ", volume.VolumeInfo.Authors)
+                    : "Unknown Author",
+                ExternalId: volume.Id,
+                Title: volume.VolumeInfo?.Title ?? string.Empty,
+                CoverImageUrl: thumbnailUrl,
+                MediaType: MediaType.Book);
         }
 
         private static MediaEntrySearchResultDto MapToSearchResult(GoogleBooksVolumeResponse volume)

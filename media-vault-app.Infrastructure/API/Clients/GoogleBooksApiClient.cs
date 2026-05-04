@@ -29,9 +29,9 @@ namespace media_vault_app.Infrastructure.API.Clients
             _options = options.Value;
         }
 
-        public async Task<Result<GoogleBooksVolumeResponse>> GetBookAsync(string volumeId, CancellationToken cancellationToken = default)
+        public async Task<Result<GoogleBooksVolumeResponse>> GetBookByIdAsync(string volumeId, CancellationToken cancellationToken = default)
         {
-            var errorContext = DefineErrorContext(nameof(GetBookAsync), OperationType.Get, fieldName: volumeId);
+            var errorContext = DefineErrorContext(nameof(GetBookByIdAsync), OperationType.Get, fieldName: volumeId);
 
             using var response = await _httpClient.GetAsync(BuildRequestUri($"volumes/{volumeId}"), cancellationToken);
 

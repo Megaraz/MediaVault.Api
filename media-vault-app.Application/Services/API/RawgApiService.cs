@@ -20,24 +20,24 @@ namespace media_vault_app.Application.Services.API
             _client = client;
         }
 
-        public async Task<Result<MediaEntrySearchResultDto>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Result<RawgGameDetailedDto>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var idValidationErrorContext = DefineErrorContext(nameof(GetGameByIdAsync), OperationType.Get);
 
             if (!id.IsValidId(idValidationErrorContext, out var idError))
             {
-                return Result<MediaEntrySearchResultDto>.ValidationFailure([idError]);
+                return Result<RawgGameDetailedDto>.ValidationFailure([idError]);
             }
 
-            var result = await _client.GetGameAsync(id, cancellationToken);
+            var result = await _client.GetGameByIdAsync(id, cancellationToken);
 
-            return result.Map(MapToGameSearchResult);
+            return result.Map(ToDetailedDto);
 
         }
         public async Task<Result<IReadOnlyList<MediaEntrySearchResultDto>>> SearchGamesAsync(
             string search,
             int page = 1,
-            int pageSize = 10,
+            int pageSize = 8,
             bool? searchPrecise = null,
             bool? searchExact = null,
             string? ordering = null,
@@ -99,12 +99,38 @@ namespace media_vault_app.Application.Services.API
                 FieldName: fieldName);
         }
 
-        private static IReadOnlyList<MediaEntrySearchResultDto> MapToGameSearchResult(IReadOnlyList<RawgGameResponse>? rawgGames)
+        private static IReadOnlyList<MediaEntrySearchResultDto> MapToGameSearchResult(IReadOnlyList<RawgGameSearchResult>? rawgGames)
         {
             return rawgGames?.Select(MapToGameSearchResult).ToArray() ?? Array.Empty<MediaEntrySearchResultDto>();
         }
 
-        private static MediaEntrySearchResultDto MapToGameSearchResult(RawgGameResponse rawgGame)
+        private static RawgGameDetailedDto ToDetailedDto(RawgGameDetailedResponse rawgGame)
+        {
+            return new RawgGameDetailedDto(
+                RawgId: rawgGame.Id,
+                RawgSlug: rawgGame.Slug,
+                RawgName: rawgGame.Name,
+                RawgDescription: rawgGame.Description,
+                RawgMetacritic: rawgGame.Metacritic,
+                RawgReleased: rawgGame.Released,
+                RawgBackgroundImage: rawgGame.BackgroundImage,
+                RawgWebsite: rawgGame.Website,
+                RawgPlatforms: rawgGame.Platforms?.Select(p => new RawgPlatformDto(
+                    Platform1: new RawgPlatform1Dto(
+                        RawgPlatform1Id: p?.Platform1?.Id ?? 0,
+                        RawgPlatform1Name: p?.Platform1?.Name,
+                        RawgPlatform1Slug: p?.Platform1?.Slug
+                    ),
+                    RawgReleasedAt: p?.ReleasedAt,
+                    RawgRequirements: p?.Requirements != null ? new RawgRequirementsDto(
+                        RawgRequirementsMinimum: p.Requirements.Minimum,
+                        RawgRequirementsRecommended: p.Requirements.Recommended
+                    ) : null
+                )).ToArray()
+                );
+        }
+
+        private static MediaEntrySearchResultDto MapToGameSearchResult(RawgGameSearchResult rawgGame)
         {
             return new MediaEntrySearchResultDto(
                 rawgGame.Id.ToString(),

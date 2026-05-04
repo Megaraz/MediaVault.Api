@@ -65,6 +65,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Genres = dto.Genres;
             entity.ReleaseYear = dto.ReleaseYear ?? 0;
             entity.ImageUrl = dto.ImageUrl;
+            entity.Overview = dto.Overview;
             entity.CreatedAtUtc = DateTime.UtcNow;
         }
 
@@ -108,7 +109,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
                     break;
                 case GameEntry game when dto is GameEntryCreateDto gameDto:
-                    game.DevStudioName = gameDto.DevStudioName;
+                    //game.DevStudioName = gameDto.DevStudioName;
                     game.HoursPlayed = gameDto.HoursPlayed;
                     break;
                 case BookEntry book when dto is BookEntryCreateDto bookDto:

@@ -10,6 +10,7 @@ public abstract record MediaEntryCreateDto
     public string? IdExternal { get; init; }
     public Status Status { get; init; }
     public required string Title { get; init; }
+    public string? Overview { get; init; }
     public decimal Rating { get; init; }
     public string? Review { get; init; }
     public ICollection<string>? Genres { get; init; }

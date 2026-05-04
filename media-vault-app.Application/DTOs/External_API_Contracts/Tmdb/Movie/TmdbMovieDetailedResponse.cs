@@ -6,7 +6,7 @@ using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 
 namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie
 {
-    public sealed record TmdbMovieDetailedResult
+    public sealed record TmdbMovieDetailedResponse
     {
 
         [JsonPropertyName("id")]

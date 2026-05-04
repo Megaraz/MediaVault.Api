@@ -1,4 +1,5 @@
 ﻿using media_vault_app.Application.DTOs;
+using media_vault_app.Application.DTOs.Rawg;
 using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10,
+            [FromQuery] int pageSize = 8,
             [FromQuery] bool? searchPrecise = null,
             [FromQuery] bool? searchExact = null,
             [FromQuery] string? ordering = null)
@@ -33,7 +34,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<MediaEntrySearchResultDto>> GetGameById(
+        public async Task<ActionResult<RawgGameDetailedDto>> GetGameById(
             [FromRoute] int id,
             CancellationToken ct)
         {

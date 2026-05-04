@@ -30,14 +30,13 @@ namespace media_vault_app.Infrastructure.API.Clients
             _options = options.Value;
         }
 
-        public async Task<Result<RawgGameResponse>> GetGameAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Result<RawgGameDetailedResponse>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             using var response = await _httpClient.GetAsync(BuildRequestUri($"games/{id}"), cancellationToken);
 
-            var httpResponseErrorContext = DefineErrorContext(nameof(GetGameAsync), OperationType.Get, fieldName: $"{id}");
+            var httpResponseErrorContext = DefineErrorContext(nameof(GetGameByIdAsync), OperationType.Get, fieldName: $"{id}");
 
-
-            return await response.MapToResultAsync<RawgGameResponse>(httpResponseErrorContext, cancellationToken);
+            return await response.MapToResultAsync<RawgGameDetailedResponse>(httpResponseErrorContext, cancellationToken);
         }
 
         public async Task<Result<RawgSearchResponse>> SearchGamesAsync(

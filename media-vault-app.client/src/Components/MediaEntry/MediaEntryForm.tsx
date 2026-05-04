@@ -22,8 +22,6 @@ import SelectOption from "../../Components/Shared/SelectOption";
 import StarRating from "../../Components/Shared/StarRating";
 import TitleSearchInput from "./TitleSearchInput";
 import type { SearchResult } from "./TitleSearchInput";
-import { useState } from "react";
-import TmdbApiClient from "../../Clients/TmdbApiClient";
 
 // All form fields in a single flat object.
 // Type-specific fields (runtimeMinutes, author, etc.) are always present
@@ -54,6 +52,7 @@ export type MediaEntryFormData = {
 type MediaEntryFormProps = {
   formData: MediaEntryFormData;
   onChange: (field: keyof MediaEntryFormData, value: string | number) => void;
+  onSelectResult: (result: SearchResult) => void;
   isEditMode: boolean;
 };
 
@@ -70,10 +69,9 @@ const statusOptions: SelectOptionItem[] = Object.entries(StatusLabels).map(
 export default function MediaEntryForm({
   formData,
   onChange,
+  onSelectResult,
   isEditMode,
 }: MediaEntryFormProps) {
-  const [tmdbClient] = useState(() => new TmdbApiClient());
-
   // Step 1: if no type chosen yet, only show the type selector.
   // mediaType -1 is the "not selected" sentinel set in buildInitialFormData.
   if (formData.mediaType < 0) {
@@ -91,32 +89,6 @@ export default function MediaEntryForm({
     );
   }
 
-  const handleSelectResult = (result: SearchResult) => {
-    // When a result is picked from the dropdown, also fill in the cover image
-    onChange("title", result.title);
-    if (result.coverImageUrl) onChange("imageUrl", result.coverImageUrl);
-
-    if (formData.mediaType === MediaType.Movie) {
-      tmdbClient.getMovieById(Number(result.externalId)).then((movie) => {
-        if (movie.tmdbRunTimeMinutes)
-          onChange("runtimeMinutes", movie.tmdbRunTimeMinutes.toString());
-
-        if (movie.tmdbBackdropPath) onChange("backdropUrl", movie.tmdbBackdropPath);
-
-        if (movie.tmdbReleaseDate) onChange("releaseDate", movie.tmdbReleaseDate);
-
-        if (movie.tmdbGenres)
-          onChange(
-            "genres",
-            movie.tmdbGenres.map((g) => g.tmdbGenreName || "").join(", "),
-          );
-
-        if (movie.tmdbOverview) onChange("overview", movie.tmdbOverview);
-
-      });
-    }
-  };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Title */}
@@ -130,7 +102,12 @@ export default function MediaEntryForm({
           onChange={(value) => onChange("title", value)}
           mediaType={formData.mediaType}
           isEditMode={isEditMode}
-          onSelectResult={handleSelectResult}
+          onSelectResult={(result) => {
+            onSelectResult(result);
+            onChange("title", result.title);
+            if (result.coverImageUrl)
+              onChange("imageUrl", result.coverImageUrl);
+          }}
         />
       </div>
 
@@ -224,7 +201,11 @@ export default function MediaEntryForm({
               Genres
             </label>
             <InputText
-              value={Array.isArray(formData.genres) ? formData.genres.join(", ") : formData.genres}
+              value={
+                Array.isArray(formData.genres)
+                  ? formData.genres.join(", ")
+                  : formData.genres
+              }
               placeholder="e.g. Action, Drama"
               onChange={(val) => onChange("genres", val)}
             />

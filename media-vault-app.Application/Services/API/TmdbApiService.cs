@@ -128,7 +128,7 @@ namespace media_vault_app.Application.Services.API
             );
         }
 
-        private static TmdbMovieDetailedDto ToDetailedDto(TmdbMovieDetailedResult movieResult)
+        private static TmdbMovieDetailedDto ToDetailedDto(TmdbMovieDetailedResponse movieResult)
         {
             return new TmdbMovieDetailedDto
             (

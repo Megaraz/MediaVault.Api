@@ -6,6 +6,7 @@ namespace media_vault_app.Application.DTOs.External_API_Contracts.GoogleBooks
         [property: JsonPropertyName("id")] string Id,
         [property: JsonPropertyName("volumeInfo")] GoogleBooksVolumeInfo? VolumeInfo);
 
+
     public sealed record GoogleBooksVolumeInfo(
         [property: JsonPropertyName("title")] string? Title,
         [property: JsonPropertyName("authors")] IReadOnlyList<string>? Authors,

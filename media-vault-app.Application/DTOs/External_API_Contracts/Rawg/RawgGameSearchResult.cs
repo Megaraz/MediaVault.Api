@@ -5,9 +5,12 @@ using System.Text.Json.Serialization;
 
 namespace media_vault_app.Application.DTOs.External_API_Contracts.Rawg
 {
-    public sealed record RawgGameResponse(
+    public sealed record RawgGameSearchResult(
         [property: JsonPropertyName("id")] int Id,
         [property: JsonPropertyName("slug")] string? Slug,
         [property: JsonPropertyName("name")] string? Name,
         [property: JsonPropertyName("background_image")] string? BackgroundImage);
+
+
+
 }

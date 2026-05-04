@@ -5,7 +5,7 @@ import GoogleBooksApiClient from "../../Clients/GoogleBooksApiClient";
 import { MediaType } from "../../Clients/MediaEntriesClient";
 
 // Unified shape shared by all search APIs
-export type SearchResult = {
+export interface SearchResult {
   externalId: string;
   title: string;
   coverImageUrl: string | null;

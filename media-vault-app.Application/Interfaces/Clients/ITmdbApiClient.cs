@@ -13,7 +13,7 @@ namespace media_vault_app.Application.Interfaces.Clients
     {
         //Task<Result<TmdbSearchResult>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default);
 
-        Task<Result<TmdbMovieDetailedResult>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default);
+        Task<Result<TmdbMovieDetailedResponse>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<Result<TmdbTvSeriesDetailedResult>> GetTvSeriesByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<Result<TmdbSearchResponse>> SearchAsync(
             List<string> queryParameters,

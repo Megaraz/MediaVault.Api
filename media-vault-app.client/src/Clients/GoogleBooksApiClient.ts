@@ -1,21 +1,18 @@
-export type BookSearchResultDto = {
-    externalId: string;
-    title: string;
-    coverImageUrl: string | null;
-};
+import type { SearchResult } from "../Components/MediaEntry/TitleSearchInput";
+import type { SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
 
-export type BookSearchRequestDto = {
-    query: string;
+export interface GoogleBooksDetailedDto extends SearchResult {
+    author: string;
 };
 
 export default class GoogleBooksApiClient {
     private baseUrl = "/googlebooksapi";
 
     async searchBooks(
-        request: BookSearchRequestDto,
+        request: SearchRequestDto,
         page: number = 1,
-        pageSize: number = 10
-    ): Promise<BookSearchResultDto[]> {
+        pageSize: number = 8
+    ): Promise<GoogleBooksDetailedDto[]> {
         const params = new URLSearchParams();
         params.set("page", page.toString());
         params.set("pageSize", pageSize.toString());
@@ -37,7 +34,7 @@ export default class GoogleBooksApiClient {
         return response.json();
     }
 
-    async getBookById(volumeId: string): Promise<BookSearchResultDto> {
+    async getBookById(volumeId: string): Promise<GoogleBooksDetailedDto> {
         const response = await fetch(`${this.baseUrl}/${volumeId}`, {
             credentials: "include",
         });

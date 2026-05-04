@@ -12,7 +12,10 @@
 // before the modal closes automatically.
 // ─────────────────────────────────────────────────────────────
 import { useState } from "react";
-import type { MediaEntryDetailedDto } from "../../Clients/MediaEntriesClient";
+import {
+  MediaType,
+  type MediaEntryDetailedDto,
+} from "../../Clients/MediaEntriesClient";
 import type { GameEntryDetailedDto } from "../../Types/DTOs/GameEntry";
 import type { MovieEntryDetailedDto } from "../../Types/DTOs/MovieEntry";
 import type { TvSeriesEntryDetailedDto } from "../../Types/DTOs/TvSeriesEntry";
@@ -23,6 +26,12 @@ import MediaEntryForm from "./MediaEntryForm";
 import type { MediaEntryFormData } from "./MediaEntryForm";
 import FormFooter from "./FormFooter";
 import ModalWindow from "../Shared/ModalWindow";
+import type { SearchResult } from "./TitleSearchInput";
+import TmdbApiClient from "../../Clients/TmdbApiClient";
+import {
+  type GoogleBooksDetailedDto,
+} from "../../Clients/GoogleBooksApiClient";
+import RawgApiClient from "../../Clients/RawgApiClient";
 
 // How long to show the success screen before closing the modal.
 const SUCCESS_STATE_DELAY_MS = 1000;
@@ -53,7 +62,7 @@ function buildInitialFormData(
     title: entry?.title ?? "",
     imageUrl: entry?.imageUrl ?? "",
     backdropUrl: "",
-    mediaType: entry?.mediaType ?? 0,  // 0 = Movie is the default for new entries
+    mediaType: entry?.mediaType ?? 0, // 0 = Movie is the default for new entries
     status: entry?.status ?? 0,
     rating: entry?.rating ?? 0,
     review: entry?.review ?? "",
@@ -87,6 +96,9 @@ export default function MediaEntryModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessState, setShowSuccessState] = useState(false);
   const [deleteSuccessState, setDeleteSuccessState] = useState(false);
+
+  const [rawgClient] = useState(() => new RawgApiClient());
+  const [tmdbClient] = useState(() => new TmdbApiClient());
 
   // isEditMode = true when we opened the modal by clicking an existing entry.
   const isEditMode = detailedEntry != null && detailedEntry.id != null;
@@ -139,6 +151,51 @@ export default function MediaEntryModal({
         setIsSubmitting(false);
         setShowSuccessState(false);
       }
+    }
+  };
+
+  function isGoogleBooksResult(
+    result: SearchResult,
+  ): result is GoogleBooksDetailedDto {
+    return "author" in result;
+  }
+
+  const handleSelectResult = (result: SearchResult) => {
+    if (
+      formData.mediaType === MediaType.Book ||
+      formData.mediaType === MediaType.Manga
+    ) {
+      if (isGoogleBooksResult(result)) {
+        handleChange("author", result.author);
+      }
+    }
+
+    if (formData.mediaType === MediaType.Game) {
+      rawgClient.getGameById(Number(result.externalId)).then((game) => {
+        if (game.devStudioName)
+          handleChange("devStudioName", game.devStudioName);
+      });
+    }
+
+    if (formData.mediaType === MediaType.Movie) {
+      tmdbClient.getMovieById(Number(result.externalId)).then((movie) => {
+        if (movie.tmdbRunTimeMinutes)
+          handleChange("runtimeMinutes", movie.tmdbRunTimeMinutes.toString());
+
+        if (movie.tmdbBackdropPath)
+          handleChange("backdropUrl", movie.tmdbBackdropPath);
+
+        if (movie.tmdbReleaseDate)
+          handleChange("releaseDate", movie.tmdbReleaseDate);
+
+        if (movie.tmdbGenres)
+          handleChange(
+            "genres",
+            movie.tmdbGenres.map((g) => g.tmdbGenreName || "").join(", "),
+          );
+
+        if (movie.tmdbOverview) handleChange("overview", movie.tmdbOverview);
+      });
     }
   };
 
@@ -198,6 +255,7 @@ export default function MediaEntryModal({
               formData={formData}
               onChange={handleChange}
               isEditMode={isEditMode}
+              onSelectResult={handleSelectResult}
             />
 
             <FormFooter

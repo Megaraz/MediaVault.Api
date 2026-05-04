@@ -12,4 +12,6 @@ namespace media_vault_app.Application.DTOs.GoogleBooks
         string? CoverImageUrl,
         MediaType MediaType
         );
+
+
 }

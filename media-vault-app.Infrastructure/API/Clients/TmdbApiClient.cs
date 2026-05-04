@@ -54,13 +54,13 @@ namespace media_vault_app.Infrastructure.API.Clients
 
             return await response.MapToResultAsync<TmdbTvSeriesDetailedResult>(httpResponseErrorContext, cancellationToken);
         }
-        public async Task<Result<TmdbMovieDetailedResult>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Result<TmdbMovieDetailedResponse>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetMovieByIdAsync), OperationType.Get);
 
             if (!id.IsValidId(baseErrorContext, out var idValidationError))
             {
-                return Result<TmdbMovieDetailedResult>.ValidationFailure([idValidationError]);
+                return Result<TmdbMovieDetailedResponse>.ValidationFailure([idValidationError]);
             }
 
             using var response = await _httpClient.GetAsync(BuildRequestUri($"movie/{id}"), cancellationToken);
@@ -70,7 +70,7 @@ namespace media_vault_app.Infrastructure.API.Clients
                 FieldName = $"{id}"
             };
 
-            return await response.MapToResultAsync<TmdbMovieDetailedResult>(httpResponseErrorContext, cancellationToken);
+            return await response.MapToResultAsync<TmdbMovieDetailedResponse>(httpResponseErrorContext, cancellationToken);
         }
         //public async Task<Result<TmdbSearchResult>> GetByIdAsync(int id, MediaType mediaType, CancellationToken cancellationToken = default)
         //{

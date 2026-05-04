@@ -8,7 +8,7 @@ namespace media_vault_app.Application.Interfaces.Clients
 {
     public interface IRawgApiClient
     {
-        Task<Result<RawgGameResponse>> GetGameAsync(int id, CancellationToken cancellationToken = default);
+        Task<Result<RawgGameDetailedResponse>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<Result<RawgSearchResponse>> SearchGamesAsync(
             List<string> queryParameters,
             CancellationToken cancellationToken = default);
