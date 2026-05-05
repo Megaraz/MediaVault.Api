@@ -1,11 +1,11 @@
 // Card used in the grid sections (On Going, Completed, etc.).
 // Shows a poster image, title, media type badge, and rating.
-import type { MediaEntryDetailedDto } from "../../Clients/MediaEntriesClient";
+import type { MediaEntryMinimalDto } from "../../Clients/MediaEntriesClient";
 import MediaTypeBadge from "../Shared/MediaTypeBadge";
 
 type MediaEntrySmallProps = {
-  entry: MediaEntryDetailedDto;
-  onClickEntry: (entry: MediaEntryDetailedDto) => void;
+  entry: MediaEntryMinimalDto;
+  onClickEntry: (entry: MediaEntryMinimalDto) => void;
 };
 
 export default function MediaItem({

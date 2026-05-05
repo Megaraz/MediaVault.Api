@@ -63,7 +63,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Rating = dto.Rating;
             entity.Review = dto.Review;
             entity.Genres = dto.Genres;
-            entity.ReleaseYear = dto.ReleaseYear ?? 0;
+            entity.ReleaseDate = dto.ReleaseDate ?? DateTime.MinValue;
             entity.ImageUrl = dto.ImageUrl;
             entity.Overview = dto.Overview;
             entity.CreatedAtUtc = DateTime.UtcNow;
@@ -80,7 +80,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Overview = dto.Overview;
             entity.Review = dto.Review;
             entity.Genres = dto.Genres;
-            entity.ReleaseYear = dto.ReleaseYear;
+            entity.ReleaseDate = dto.ReleaseDate;
             entity.ImageUrl = dto.ImageUrl;
             entity.CreatedAtUtc = dto.CreatedAtUtc;
         }
@@ -94,7 +94,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Overview = dto.Overview;
             entity.Review = dto.Review;
             entity.Genres = dto.Genres;
-            entity.ReleaseYear = dto.ReleaseYear ?? 0;
+            entity.ReleaseDate = dto.ReleaseDate ?? DateTime.MinValue;
             entity.ImageUrl = dto.ImageUrl;
         }
 
@@ -119,13 +119,13 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     game.Platforms = gameDto.Platforms;
                     game.Website = gameDto.Website;
                     game.PcRequirements = gameDto.PcRequirements != null ? new GamePcRequirements
-                    (
-                        Minimum: gameDto.PcRequirements.Minimum,
-                        Recommended: gameDto.PcRequirements.Recommended,
-                        High: gameDto.PcRequirements.High,
-                        VeryHigh: gameDto.PcRequirements.VeryHigh,
-                        Ultra: gameDto.PcRequirements.Ultra
-                    ) : null;
+                    {
+                        Minimum = gameDto.PcRequirements.Minimum,
+                        Recommended = gameDto.PcRequirements.Recommended,
+                        High = gameDto.PcRequirements.High,
+                        VeryHigh = gameDto.PcRequirements.VeryHigh,
+                        Ultra = gameDto.PcRequirements.Ultra
+                    } : null;
                 break;
 
                 case BookEntry book when dto is BookEntryCreateDto bookDto:
@@ -158,13 +158,13 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     game.Platforms = gameDto.Platforms;
                     game.Website = gameDto.Website;
                     game.PcRequirements = gameDto.PcRequirements != null ? new GamePcRequirements
-                    (
-                        Minimum: gameDto.PcRequirements.Minimum,
-                        Recommended: gameDto.PcRequirements.Recommended,
-                        High: gameDto.PcRequirements.High,
-                        VeryHigh: gameDto.PcRequirements.VeryHigh,
-                        Ultra: gameDto.PcRequirements.Ultra
-                    ) : null;
+                    {
+                        Minimum = gameDto.PcRequirements.Minimum,
+                        Recommended = gameDto.PcRequirements.Recommended,
+                        High = gameDto.PcRequirements.High,
+                        VeryHigh = gameDto.PcRequirements.VeryHigh,
+                        Ultra = gameDto.PcRequirements.Ultra
+                    } : null;
                 break;
 
                 case BookEntry book when dto is BookEntryDetailedDto bookDto:
@@ -197,13 +197,13 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     game.Platforms = gameDto.Platforms;
                     game.Website = gameDto.Website;
                     game.PcRequirements = gameDto.PcRequirements != null ? new GamePcRequirements
-                    (
-                        Minimum: gameDto.PcRequirements.Minimum,
-                        Recommended: gameDto.PcRequirements.Recommended,
-                        High: gameDto.PcRequirements.High,
-                        VeryHigh: gameDto.PcRequirements.VeryHigh,
-                        Ultra: gameDto.PcRequirements.Ultra
-                    ) : null;
+                    {
+                        Minimum = gameDto.PcRequirements.Minimum,
+                        Recommended = gameDto.PcRequirements.Recommended,
+                        High = gameDto.PcRequirements.High,
+                        VeryHigh = gameDto.PcRequirements.VeryHigh,
+                        Ultra = gameDto.PcRequirements.Ultra
+                    } : null;
                 break;
 
                 case BookEntry book when dto is BookEntryUpdateDto bookDto:

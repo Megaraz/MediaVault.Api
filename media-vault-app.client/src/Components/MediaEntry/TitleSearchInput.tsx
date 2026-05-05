@@ -6,7 +6,7 @@ import { MediaType } from "../../Clients/MediaEntriesClient";
 
 // Unified shape shared by all search APIs
 export interface SearchResult {
-  externalId: string;
+  idExternal: string;
   title: string;
   coverImageUrl: string | null;
 };
@@ -15,7 +15,7 @@ type TitleSearchProps = {
   titleInputValue?: string;
   onChange: (newValue: string) => void;
   // /** Called when the user picks a result from the dropdown, so the parent can set imageUrl etc. */
-  onSelectResult?: (result: SearchResult) => void;
+  onSelectResult: (result: SearchResult) => void;
   placeholder?: string;
   className?: string;
   mediaType?: number;
@@ -129,7 +129,7 @@ export default function TitleSearchInput({
     // Update the title field with the selected result's title
     onChange(result.title);
     // Notify the parent so it can also set imageUrl / other fields
-    onSelectResult?.(result);
+    onSelectResult(result);
     // Close the dropdown
     setShowDropdown(false);
     setSearchResults([]);
@@ -170,7 +170,7 @@ export default function TitleSearchInput({
         <ul className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
           {searchResults.map((result) => (
             <li
-              key={result.externalId}
+              key={result.idExternal}
               // onMouseDown fires before onBlur, so the click registers before the dropdown hides
               onMouseDown={() => handleSelectResult(result)}
               className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"

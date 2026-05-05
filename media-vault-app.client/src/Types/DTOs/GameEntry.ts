@@ -9,7 +9,7 @@ import type {
 export interface GameEntryDetailedDto extends MediaEntryDetailedDto {
     // devStudioName: string | null;
     hoursPlayed: number;
-    metaCriticRating: number;
+    metacriticRating: number;
     website?: string;
     platforms: string[];
     pcRequirements?: GamePcRequirementsDto;
@@ -19,7 +19,7 @@ export interface GameEntryDetailedDto extends MediaEntryDetailedDto {
 export interface GameEntryCreateDto extends MediaEntryCreateDto {
     // devStudioName?: string | null;
     hoursPlayed?: number;
-    metaCriticRating?: number;
+    metacriticRating?: number;
     website?: string;
     platforms?: string[];
     pcRequirements?: GamePcRequirementsDto;
@@ -29,7 +29,7 @@ export interface GameEntryCreateDto extends MediaEntryCreateDto {
 export interface GameEntryUpdateDto extends MediaEntryUpdateDto {
     // devStudioName?: string | null;
     hoursPlayed?: number;
-    metaCriticRating?: number;
+    metacriticRating?: number;
     website?: string;
     platforms?: string[];
     pcRequirements?: GamePcRequirementsDto;

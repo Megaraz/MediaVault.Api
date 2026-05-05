@@ -98,9 +98,9 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                var localErrorContext = errorContext with 
-                { 
-                    DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty." 
+                var localErrorContext = errorContext with
+                {
+                    DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty."
                 };
 
                 nullOrEmptyError = ValidationError.Required(localErrorContext);
@@ -126,6 +126,26 @@ namespace Rasmus.SharedKernel.ResultPattern
             else
                 return true;
         }
+
+        //public static bool Matches<TOriginal, TConfirm>(
+        //    ErrorContext errorContext,
+        //    out ValidationError notMatchingError)
+        //{
+        //    notMatchingError = default!;
+
+        //    if (typeof(TOriginal) != typeof(TConfirm))
+        //    {
+        //        var localErrorContext = errorContext with
+        //        {
+        //            DescriptionSuffix = $"The types '{typeof(TOriginal).Name}' and '{typeof(TConfirm).Name}' must match be matching"
+        //        };
+
+        //        notMatchingError = ValidationError.NonMatchingValues(localErrorContext);
+        //        return false;
+        //    }
+        //    else
+        //        return true;
+        //}
 
         public static bool Matches(this string value1, string value2, ErrorContext errorContext, out ValidationError notMatchingError)
         {

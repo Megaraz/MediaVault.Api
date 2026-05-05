@@ -32,7 +32,7 @@ import { statusSections } from "../../Shared/mediaConstants";
 
 export default function Dashboard() {
   const { currentUser, isAuthenticated } = useUser();
-  const [entries, setEntries] = useState<MediaEntryDetailedDto[]>([]);
+  const [entries, setEntries] = useState<MediaEntryMinimalDto[]>([]);
   // One shared client for type-agnostic operations (fetch all, fetch by id, delete, search).
   // Separate clients for create/update because each media type has its own endpoint.
   const [client] = useState(() => new MediaEntriesClient());
@@ -84,10 +84,37 @@ export default function Dashboard() {
     }
   };
 
+  const loadDetailedEntry = async (
+    entry: Pick<MediaEntryMinimalDto, "id" | "mediaType">,
+  ): Promise<MediaEntryDetailedDto> => {
+    switch (entry.mediaType) {
+      case MediaType.Movie:
+        return client.getMovieById(entry.id);
+      case MediaType.Series:
+        return client.getTvSeriesById(entry.id);
+      case MediaType.Game:
+        return client.getGameById(entry.id);
+      case MediaType.Book:
+        return client.getBookById(entry.id);
+      case MediaType.Manga:
+        return client.getMangaById(entry.id);
+      default:
+        return client.getMediaEntryById(entry.id);
+    }
+  };
+
   // Opens the modal pre-populated with the clicked entry's data.
-  const onClickEntry = (entry: MediaEntryDetailedDto) => {
-    setSelectedEntry(entry);
-    setShowPopup(true);
+  const onClickEntry = async (entry: MediaEntryMinimalDto) => {
+    setError(null);
+    setSelectedEntry(undefined);
+
+    try {
+      const detailedEntry = await loadDetailedEntry(entry);
+      setSelectedEntry(detailedEntry);
+      setShowPopup(true);
+    } catch (err) {
+      setError((err as Error).message);
+    }
   };
 
   // Opens the modal in create mode (no pre-populated entry).
@@ -119,12 +146,22 @@ export default function Dashboard() {
 
     // Fields shared by all media types.
     const baseFields = {
+      idExternal: formData.idExternal ?? null,
       title: formData.title ?? "",
       status: formData.status,
       rating: formData.rating,
       imageUrl: formData.imageUrl?.trim() || null,
       review: formData.review || null,
+      overview: formData.overview || null,
+      releaseDate: formData.releaseDate || null,
     };
+
+    const gamePlatforms = formData.platforms
+      ? formData.platforms
+          .split(",")
+          .map((platform) => platform.trim())
+          .filter(Boolean)
+      : undefined;
 
     setLoading(true);
     setError(null);
@@ -150,8 +187,10 @@ export default function Dashboard() {
           case MediaType.Game:
             await gameClient.updateGame(entryId, {
               ...baseFields,
-              devStudioName: formData.devStudioName || null,
               hoursPlayed: Number(formData.hoursPlayed) || 0,
+              metacriticRating: formData.metacriticRating ?? 0,
+              website: formData.website?.trim() || undefined,
+              platforms: gamePlatforms,
             });
             break;
           case MediaType.Book:
@@ -192,8 +231,10 @@ export default function Dashboard() {
           case MediaType.Game:
             created = await gameClient.createGame({
               ...baseFields,
-              devStudioName: formData.devStudioName || null,
               hoursPlayed: Number(formData.hoursPlayed) || 0,
+              metacriticRating: formData.metacriticRating ?? 0,
+              website: formData.website?.trim() || undefined,
+              platforms: gamePlatforms,
             });
             break;
           case MediaType.Book:
@@ -246,8 +287,11 @@ export default function Dashboard() {
 
   // Fetches the full detailed entry for a search result and opens the edit modal.
   const handleSelectSearchResult = async (minimalEntry: MediaEntryMinimalDto) => {
+    setError(null);
+    setSelectedEntry(undefined);
+
     try {
-      const detailed = await client.getMediaEntryById(minimalEntry.id);
+      const detailed = await loadDetailedEntry(minimalEntry);
       setSelectedEntry(detailed);
       setShowPopup(true);
     } catch (err) {

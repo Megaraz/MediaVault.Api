@@ -7,7 +7,6 @@ using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Services.Base_Classes;
 using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
-using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.ResultPattern;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using UserEntity = media_vault_app.Domain.Entities.User;
@@ -28,6 +27,31 @@ namespace media_vault_app.Application.Services.MediaEntry
             ) : base(mediaEntryRepo, entityMapper, ownerRepo)
         {
             _mediaEntryRepo = mediaEntryRepo;
+        }
+
+        public async Task<Result<MovieEntryDetailedDto>> GetMovieByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
+        {
+            return await GetTypedByIdAsync<MovieEntryDetailedDto>(ownerId, id, nameof(GetMovieByIdAsync), "movie", ct);
+        }
+
+        public async Task<Result<TvSeriesEntryDetailedDto>> GetTvSeriesByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
+        {
+            return await GetTypedByIdAsync<TvSeriesEntryDetailedDto>(ownerId, id, nameof(GetTvSeriesByIdAsync), "TV series", ct);
+        }
+
+        public async Task<Result<GameEntryDetailedDto>> GetGameByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
+        {
+            return await GetTypedByIdAsync<GameEntryDetailedDto>(ownerId, id, nameof(GetGameByIdAsync), "game", ct);
+        }
+
+        public async Task<Result<BookEntryDetailedDto>> GetBookByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
+        {
+            return await GetTypedByIdAsync<BookEntryDetailedDto>(ownerId, id, nameof(GetBookByIdAsync), "book", ct);
+        }
+
+        public async Task<Result<MangaEntryDetailedDto>> GetMangaByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
+        {
+            return await GetTypedByIdAsync<MangaEntryDetailedDto>(ownerId, id, nameof(GetMangaByIdAsync), "manga", ct);
         }
 
         public async Task<Result<IEnumerable<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
@@ -74,6 +98,35 @@ namespace media_vault_app.Application.Services.MediaEntry
             // Maps the result internally  
             return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
 
+        }
+
+        private async Task<Result<TDetailedSubtype>> GetTypedByIdAsync<TDetailedSubtype>(
+            Guid ownerId,
+            Guid id,
+            string methodName,
+            string subtypeDisplayName,
+            CancellationToken ct = default)
+            where TDetailedSubtype : MediaEntryDetailedDto
+        {
+            var baseResult = await GetDetailedByIdAsync(ownerId, id, ct);
+
+            if (baseResult.IsFailure)
+            {
+                return baseResult.From<MediaEntryDetailedDto, TDetailedSubtype>();
+            }
+
+            if (baseResult.Value is TDetailedSubtype typedDetailedDto)
+            {
+                return Result<TDetailedSubtype>.Success(typedDetailedDto);
+            }
+
+            var mismatchErrorContext = DefineErrorContext(methodName, OperationType.Get);
+
+            return Result<TDetailedSubtype>.Failure(
+                Error.NotFound(mismatchErrorContext with
+                {
+                    DescriptionSuffix = $"No media entry with the specified ID was found, or the media entry is not a {subtypeDisplayName} entry."
+                }));
         }
 
     }

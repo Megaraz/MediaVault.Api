@@ -17,13 +17,14 @@ namespace media_vault_app.Domain.Entities
 
         public string? Overview { get; set; }
 
+        public DateTime ReleaseDate { get; set; }
 
-        private int _releaseYear;
-        public int ReleaseYear
-        {
-            get => _releaseYear;
-            set => _releaseYear = Math.Clamp(value, 0, DateTime.UtcNow.Year);
-        }
+        //private int _releaseYear;
+        //public int ReleaseYear
+        //{
+        //    get => _releaseYear;
+        //    set => _releaseYear = Math.Clamp(value, 0, DateTime.UtcNow.Year);
+        //}
 
         public string? ImageUrl { get; set; }
         public MediaType MediaType { get; set; }

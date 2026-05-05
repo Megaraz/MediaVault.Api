@@ -1,7 +1,7 @@
 // Compact list-style section used exclusively for the Backlog status.
 // Uses MediaItemCompact instead of the card-grid MediaItem.
 import { MediaType } from "../../Clients/MediaEntriesClient";
-import type { MediaEntryDetailedDto } from "../../Clients/MediaEntriesClient";
+import type { MediaEntryMinimalDto } from "../../Clients/MediaEntriesClient";
 import { mediaSections } from "../../Shared/mediaConstants";
 import { useEffect, useMemo, useState } from "react";
 import MediaItemCompact from "./MediaItemCompact";
@@ -9,8 +9,8 @@ import Dropdown from "../Shared/Dropdown";
 import type { DropdownItem } from "../Shared/Dropdown";
 
 type Props = {
-  mediaEntries: MediaEntryDetailedDto[];
-  onClickEntry: (entry: MediaEntryDetailedDto) => void;
+  mediaEntries: MediaEntryMinimalDto[];
+  onClickEntry: (entry: MediaEntryMinimalDto) => void;
   statusSectionType: string;
   currentMainMediaTypeFilter: number;
 };

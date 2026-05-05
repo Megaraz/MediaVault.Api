@@ -7,7 +7,7 @@ using media_vault_app.Domain.Enums;
 namespace media_vault_app.Application.DTOs
 {
     public record MediaEntrySearchResultDto(
-        string ExternalId,
+        string IdExternal,
         string Title,
         string? CoverImageUrl,
         MediaType MediaType

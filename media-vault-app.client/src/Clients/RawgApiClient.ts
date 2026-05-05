@@ -1,23 +1,23 @@
 import type { MediaEntrySearchResultDto, SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
 
 export interface RawgGameDetailedDto {
-    RawgId: number;
-    RawgSlug?: string;
-    RawgName?: string;
-    RawgDescription?: string;
-    RawgMetacritic: number;
-    RawgReleased?: string;
-    RawgBackgroundImage?: string;
-    RawgWebsite?: string;
-    RawgPlatforms?: string[];
-    RawgRequirements?: GamePcRequirementsDto;
+    rawgId: number;
+    rawgSlug?: string;
+    rawgName?: string;
+    rawgDescription?: string;
+    rawgMetacritic: number;
+    rawgReleased?: string;
+    rawgBackgroundImage?: string;
+    rawgWebsite?: string;
+    rawgPlatforms?: string[];
+    rawgRequirements?: GamePcRequirementsDto;
 }
 export interface GamePcRequirementsDto {
-    Minimum?: string;
-    Recommended?: string;
-    High?: string;
-    VeryHigh?: string;
-    Ultra?: string;
+    minimum?: string;
+    recommended?: string;
+    high?: string;
+    veryHigh?: string;
+    ultra?: string;
 }
 
 

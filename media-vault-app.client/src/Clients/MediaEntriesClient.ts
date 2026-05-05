@@ -14,11 +14,16 @@
 // Also re-exports shared types and constants from MediaEntryBase
 // so other files can do a single import from this module.
 // ─────────────────────────────────────────────────────────────
+import type { BookEntryDetailedDto } from "../Types/DTOs/BookEntry";
+import type { GameEntryDetailedDto } from "../Types/DTOs/GameEntry";
+import type { MangaEntryDetailedDto } from "../Types/DTOs/MangaEntry";
 import type {
     MediaEntryDetailedDto,
     MediaEntryMinimalDto,
     MediaEntrySearchRequestDto,
 } from "../Types/DTOs/MediaEntryBase";
+import type { MovieEntryDetailedDto } from "../Types/DTOs/MovieEntry";
+import type { TvSeriesEntryDetailedDto } from "../Types/DTOs/TvSeriesEntry";
 
 // Re-export shared types and constants so existing component imports keep working
 export type {
@@ -60,13 +65,55 @@ export default class MediaEntriesClient {
         return response.json();
     }
 
-    async getMediaEntries(pageNumber = 1, pageSize = 25): Promise<MediaEntryDetailedDto[]> {
+    async getMediaEntries(pageNumber = 1, pageSize = 25): Promise<MediaEntryMinimalDto[]> {
         const response = await fetch(
             `${this.baseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
         );
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error("Failed to fetch media entries: " + errorMessage);
+        }
+        return response.json();
+    }
+
+    async getMangaById(entryId: string): Promise<MangaEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/manga/${entryId}`);
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entry: " + errorMessage);
+        }
+        return response.json();
+    }
+    async getTvSeriesById(entryId: string): Promise<TvSeriesEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/tv-series/${entryId}`);
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entry: " + errorMessage);
+        }
+        return response.json();
+    }
+    async getMovieById(entryId: string): Promise<MovieEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/movies/${entryId}`);
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entry: " + errorMessage);
+        }
+        return response.json();
+    }
+    async getGameById(entryId: string): Promise<GameEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/games/${entryId}`);
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entry: " + errorMessage);
+        }
+        return response.json();
+    }
+
+    async getBookById(entryId: string): Promise<BookEntryDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/books/${entryId}`);
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch media entry: " + errorMessage);
         }
         return response.json();
     }

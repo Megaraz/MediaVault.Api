@@ -40,9 +40,36 @@ namespace media_vault_app.Application.Services.Base_Classes
             _ownerRepo = ownerRepo;
         }
 
-        public async Task<Result<TDetailedDto>> GetByIdAsync(TKeyOwner ownerId, TKeyDependent id, CancellationToken ct = default)
+        public async Task<Result<TMinimalDto>> GetMinimalByIdAsync(TKeyOwner ownerId, TKeyDependent id, CancellationToken ct = default)
         {
-            var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
+            var baseErrorContext = DefineErrorContext(nameof(GetMinimalByIdAsync), OperationType.Get);
+
+            var validationErrors = new List<ValidationError>();
+
+            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+                validationErrors.Add(ownerIdError);
+
+            if (!id.IsValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
+                validationErrors.Add(idError);
+
+            if (validationErrors.Count > 0)
+                return Result<TMinimalDto>.ValidationFailure(validationErrors, "Validation errors occurred, see validationErrors for details.");
+
+            var ownerExistsResult = await EnsureOwnerExistsAsync(ownerId, ct);
+
+            if (ownerExistsResult.IsFailure)
+            {
+                return ownerExistsResult.From<bool, TMinimalDto>();
+            }
+
+            var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct);
+
+            return repoResult.Map(_entityToDtoMapper.ToMinimalDTO);
+
+        }
+        public async Task<Result<TDetailedDto>> GetDetailedByIdAsync(TKeyOwner ownerId, TKeyDependent id, CancellationToken ct = default)
+        {
+            var baseErrorContext = DefineErrorContext(nameof(GetDetailedByIdAsync), OperationType.Get);
 
             var validationErrors = new List<ValidationError>();
 

@@ -167,6 +167,75 @@ namespace media_vault_app.API.Controllers
 
         #endregion
 
+
+        #region Read Operations - Type-Specific Endpoints
+
+        [HttpGet("movies/{id:Guid}")]
+        public async Task<ActionResult<MovieEntryDetailedDto>> GetMovieById(
+            [FromRoute] Guid id,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _readService.GetMovieByIdAsync(userId, id, ct);
+
+            return this.ToActionResult(result);
+        }
+
+        [HttpGet("tv-series/{id:Guid}")]
+        public async Task<ActionResult<TvSeriesEntryDetailedDto>> GetTvSeriesById(
+            [FromRoute] Guid id,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _readService.GetTvSeriesByIdAsync(userId, id, ct);
+
+            return this.ToActionResult(result);
+        }
+
+        [HttpGet("games/{id:Guid}")]
+        public async Task<ActionResult<GameEntryDetailedDto>> GetGameById(
+            [FromRoute] Guid id,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _readService.GetGameByIdAsync(userId, id, ct);
+
+            return this.ToActionResult(result);
+        }
+
+        [HttpGet("books/{id:Guid}")]
+        public async Task<ActionResult<BookEntryDetailedDto>> GetBookById(
+            [FromRoute] Guid id,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _readService.GetBookByIdAsync(userId, id, ct);
+
+            return this.ToActionResult(result);
+        }
+
+        [HttpGet("manga/{id:Guid}")]
+        public async Task<ActionResult<MangaEntryDetailedDto>> GetMangaById(
+            [FromRoute] Guid id,
+            CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            var result = await _readService.GetMangaByIdAsync(userId, id, ct);
+
+            return this.ToActionResult(result);
+        }
+        #endregion
+
         #region Read Operations - Shared Endpoints
 
         [HttpPost("search")]
@@ -191,13 +260,13 @@ namespace media_vault_app.API.Controllers
             if (!TryGetCurrentUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _readService.GetByIdAsync(userId, id, ct);
+            var result = await _readService.GetDetailedByIdAsync(userId, id, ct);
 
             return this.ToActionResult(result);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MediaEntryDetailedDto>>> GetMediaEntries(
+        public async Task<ActionResult<IEnumerable<MediaEntryMinimalDto>>> GetMediaEntries(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 25,
             CancellationToken ct = default)
@@ -205,7 +274,7 @@ namespace media_vault_app.API.Controllers
             if (!TryGetCurrentUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _readService.GetDetailedCollectionByOwnerIdAsync(userId, pageNumber, pageSize, ct);
+            var result = await _readService.GetMinimalCollectionByOwnerIdAsync(userId, pageNumber, pageSize, ct);
 
             return this.ToActionResult(result);
         }

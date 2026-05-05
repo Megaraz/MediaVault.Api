@@ -21,5 +21,14 @@ namespace media_vault_app.Domain.Entities
         }
     }
 
-    public sealed record GamePcRequirements(string? Minimum, string? Recommended, string? High, string? VeryHigh, string? Ultra);
+    public sealed record GamePcRequirements
+    {
+        public Guid Id { get; set; }
+        public Guid GameEntryId { get; set; }
+        public string? Minimum { get; set; }
+        public string? Recommended { get; set; }
+        public string? High { get; set; }
+        public string? VeryHigh { get; set; }
+        public string? Ultra { get; set; }
+    }
 }

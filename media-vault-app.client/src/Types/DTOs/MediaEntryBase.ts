@@ -10,63 +10,71 @@
 // The full details of a media entry as returned from GET endpoints.
 // Concrete sub-types (e.g. MovieEntryDetailedDto) extend this.
 export interface MediaEntryDetailedDto {
-  id: string;
-  idExternal: string | null; // ID from an external API (e.g. TMDB, RAWG)
-  userId: string;
-  status: number;            // Maps to StatusType constants below
-  title: string;
-  rating: number;
-  review: string | null;
-  genres: string[] | null;
-  releaseYear: number | null;
-  imageUrl: string | null;
-  mediaType: number;         // Maps to MediaType constants below
-  createdAtUtc: string;      // ISO 8601 date string from the server
+    id: string;
+    idExternal: string | null; // ID from an external API (e.g. TMDB, RAWG)
+    userId: string;
+    status: number;            // Maps to StatusType constants below
+    title: string;
+    rating: number;
+    overview: string | null;
+    review: string | null;
+    genres: string[] | null;
+    releaseDate: string | null;
+    imageUrl: string | null;
+    mediaType: number;         // Maps to MediaType constants below
+    createdAtUtc: string;      // ISO 8601 date string from the server
 }
 
 // The shape sent to POST (create) endpoints.
 // mediaType is NOT included — it is determined by which endpoint you call
 // (e.g. POST /mediaentries/movies vs /mediaentries/games).
 export interface MediaEntryCreateDto {
-  idExternal?: string | null;
-  status: number;
-  title: string;
-  rating: number;
-  review?: string | null;
-  genres?: string[] | null;
-  releaseYear?: number | null;
-  imageUrl?: string | null;
+    idExternal?: string | null;
+    status: number;
+    title: string;
+    overview?: string | null;
+    rating: number;
+    review?: string | null;
+    genres?: string[] | null;
+    releaseDate?: string | null;
+    imageUrl?: string | null;
 }
 
 
 export interface MediaEntrySearchResultDto {
-    externalId: string;
+    idExternal: string;
     title: string;
     coverImageUrl: string | null;
 };
 
-export interface SearchRequestDto  {
+export interface SearchRequestDto {
     query: string;
 };
 
 // The shape sent to PUT (update) endpoints. Same fields as create.
 export interface MediaEntryUpdateDto {
-  idExternal?: string | null;
-  status: number;
-  title: string;
-  rating: number;
-  review?: string | null;
-  genres?: string[] | null;
-  releaseYear?: number | null;
-  imageUrl?: string | null;
+    idExternal?: string | null;
+    status: number;
+    title: string;
+    overview?: string | null;
+    rating: number;
+    review?: string | null;
+    genres?: string[] | null;
+    releaseDate?: string | null;
+    imageUrl?: string | null;
 }
 
-// Lightweight shape returned by the search endpoint — just enough to show in a list.
-export type MediaEntryMinimalDto = {
+// Lightweight shape returned by the GetEntries endpoint — just enough to show in a list.
+export interface MediaEntryMinimalDto {
     id: string;
     title: string;
+    status: number;
+    genres?: string[] | null;
+    releaseDate?: string | null;
     mediaType: number;
+    rating: number;
     imageUrl: string | null;
+    createdAtUtc: string;      // ISO 8601 date string from the server
 };
 
 // Request body for the search endpoint.

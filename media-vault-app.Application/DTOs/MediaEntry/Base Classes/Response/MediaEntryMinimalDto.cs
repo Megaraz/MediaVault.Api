@@ -6,10 +6,15 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Application.DTOs.MediaEntry.Response;
 
-public abstract record MediaEntryMinimalDto : IDtoIdentifiable<Guid>
+public record MediaEntryMinimalDto : IDtoIdentifiable<Guid>
 {
     public Guid Id { get; init; }
     public string? Title { get; init; }
-    public abstract MediaType MediaType { get; }
+    public Status Status { get; init; }
+    public ICollection<string>? Genres { get; init; }
+    public DateTime ReleaseDate { get; init; }
+    public MediaType MediaType { get; init; }
+    public decimal Rating { get; init; }
     public string? ImageUrl { get; init; }
+    public DateTime CreatedAtUtc { get; init; }
 }

@@ -11,7 +11,7 @@
 // After a successful save or delete, a brief success screen is shown
 // before the modal closes automatically.
 // ─────────────────────────────────────────────────────────────
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MediaType,
   type MediaEntryDetailedDto,
@@ -36,10 +36,7 @@ const SUCCESS_STATE_DELAY_MS = 1000;
 
 type MediaEntryProps = {
   detailedEntry?: MediaEntryDetailedDto;
-  onSubmit: (
-    formData: MediaEntryFormData,
-    entryId?: string,
-  ) => Promise<void> | void;
+  onSubmit: (formData: MediaEntryFormData, entryId?: string) => Promise<void> | void;
   onDelete: (id: string) => Promise<void> | void;
   onCancel: () => void;
 };
@@ -57,6 +54,7 @@ function buildInitialFormData(
   const manga = entry as MangaEntryDetailedDto | undefined;
 
   return {
+    idExternal: entry?.idExternal ?? null,
     title: entry?.title ?? "",
     imageUrl: entry?.imageUrl ?? "",
     backdropUrl: "",
@@ -64,18 +62,26 @@ function buildInitialFormData(
     status: entry?.status ?? 0,
     rating: entry?.rating ?? 0,
     review: entry?.review ?? "",
-    releaseDate: "",
-    genres: [],
-    overview: "",
+    releaseDate: formatDateForInput(entry?.releaseDate),
+    genres: entry?.genres ?? [],
+    overview: entry?.overview ?? "",
     runtimeMinutes: movie?.runtimeMinutes?.toString() ?? "",
     totalEpisodes: series?.totalEpisodes?.toString() ?? "",
     totalWatchedEpisodes: series?.totalWatchedEpisodes?.toString() ?? "",
-    metaCriticRating: game?.metaCriticRating ?? 0,
+    metacriticRating: game?.metacriticRating ?? 0,
     hoursPlayed: game?.hoursPlayed?.toString() ?? "",
     platforms: game?.platforms?.join(", ") ?? "",
     website: game?.website ?? "",
     author: book?.author ?? manga?.author ?? "",
   };
+}
+
+function formatDateForInput(value?: string | null): string {
+  if (!value) {
+    return "";
+  }
+
+  return value.includes("T") ? value.split("T")[0] : value;
 }
 
 function formatSubtitle(entry?: MediaEntryDetailedDto): string | undefined {
@@ -100,6 +106,10 @@ export default function MediaEntryModal({
   const [rawgClient] = useState(() => new RawgApiClient());
   const [tmdbClient] = useState(() => new TmdbApiClient());
 
+  useEffect(() => {
+    setFormData(buildInitialFormData(detailedEntry));
+  }, [detailedEntry]);
+
   // isEditMode = true when we opened the modal by clicking an existing entry.
   const isEditMode = detailedEntry != null && detailedEntry.id != null;
   // isBusy prevents closing the modal while an async operation is running.
@@ -107,7 +117,7 @@ export default function MediaEntryModal({
 
   const handleChange = (
     field: keyof MediaEntryFormData,
-    value: string | number,
+    value: string | number | null,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -171,24 +181,23 @@ export default function MediaEntryModal({
     }
 
     if (formData.mediaType === MediaType.Game) {
-      rawgClient.getGameById(Number(result.externalId)).then((game) => {
-        if (game.RawgDescription)
-          handleChange("overview", game.RawgDescription);
-        if (game.RawgReleased)
-          handleChange("releaseDate", game.RawgReleased);
-        if (game.RawgBackgroundImage)
-          handleChange("backdropUrl", game.RawgBackgroundImage);
-        if (game.RawgMetacritic)
-          handleChange("metaCriticRating", game.RawgMetacritic);
-        if (game.RawgPlatforms)
-          handleChange("platforms", game.RawgPlatforms.join(", "));
-        if (game.RawgWebsite)
-          handleChange("website", game.RawgWebsite);
+      rawgClient.getGameById(Number(result.idExternal)).then((game) => {
+        if (game.rawgDescription)
+          handleChange("overview", game.rawgDescription);
+        if (game.rawgReleased)
+          handleChange("releaseDate", formatDateForInput(game.rawgReleased));
+        if (game.rawgBackgroundImage)
+          handleChange("backdropUrl", game.rawgBackgroundImage);
+        if (game.rawgMetacritic != null)
+          handleChange("metacriticRating", game.rawgMetacritic);
+        if (game.rawgPlatforms)
+          handleChange("platforms", game.rawgPlatforms.join(", "));
+        handleChange("website", game.rawgWebsite ?? "");
       });
     }
 
     if (formData.mediaType === MediaType.Movie) {
-      tmdbClient.getMovieById(Number(result.externalId)).then((movie) => {
+      tmdbClient.getMovieById(Number(result.idExternal)).then((movie) => {
         if (movie.tmdbRunTimeMinutes)
           handleChange("runtimeMinutes", movie.tmdbRunTimeMinutes.toString());
 
@@ -196,7 +205,7 @@ export default function MediaEntryModal({
           handleChange("backdropUrl", movie.tmdbBackdropPath);
 
         if (movie.tmdbReleaseDate)
-          handleChange("releaseDate", movie.tmdbReleaseDate);
+          handleChange("releaseDate", formatDateForInput(movie.tmdbReleaseDate));
 
         if (movie.tmdbGenres)
           handleChange(

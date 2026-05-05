@@ -2,7 +2,7 @@
 // Supports sorting (by rating or date added) and filtering by media type.
 // The media type filter is driven externally by the sidebar but can also
 // be overridden locally within this section via a dropdown.
-import type { MediaEntryDetailedDto } from "../../Clients/MediaEntriesClient";
+import type { MediaEntryMinimalDto } from "../../Clients/MediaEntriesClient";
 import MediaItem from "./MediaItem";
 import { MediaType } from "../../Clients/MediaEntriesClient";
 import { mediaSections } from "../../Shared/mediaConstants";
@@ -11,8 +11,8 @@ import Dropdown from "../Shared/Dropdown";
 import type { DropdownItem } from "../Shared/Dropdown";
 
 type Props = {
-  mediaEntries: MediaEntryDetailedDto[];
-  onClickEntry: (entry: MediaEntryDetailedDto) => void;
+  mediaEntries: MediaEntryMinimalDto[];
+  onClickEntry: (entry: MediaEntryMinimalDto) => void;
   statusSectionType: string;
   currentMainMediaTypeFilter: number;
 };
@@ -54,7 +54,7 @@ export default function EntriesSectionMain({
             (entry) => entry.mediaType === internalMediaTypeFilter,
           );
 
-    const getCreatedAtTime = (entry: MediaEntryDetailedDto) =>
+    const getCreatedAtTime = (entry: MediaEntryMinimalDto) =>
       new Date(entry.createdAtUtc).getTime();
 
     switch (sortBy) {

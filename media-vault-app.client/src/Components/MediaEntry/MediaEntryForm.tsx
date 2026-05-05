@@ -27,6 +27,7 @@ import type { SearchResult } from "./TitleSearchInput";
 // Type-specific fields (runtimeMinutes, author, etc.) are always present
 // but only rendered and populated when the matching media type is selected.
 export type MediaEntryFormData = {
+  idExternal?: string | null;
   title?: string;
   imageUrl?: string;
   backdropUrl?: string;
@@ -43,7 +44,7 @@ export type MediaEntryFormData = {
   totalEpisodes?: string;
   totalWatchedEpisodes?: string;
   // Game-specific
-  metaCriticRating?: number;
+  metacriticRating?: number;
   hoursPlayed?: string;
   platforms?: string;
   website?: string;
@@ -53,7 +54,10 @@ export type MediaEntryFormData = {
 
 type MediaEntryFormProps = {
   formData: MediaEntryFormData;
-  onChange: (field: keyof MediaEntryFormData, value: string | number) => void;
+  onChange: (
+    field: keyof MediaEntryFormData,
+    value: string | number | null,
+  ) => void;
   onSelectResult: (result: SearchResult) => void;
   isEditMode: boolean;
 };
@@ -105,6 +109,7 @@ export default function MediaEntryForm({
           mediaType={formData.mediaType}
           isEditMode={isEditMode}
           onSelectResult={(result) => {
+            onChange("idExternal", result.idExternal);
             onSelectResult(result);
             onChange("title", result.title);
             if (result.coverImageUrl)
@@ -286,9 +291,19 @@ export default function MediaEntryForm({
             </label>
             <InputText
               type="number"
-              value={formData.metaCriticRating?.toString()}
+              value={formData.metacriticRating?.toString()}
               placeholder="e.g. 87"
-              onChange={(val) => onChange("metaCriticRating", Number(val))}
+              onChange={(val) => onChange("metacriticRating", Number(val))}
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Release Date
+            </label>
+            <InputText
+              type="date"
+              value={formData.releaseDate}
+              onChange={(val) => onChange("releaseDate", val)}
             />
           </div>
           <div className="col-span-full">
@@ -299,6 +314,18 @@ export default function MediaEntryForm({
               value={formData.platforms}
               placeholder="e.g. PC, PlayStation 5"
               onChange={(val) => onChange("platforms", val)}
+            />
+          </div>
+          <div className="col-span-full">
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Overview
+            </label>
+            <textarea
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none"
+              placeholder="Short description of the game..."
+              rows={3}
+              value={formData.overview ?? ""}
+              onChange={(e) => onChange("overview", e.target.value)}
             />
           </div>
           <div className="col-span-full">
