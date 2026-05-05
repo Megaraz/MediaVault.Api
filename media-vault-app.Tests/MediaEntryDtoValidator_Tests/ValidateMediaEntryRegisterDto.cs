@@ -35,7 +35,8 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Genres = null,
                 ReleaseDate = null,
                 ImageUrl = null,
-                RuntimeMinutes = 120
+                RuntimeMinutes = 120,
+                Overview = "This is a test media entry used for validating the MediaEntryDtoValidator's IsValidCreateDto method."
             };
 
             // Act

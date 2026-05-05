@@ -9,9 +9,13 @@ namespace media_vault_app.Domain.Entities
 {
     public sealed record TvSeriesEntry : MediaEntry, IOwnerEntity<Guid>, IHasSeasons
     {
-        public ICollection<Season>? Seasons { get; set; }
-        public int TotalEpisodes { get; set; }
+        public string? BackdropImageUrl { get; set; }
+        public DateTime? LastAirDate { get; set; }
+        public int NumberOfSeasons { get; set; }
+        public int NumberOfEpisodes { get; set; }
+        public string? AiringStatus { get; set; }
         public int TotalWatchedEpisodes { get; set; }
+        public ICollection<Season> Seasons { get; set; } = new List<Season>();
 
         public TvSeriesEntry()
         {

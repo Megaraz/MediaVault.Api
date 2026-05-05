@@ -67,6 +67,7 @@ namespace media_vault_app.Application.Services.Base_Classes
             return repoResult.Map(_entityToDtoMapper.ToMinimalDTO);
 
         }
+
         public async Task<Result<TDetailedDto>> GetDetailedByIdAsync(TKeyOwner ownerId, TKeyDependent id, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetDetailedByIdAsync), OperationType.Get);

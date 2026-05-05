@@ -29,30 +29,35 @@ namespace media_vault_app.Application.Services.MediaEntry
             _mediaEntryRepo = mediaEntryRepo;
         }
 
-        public async Task<Result<MovieEntryDetailedDto>> GetMovieByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
-        {
-            return await GetTypedByIdAsync<MovieEntryDetailedDto>(ownerId, id, nameof(GetMovieByIdAsync), "movie", ct);
-        }
+        public async Task<Result<MovieEntryDetailedDto>> GetMovieByIdAsync(
+            Guid ownerId,
+            Guid id,
+            CancellationToken ct = default) => 
+            await GetTypedByIdAsync<MovieEntryDetailedDto>(ownerId, id, nameof(GetMovieByIdAsync), "movie", ct);
 
-        public async Task<Result<TvSeriesEntryDetailedDto>> GetTvSeriesByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
-        {
-            return await GetTypedByIdAsync<TvSeriesEntryDetailedDto>(ownerId, id, nameof(GetTvSeriesByIdAsync), "TV series", ct);
-        }
+        public async Task<Result<TvSeriesEntryDetailedDto>> GetTvSeriesByIdAsync(
+            Guid ownerId,
+            Guid id,
+            CancellationToken ct = default) =>
+            await GetTypedByIdAsync<TvSeriesEntryDetailedDto>(ownerId, id, nameof(GetTvSeriesByIdAsync), "TV series", ct);
 
-        public async Task<Result<GameEntryDetailedDto>> GetGameByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
-        {
-            return await GetTypedByIdAsync<GameEntryDetailedDto>(ownerId, id, nameof(GetGameByIdAsync), "game", ct);
-        }
+        public async Task<Result<GameEntryDetailedDto>> GetGameByIdAsync(
+            Guid ownerId,
+            Guid id,
+            CancellationToken ct = default) =>
+            await GetTypedByIdAsync<GameEntryDetailedDto>(ownerId, id, nameof(GetGameByIdAsync), "game", ct);
 
-        public async Task<Result<BookEntryDetailedDto>> GetBookByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
-        {
-            return await GetTypedByIdAsync<BookEntryDetailedDto>(ownerId, id, nameof(GetBookByIdAsync), "book", ct);
-        }
+        public async Task<Result<BookEntryDetailedDto>> GetBookByIdAsync(
+            Guid ownerId, 
+            Guid id, 
+            CancellationToken ct = default) => 
+            await GetTypedByIdAsync<BookEntryDetailedDto>(ownerId, id, nameof(GetBookByIdAsync), "book", ct);
 
-        public async Task<Result<MangaEntryDetailedDto>> GetMangaByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default)
-        {
-            return await GetTypedByIdAsync<MangaEntryDetailedDto>(ownerId, id, nameof(GetMangaByIdAsync), "manga", ct);
-        }
+        public async Task<Result<MangaEntryDetailedDto>> GetMangaByIdAsync(
+            Guid ownerId, 
+            Guid id, 
+            CancellationToken ct = default) =>
+            await GetTypedByIdAsync<MangaEntryDetailedDto>(ownerId, id, nameof(GetMangaByIdAsync), "manga", ct);
 
         public async Task<Result<IEnumerable<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
             Guid ownerId,

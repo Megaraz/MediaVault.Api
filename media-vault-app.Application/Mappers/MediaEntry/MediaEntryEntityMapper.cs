@@ -49,7 +49,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     ReleaseDate = tvSeries.ReleaseDate,
                     ImageUrl = tvSeries.ImageUrl,
                     CreatedAtUtc = tvSeries.CreatedAtUtc,
-                    TotalEpisodes = tvSeries.TotalEpisodes,
+                    TotalEpisodes = tvSeries.NumberOfEpisodes,
                     TotalWatchedEpisodes = tvSeries.TotalWatchedEpisodes
                 },
                 GameEntity game => new GameEntryDetailedDto
@@ -164,7 +164,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Overview = tvSeries.Overview,
                 ReleaseDate = tvSeries.ReleaseDate,
                 ImageUrl = tvSeries.ImageUrl,
-                TotalEpisodes = tvSeries.TotalEpisodes,
+                TotalEpisodes = tvSeries.NumberOfEpisodes,
                 TotalWatchedEpisodes = tvSeries.TotalWatchedEpisodes
             },
             GameEntity game => new GameEntryUpdateDto

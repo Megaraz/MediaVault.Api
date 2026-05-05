@@ -108,7 +108,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 break;
 
                 case TvSeriesEntry tvSeries when dto is TvSeriesEntryCreateDto tvDto:
-                    tvSeries.TotalEpisodes = tvDto.TotalEpisodes;
+                    tvSeries.NumberOfEpisodes = tvDto.TotalEpisodes;
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
                 break;
 
@@ -147,7 +147,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 break;
 
                 case TvSeriesEntry tvSeries when dto is TvSeriesEntryDetailedDto tvDto:
-                    tvSeries.TotalEpisodes = tvDto.TotalEpisodes;
+                    tvSeries.NumberOfEpisodes = tvDto.TotalEpisodes;
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
                 break;
 
@@ -186,7 +186,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 break;
 
                 case TvSeriesEntry tvSeries when dto is TvSeriesEntryUpdateDto tvDto:
-                    tvSeries.TotalEpisodes = tvDto.TotalEpisodes;
+                    tvSeries.NumberOfEpisodes = tvDto.TotalEpisodes;
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
                 break;
 

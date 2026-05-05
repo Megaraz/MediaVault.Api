@@ -7,6 +7,6 @@ namespace media_vault_app.Domain.Interfaces
 {
     public interface IHasSeasons
     {
-        public ICollection<Season>? Seasons { get; set; }
+        public ICollection<Season> Seasons { get; set; }
     }
 }

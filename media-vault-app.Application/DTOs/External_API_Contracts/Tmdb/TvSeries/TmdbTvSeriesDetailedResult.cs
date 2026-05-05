@@ -9,6 +9,9 @@ namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries
     public class TmdbTvSeriesDetailedResult
     {
 
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
         [JsonPropertyName("backdrop_path")]
         public string? BackdropPath { get; set; }
 
@@ -19,8 +22,6 @@ namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries
         [JsonPropertyName("genres")]
         public TmdbGenre[]? Genres { get; set; }
 
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
 
         [JsonPropertyName("last_air_date")]
         public string? LastAirDate { get; init; }

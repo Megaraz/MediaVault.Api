@@ -11,7 +11,12 @@ namespace media_vault_app.Domain.Entities
     {
         public Guid Id { get; set; }
         public Guid OwnerId { get; set; }
-        public int? ReleaseYear { get; set; }
+        public string? IdExternal { get; set; }
+        public string? Name { get; set; }
+        public string? Overview { get; set; }
+        public string? ImageUrl { get; set; }
+        public int SeasonNumber { get; set; }
+        public DateTime? AirDate { get; set; }
         public int WatchedEpisodes { get; set; }
         public int Episodes { get; set; }
 
