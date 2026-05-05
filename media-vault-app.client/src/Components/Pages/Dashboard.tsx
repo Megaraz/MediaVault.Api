@@ -180,8 +180,24 @@ export default function Dashboard() {
           case MediaType.Series:
             await tvSeriesClient.updateTvSeries(entryId, {
               ...baseFields,
-              totalEpisodes: Number(formData.totalEpisodes) || 0,
+              numberOfSeasons: Number(formData.numberOfSeasons) || 0,
+              numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
               totalWatchedEpisodes: Number(formData.totalWatchedEpisodes) || 0,
+              backdropImageUrl: formData.backdropImageUrl ?? null,
+              firstAirDate: formData.firstAirDate ?? null,
+              lastAirDate: formData.lastAirDate ?? null,
+              airingStatus: formData.airingStatus ?? null,
+              seasons: formData.seasons?.map((s) => ({
+                seasonNumber: parseInt(s.seasonNumber) || 0,
+                name: s.name || null,
+                overview: s.overview || null,
+                imageUrl: s.imageUrl || null,
+                airDate: s.airDate || null,
+                episodes: parseInt(s.episodes) || 0,
+                watchedEpisodes: parseInt(s.watchedEpisodes) || 0,
+                status: s.status,
+                rating: s.rating,
+              })),
             });
             break;
           case MediaType.Game:
@@ -224,8 +240,24 @@ export default function Dashboard() {
           case MediaType.Series:
             created = await tvSeriesClient.createTvSeries({
               ...baseFields,
-              totalEpisodes: Number(formData.totalEpisodes) || 0,
+              numberOfSeasons: Number(formData.numberOfSeasons) || 0,
+              numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
               totalWatchedEpisodes: Number(formData.totalWatchedEpisodes) || 0,
+              backdropImageUrl: formData.backdropImageUrl ?? null,
+              firstAirDate: formData.firstAirDate ?? null,
+              lastAirDate: formData.lastAirDate ?? null,
+              airingStatus: formData.airingStatus ?? null,
+              seasons: formData.seasons?.map((s) => ({
+                seasonNumber: parseInt(s.seasonNumber) || 0,
+                name: s.name || null,
+                overview: s.overview || null,
+                imageUrl: s.imageUrl || null,
+                airDate: s.airDate || null,
+                episodes: parseInt(s.episodes) || 0,
+                watchedEpisodes: parseInt(s.watchedEpisodes) || 0,
+                status: s.status,
+                rating: s.rating,
+              })),
             });
             break;
           case MediaType.Game:

@@ -17,12 +17,12 @@ namespace media_vault_app.Application.Services.MediaEntry
         IMediaEntryWriteService
     {
         public MediaEntryWriteService(
-            IMediaEntryRepo ownedEntityRepo,
+            IMediaEntryRepo dependentEntityRepo,
             IUserRepo ownerRepo,
             IMapEntityToDto<MediaEntryEntity, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto> entityMapper,
             IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, MediaEntryUpdateDto, Guid> dtoMapper,
             IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto> validator
-            ) : base(ownedEntityRepo, ownerRepo, entityMapper, dtoMapper, validator)
+            ) : base(dependentEntityRepo, ownerRepo, entityMapper, dtoMapper, validator)
         {
         }
     }

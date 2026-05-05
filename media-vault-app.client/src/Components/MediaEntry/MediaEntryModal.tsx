@@ -24,6 +24,7 @@ import type { MangaEntryDetailedDto } from "../../Types/DTOs/MangaEntry";
 import DetailedHeader from "./DetailedHeader";
 import MediaEntryForm from "./MediaEntryForm";
 import type { MediaEntryFormData } from "./MediaEntryForm";
+import type { SeasonFormData } from "./SeasonSection";
 import FormFooter from "./FormFooter";
 import ModalWindow from "../Shared/ModalWindow";
 import type { SearchResult } from "./TitleSearchInput";
@@ -66,8 +67,24 @@ function buildInitialFormData(
     genres: entry?.genres ?? [],
     overview: entry?.overview ?? "",
     runtimeMinutes: movie?.runtimeMinutes?.toString() ?? "",
-    totalEpisodes: series?.totalEpisodes?.toString() ?? "",
+    numberOfEpisodes: series?.numberOfEpisodes?.toString() ?? "",
     totalWatchedEpisodes: series?.totalWatchedEpisodes?.toString() ?? "",
+    numberOfSeasons: series?.numberOfSeasons?.toString() ?? "",
+    backdropImageUrl: series?.backdropImageUrl ?? null,
+    firstAirDate: series?.firstAirDate ?? null,
+    lastAirDate: series?.lastAirDate ?? null,
+    airingStatus: series?.airingStatus ?? null,
+    seasons: series?.seasons?.map((s) => ({
+      seasonNumber: s.seasonNumber.toString(),
+      name: s.name ?? "",
+      overview: s.overview ?? "",
+      imageUrl: s.imageUrl ?? "",
+      airDate: s.airDate ? s.airDate.split("T")[0] : "",
+      episodes: s.episodes.toString(),
+      watchedEpisodes: s.watchedEpisodes.toString(),
+      status: s.status,
+      rating: s.rating,
+    })) ?? [],
     metacriticRating: game?.metacriticRating ?? 0,
     hoursPlayed: game?.hoursPlayed?.toString() ?? "",
     platforms: game?.platforms?.join(", ") ?? "",
@@ -120,6 +137,10 @@ export default function MediaEntryModal({
     value: string | number | null,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSeasonsChange = (seasons: SeasonFormData[]) => {
+    setFormData((prev) => ({ ...prev, seasons }));
   };
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -216,6 +237,38 @@ export default function MediaEntryModal({
         if (movie.tmdbOverview) handleChange("overview", movie.tmdbOverview);
       });
     }
+
+    if (formData.mediaType === MediaType.Series) {
+      tmdbClient.getTvSeriesById(Number(result.idExternal)).then((series) => {
+        setFormData((prev) => ({
+          ...prev,
+          overview: series.tmdbOverview ?? prev.overview,
+          releaseDate: series.tmdbFirstAirDate
+            ? formatDateForInput(series.tmdbFirstAirDate)
+            : prev.releaseDate,
+          firstAirDate: series.tmdbFirstAirDate ?? prev.firstAirDate,
+          lastAirDate: series.tmdbLastAirDate ?? prev.lastAirDate,
+          backdropImageUrl: series.tmdbBackdropPath ?? prev.backdropImageUrl,
+          genres: series.tmdbGenres
+            ? series.tmdbGenres.map((g) => g.tmdbGenreName || "")
+            : prev.genres,
+          numberOfEpisodes: series.tmdbNumberOfEpisodes.toString(),
+          numberOfSeasons: series.tmdbNumberOfSeasons.toString(),
+          airingStatus: series.tmdbStatus ?? prev.airingStatus,
+          seasons: series.tmdbSeasons?.map((s) => ({
+            seasonNumber: s.tmdbSeasonNumber.toString(),
+            name: s.tmdbName ?? "",
+            overview: s.tmdbOverview ?? "",
+            imageUrl: s.tmdbPosterPath ?? "",
+            airDate: s.tmdbAirDate ? formatDateForInput(s.tmdbAirDate) : "",
+            episodes: s.tmdbEpisodeCount.toString(),
+            watchedEpisodes: "0",
+            status: 0,
+            rating: 0,
+          })) ?? prev.seasons,
+        }));
+      });
+    }
   };
 
   return (
@@ -273,6 +326,7 @@ export default function MediaEntryModal({
             <MediaEntryForm
               formData={formData}
               onChange={handleChange}
+              onSeasonsChange={handleSeasonsChange}
               isEditMode={isEditMode}
               onSelectResult={handleSelectResult}
             />

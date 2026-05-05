@@ -42,6 +42,9 @@ namespace media_vault_app.API
                 .GetConnectionString("Default") ??
                 throw new InvalidOperationException("Connection string 'Default' not found.");
 
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(connectionString));
+
 
             #region Rawg API
 
@@ -94,10 +97,7 @@ namespace media_vault_app.API
 
             #endregion
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(connectionString));
 
-            builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
             #region Mappers
 
@@ -117,7 +117,6 @@ namespace media_vault_app.API
                 IMapDtoToEntity<User, UserDetailedDto, UserRegisterDto, UserUpdateDto, Guid>,
                 UserDtoMapper>();
 
-
             #endregion
 
             #region Validators
@@ -130,15 +129,25 @@ namespace media_vault_app.API
                 IDtoValidator<Guid, UserRegisterDto, UserUpdateDto>,
                 UserDtoValidator>();
 
+            // Validator (once created)
+
             #endregion
 
 
+            #region Repositories
             builder.Services.AddScoped<IUserRepo, UserRepo>();
 
             builder.Services.AddScoped<IMediaEntryRepo, MediaEntryRepo>();
 
+            builder.Services.AddScoped<IRepo<TvSeriesEntry, Guid>, RepoBase<TvSeriesEntry, Guid>>();
+            #endregion
+
+            #region Services
+
             builder.Services.AddScoped<IMediaEntryReadService, MediaEntryReadService>();
             builder.Services.AddScoped<IMediaEntryWriteService, MediaEntryWriteService>();
+
+            builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
             builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -150,6 +159,7 @@ namespace media_vault_app.API
             builder.Services.AddScoped<ITmdbApiService, TmdbApiService>();
 
             builder.Services.AddScoped<IGoogleBooksApiService, GoogleBooksApiService>();
+            #endregion
 
 
             builder.Services.AddControllers();

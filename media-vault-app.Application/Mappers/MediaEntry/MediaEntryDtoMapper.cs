@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.DTOs.Season;
 using media_vault_app.Domain.Entities;
 using media_vault_app.Domain.Enums;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
@@ -108,8 +109,29 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 break;
 
                 case TvSeriesEntry tvSeries when dto is TvSeriesEntryCreateDto tvDto:
-                    tvSeries.NumberOfEpisodes = tvDto.TotalEpisodes;
+                    tvSeries.BackdropImageUrl = tvDto.BackdropImageUrl;
+                    tvSeries.LastAirDate = tvDto.LastAirDate;
+                    tvSeries.NumberOfSeasons = tvDto.NumberOfSeasons;
+                    tvSeries.NumberOfEpisodes = tvDto.NumberOfEpisodes;
+                    tvSeries.AiringStatus = tvDto.AiringStatus;
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
+                    tvSeries.Seasons = tvDto.Seasons?.Select(s => new Season
+                    {
+                        Id = Guid.NewGuid(),
+                        OwnerId = tvSeries.Id,
+                        IdExternal = s.IdExternal,
+                        Name = s.Name,
+                        Overview = s.Overview,
+                        ImageUrl = s.ImageUrl,
+                        SeasonNumber = s.SeasonNumber,
+                        AirDate = s.AirDate,
+                        WatchedEpisodes = s.WatchedEpisodes,
+                        Episodes = s.Episodes,
+                        Status = s.Status,
+                        Rating = s.Rating,
+                        CreatedAtUtc = DateTime.UtcNow,
+                        UpdatedAtUtc = DateTime.UtcNow
+                    }).ToList() ?? new List<Season>();
                 break;
 
                 case GameEntry game when dto is GameEntryCreateDto gameDto:
@@ -147,7 +169,11 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 break;
 
                 case TvSeriesEntry tvSeries when dto is TvSeriesEntryDetailedDto tvDto:
-                    tvSeries.NumberOfEpisodes = tvDto.TotalEpisodes;
+                    tvSeries.BackdropImageUrl = tvDto.BackdropImageUrl;
+                    tvSeries.LastAirDate = tvDto.LastAirDate;
+                    tvSeries.NumberOfSeasons = tvDto.NumberOfSeasons;
+                    tvSeries.NumberOfEpisodes = tvDto.NumberOfEpisodes;
+                    tvSeries.AiringStatus = tvDto.AiringStatus;
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
                 break;
 
@@ -186,8 +212,29 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 break;
 
                 case TvSeriesEntry tvSeries when dto is TvSeriesEntryUpdateDto tvDto:
-                    tvSeries.NumberOfEpisodes = tvDto.TotalEpisodes;
+                    tvSeries.BackdropImageUrl = tvDto.BackdropImageUrl;
+                    tvSeries.LastAirDate = tvDto.LastAirDate;
+                    tvSeries.NumberOfSeasons = tvDto.NumberOfSeasons;
+                    tvSeries.NumberOfEpisodes = tvDto.NumberOfEpisodes;
+                    tvSeries.AiringStatus = tvDto.AiringStatus;
                     tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
+                    tvSeries.Seasons = tvDto.Seasons?.Select(s => new Season
+                    {
+                        Id = Guid.NewGuid(),
+                        OwnerId = tvSeries.Id,
+                        IdExternal = s.IdExternal,
+                        Name = s.Name,
+                        Overview = s.Overview,
+                        ImageUrl = s.ImageUrl,
+                        SeasonNumber = s.SeasonNumber,
+                        AirDate = s.AirDate,
+                        WatchedEpisodes = s.WatchedEpisodes,
+                        Episodes = s.Episodes,
+                        Status = s.Status,
+                        Rating = s.Rating,
+                        CreatedAtUtc = DateTime.UtcNow,
+                        UpdatedAtUtc = DateTime.UtcNow
+                    }).ToList() ?? new List<Season>();
                 break;
 
                 case GameEntry game when dto is GameEntryUpdateDto gameDto:

@@ -57,27 +57,5 @@ namespace media_vault_app.Application.Validators.MediaEntry
             return !validationErrors.Any();
         }
 
-        private void CheckAndFixRating(ref decimal rating)
-        {
-            var clamped = Math.Clamp(rating, 0m, 5m);
-            rating = Math.Round(clamped * 2, MidpointRounding.AwayFromZero) / 2;
-        }
-
-        private static List<ValidationError> ValidateRating(decimal rating, ErrorContext errorContext, List<ValidationError> validationErrors)
-        {
-            var ratingErrorContext = errorContext with { FieldName = "Rating" };
-
-            if (rating < 0m || rating > 5m)
-            {
-                validationErrors.Add(ValidationError.OutOfRange(ratingErrorContext, "0 to 5"));
-            }
-
-            if (rating * 2m != decimal.Truncate(rating * 2m))
-            {
-                validationErrors.Add(ValidationError.InvalidFormat(ratingErrorContext, "0.5 increments between 0 and 5"));
-            }
-
-            return validationErrors;
-        }
     }
 }

@@ -22,6 +22,7 @@ import SelectOption from "../../Components/Shared/SelectOption";
 import StarRating from "../../Components/Shared/StarRating";
 import TitleSearchInput from "./TitleSearchInput";
 import type { SearchResult } from "./TitleSearchInput";
+import SeasonSection, { type SeasonFormData } from "./SeasonSection";
 
 // All form fields in a single flat object.
 // Type-specific fields (runtimeMinutes, author, etc.) are always present
@@ -41,8 +42,14 @@ export type MediaEntryFormData = {
   // Movie-specific
   runtimeMinutes?: string;
   // TV Series-specific
-  totalEpisodes?: string;
-  totalWatchedEpisodes?: string;
+  numberOfEpisodes?: string;
+  totalWatchedEpisodes?: string; // How many the user has watched so far
+  backdropImageUrl?: string | null;
+  firstAirDate?: string | null;
+  lastAirDate?: string | null;
+  numberOfSeasons?: string;
+  airingStatus?: string | null;
+  seasons?: SeasonFormData[];
   // Game-specific
   metacriticRating?: number;
   hoursPlayed?: string;
@@ -58,6 +65,7 @@ type MediaEntryFormProps = {
     field: keyof MediaEntryFormData,
     value: string | number | null,
   ) => void;
+  onSeasonsChange: (seasons: SeasonFormData[]) => void;
   onSelectResult: (result: SearchResult) => void;
   isEditMode: boolean;
 };
@@ -75,6 +83,7 @@ const statusOptions: SelectOptionItem[] = Object.entries(StatusLabels).map(
 export default function MediaEntryForm({
   formData,
   onChange,
+  onSeasonsChange,
   onSelectResult,
   isEditMode,
 }: MediaEntryFormProps) {
@@ -248,13 +257,24 @@ export default function MediaEntryForm({
         <>
           <div>
             <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Number of Seasons
+            </label>
+            <InputText
+              type="number"
+              value={formData.numberOfSeasons}
+              placeholder="e.g. 3"
+              onChange={(val) => onChange("numberOfSeasons", val)}
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
               Total Episodes
             </label>
             <InputText
               type="number"
-              value={formData.totalEpisodes}
+              value={formData.numberOfEpisodes}
               placeholder="e.g. 24"
-              onChange={(val) => onChange("totalEpisodes", val)}
+              onChange={(val) => onChange("numberOfEpisodes", val)}
             />
           </div>
           <div>
@@ -266,6 +286,15 @@ export default function MediaEntryForm({
               value={formData.totalWatchedEpisodes}
               placeholder="e.g. 12"
               onChange={(val) => onChange("totalWatchedEpisodes", val)}
+            />
+          </div>
+          <div className="col-span-full">
+            <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Seasons
+            </label>
+            <SeasonSection
+              seasons={formData.seasons ?? []}
+              onSeasonsChange={onSeasonsChange}
             />
           </div>
         </>

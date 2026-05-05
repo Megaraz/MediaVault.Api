@@ -1,5 +1,6 @@
 import type { MediaEntrySearchResultDto, SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
 import type { TmdbMovieDetailedDto } from "../Types/DTOs/MovieEntry";
+import type { TmdbTvSeriesDetailedDto } from "../Types/DTOs/TvSeriesEntry";
 
 
 export default class TmdbApiClient {
@@ -66,16 +67,16 @@ export default class TmdbApiClient {
         return response.json();
     }
 
-    // async getTvSeriesById(id: number): Promise<TmdbSearchResultDto> {
-    //     const response = await fetch(`${this.baseUrl}/tv/${id}`, {
-    //         credentials: "include",
-    //     });
+    async getTvSeriesById(id: number): Promise<TmdbTvSeriesDetailedDto> {
+        const response = await fetch(`${this.baseUrl}/tv/${id}`, {
+            credentials: "include",
+        });
 
-    //     if (!response.ok) {
-    //         const errorMessage = await response.text();
-    //         throw new Error("Failed to fetch TV series: " + errorMessage);
-    //     }
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error("Failed to fetch TV series: " + errorMessage);
+        }
 
-    //     return response.json();
-    // }
+        return response.json();
+    }
 }

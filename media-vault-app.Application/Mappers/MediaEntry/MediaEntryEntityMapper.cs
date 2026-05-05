@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.DTOs.Season;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using MovieEntity = media_vault_app.Domain.Entities.MovieEntry;
@@ -49,8 +50,29 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     ReleaseDate = tvSeries.ReleaseDate,
                     ImageUrl = tvSeries.ImageUrl,
                     CreatedAtUtc = tvSeries.CreatedAtUtc,
-                    TotalEpisodes = tvSeries.NumberOfEpisodes,
-                    TotalWatchedEpisodes = tvSeries.TotalWatchedEpisodes
+                    BackdropImageUrl = tvSeries.BackdropImageUrl,
+                    LastAirDate = tvSeries.LastAirDate,
+                    NumberOfSeasons = tvSeries.NumberOfSeasons,
+                    NumberOfEpisodes = tvSeries.NumberOfEpisodes,
+                    AiringStatus = tvSeries.AiringStatus,
+                    TotalWatchedEpisodes = tvSeries.TotalWatchedEpisodes,
+                    Seasons = tvSeries.Seasons?.Select(s => new SeasonMinimalDto
+                    {
+                        Id = s.Id,
+                        OwnerId = s.OwnerId,
+                        IdExternal = s.IdExternal,
+                        Name = s.Name,
+                        Overview = s.Overview,
+                        ImageUrl = s.ImageUrl,
+                        SeasonNumber = s.SeasonNumber,
+                        AirDate = s.AirDate,
+                        WatchedEpisodes = s.WatchedEpisodes,
+                        Episodes = s.Episodes,
+                        Status = s.Status,
+                        Rating = s.Rating,
+                        CreatedAtUtc = s.CreatedAtUtc,
+                        UpdatedAtUtc = s.UpdatedAtUtc
+                    }).ToArray()
                 },
                 GameEntity game => new GameEntryDetailedDto
                 {
@@ -164,8 +186,25 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Overview = tvSeries.Overview,
                 ReleaseDate = tvSeries.ReleaseDate,
                 ImageUrl = tvSeries.ImageUrl,
-                TotalEpisodes = tvSeries.NumberOfEpisodes,
-                TotalWatchedEpisodes = tvSeries.TotalWatchedEpisodes
+                BackdropImageUrl = tvSeries.BackdropImageUrl,
+                LastAirDate = tvSeries.LastAirDate,
+                NumberOfSeasons = tvSeries.NumberOfSeasons,
+                NumberOfEpisodes = tvSeries.NumberOfEpisodes,
+                AiringStatus = tvSeries.AiringStatus,
+                TotalWatchedEpisodes = tvSeries.TotalWatchedEpisodes,
+                Seasons = tvSeries.Seasons?.Select(s => new SeasonCreateDto
+                {
+                    IdExternal = s.IdExternal,
+                    Name = s.Name,
+                    Overview = s.Overview,
+                    ImageUrl = s.ImageUrl,
+                    SeasonNumber = s.SeasonNumber,
+                    AirDate = s.AirDate,
+                    WatchedEpisodes = s.WatchedEpisodes,
+                    Episodes = s.Episodes,
+                    Status = s.Status,
+                    Rating = s.Rating
+                }).ToArray()
             },
             GameEntity game => new GameEntryUpdateDto
             {
