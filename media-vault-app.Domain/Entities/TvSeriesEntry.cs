@@ -7,10 +7,10 @@ using media_vault_app.Domain.Enums;
 
 namespace media_vault_app.Domain.Entities
 {
-    public sealed record TvSeriesEntry : MediaEntry, IOwnerEntity<Guid>, IHasSeasons
+    public sealed class TvSeriesEntry : MediaEntry, IOwnerEntity<Guid>, IHasSeasons
     {
         public string? BackdropImageUrl { get; set; }
-        public DateTime? LastAirDate { get; set; }
+        public DateOnly? LastAirDate { get; set; }
         public int NumberOfSeasons { get; set; }
         public int NumberOfEpisodes { get; set; }
         public string? AiringStatus { get; set; }

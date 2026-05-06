@@ -64,7 +64,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Rating = dto.Rating;
             entity.Review = dto.Review;
             entity.Genres = dto.Genres;
-            entity.ReleaseDate = dto.ReleaseDate ?? DateTime.MinValue;
+            entity.ReleaseDate = dto.ReleaseDate;
             entity.ImageUrl = dto.ImageUrl;
             entity.Overview = dto.Overview;
             entity.CreatedAtUtc = DateTime.UtcNow;
@@ -95,7 +95,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             entity.Overview = dto.Overview;
             entity.Review = dto.Review;
             entity.Genres = dto.Genres;
-            entity.ReleaseDate = dto.ReleaseDate ?? DateTime.MinValue;
+            entity.ReleaseDate = dto.ReleaseDate;
             entity.ImageUrl = dto.ImageUrl;
         }
 
@@ -118,7 +118,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     tvSeries.Seasons = tvDto.Seasons?.Select(s => new Season
                     {
                         Id = Guid.NewGuid(),
-                        OwnerId = tvSeries.Id,
+                        TvSeriesEntryId = tvSeries.Id,
                         IdExternal = s.IdExternal,
                         Name = s.Name,
                         Overview = s.Overview,
@@ -221,7 +221,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     tvSeries.Seasons = tvDto.Seasons?.Select(s => new Season
                     {
                         Id = Guid.NewGuid(),
-                        OwnerId = tvSeries.Id,
+                        TvSeriesEntryId = tvSeries.Id,
                         IdExternal = s.IdExternal,
                         Name = s.Name,
                         Overview = s.Overview,

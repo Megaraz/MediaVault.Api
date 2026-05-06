@@ -10,7 +10,7 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Response;
 public sealed record TvSeriesEntryDetailedDto : MediaEntryDetailedDto
 {
     public string? BackdropImageUrl { get; init; }
-    public DateTime? LastAirDate { get; init; }
+    public DateOnly? LastAirDate { get; init; }
     public int NumberOfSeasons { get; init; }
     public int NumberOfEpisodes { get; init; }
     public string? AiringStatus { get; init; }

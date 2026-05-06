@@ -9,13 +9,13 @@ namespace media_vault_app.Application.DTOs.Season
     {
 
         public Guid Id { get; set; }
-        public Guid OwnerId { get; set; }
+        public Guid TvSeriesId { get; set; }
         public string? IdExternal { get; set; }
         public string? Name { get; set; }
         public string? Overview { get; set; }
         public string? ImageUrl { get; set; }
         public int SeasonNumber { get; set; }
-        public DateTime? AirDate { get; set; }
+        public DateOnly? AirDate { get; set; }
         public int WatchedEpisodes { get; set; }
         public int Episodes { get; set; }
 

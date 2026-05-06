@@ -4,7 +4,7 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Domain.Entities
 {
-    public abstract record MediaEntry : IDependentEntity<Guid, Guid>
+    public abstract class MediaEntry : IDependentEntity<Guid, Guid>
     {
         public Guid Id { get; set; }
         public Guid OwnerId { get; set; }
@@ -13,21 +13,14 @@ namespace media_vault_app.Domain.Entities
         public string Title { get; set; } = string.Empty;
         public Rating Rating { get; set; }
         public string? Review { get; set; }
-        public ICollection<string>? Genres { get; set; }
+        public ICollection<string> Genres { get; set; } = new List<string>();
 
         public string? Overview { get; set; }
 
-        public DateTime ReleaseDate { get; set; }
-
-        //private int _releaseYear;
-        //public int ReleaseYear
-        //{
-        //    get => _releaseYear;
-        //    set => _releaseYear = Math.Clamp(value, 0, DateTime.UtcNow.Year);
-        //}
+        public DateOnly? ReleaseDate { get; set; }
 
         public string? ImageUrl { get; set; }
-        public MediaType MediaType { get; set; }
+        public MediaType MediaType { get; protected set; }
         public DateTime CreatedAtUtc { get; set; }
         public DateTime UpdatedAtUtc { get; set; }
 

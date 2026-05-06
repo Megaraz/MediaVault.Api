@@ -31,7 +31,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     Review = movie.Review,
                     Genres = movie.Genres,
                     Overview = movie.Overview,
-                    ReleaseDate = movie.ReleaseDate,
+                    ReleaseDate = movie.ReleaseDate ?? default,
                     ImageUrl = movie.ImageUrl,
                     CreatedAtUtc = movie.CreatedAtUtc,
                     RuntimeMinutes = movie.RuntimeMinutes
@@ -47,7 +47,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     Review = tvSeries.Review,
                     Genres = tvSeries.Genres,
                     Overview = tvSeries.Overview,
-                    ReleaseDate = tvSeries.ReleaseDate,
+                    ReleaseDate = tvSeries.ReleaseDate ?? default,
                     ImageUrl = tvSeries.ImageUrl,
                     CreatedAtUtc = tvSeries.CreatedAtUtc,
                     BackdropImageUrl = tvSeries.BackdropImageUrl,
@@ -59,7 +59,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     Seasons = tvSeries.Seasons?.Select(s => new SeasonMinimalDto
                     {
                         Id = s.Id,
-                        OwnerId = s.OwnerId,
+                        TvSeriesId = s.TvSeriesEntryId,
                         IdExternal = s.IdExternal,
                         Name = s.Name,
                         Overview = s.Overview,
@@ -85,7 +85,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     Review = game.Review,
                     Genres = game.Genres,
                     Overview = game.Overview,
-                    ReleaseDate = game.ReleaseDate,
+                    ReleaseDate = game.ReleaseDate ?? default,
                     ImageUrl = game.ImageUrl,
                     CreatedAtUtc = game.CreatedAtUtc,
                     //DevStudioName = game.DevStudioName,
@@ -93,13 +93,13 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     MetacriticRating = game.MetacriticRating,
                     Platforms = game.Platforms,
                     Website = game.Website,
-                    PcRequirements = game.PcRequirements is not null ? new GamePcRequirementsDto
+                    PcRequirements = game.PcRequirements.HasValue ? new GamePcRequirementsDto
                     (
-                        Minimum: game.PcRequirements.Minimum,
-                        Recommended: game.PcRequirements.Recommended,
-                        High: game.PcRequirements.High,
-                        VeryHigh: game.PcRequirements.VeryHigh,
-                        Ultra: game.PcRequirements.Ultra
+                        Minimum: game.PcRequirements.Value.Minimum,
+                        Recommended: game.PcRequirements.Value.Recommended,
+                        High: game.PcRequirements.Value.High,
+                        VeryHigh: game.PcRequirements.Value.VeryHigh,
+                        Ultra: game.PcRequirements.Value.Ultra
                     ) : null
 
                 },
@@ -114,7 +114,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     Review = book.Review,
                     Genres = book.Genres,
                     Overview = book.Overview,
-                    ReleaseDate = book.ReleaseDate,
+                    ReleaseDate = book.ReleaseDate ?? default,
                     ImageUrl = book.ImageUrl,
                     CreatedAtUtc = book.CreatedAtUtc,
                     Author = book.Author,
@@ -130,7 +130,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                     Review = manga.Review,
                     Genres = manga.Genres,
                     Overview = manga.Overview,
-                    ReleaseDate = manga.ReleaseDate,
+                    ReleaseDate = manga.ReleaseDate ?? default,
                     ImageUrl = manga.ImageUrl,
                     CreatedAtUtc = manga.CreatedAtUtc,
                     Author = manga.Author,
@@ -149,7 +149,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Title = entity.Title,
                 ImageUrl = entity.ImageUrl,
                 Rating = entity.Rating,
-                ReleaseDate = entity.ReleaseDate,
+                ReleaseDate = entity.ReleaseDate ?? default,
                 Genres = entity.Genres,
                 MediaType = entity.MediaType,
                 Status = entity.Status,
@@ -171,7 +171,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Review = movie.Review,
                 Genres = movie.Genres,
                 Overview = movie.Overview,
-                ReleaseDate = movie.ReleaseDate,
+                ReleaseDate = movie.ReleaseDate ?? default,
                 ImageUrl = movie.ImageUrl,
                 RuntimeMinutes = movie.RuntimeMinutes
             },
@@ -184,7 +184,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Review = tvSeries.Review,
                 Genres = tvSeries.Genres,
                 Overview = tvSeries.Overview,
-                ReleaseDate = tvSeries.ReleaseDate,
+                ReleaseDate = tvSeries.ReleaseDate ?? default,
                 ImageUrl = tvSeries.ImageUrl,
                 BackdropImageUrl = tvSeries.BackdropImageUrl,
                 LastAirDate = tvSeries.LastAirDate,
@@ -215,20 +215,20 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Review = game.Review,
                 Genres = game.Genres,
                 Overview = game.Overview,
-                ReleaseDate = game.ReleaseDate,
+                ReleaseDate = game.ReleaseDate ?? default,
                 ImageUrl = game.ImageUrl,
                 //DevStudioName = game.DevStudioName,
                 HoursPlayed = game.HoursPlayed,
                 MetacriticRating = game.MetacriticRating,
                 Platforms = game.Platforms,
                 Website = game.Website,
-                PcRequirements = game.PcRequirements is not null ? new GamePcRequirementsDto
+                PcRequirements = game.PcRequirements.HasValue ? new GamePcRequirementsDto
                 (
-                    Minimum: game.PcRequirements.Minimum,
-                    Recommended: game.PcRequirements.Recommended,
-                    High: game.PcRequirements.High,
-                    VeryHigh: game.PcRequirements.VeryHigh,
-                    Ultra: game.PcRequirements.Ultra
+                    Minimum: game.PcRequirements.Value.Minimum,
+                    Recommended: game.PcRequirements.Value.Recommended,
+                    High: game.PcRequirements.Value.High,
+                    VeryHigh: game.PcRequirements.Value.VeryHigh,
+                    Ultra: game.PcRequirements.Value.Ultra
                 ) : null
 
             },
@@ -241,7 +241,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Review = book.Review,
                 Genres = book.Genres,
                 Overview = book.Overview,
-                ReleaseDate = book.ReleaseDate,
+                ReleaseDate = book.ReleaseDate ?? default,
                 ImageUrl = book.ImageUrl,
                 Author = book.Author
             },
@@ -254,7 +254,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Review = manga.Review,
                 Genres = manga.Genres,
                 Overview = manga.Overview,
-                ReleaseDate = manga.ReleaseDate,
+                ReleaseDate = manga.ReleaseDate ?? default,
                 ImageUrl = manga.ImageUrl,
                 Author = manga.Author
             },

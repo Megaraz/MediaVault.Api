@@ -15,7 +15,6 @@ namespace media_vault_app.Infrastructure
         public DbSet<MediaEntry> MediaEntries { get; set; }
         public DbSet<MovieEntry> MovieEntries { get; set; }
         public DbSet<GameEntry> GameEntries { get; set; }
-        public DbSet<GamePcRequirements> GamePcRequirements { get; set; }
         public DbSet<TvSeriesEntry> TvSeriesEntries { get; set; }
         public DbSet<BookEntry> BookEntries { get; set; }
         public DbSet<MangaEntry> MangaEntries { get; set; }
@@ -65,17 +64,15 @@ namespace media_vault_app.Infrastructure
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
+            // === GamePcRequirements as a complex value object (no separate table/FK) ===
             modelBuilder.Entity<GameEntry>()
-                .HasOne(g => g.PcRequirements)
-                .WithOne()
-                .HasForeignKey<GamePcRequirements>(r => r.GameEntryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .ComplexProperty(g => g.PcRequirements);
 
             // === TvSeriesEntry → Seasons relationship ===
             modelBuilder.Entity<TvSeriesEntry>()
                 .HasMany(tv => tv.Seasons)
                 .WithOne()
-                .HasForeignKey(s => s.OwnerId)
+                .HasForeignKey(s => s.TvSeriesEntryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // === Season configuration ===

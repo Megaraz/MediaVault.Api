@@ -12,7 +12,7 @@ namespace media_vault_app.Application.DTOs.Season
         public string? Overview { get; set; }
         public string? ImageUrl { get; set; }
         public int SeasonNumber { get; set; }
-        public DateTime? AirDate { get; set; }
+        public DateOnly? AirDate { get; set; }
         public int WatchedEpisodes { get; set; }
         public int Episodes { get; set; }
 

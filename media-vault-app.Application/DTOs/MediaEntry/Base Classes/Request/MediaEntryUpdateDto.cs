@@ -13,8 +13,8 @@ public abstract record MediaEntryUpdateDto
     public decimal Rating { get; init; }
     public string? Overview { get; init; }
     public string? Review { get; init; }
-    public ICollection<string>? Genres { get; init; }
-    public DateTime? ReleaseDate { get; init; }
+    public ICollection<string> Genres { get; init; } = new List<string>();
+    public DateOnly ReleaseDate { get; init; }
     public string? ImageUrl { get; init; }
     public abstract MediaType MediaType { get; }
 }

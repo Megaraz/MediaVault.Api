@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rasmus.SharedKernel.Interfaces.Identifiers
 {
-    public interface IDependentEntity<TKeyOwner, TKeyDependent> 
+    public interface IDependentEntity<TKeyOwner, TKeyDependent>
         : IEntity<TKeyDependent>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
             where TKeyDependent : notnull, IEquatable<TKeyDependent>

@@ -63,7 +63,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Rating = 4.5m,
                 Review = "Great media entry!",
                 Genres = null,
-                ReleaseDate = null,
+                ReleaseDate = default,
                 ImageUrl = null,
                 RuntimeMinutes = 120
             };
@@ -94,7 +94,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Rating = 4.5m,
                 Review = "Great media entry!",
                 Genres = null,
-                ReleaseDate = null,
+                ReleaseDate = default,
                 ImageUrl = null,
                 RuntimeMinutes = 120
             };

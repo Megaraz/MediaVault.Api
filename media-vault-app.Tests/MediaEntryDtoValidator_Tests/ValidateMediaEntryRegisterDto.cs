@@ -33,7 +33,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Rating = 4.5m,
                 Review = "Great media entry!",
                 Genres = null,
-                ReleaseDate = null,
+                ReleaseDate = default,
                 ImageUrl = null,
                 RuntimeMinutes = 120,
                 Overview = "This is a test media entry used for validating the MediaEntryDtoValidator's IsValidCreateDto method."
@@ -95,7 +95,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Rating = 4.5m,
                 Review = "Great media entry!",
                 Genres = null,
-                ReleaseDate = null,
+                ReleaseDate = default,
                 ImageUrl = null,
                 RuntimeMinutes = 120
             };

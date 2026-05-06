@@ -5,7 +5,7 @@ using media_vault_app.Domain.Enums;
 
 namespace media_vault_app.Domain.Entities
 {
-    public sealed record GameEntry : MediaEntry
+    public sealed class GameEntry : MediaEntry
     {
         //public string? DevStudioName { get; set; }
 
@@ -21,14 +21,10 @@ namespace media_vault_app.Domain.Entities
         }
     }
 
-    public sealed record GamePcRequirements
-    {
-        public Guid Id { get; set; }
-        public Guid GameEntryId { get; set; }
-        public string? Minimum { get; set; }
-        public string? Recommended { get; set; }
-        public string? High { get; set; }
-        public string? VeryHigh { get; set; }
-        public string? Ultra { get; set; }
-    }
+    public readonly record struct GamePcRequirements(
+        string? Minimum,
+        string? Recommended,
+        string? High,
+        string? VeryHigh,
+        string? Ultra);
 }

@@ -91,20 +91,8 @@ namespace media_vault_app.Infrastructure.Repos
             existing.Platforms = updated.Platforms;
             existing.HoursPlayed = updated.HoursPlayed;
 
-            // PcRequirements: update in-place if both exist, otherwise replace.
-            if (existing.PcRequirements is not null && updated.PcRequirements is not null)
-            {
-                existing.PcRequirements.Minimum = updated.PcRequirements.Minimum;
-                existing.PcRequirements.Recommended = updated.PcRequirements.Recommended;
-                existing.PcRequirements.High = updated.PcRequirements.High;
-                existing.PcRequirements.VeryHigh = updated.PcRequirements.VeryHigh;
-                existing.PcRequirements.Ultra = updated.PcRequirements.Ultra;
-            }
-            else
-            {
-                // Assigning null removes the owned entity; assigning a new instance adds it.
-                existing.PcRequirements = updated.PcRequirements;
-            }
+            // PcRequirements is a value object — replace the whole value.
+            existing.PcRequirements = updated.PcRequirements;
         }
 
         // Override to update a TvSeriesEntry in-place, including merging its Seasons.
@@ -203,7 +191,7 @@ namespace media_vault_app.Infrastructure.Repos
                 else
                 {
                     // New season — assign the correct owner and add it.
-                    updated.OwnerId = existing.Id;
+                    updated.TvSeriesEntryId = existing.Id;
                     updated.Id = Guid.NewGuid();
                     updated.CreatedAtUtc = DateTime.UtcNow;
                     updated.UpdatedAtUtc = DateTime.UtcNow;
