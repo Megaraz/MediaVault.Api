@@ -12,7 +12,7 @@ namespace media_vault_app.Infrastructure.Repos
         {
         }
 
-        // Override to include Seasons when the entry is a TvSeriesEntry.
+        // Override to include Seasons (TvSeries) and PcRequirements (Game) via eager loading.
         public override async Task<Result<MediaEntry>> GetByIdAsync(Guid ownerId, Guid entityId, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
@@ -29,6 +29,16 @@ namespace media_vault_app.Infrastructure.Repos
                 if (tvSeries is not null)
                     return Result<MediaEntry>.Success(tvSeries);
 
+                // Try Game so PcRequirements are eagerly loaded.
+                var game = await _appDbContext.GameEntries
+                    .Include(g => g.PcRequirements)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(g => g.Id == entityId && g.OwnerId == ownerId, ct)
+                    .ConfigureAwait(false);
+
+                if (game is not null)
+                    return Result<MediaEntry>.Success(game);
+
                 // Fall back to the generic base query for other media types.
                 return await base.GetByIdAsync(ownerId, entityId, ct);
             }
@@ -42,9 +52,88 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
+        // Override to update a GameEntry in-place, including its PcRequirements navigation property.
+        // The base SetValues() only copies scalars and silently ignores PcRequirements.
+        private async Task<Result> UpdateGameAsync(Guid ownerId, GameEntry updatedGame, CancellationToken ct)
+        {
+            var baseErrorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
+
+            try
+            {
+                var existing = await _appDbContext.GameEntries
+                    .Include(g => g.PcRequirements)
+                    .FirstOrDefaultAsync(g => g.Id == updatedGame.Id && g.OwnerId == ownerId, ct)
+                    .ConfigureAwait(false);
+
+                if (existing is null)
+                    return Result.Failure(Error.NotFound(baseErrorContext));
+
+                ApplyGameProperties(existing, updatedGame);
+
+                await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+                return Result.Success();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                return Result.Failure(DatabaseError.ConcurrencyFailure(baseErrorContext, ex));
+            }
+            catch (DbUpdateException ex)
+            {
+                return Result.Failure(DatabaseError.UpdateFailure(baseErrorContext, ex));
+            }
+            catch (OperationCanceledException)
+            {
+                return Result.Failure(DatabaseError.Cancelled(baseErrorContext));
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(DatabaseError.UpdateFailure(baseErrorContext, ex));
+            }
+        }
+
+        // Applies all scalar + PcRequirements properties from the incoming GameEntry.
+        private static void ApplyGameProperties(GameEntry existing, GameEntry updated)
+        {
+            // Base MediaEntry properties
+            existing.IdExternal   = updated.IdExternal;
+            existing.Title        = updated.Title;
+            existing.Status       = updated.Status;
+            existing.Rating       = updated.Rating;
+            existing.Review       = updated.Review;
+            existing.Overview     = updated.Overview;
+            existing.Genres       = updated.Genres;
+            existing.ReleaseDate  = updated.ReleaseDate;
+            existing.ImageUrl     = updated.ImageUrl;
+            existing.UpdatedAtUtc = DateTime.UtcNow;
+
+            // Game-specific scalar properties
+            existing.MetacriticRating = updated.MetacriticRating;
+            existing.Website          = updated.Website;
+            existing.Platforms        = updated.Platforms;
+            existing.HoursPlayed      = updated.HoursPlayed;
+
+            // PcRequirements: update in-place if both exist, otherwise replace.
+            if (existing.PcRequirements is not null && updated.PcRequirements is not null)
+            {
+                existing.PcRequirements.Minimum     = updated.PcRequirements.Minimum;
+                existing.PcRequirements.Recommended = updated.PcRequirements.Recommended;
+                existing.PcRequirements.High        = updated.PcRequirements.High;
+                existing.PcRequirements.VeryHigh    = updated.PcRequirements.VeryHigh;
+                existing.PcRequirements.Ultra       = updated.PcRequirements.Ultra;
+            }
+            else
+            {
+                // Assigning null removes the owned entity; assigning a new instance adds it.
+                existing.PcRequirements = updated.PcRequirements;
+            }
+        }
+
         // Override to update a TvSeriesEntry in-place, including merging its Seasons.
         public override async Task<Result> UpdateAsync(Guid ownerId, MediaEntry updatedEntity, CancellationToken ct = default)
         {
+            if (updatedEntity is GameEntry updatedGame)
+                return await UpdateGameAsync(ownerId, updatedGame, ct);
+
             if (updatedEntity is not TvSeriesEntry updatedTvSeries)
                 return await base.UpdateAsync(ownerId, updatedEntity, ct);
 
