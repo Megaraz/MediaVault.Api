@@ -2,6 +2,7 @@ using media_vault_app.Application.DTOs;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries;
+using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.Tmdb;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;

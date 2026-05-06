@@ -165,6 +165,14 @@ export default function TitleSearchInput({
         </div>
       )}
 
+      {/* Search hint — only shown while the field is empty on a new entry */}
+      {isSearchEnabled && !isEditMode && value.length === 0 && (
+        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-primary animate-fade-in">
+          <span className="material-symbols-outlined text-sm">auto_awesome</span>
+          Start typing to search and auto-fill details like cover art, genres, and more
+        </p>
+      )}
+
       {/* ── Dropdown with search results ── */}
       {showDropdown && (
         <ul className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">

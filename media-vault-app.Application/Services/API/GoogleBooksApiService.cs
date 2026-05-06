@@ -1,6 +1,7 @@
 using media_vault_app.Application.DTOs;
 using media_vault_app.Application.DTOs.External_API_Contracts.GoogleBooks;
 using media_vault_app.Application.DTOs.GoogleBooks;
+using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
@@ -66,7 +67,7 @@ namespace media_vault_app.Application.Services.API
 
             var result = await _client.SearchBooksAsync(queryParameters, cancellationToken);
 
-            return result.Map(searchResponse => ToDetailedDto(searchResponse.Items));
+            return result.Map(searchResponse => ToDetailedDtoCollection(searchResponse.Items));
         }
 
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
@@ -85,7 +86,7 @@ namespace media_vault_app.Application.Services.API
             return volumes?.Select(MapToSearchResult).ToArray() ?? Array.Empty<MediaEntrySearchResultDto>();
         }
 
-        private static IReadOnlyList<GoogleBooksDetailedDto> ToDetailedDto(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)
+        private static IReadOnlyList<GoogleBooksDetailedDto> ToDetailedDtoCollection(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)
         {
             return volumes?.Select(ToDetailedDto).ToArray() ?? Array.Empty<GoogleBooksDetailedDto>();
         }

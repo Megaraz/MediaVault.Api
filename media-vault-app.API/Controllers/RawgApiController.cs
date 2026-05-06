@@ -1,4 +1,4 @@
-﻿using media_vault_app.Application.DTOs;
+﻿using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.Rawg;
 using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +8,7 @@ namespace media_vault_app.API.Controllers
 {
 
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Route("[controller]")]
     public class RawgApiController : ControllerBase
     {

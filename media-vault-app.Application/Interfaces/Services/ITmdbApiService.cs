@@ -1,4 +1,4 @@
-using media_vault_app.Application.DTOs;
+using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.Tmdb;
 using media_vault_app.Domain.Enums;
 using Rasmus.SharedKernel.ResultPattern;

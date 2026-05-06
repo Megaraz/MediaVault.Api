@@ -59,7 +59,7 @@ function buildInitialFormData(
     title: entry?.title ?? "",
     imageUrl: entry?.imageUrl ?? "",
     backdropUrl: "",
-    mediaType: entry?.mediaType ?? 0, // 0 = Movie is the default for new entries
+    mediaType: entry?.mediaType ?? -1, // -1 = no type selected yet (new entry sentinel)
     status: entry?.status ?? 0,
     rating: entry?.rating ?? 0,
     review: entry?.review ?? "",
@@ -322,21 +322,23 @@ export default function MediaEntryModal({
             imgUrl={formData.imageUrl || undefined}
           />
 
-          <form className="space-y-6 p-6" onSubmit={handleSubmit}>
-            <MediaEntryForm
-              formData={formData}
-              onChange={handleChange}
-              onSeasonsChange={handleSeasonsChange}
-              isEditMode={isEditMode}
-              onSelectResult={handleSelectResult}
-            />
+          <div className="overflow-y-auto flex-1 min-h-0">
+            <form className="space-y-6 p-6" onSubmit={handleSubmit}>
+              <MediaEntryForm
+                formData={formData}
+                onChange={handleChange}
+                onSeasonsChange={handleSeasonsChange}
+                isEditMode={isEditMode}
+                onSelectResult={handleSelectResult}
+              />
 
-            <FormFooter
-              isEditMode={isEditMode}
-              onDelete={isEditMode ? handleDelete : undefined}
-              onCancel={onCancel}
-            />
-          </form>
+              <FormFooter
+                isEditMode={isEditMode}
+                onDelete={isEditMode ? handleDelete : undefined}
+                onCancel={onCancel}
+              />
+            </form>
+          </div>
         </>
       )}
     </ModalWindow>

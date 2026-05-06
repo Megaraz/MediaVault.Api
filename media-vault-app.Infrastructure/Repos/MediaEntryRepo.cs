@@ -42,7 +42,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        // Override to replace the Seasons collection when updating a TvSeriesEntry.
+        // Override to update a TvSeriesEntry in-place, including merging its Seasons.
         public override async Task<Result> UpdateAsync(Guid ownerId, MediaEntry updatedEntity, CancellationToken ct = default)
         {
             if (updatedEntity is not TvSeriesEntry updatedTvSeries)
@@ -60,17 +60,8 @@ namespace media_vault_app.Infrastructure.Repos
                 if (existing is null)
                     return Result.Failure(Error.NotFound(baseErrorContext));
 
-                var createdAt = existing.CreatedAtUtc;
-                _appDbContext.Entry(existing).CurrentValues.SetValues(updatedTvSeries);
-                existing.CreatedAtUtc = createdAt;
-
-                // Replace seasons: clear existing (EF will delete via cascade) then add new ones.
-                existing.Seasons.Clear();
-                foreach (var season in updatedTvSeries.Seasons)
-                {
-                    season.OwnerId = existing.Id;
-                    existing.Seasons.Add(season);
-                }
+                ApplyTvSeriesProperties(existing, updatedTvSeries);
+                MergeSeasons(existing, updatedTvSeries.Seasons);
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
@@ -91,6 +82,81 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result.Failure(DatabaseError.UpdateFailure(baseErrorContext, ex));
             }
+        }
+
+        // Applies all scalar properties from the incoming TvSeriesEntry onto the
+        // tracked entity. CreatedAtUtc is intentionally left unchanged.
+        private static void ApplyTvSeriesProperties(TvSeriesEntry existing, TvSeriesEntry updated)
+        {
+            // Base MediaEntry properties
+            existing.IdExternal = updated.IdExternal;
+            existing.Title = updated.Title;
+            existing.Status = updated.Status;
+            existing.Rating = updated.Rating;
+            existing.Review = updated.Review;
+            existing.Overview = updated.Overview;
+            existing.Genres = updated.Genres;
+            existing.ReleaseDate = updated.ReleaseDate;
+            existing.ImageUrl = updated.ImageUrl;
+            existing.UpdatedAtUtc = DateTime.UtcNow;
+
+            // TvSeries-specific properties
+            existing.BackdropImageUrl = updated.BackdropImageUrl;
+            existing.LastAirDate = updated.LastAirDate;
+            existing.NumberOfSeasons = updated.NumberOfSeasons;
+            existing.NumberOfEpisodes = updated.NumberOfEpisodes;
+            existing.AiringStatus = updated.AiringStatus;
+            existing.TotalWatchedEpisodes = updated.TotalWatchedEpisodes;
+        }
+
+        // Merges the incoming seasons into the tracked collection:
+        //   - Seasons matched by SeasonNumber have their properties updated.
+        //   - Seasons present in the update but not in existing are added.
+        //   - Seasons in existing but absent from the update are removed.
+        private static void MergeSeasons(TvSeriesEntry existing, ICollection<Season> updatedSeasons)
+        {
+            // Remove seasons that are no longer in the updated list.
+            var toRemove = existing.Seasons
+                .Where(e => !updatedSeasons.Any(u => u.SeasonNumber == e.SeasonNumber))
+                .ToList();
+
+            foreach (var season in toRemove)
+                existing.Seasons.Remove(season);
+
+            foreach (var updated in updatedSeasons)
+            {
+                var match = existing.Seasons.FirstOrDefault(e => e.SeasonNumber == updated.SeasonNumber);
+
+                if (match is not null)
+                {
+                    // Update the existing tracked season in-place.
+                    ApplySeasonProperties(match, updated);
+                }
+                else
+                {
+                    // New season — assign the correct owner and add it.
+                    updated.OwnerId = existing.Id;
+                    updated.Id = Guid.NewGuid();
+                    updated.CreatedAtUtc = DateTime.UtcNow;
+                    updated.UpdatedAtUtc = DateTime.UtcNow;
+                    existing.Seasons.Add(updated);
+                }
+            }
+        }
+
+        // Applies all scalar properties from the incoming Season onto the tracked one.
+        private static void ApplySeasonProperties(Season existing, Season updated)
+        {
+            existing.IdExternal = updated.IdExternal;
+            existing.Name = updated.Name;
+            existing.Overview = updated.Overview;
+            existing.ImageUrl = updated.ImageUrl;
+            existing.AirDate = updated.AirDate;
+            existing.Episodes = updated.Episodes;
+            existing.WatchedEpisodes = updated.WatchedEpisodes;
+            existing.Status = updated.Status;
+            existing.Rating = updated.Rating;
+            existing.UpdatedAtUtc = DateTime.UtcNow;
         }
 
         public async Task<Result<IReadOnlyList<MediaEntry>>> SearchMediaEntriesAsync(Guid ownerId, string query, int pageNumber, int pageSize, CancellationToken ct = default)

@@ -1,5 +1,5 @@
-using media_vault_app.Application.DTOs;
 using media_vault_app.Application.DTOs.GoogleBooks;
+using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

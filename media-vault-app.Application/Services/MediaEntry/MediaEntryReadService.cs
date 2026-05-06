@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using media_vault_app.Application.DTOs;
+using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Services.Base_Classes;
-using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.ResultPattern;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
