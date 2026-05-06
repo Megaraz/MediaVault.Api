@@ -2,10 +2,10 @@
 {
     public enum MediaType
     {
-        Movie,
-        TvSeries,
-        Book,
-        Manga,
-        Game
+        Movie = 0,
+        TvSeries = 1,
+        Book = 2,
+        Manga = 3,
+        Game = 4
     }
 }

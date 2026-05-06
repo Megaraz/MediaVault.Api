@@ -13,44 +13,23 @@ namespace media_vault_app.Infrastructure.Repos
         }
 
         // Override to include Seasons (TvSeries) and PcRequirements (Game) via eager loading.
-        public override async Task<Result<MediaEntry>> GetByIdAsync(Guid ownerId, Guid entityId, CancellationToken ct = default)
+        // Uses the base overload that accepts an include-shaping delegate.
+        // EF Core supports casting to a derived type inside Include(), so it generates
+        // the correct LEFT JOINs for each subtype without needing separate queries.
+        public override Task<Result<MediaEntry>> GetByIdAsync(
+            Guid ownerId,
+            Guid entityId,
+            CancellationToken ct = default)
         {
-            var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
-
-            try
-            {
-                // Try TvSeries first so seasons are eagerly loaded.
-                var tvSeries = await _appDbContext.TvSeriesEntries
-                    .Include(tv => tv.Seasons)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(tv => tv.Id == entityId && tv.OwnerId == ownerId, ct)
-                    .ConfigureAwait(false);
-
-                if (tvSeries is not null)
-                    return Result<MediaEntry>.Success(tvSeries);
-
-                // Try Game so PcRequirements are eagerly loaded.
-                var game = await _appDbContext.GameEntries
-                    .Include(g => g.PcRequirements)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(g => g.Id == entityId && g.OwnerId == ownerId, ct)
-                    .ConfigureAwait(false);
-
-                if (game is not null)
-                    return Result<MediaEntry>.Success(game);
-
-                // Fall back to the generic base query for other media types.
-                return await base.GetByIdAsync(ownerId, entityId, ct);
-            }
-            catch (OperationCanceledException)
-            {
-                return Result<MediaEntry>.Failure(DatabaseError.Cancelled(baseErrorContext));
-            }
-            catch (Exception ex)
-            {
-                return Result<MediaEntry>.Failure(DatabaseError.GetFailure(baseErrorContext, ex));
-            }
+            return base.GetByIdAsync(
+                ownerId,
+                entityId,
+                query => query
+                    .Include(e => (e as TvSeriesEntry)!.Seasons)
+                    .Include(e => (e as GameEntry)!.PcRequirements),
+                ct);
         }
+
 
         // Override to update a GameEntry in-place, including its PcRequirements navigation property.
         // The base SetValues() only copies scalars and silently ignores PcRequirements.
@@ -95,31 +74,31 @@ namespace media_vault_app.Infrastructure.Repos
         private static void ApplyGameProperties(GameEntry existing, GameEntry updated)
         {
             // Base MediaEntry properties
-            existing.IdExternal   = updated.IdExternal;
-            existing.Title        = updated.Title;
-            existing.Status       = updated.Status;
-            existing.Rating       = updated.Rating;
-            existing.Review       = updated.Review;
-            existing.Overview     = updated.Overview;
-            existing.Genres       = updated.Genres;
-            existing.ReleaseDate  = updated.ReleaseDate;
-            existing.ImageUrl     = updated.ImageUrl;
+            existing.IdExternal = updated.IdExternal;
+            existing.Title = updated.Title;
+            existing.Status = updated.Status;
+            existing.Rating = updated.Rating;
+            existing.Review = updated.Review;
+            existing.Overview = updated.Overview;
+            existing.Genres = updated.Genres;
+            existing.ReleaseDate = updated.ReleaseDate;
+            existing.ImageUrl = updated.ImageUrl;
             existing.UpdatedAtUtc = DateTime.UtcNow;
 
             // Game-specific scalar properties
             existing.MetacriticRating = updated.MetacriticRating;
-            existing.Website          = updated.Website;
-            existing.Platforms        = updated.Platforms;
-            existing.HoursPlayed      = updated.HoursPlayed;
+            existing.Website = updated.Website;
+            existing.Platforms = updated.Platforms;
+            existing.HoursPlayed = updated.HoursPlayed;
 
             // PcRequirements: update in-place if both exist, otherwise replace.
             if (existing.PcRequirements is not null && updated.PcRequirements is not null)
             {
-                existing.PcRequirements.Minimum     = updated.PcRequirements.Minimum;
+                existing.PcRequirements.Minimum = updated.PcRequirements.Minimum;
                 existing.PcRequirements.Recommended = updated.PcRequirements.Recommended;
-                existing.PcRequirements.High        = updated.PcRequirements.High;
-                existing.PcRequirements.VeryHigh    = updated.PcRequirements.VeryHigh;
-                existing.PcRequirements.Ultra       = updated.PcRequirements.Ultra;
+                existing.PcRequirements.High = updated.PcRequirements.High;
+                existing.PcRequirements.VeryHigh = updated.PcRequirements.VeryHigh;
+                existing.PcRequirements.Ultra = updated.PcRequirements.Ultra;
             }
             else
             {

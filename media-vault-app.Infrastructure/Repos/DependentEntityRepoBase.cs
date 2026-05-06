@@ -58,7 +58,11 @@ namespace media_vault_app.Infrastructure.Repos
 
         }
 
-        public virtual async Task<Result<IReadOnlyList<TEntityDependent>>> GetCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber, int pageSize, CancellationToken ct = default)
+        public virtual async Task<Result<IReadOnlyList<TEntityDependent>>> GetCollectionByOwnerIdAsync(
+            TKeyOwner ownerId,
+            int pageNumber,
+            int pageSize,
+            CancellationToken ct = default)
         {
 
             try
@@ -83,6 +87,49 @@ namespace media_vault_app.Infrastructure.Repos
                 return Result<IReadOnlyList<TEntityDependent>>.Failure(DatabaseError.GetCollectionFailure(baseErrorContext, ex));
             }
         }
+
+        public virtual async Task<Result<TEntityDependent>> GetByIdAsync(
+            TKeyOwner ownerId,
+            TKeyDependent entityId,
+            Func<IQueryable<TEntityDependent>, IQueryable<TEntityDependent>>? include = null,
+            CancellationToken ct = default)
+        {
+            var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
+
+            try
+            {
+                IQueryable<TEntityDependent> query = _dbSet.AsNoTracking();
+
+                if (include is not null)
+                {
+                    query = include(query);
+                }
+
+                var dependentEntity = await query
+                    .FirstOrDefaultAsync(
+                        currentDependentEntity =>
+                            currentDependentEntity.Id.Equals(entityId) &&
+                            currentDependentEntity.OwnerId.Equals(ownerId),
+                        ct)
+                    .ConfigureAwait(false);
+
+                if (dependentEntity is null)
+                {
+                    return Result<TEntityDependent>.Failure(Error.NotFound(baseErrorContext));
+                }
+
+                return Result<TEntityDependent>.Success(dependentEntity);
+            }
+            catch (OperationCanceledException)
+            {
+                return Result<TEntityDependent>.Failure(DatabaseError.Cancelled(baseErrorContext));
+            }
+            catch (Exception ex)
+            {
+                return Result<TEntityDependent>.Failure(DatabaseError.GetFailure(baseErrorContext, ex));
+            }
+        }
+
 
         public virtual async Task<Result<TEntityDependent>> GetByIdAsync(TKeyOwner ownerId, TKeyDependent entityId, CancellationToken ct = default)
         {
