@@ -12,8 +12,7 @@ using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 namespace media_vault_app.Application.Mappers.MediaEntry
 {
     public class MediaEntryDtoMapper :
-        IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, MediaEntryUpdateDto, Guid>,
-        IMapUpdateDtoToEntity<MediaEntryEntity, Guid, MediaEntryUpdateDto>
+        IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, MediaEntryUpdateDto, Guid>
     {
         public MediaEntryEntity ToEntity(MediaEntryCreateDto createDto)
         {
@@ -135,7 +134,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 break;
 
                 case GameEntry game when dto is GameEntryCreateDto gameDto:
-                    //game.DevStudioName = gameDto.DevStudioName;
                     game.HoursPlayed = gameDto.HoursPlayed;
                     game.MetacriticRating = gameDto.MetacriticRating;
                     game.Platforms = gameDto.Platforms;
@@ -178,7 +176,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 break;
 
                 case GameEntry game when dto is GameEntryDetailedDto gameDto:
-                    //game.DevStudioName = gameDto.DevStudioName;
                     game.HoursPlayed = gameDto.HoursPlayed;
                     game.MetacriticRating = gameDto.MetacriticRating;
                     game.Platforms = gameDto.Platforms;
@@ -238,7 +235,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 break;
 
                 case GameEntry game when dto is GameEntryUpdateDto gameDto:
-                    //game.DevStudioName = gameDto.DevStudioName;
                     game.HoursPlayed = gameDto.HoursPlayed;
                     game.MetacriticRating = gameDto.MetacriticRating;
                     game.Platforms = gameDto.Platforms;

@@ -7,7 +7,7 @@ using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.ResultPattern;
 
-namespace media_vault_app.Application.Services
+namespace media_vault_app.Application.Services.Base_Classes
 {
     public abstract class ReadServiceBase<TEntity, TKey, TDetailedDto, TMinimalDto>
         : IReadService<TEntity, TKey, TDetailedDto, TMinimalDto>

@@ -15,8 +15,7 @@ namespace media_vault_app.Application.Services.MediaEntry
         : DependentEntityReadServiceBase<UserEntity, MediaEntryEntity, Guid, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto>,
         IMediaEntryReadService
     {
-
-        private readonly IMediaEntryRepo _mediaEntryRepo;
+        private IMediaEntryRepo _mediaEntryRepo => (IMediaEntryRepo)base._dependentEntityRepo;
 
         public MediaEntryReadService(
             IMediaEntryRepo mediaEntryRepo,
@@ -24,13 +23,12 @@ namespace media_vault_app.Application.Services.MediaEntry
             IMapEntityToDto<MediaEntryEntity, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto> entityMapper
             ) : base(mediaEntryRepo, entityMapper, ownerRepo)
         {
-            _mediaEntryRepo = mediaEntryRepo;
         }
 
         public async Task<Result<MovieEntryDetailedDto>> GetMovieByIdAsync(
             Guid ownerId,
             Guid id,
-            CancellationToken ct = default) => 
+            CancellationToken ct = default) =>
             await GetTypedByIdAsync<MovieEntryDetailedDto>(ownerId, id, nameof(GetMovieByIdAsync), "movie", ct);
 
         public async Task<Result<TvSeriesEntryDetailedDto>> GetTvSeriesByIdAsync(
@@ -46,14 +44,14 @@ namespace media_vault_app.Application.Services.MediaEntry
             await GetTypedByIdAsync<GameEntryDetailedDto>(ownerId, id, nameof(GetGameByIdAsync), "game", ct);
 
         public async Task<Result<BookEntryDetailedDto>> GetBookByIdAsync(
-            Guid ownerId, 
-            Guid id, 
-            CancellationToken ct = default) => 
+            Guid ownerId,
+            Guid id,
+            CancellationToken ct = default) =>
             await GetTypedByIdAsync<BookEntryDetailedDto>(ownerId, id, nameof(GetBookByIdAsync), "book", ct);
 
         public async Task<Result<MangaEntryDetailedDto>> GetMangaByIdAsync(
-            Guid ownerId, 
-            Guid id, 
+            Guid ownerId,
+            Guid id,
             CancellationToken ct = default) =>
             await GetTypedByIdAsync<MangaEntryDetailedDto>(ownerId, id, nameof(GetMangaByIdAsync), "manga", ct);
 
@@ -94,7 +92,7 @@ namespace media_vault_app.Application.Services.MediaEntry
                 return ownerExistsResult.From<bool, IEnumerable<MediaEntryMinimalDto>>();
             }
 
-            ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
+            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
             var repoResult = await _mediaEntryRepo.SearchMediaEntriesAsync(ownerId, request.Query, pageNumber, pageSize, ct);
 

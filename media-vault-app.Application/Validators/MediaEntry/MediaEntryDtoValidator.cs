@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
-using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
@@ -28,9 +27,8 @@ namespace media_vault_app.Application.Validators.MediaEntry
                 internalErrors.Add(nullOrEmptyError);
             }
 
-            //validationErrors = ValidateRating(createDto.Rating, errorContext, internalErrors);
             validationErrors = internalErrors;
-            return !validationErrors.Any();
+            return internalErrors.Count == 0;
 
         }
 
@@ -52,9 +50,8 @@ namespace media_vault_app.Application.Validators.MediaEntry
                 internalErrors.Add(nullOrEmptyError);
             }
 
-            //validationErrors = ValidateRating(updateDto.Rating, errorContext, internalErrors);
             validationErrors= internalErrors;
-            return !validationErrors.Any();
+            return internalErrors.Count == 0;
         }
 
     }

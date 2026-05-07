@@ -115,7 +115,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 return ownerExistsResult.From<bool, IEnumerable<TDetailedDto>>();
             }
 
-            ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
+            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
             var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pageNumber, pageSize, ct);
 
@@ -141,7 +141,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 return ownerExistsResult.From<bool, IEnumerable<TMinimalDto>>();
             }
 
-            ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
+            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
             var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pageNumber, pageSize, ct);
 
@@ -151,14 +151,6 @@ namespace media_vault_app.Application.Services.Base_Classes
         protected async Task<Result<bool>> EnsureOwnerExistsAsync(TKeyOwner ownerId, CancellationToken ct)
         {
             return await _ownerRepo.ExistsAsync(ownerId, ct);
-        }
-
-        protected virtual void ValidateAndAdjustPaginationParameters(ref int pageNumber, ref int pageSize)
-        {
-            if (pageNumber < 1)
-                pageNumber = 1; // Default to page 1 if the provided page number is too low
-            if (pageSize < 1)
-                pageSize = 1; // Default to a minimum page size of 1 if the provided page size is too low
         }
 
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)

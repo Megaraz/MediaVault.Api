@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 using media_vault_app.Application.DTOs.User.Response;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
-using Rasmus.SharedKernel.Interfaces;
+using media_vault_app.Application.Services.Base_Classes;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using UserEntity = media_vault_app.Domain.Entities.User;
 

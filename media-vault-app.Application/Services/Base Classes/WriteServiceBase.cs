@@ -9,7 +9,7 @@ using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
-namespace media_vault_app.Application.Services
+namespace media_vault_app.Application.Services.Base_Classes
 {
     public abstract class WriteServiceBase<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
         : IWriteService<TEntity, TKey, TCreateDto, TUpdateDto, TDetailedDto>
@@ -82,7 +82,7 @@ namespace media_vault_app.Application.Services
 
         }
 
-        protected private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
+        protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
                 Layer: "Service",

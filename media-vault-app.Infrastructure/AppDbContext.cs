@@ -66,12 +66,12 @@ namespace media_vault_app.Infrastructure
 
             // === GamePcRequirements as a complex value object (no separate table/FK) ===
             modelBuilder.Entity<GameEntry>()
-                .ComplexProperty(g => g.PcRequirements);
+                .ComplexProperty<GamePcRequirements>(g => g.PcRequirements, b => b.HasDiscriminator());
 
             // === TvSeriesEntry → Seasons relationship ===
             modelBuilder.Entity<TvSeriesEntry>()
                 .HasMany(tv => tv.Seasons)
-                .WithOne()
+                .WithOne(s => s.TvSeriesEntry)
                 .HasForeignKey(s => s.TvSeriesEntryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
