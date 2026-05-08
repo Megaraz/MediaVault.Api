@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using media_vault_app.Application.DTOs.User.Request;
+using media_vault_app.Application.Interfaces.Validators;
 using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Validators.User
 {
-    public class UserDtoValidator : IDtoValidator<Guid, UserRegisterDto, UserUpdateDto>
+    public class UserDtoValidator : IUserDtoValidator
     {
         public bool IsValidLoginDto(UserLoginDto loginDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {

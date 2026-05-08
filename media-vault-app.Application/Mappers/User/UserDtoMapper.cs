@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
-using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
+using media_vault_app.Application.Interfaces.Mappers;
 using UserEntity = media_vault_app.Domain.Entities.User;
 
 namespace media_vault_app.Application.Mappers.User
 {
-    public class UserDtoMapper :
-        IMapDtoToEntity<UserEntity, UserDetailedDto, UserRegisterDto, UserUpdateDto, Guid>
+    public class UserDtoMapper : IUserDtoMapper
     {
         public UserEntity ToEntity(UserRegisterDto createDto) =>
             new()

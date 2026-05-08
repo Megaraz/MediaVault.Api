@@ -4,259 +4,399 @@ using System.Linq;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.DTOs.Season;
+using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Domain.Entities;
-using media_vault_app.Domain.Enums;
-using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 
 namespace media_vault_app.Application.Mappers.MediaEntry
 {
-    public class MediaEntryDtoMapper :
-        IMapDtoToEntity<MediaEntryEntity, MediaEntryDetailedDto, MediaEntryCreateDto, MediaEntryUpdateDto, Guid>
+    public class MediaEntryDtoMapper : IMediaEntryDtoMapper
     {
-        public MediaEntryEntity ToEntity(MediaEntryCreateDto createDto)
-        {
-            var entity = CreateEntityFromMediaType(createDto.MediaType);
-            MapCommonPropertiesFromCreate(entity, createDto);
-            MapTypeSpecificPropertiesFromCreate(entity, createDto);
-            return entity;
-        }
+        public MediaEntryEntity ToEntity(MediaEntryCreateDto createDto) =>
+            createDto switch
+            {
+                MovieEntryCreateDto dto => MapMovieFromCreate(dto),
+                TvSeriesEntryCreateDto dto => MapTvSeriesFromCreate(dto),
+                GameEntryCreateDto dto => MapGameFromCreate(dto),
+                BookEntryCreateDto dto => MapBookFromCreate(dto),
+                MangaEntryCreateDto dto => MapMangaFromCreate(dto),
+                _ => throw new NotSupportedException($"Unknown create DTO type: {createDto.GetType()}")
+            };
 
-        public MediaEntryEntity ToEntity(MediaEntryDetailedDto detailedDto)
-        {
-            var entity = CreateEntityFromMediaType(detailedDto.MediaType);
-            MapCommonPropertiesFromDetailed(entity, detailedDto);
-            MapTypeSpecificPropertiesFromDetailed(entity, detailedDto);
-            return entity;
-        }
+        public MediaEntryEntity ToEntity(MediaEntryDetailedDto detailedDto) =>
+            detailedDto switch
+            {
+                MovieEntryDetailedDto dto => MapMovieFromDetailed(dto),
+                TvSeriesEntryDetailedDto dto => MapTvSeriesFromDetailed(dto),
+                GameEntryDetailedDto dto => MapGameFromDetailed(dto),
+                BookEntryDetailedDto dto => MapBookFromDetailed(dto),
+                MangaEntryDetailedDto dto => MapMangaFromDetailed(dto),
+                _ => throw new NotSupportedException($"Unknown detailed DTO type: {detailedDto.GetType()}")
+            };
 
         public IEnumerable<MediaEntryEntity> ToEntities(IEnumerable<MediaEntryDetailedDto> detailedDtos) =>
             detailedDtos.Select(ToEntity);
 
-        public MediaEntryEntity ToEntity(Guid id, MediaEntryUpdateDto updateDto)
-        {
-            var entity = CreateEntityFromMediaType(updateDto.MediaType);
-            entity.Id = id;
-            MapCommonPropertiesFromUpdate(entity, updateDto);
-            MapTypeSpecificPropertiesFromUpdate(entity, updateDto);
-            return entity;
-        }
+        public MediaEntryEntity ToEntity(Guid id, MediaEntryUpdateDto updateDto) =>
+            updateDto switch
+            {
+                MovieEntryUpdateDto dto => MapMovieFromUpdate(id, dto),
+                TvSeriesEntryUpdateDto dto => MapTvSeriesFromUpdate(id, dto),
+                GameEntryUpdateDto dto => MapGameFromUpdate(id, dto),
+                BookEntryUpdateDto dto => MapBookFromUpdate(id, dto),
+                MangaEntryUpdateDto dto => MapMangaFromUpdate(id, dto),
+                _ => throw new NotSupportedException($"Unknown update DTO type: {updateDto.GetType()}")
+            };
 
-        // Factory method
-        private static MediaEntryEntity CreateEntityFromMediaType(MediaType mediaType) => mediaType switch
+
+        #region Movie Internal Mapping Methods
+        private static MovieEntry MapMovieFromCreate(MovieEntryCreateDto dto) => new()
         {
-            MediaType.Movie => new MovieEntry(),
-            MediaType.TvSeries => new TvSeriesEntry(),
-            MediaType.Game => new GameEntry(),
-            MediaType.Book => new BookEntry(),
-            MediaType.Manga => new MangaEntry(),
-            _ => throw new NotSupportedException($"Unknown media type: {mediaType}")
+            Id = Guid.NewGuid(),
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = DateTime.UtcNow,
+            RuntimeMinutes = dto.RuntimeMinutes
         };
 
-        // Common property mapping helpers
-        private static void MapCommonPropertiesFromCreate(MediaEntryEntity entity, MediaEntryCreateDto dto)
+        private static MovieEntry MapMovieFromDetailed(MovieEntryDetailedDto dto) => new()
         {
-            entity.Id = Guid.NewGuid();
-            entity.IdExternal = dto.IdExternal;
-            entity.Status = dto.Status;
-            entity.Title = dto.Title;
-            entity.Rating = dto.Rating;
-            entity.Review = dto.Review;
-            entity.Genres = dto.Genres;
-            entity.ReleaseDate = dto.ReleaseDate;
-            entity.ImageUrl = dto.ImageUrl;
-            entity.Overview = dto.Overview;
-            entity.CreatedAtUtc = DateTime.UtcNow;
-        }
+            Id = dto.Id,
+            IdExternal = dto.IdExternal,
+            OwnerId = dto.UserId,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = dto.CreatedAtUtc,
+            RuntimeMinutes = dto.RuntimeMinutes
+        };
 
-        private static void MapCommonPropertiesFromDetailed(MediaEntryEntity entity, MediaEntryDetailedDto dto)
+        private static MovieEntry MapMovieFromUpdate(Guid id, MovieEntryUpdateDto dto) => new()
         {
-            entity.Id = dto.Id;
-            entity.IdExternal = dto.IdExternal;
-            entity.OwnerId = dto.UserId;
-            entity.Status = dto.Status;
-            entity.Title = dto.Title;
-            entity.Rating = dto.Rating;
-            entity.Overview = dto.Overview;
-            entity.Review = dto.Review;
-            entity.Genres = dto.Genres;
-            entity.ReleaseDate = dto.ReleaseDate;
-            entity.ImageUrl = dto.ImageUrl;
-            entity.CreatedAtUtc = dto.CreatedAtUtc;
-        }
+            Id = id,
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            RuntimeMinutes = dto.RuntimeMinutes
+        };
+        #endregion
 
-        private static void MapCommonPropertiesFromUpdate(MediaEntryEntity entity, MediaEntryUpdateDto dto)
+        #region TvSeries Internal Mapping Methods
+        private TvSeriesEntry MapTvSeriesFromCreate(TvSeriesEntryCreateDto dto) => new()
         {
-            entity.IdExternal = dto.IdExternal;
-            entity.Status = dto.Status;
-            entity.Title = dto.Title;
-            entity.Rating = dto.Rating;
-            entity.Overview = dto.Overview;
-            entity.Review = dto.Review;
-            entity.Genres = dto.Genres;
-            entity.ReleaseDate = dto.ReleaseDate;
-            entity.ImageUrl = dto.ImageUrl;
-        }
-
-        // Type-specific property mapping
-        private static void MapTypeSpecificPropertiesFromCreate(MediaEntryEntity entity, MediaEntryCreateDto dto)
-        {
-            switch (entity)
+            Id = Guid.NewGuid(),
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = DateTime.UtcNow,
+            BackdropImageUrl = dto.BackdropImageUrl,
+            LastAirDate = dto.LastAirDate,
+            NumberOfSeasons = dto.NumberOfSeasons,
+            NumberOfEpisodes = dto.NumberOfEpisodes,
+            AiringStatus = dto.AiringStatus,
+            TotalWatchedEpisodes = dto.TotalWatchedEpisodes,
+            Seasons = dto.Seasons.Select(s => new Season
             {
-                case MovieEntry movie when dto is MovieEntryCreateDto movieDto:
-                    movie.RuntimeMinutes = movieDto.RuntimeMinutes;
-                break;
+                Id = Guid.NewGuid(),
+                TvSeriesEntryId = s.TvSeriesId,
+                IdExternal = s.IdExternal,
+                Name = s.Name,
+                Overview = s.Overview,
+                ImageUrl = s.ImageUrl,
+                SeasonNumber = s.SeasonNumber,
+                AirDate = s.AirDate,
+                WatchedEpisodes = s.WatchedEpisodes,
+                Episodes = s.Episodes,
+                Status = s.Status,
+                Rating = s.Rating,
+                CreatedAtUtc = DateTime.UtcNow,
+                UpdatedAtUtc = DateTime.UtcNow
+            }).ToList()
+        };
 
-                case TvSeriesEntry tvSeries when dto is TvSeriesEntryCreateDto tvDto:
-                    tvSeries.BackdropImageUrl = tvDto.BackdropImageUrl;
-                    tvSeries.LastAirDate = tvDto.LastAirDate;
-                    tvSeries.NumberOfSeasons = tvDto.NumberOfSeasons;
-                    tvSeries.NumberOfEpisodes = tvDto.NumberOfEpisodes;
-                    tvSeries.AiringStatus = tvDto.AiringStatus;
-                    tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
-                    tvSeries.Seasons = tvDto.Seasons?.Select(s => new Season
-                    {
-                        Id = Guid.NewGuid(),
-                        TvSeriesEntryId = tvSeries.Id,
-                        IdExternal = s.IdExternal,
-                        Name = s.Name,
-                        Overview = s.Overview,
-                        ImageUrl = s.ImageUrl,
-                        SeasonNumber = s.SeasonNumber,
-                        AirDate = s.AirDate,
-                        WatchedEpisodes = s.WatchedEpisodes,
-                        Episodes = s.Episodes,
-                        Status = s.Status,
-                        Rating = s.Rating,
-                        CreatedAtUtc = DateTime.UtcNow,
-                        UpdatedAtUtc = DateTime.UtcNow
-                    }).ToList() ?? new List<Season>();
-                break;
-
-                case GameEntry game when dto is GameEntryCreateDto gameDto:
-                    game.HoursPlayed = gameDto.HoursPlayed;
-                    game.MetacriticRating = gameDto.MetacriticRating;
-                    game.Platforms = gameDto.Platforms;
-                    game.Website = gameDto.Website;
-                    game.PcRequirements = gameDto.PcRequirements != null ? new GamePcRequirements
-                    {
-                        Minimum = gameDto.PcRequirements.Minimum,
-                        Recommended = gameDto.PcRequirements.Recommended,
-                        High = gameDto.PcRequirements.High,
-                        VeryHigh = gameDto.PcRequirements.VeryHigh,
-                        Ultra = gameDto.PcRequirements.Ultra
-                    } : null;
-                break;
-
-                case BookEntry book when dto is BookEntryCreateDto bookDto:
-                    book.Author = bookDto.Author;
-                break;
-
-                case MangaEntry manga when dto is MangaEntryCreateDto mangaDto:
-                    manga.Author = mangaDto.Author;
-                break;
-            }
-        }
-
-        private static void MapTypeSpecificPropertiesFromDetailed(MediaEntryEntity entity, MediaEntryDetailedDto dto)
+        private TvSeriesEntry MapTvSeriesFromDetailed(TvSeriesEntryDetailedDto dto) => new()
         {
-            switch (entity)
+            Id = dto.Id,
+            IdExternal = dto.IdExternal,
+            OwnerId = dto.UserId,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = dto.CreatedAtUtc,
+            BackdropImageUrl = dto.BackdropImageUrl,
+            LastAirDate = dto.LastAirDate,
+            NumberOfSeasons = dto.NumberOfSeasons,
+            NumberOfEpisodes = dto.NumberOfEpisodes,
+            AiringStatus = dto.AiringStatus,
+            TotalWatchedEpisodes = dto.TotalWatchedEpisodes,
+            Seasons = dto.Seasons.Select(s => new Season
             {
-                case MovieEntry movie when dto is MovieEntryDetailedDto movieDto:
-                    movie.RuntimeMinutes = movieDto.RuntimeMinutes;
-                break;
+                Id = Guid.NewGuid(),
+                TvSeriesEntryId = s.TvSeriesId,
+                IdExternal = s.IdExternal,
+                Name = s.Name,
+                Overview = s.Overview,
+                ImageUrl = s.ImageUrl,
+                SeasonNumber = s.SeasonNumber,
+                AirDate = s.AirDate,
+                WatchedEpisodes = s.WatchedEpisodes,
+                Episodes = s.Episodes,
+                Status = s.Status,
+                Rating = s.Rating,
+                CreatedAtUtc = DateTime.UtcNow,
+                UpdatedAtUtc = DateTime.UtcNow
+            }).ToList()
+        };
 
-                case TvSeriesEntry tvSeries when dto is TvSeriesEntryDetailedDto tvDto:
-                    tvSeries.BackdropImageUrl = tvDto.BackdropImageUrl;
-                    tvSeries.LastAirDate = tvDto.LastAirDate;
-                    tvSeries.NumberOfSeasons = tvDto.NumberOfSeasons;
-                    tvSeries.NumberOfEpisodes = tvDto.NumberOfEpisodes;
-                    tvSeries.AiringStatus = tvDto.AiringStatus;
-                    tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
-                break;
-
-                case GameEntry game when dto is GameEntryDetailedDto gameDto:
-                    game.HoursPlayed = gameDto.HoursPlayed;
-                    game.MetacriticRating = gameDto.MetacriticRating;
-                    game.Platforms = gameDto.Platforms;
-                    game.Website = gameDto.Website;
-                    game.PcRequirements = gameDto.PcRequirements != null ? new GamePcRequirements
-                    {
-                        Minimum = gameDto.PcRequirements.Minimum,
-                        Recommended = gameDto.PcRequirements.Recommended,
-                        High = gameDto.PcRequirements.High,
-                        VeryHigh = gameDto.PcRequirements.VeryHigh,
-                        Ultra = gameDto.PcRequirements.Ultra
-                    } : null;
-                break;
-
-                case BookEntry book when dto is BookEntryDetailedDto bookDto:
-                    book.Author = bookDto.Author;
-                break;
-
-                case MangaEntry manga when dto is MangaEntryDetailedDto mangaDto:
-                    manga.Author = mangaDto.Author;
-                break;
-            }
-        }
-
-        private static void MapTypeSpecificPropertiesFromUpdate(MediaEntryEntity entity, MediaEntryUpdateDto dto)
+        private TvSeriesEntry MapTvSeriesFromUpdate(Guid id, TvSeriesEntryUpdateDto dto) => new()
         {
-            switch (entity)
+            Id = id,
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            BackdropImageUrl = dto.BackdropImageUrl,
+            LastAirDate = dto.LastAirDate,
+            NumberOfSeasons = dto.NumberOfSeasons,
+            NumberOfEpisodes = dto.NumberOfEpisodes,
+            AiringStatus = dto.AiringStatus,
+            TotalWatchedEpisodes = dto.TotalWatchedEpisodes,
+            Seasons = dto.Seasons.Select(s => new Season
             {
-                case MovieEntry movie when dto is MovieEntryUpdateDto movieDto:
-                    movie.RuntimeMinutes = movieDto.RuntimeMinutes;
-                break;
+                Id = s.Id,
+                TvSeriesEntryId = s.TvSeriesId,
+                IdExternal = s.IdExternal,
+                Name = s.Name,
+                Overview = s.Overview,
+                ImageUrl = s.ImageUrl,
+                SeasonNumber = s.SeasonNumber,
+                AirDate = s.AirDate,
+                WatchedEpisodes = s.WatchedEpisodes,
+                Episodes = s.Episodes,
+                Status = s.Status,
+                Rating = s.Rating,
+                CreatedAtUtc = s.CreatedAtUtc,
+                UpdatedAtUtc = DateTime.UtcNow
+            }).ToList()
 
-                case TvSeriesEntry tvSeries when dto is TvSeriesEntryUpdateDto tvDto:
-                    tvSeries.BackdropImageUrl = tvDto.BackdropImageUrl;
-                    tvSeries.LastAirDate = tvDto.LastAirDate;
-                    tvSeries.NumberOfSeasons = tvDto.NumberOfSeasons;
-                    tvSeries.NumberOfEpisodes = tvDto.NumberOfEpisodes;
-                    tvSeries.AiringStatus = tvDto.AiringStatus;
-                    tvSeries.TotalWatchedEpisodes = tvDto.TotalWatchedEpisodes;
-                    tvSeries.Seasons = tvDto.Seasons?.Select(s => new Season
-                    {
-                        Id = Guid.NewGuid(),
-                        TvSeriesEntryId = tvSeries.Id,
-                        IdExternal = s.IdExternal,
-                        Name = s.Name,
-                        Overview = s.Overview,
-                        ImageUrl = s.ImageUrl,
-                        SeasonNumber = s.SeasonNumber,
-                        AirDate = s.AirDate,
-                        WatchedEpisodes = s.WatchedEpisodes,
-                        Episodes = s.Episodes,
-                        Status = s.Status,
-                        Rating = s.Rating,
-                        CreatedAtUtc = DateTime.UtcNow,
-                        UpdatedAtUtc = DateTime.UtcNow
-                    }).ToList() ?? new List<Season>();
-                break;
+        };
+        #endregion
 
-                case GameEntry game when dto is GameEntryUpdateDto gameDto:
-                    game.HoursPlayed = gameDto.HoursPlayed;
-                    game.MetacriticRating = gameDto.MetacriticRating;
-                    game.Platforms = gameDto.Platforms;
-                    game.Website = gameDto.Website;
-                    game.PcRequirements = gameDto.PcRequirements != null ? new GamePcRequirements
-                    {
-                        Minimum = gameDto.PcRequirements.Minimum,
-                        Recommended = gameDto.PcRequirements.Recommended,
-                        High = gameDto.PcRequirements.High,
-                        VeryHigh = gameDto.PcRequirements.VeryHigh,
-                        Ultra = gameDto.PcRequirements.Ultra
-                    } : null;
-                break;
+        #region Game Internal Mapping Methods
+        private static GameEntry MapGameFromCreate(GameEntryCreateDto dto) => new()
+        {
+            Id = Guid.NewGuid(),
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = DateTime.UtcNow,
+            HoursPlayed = dto.HoursPlayed,
+            MetacriticRating = dto.MetacriticRating,
+            Platforms = dto.Platforms,
+            Website = dto.Website,
+            PcRequirements = dto.PcRequirements != null ? new GamePcRequirements
+            (
+                Minimum: dto.PcRequirements.Minimum,
+                Recommended: dto.PcRequirements.Recommended,
+                High: dto.PcRequirements.High,
+                VeryHigh: dto.PcRequirements.VeryHigh,
+                Ultra: dto.PcRequirements.Ultra
+            ) : null
+        };
 
-                case BookEntry book when dto is BookEntryUpdateDto bookDto:
-                    book.Author = bookDto.Author;
-                break;
+        private static GameEntry MapGameFromDetailed(GameEntryDetailedDto dto) => new()
+        {
+            Id = dto.Id,
+            IdExternal = dto.IdExternal,
+            OwnerId = dto.UserId,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = dto.CreatedAtUtc,
+            HoursPlayed = dto.HoursPlayed,
+            MetacriticRating = dto.MetacriticRating,
+            Platforms = dto.Platforms,
+            Website = dto.Website,
+            PcRequirements = dto.PcRequirements != null ? new GamePcRequirements
+            (
+                Minimum: dto.PcRequirements.Minimum,
+                Recommended: dto.PcRequirements.Recommended,
+                High: dto.PcRequirements.High,
+                VeryHigh: dto.PcRequirements.VeryHigh,
+                Ultra: dto.PcRequirements.Ultra
+            ) : null
+        };
 
-                case MangaEntry manga when dto is MangaEntryUpdateDto mangaDto:
-                    manga.Author = mangaDto.Author;
-                break;
-            }
-        }
+        private static GameEntry MapGameFromUpdate(Guid id, GameEntryUpdateDto dto) => new()
+        {
+            Id = id,
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            HoursPlayed = dto.HoursPlayed,
+            MetacriticRating = dto.MetacriticRating,
+            Platforms = dto.Platforms,
+            Website = dto.Website,
+            PcRequirements = dto.PcRequirements != null ? new GamePcRequirements
+            (
+                Minimum: dto.PcRequirements.Minimum,
+                Recommended: dto.PcRequirements.Recommended,
+                High: dto.PcRequirements.High,
+                VeryHigh: dto.PcRequirements.VeryHigh,
+                Ultra: dto.PcRequirements.Ultra
+            ) : null
+        };
+        #endregion
+
+        #region Book Internal Mapping Methods
+        private static BookEntry MapBookFromCreate(BookEntryCreateDto dto) => new()
+        {
+            Id = Guid.NewGuid(),
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = DateTime.UtcNow,
+            Author = dto.Author
+        };
+
+        private static BookEntry MapBookFromDetailed(BookEntryDetailedDto dto) => new()
+        {
+            Id = dto.Id,
+            IdExternal = dto.IdExternal,
+            OwnerId = dto.UserId,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = dto.CreatedAtUtc,
+            Author = dto.Author
+        };
+
+        private static BookEntry MapBookFromUpdate(Guid id, BookEntryUpdateDto dto) => new()
+        {
+            Id = id,
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            Author = dto.Author
+        };
+        #endregion
+
+        #region Manga Internal Mapping Methods
+        private static MangaEntry MapMangaFromCreate(MangaEntryCreateDto dto) => new()
+        {
+            Id = Guid.NewGuid(),
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = DateTime.UtcNow,
+            Author = dto.Author
+        };
+
+        private static MangaEntry MapMangaFromDetailed(MangaEntryDetailedDto dto) => new()
+        {
+            Id = dto.Id,
+            IdExternal = dto.IdExternal,
+            OwnerId = dto.UserId,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            CreatedAtUtc = dto.CreatedAtUtc,
+            Author = dto.Author
+        };
+
+        private static MangaEntry MapMangaFromUpdate(Guid id, MangaEntryUpdateDto dto) => new()
+        {
+            Id = id,
+            IdExternal = dto.IdExternal,
+            Status = dto.Status,
+            Title = dto.Title,
+            Rating = dto.Rating,
+            Review = dto.Review,
+            Genres = dto.Genres,
+            Overview = dto.Overview,
+            ReleaseDate = dto.ReleaseDate,
+            ImageUrl = dto.ImageUrl,
+            Author = dto.Author
+        };
+        #endregion
     }
 }

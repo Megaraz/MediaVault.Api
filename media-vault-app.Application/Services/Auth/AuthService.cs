@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
+using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Interfaces.Validators;
 using media_vault_app.Application.Mappers.User;
 using media_vault_app.Application.Validators.User;
 using Rasmus.SharedKernel.ResultPattern;
@@ -16,14 +18,22 @@ namespace media_vault_app.Application.Services.Auth
 
         private readonly IUserRepo _userRepo;
         private readonly IPasswordHasherService _passwordHasherService;
-        private readonly UserDtoValidator _dtoValidator;
-        private readonly UserEntityMapper _entityToDtoMapper = new();
-        private readonly UserDtoMapper _dtoToEntityMapper = new();
-        public AuthService(IUserRepo userRepo, IPasswordHasherService passwordHasherService)
+        private readonly IUserDtoValidator _dtoValidator;
+        private readonly IUserEntityMapper _entityToDtoMapper;
+        private readonly IUserDtoMapper _dtoToEntityMapper;
+        public AuthService(
+            IUserRepo userRepo, 
+            IPasswordHasherService passwordHasherService, 
+            IUserEntityMapper entityToDtoMapper, 
+            IUserDtoMapper dtoToEntityMapper,
+            IUserDtoValidator dtoValidator
+            )
         {
             _userRepo = userRepo;
             _passwordHasherService = passwordHasherService;
-            _dtoValidator = new UserDtoValidator();
+            _entityToDtoMapper = entityToDtoMapper;
+            _dtoToEntityMapper = dtoToEntityMapper;
+            _dtoValidator = dtoValidator;
         }
 
         public async Task<Result<UserDetailedDto>> LoginAsync(UserLoginDto loginDto, CancellationToken ct = default)

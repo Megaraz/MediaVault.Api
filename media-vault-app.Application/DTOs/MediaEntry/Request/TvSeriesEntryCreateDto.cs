@@ -16,7 +16,7 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Request
         public int NumberOfEpisodes { get; init; }
         public string? AiringStatus { get; init; }
         public int TotalWatchedEpisodes { get; init; }
-        public SeasonCreateDto[]? Seasons { get; init; }
+        public required SeasonCreateDto[] Seasons { get; init; }
         public override MediaType MediaType => MediaType.TvSeries;
     }
 }

@@ -8,22 +8,22 @@ namespace media_vault_app.Application.DTOs.Season
     public sealed record SeasonUpdateDto
     {
 
-        public Guid Id { get; set; }
-        public Guid TvSeriesId { get; set; }
-        public string? IdExternal { get; set; }
-        public string? Name { get; set; }
-        public string? Overview { get; set; }
-        public string? ImageUrl { get; set; }
-        public int SeasonNumber { get; set; }
-        public DateOnly? AirDate { get; set; }
-        public int WatchedEpisodes { get; set; }
-        public int Episodes { get; set; }
+        public Guid Id { get; init; }
+        public Guid TvSeriesId { get; init; }
+        public string? IdExternal { get; init; }
+        public string? Name { get; init; }
+        public string? Overview { get; init; }
+        public string? ImageUrl { get; init; }
+        public int SeasonNumber { get; init; }
+        public DateOnly? AirDate { get; init; }
+        public int WatchedEpisodes { get; init; }
+        public int Episodes { get; init; }
 
-        public Status Status { get; set; }
-        public decimal Rating { get; set; }
+        public Status Status { get; init; }
+        public decimal Rating { get; init; }
 
-        public DateTime CreatedAtUtc { get; set; }
-        public DateTime UpdatedAtUtc { get; set; }
+        public DateTime CreatedAtUtc { get; init; }
+        public DateTime UpdatedAtUtc { get; init; }
 
     }
 }

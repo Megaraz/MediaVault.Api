@@ -1,32 +1,29 @@
+using System.Net.Http.Headers;
 using media_vault_app.API.Security;
+using media_vault_app.Application.DTOs.MediaEntry.Request;
+using media_vault_app.Application.DTOs.User.Request;
+using media_vault_app.Application.Interfaces.Clients;
+using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Interfaces.Validators;
+using media_vault_app.Application.Mappers.MediaEntry;
+using media_vault_app.Application.Mappers.User;
+using media_vault_app.Application.Services.API;
+using media_vault_app.Application.Services.Auth;
 using media_vault_app.Application.Services.MediaEntry;
 using media_vault_app.Application.Services.User;
+using media_vault_app.Application.Validators.MediaEntry;
+using media_vault_app.Application.Validators.User;
 using media_vault_app.Domain.Entities;
 using media_vault_app.Infrastructure;
-using media_vault_app.Infrastructure.Repos;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Rasmus.SharedKernel.Interfaces;
-using media_vault_app.Application.Services.Auth;
-using media_vault_app.Application.Services.API;
-using System.Net.Http.Headers;
-using Microsoft.Extensions.Options;
-using media_vault_app.Application.Mappers.MediaEntry;
-using media_vault_app.Application.DTOs.MediaEntry.Response;
-using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
-using media_vault_app.Application.DTOs.MediaEntry.Request;
-using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
-using media_vault_app.Application.Mappers.User;
-using media_vault_app.Application.DTOs.User.Response;
-using media_vault_app.Application.DTOs.User.Request;
-using Rasmus.SharedKernel.Interfaces.Validators;
-using media_vault_app.Application.Validators.User;
-using media_vault_app.Application.Validators.MediaEntry;
-using System.Text.Json.Serialization;
 using media_vault_app.Infrastructure.API.Clients;
-using media_vault_app.Application.Interfaces.Clients;
+using media_vault_app.Infrastructure.Repos;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Rasmus.SharedKernel.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Validators;
 
 namespace media_vault_app.API
 {
@@ -101,36 +98,19 @@ namespace media_vault_app.API
 
             #region Mappers
 
-            builder.Services.AddScoped<
-                IMapEntityToDto<MediaEntry, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto>,
-                MediaEntryEntityMapper>();
+            builder.Services.AddScoped<IMediaEntryEntityMapper, MediaEntryEntityMapper>();
+            builder.Services.AddScoped<IMediaEntryDtoMapper, MediaEntryDtoMapper>();
 
-            builder.Services.AddScoped<
-                IMapDtoToEntity<MediaEntry, MediaEntryDetailedDto, MediaEntryCreateDto, MediaEntryUpdateDto, Guid>,
-                MediaEntryDtoMapper>();
-
-            builder.Services.AddScoped<
-                IMapEntityToDto<User, Guid, UserDetailedDto, UserMinimalDto>,
-                UserEntityMapper>();
-
-            builder.Services.AddScoped<
-                IMapDtoToEntity<User, UserDetailedDto, UserRegisterDto, UserUpdateDto, Guid>,
-                UserDtoMapper>();
+            builder.Services.AddScoped<IUserEntityMapper, UserEntityMapper>();
+            builder.Services.AddScoped<IUserDtoMapper, UserDtoMapper>();
 
             #endregion
 
             #region Validators
 
-            builder.Services.AddScoped<
-                IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto>,
-                MediaEntryDtoValidator>();
+            builder.Services.AddScoped<IMediaEntryDtoValidator, MediaEntryDtoValidator>();
 
-            builder.Services.AddScoped<
-                IDtoValidator<Guid, UserRegisterDto, UserUpdateDto>,
-                UserDtoValidator>();
-
-            // Validator (once created)
-
+            builder.Services.AddScoped<IUserDtoValidator, UserDtoValidator>();
             #endregion
 
 

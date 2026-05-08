@@ -1,6 +1,7 @@
 ﻿using System;
 using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Services.Base_Classes;
@@ -15,12 +16,12 @@ namespace media_vault_app.Application.Services.MediaEntry
         : DependentEntityReadServiceBase<UserEntity, MediaEntryEntity, Guid, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto>,
         IMediaEntryReadService
     {
-        private IMediaEntryRepo _mediaEntryRepo => (IMediaEntryRepo)base._dependentEntityRepo;
+        private IMediaEntryRepo MediaEntryRepo => (IMediaEntryRepo)base._dependentEntityRepo;
 
         public MediaEntryReadService(
             IMediaEntryRepo mediaEntryRepo,
             IUserRepo ownerRepo,
-            IMapEntityToDto<MediaEntryEntity, Guid, MediaEntryDetailedDto, MediaEntryMinimalDto> entityMapper
+            IMediaEntryEntityMapper entityMapper
             ) : base(mediaEntryRepo, entityMapper, ownerRepo)
         {
         }
@@ -94,7 +95,7 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
-            var repoResult = await _mediaEntryRepo.SearchMediaEntriesAsync(ownerId, request.Query, pageNumber, pageSize, ct);
+            var repoResult = await MediaEntryRepo.SearchMediaEntriesAsync(ownerId, request.Query, pageNumber, pageSize, ct);
 
             // Maps the result internally  
             return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);

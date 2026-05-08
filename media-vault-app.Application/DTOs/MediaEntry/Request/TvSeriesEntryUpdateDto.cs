@@ -14,6 +14,6 @@ public sealed record TvSeriesEntryUpdateDto : MediaEntryUpdateDto
         public int NumberOfEpisodes { get; init; }
         public string? AiringStatus { get; init; }
         public int TotalWatchedEpisodes { get; init; }
-        public SeasonCreateDto[]? Seasons { get; init; }
+        public required IReadOnlyList<SeasonUpdateDto> Seasons { get; init; }
         public override MediaType MediaType => MediaType.TvSeries;
 }

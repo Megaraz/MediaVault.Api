@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
-using Rasmus.SharedKernel.Interfaces.Validators;
+using media_vault_app.Application.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Validators.MediaEntry
 {
-    public class MediaEntryDtoValidator : IDtoValidator<Guid, MediaEntryCreateDto, MediaEntryUpdateDto>
+    public class MediaEntryDtoValidator : IMediaEntryDtoValidator
     {
         public bool IsValidCreateDto(MediaEntryCreateDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
         {
