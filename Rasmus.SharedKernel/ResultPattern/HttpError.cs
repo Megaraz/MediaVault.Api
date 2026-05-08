@@ -20,10 +20,6 @@ namespace Rasmus.SharedKernel.ResultPattern
     public record HttpError : Error
     {
         public HttpErrorType HttpErrorType { get; }
-        public HttpError(string Code, string Description, ErrorType Type, string UserMessage = "", Exception? exception = null) : base(Code, Description, Type, UserMessage, exception)
-        {
-        }
-
 
         // Private constructor to enforce the use of static factory methods for creating HttpError instances
         // Sets the ErrorType of base-class to HttpError for all instances of HttpError
@@ -34,15 +30,13 @@ namespace Rasmus.SharedKernel.ResultPattern
         }
 
 
-        public static HttpError Custom(ErrorContext errorContext)
+        public static HttpError Custom(ErrorContext errorContext, string customDescriptionSuffix)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.Custom);
 
-            string defaultDescriptionSuffix = $"Custom Error";
+            string formattedErrorDescription = FormatDescription(errorContext, customDescriptionSuffix);
 
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Custom, defaultDescriptionSuffix);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Custom, customDescriptionSuffix);
         }
 
         public static HttpError UnprocessableContent(ErrorContext errorContext)
@@ -66,7 +60,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.BadRequest, defaultDescriptionSuffix);
         }
 
-        public new static HttpError Unauthorized(ErrorContext errorContext)
+        public static HttpError UnauthorizedAccess(ErrorContext errorContext)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpUnauthorized);
 
@@ -103,7 +97,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpConflict);
 
-            string defaultDescriptionSuffix = $"Bad Request";
+            string defaultDescriptionSuffix = $"Conflict";
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 

@@ -6,10 +6,8 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Interfaces.Services
 {
-    public interface ISearchService<TEntity, TMinimalDto, TKey> 
-        where TEntity : class, IEntity<TKey>
-        where TKey : notnull, IEquatable<TKey>
+    public interface ISearchService<TSearchResultDto>
     {
-        Task<Result<IEnumerable<TMinimalDto>>> SearchAsync(string searchTerm, CancellationToken ct = default);
+        Task<Result<IReadOnlyList<TSearchResultDto>>> SearchAsync(string searchTerm, int page = 1, CancellationToken ct = default);
     }
 }

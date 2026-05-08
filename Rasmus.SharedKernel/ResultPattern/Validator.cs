@@ -12,10 +12,10 @@ namespace Rasmus.SharedKernel.ResultPattern
                 return false;
 
 
-            return !(id is string str && string.IsNullOrWhiteSpace(str) ||
-                id is Guid guid && guid == Guid.Empty ||
-                id is int intId && intId <= 0 ||
-                id.Equals(default(TKey)));
+            return !((id is string str && string.IsNullOrWhiteSpace(str)) ||
+                     (id is Guid guid && guid == Guid.Empty) ||
+                     (id is int intId && intId <= 0) ||
+                     id.Equals(default(TKey)));
         }
 
         public static void ValidateAndAdjustPaginationParameters(ref int pageNumber, ref int pageSize)

@@ -14,7 +14,7 @@ namespace media_vault_app.Application.Interfaces.Services
         Task<Result<BookEntryDetailedDto>> GetBookByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default);
         Task<Result<MangaEntryDetailedDto>> GetMangaByIdAsync(Guid ownerId, Guid id, CancellationToken ct = default);
 
-        Task<Result<IEnumerable<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
+        Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
             Guid ownerId,
             SearchRequestDto request,
             int pageNumber = 1,

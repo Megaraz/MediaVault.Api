@@ -58,7 +58,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             }
         }
 
-        public static async Task<Result> MapToResult(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
+        public static async Task<Result> MapToResultAsync(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
         {
             var localErrorContext = CloneErrorContext(errorContext);
 
@@ -115,7 +115,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 HttpStatusCode.BadRequest => HttpError.BadRequest(errorContext),
                 HttpStatusCode.UnprocessableContent => HttpError.UnprocessableContent(errorContext),
                 HttpStatusCode.Conflict => HttpError.Conflict(errorContext),
-                HttpStatusCode.Unauthorized => HttpError.Unauthorized(errorContext),
+                HttpStatusCode.Unauthorized => HttpError.UnauthorizedAccess(errorContext),
                 HttpStatusCode.Forbidden => HttpError.Forbidden(errorContext),
                 HttpStatusCode.InternalServerError => HttpError.InternalServerError(errorContext),
                 _ => HttpError.Custom(errorContext),
@@ -223,7 +223,9 @@ namespace Rasmus.SharedKernel.ResultPattern
                 var errors = errorsElement
                     .EnumerateObject()
                     .SelectMany(static property => property.Value.ValueKind == JsonValueKind.Array
-                        ? property.Value.EnumerateArray().Where(static value => value.ValueKind == JsonValueKind.String).Select(static value => value.GetString())
+                        ? property.Value.EnumerateArray()
+                            .Where(static value => value.ValueKind == JsonValueKind.String)
+                            .Select(static value => value.GetString())
                         : Array.Empty<string?>())
                     .Where(static value => !string.IsNullOrWhiteSpace(value));
 
@@ -235,7 +237,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         private static string FirstNonEmpty(params string?[] values)
         {
-            return values.First(value => !string.IsNullOrWhiteSpace(value))!;
+            return values.FirstOrDefault(value => string.IsNullOrWhiteSpace(value))!;
         }
 
     }

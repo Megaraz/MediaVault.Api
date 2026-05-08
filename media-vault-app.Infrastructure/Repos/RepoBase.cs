@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
+using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
@@ -44,7 +44,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result<TEntity>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<TEntity>.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -69,7 +69,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result<TEntity>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<TEntity>.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -94,7 +94,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (OperationCanceledException)
             {
                 var baseErrorContext = DefineErrorContext(nameof(GetCollectionAsync), OperationType.GetCollection);
-                return Result<IReadOnlyList<TEntity>>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<IReadOnlyList<TEntity>>.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -131,7 +131,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -173,7 +173,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -200,7 +200,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result<bool>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<bool>.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {

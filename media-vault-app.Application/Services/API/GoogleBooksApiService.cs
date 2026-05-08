@@ -81,9 +81,9 @@ namespace media_vault_app.Application.Services.API
                 FieldName: fieldName);
         }
 
-        private static IReadOnlyList<MediaEntrySearchResultDto> MapToSearchResults(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)
+        private static IReadOnlyList<MediaEntryExternalSearchResultDto> MapToSearchResults(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)
         {
-            return volumes?.Select(MapToSearchResult).ToArray() ?? Array.Empty<MediaEntrySearchResultDto>();
+            return volumes?.Select(MapToSearchResult).ToArray() ?? Array.Empty<MediaEntryExternalSearchResultDto>();
         }
 
         private static IReadOnlyList<GoogleBooksDetailedDto> ToDetailedDtoCollection(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)
@@ -117,7 +117,7 @@ namespace media_vault_app.Application.Services.API
                 MediaType: MediaType.Book);
         }
 
-        private static MediaEntrySearchResultDto MapToSearchResult(GoogleBooksVolumeResponse volume)
+        private static MediaEntryExternalSearchResultDto MapToSearchResult(GoogleBooksVolumeResponse volume)
         {
             var thumbnailUrl = volume.VolumeInfo?.ImageLinks is null
                 ? null
@@ -135,7 +135,7 @@ namespace media_vault_app.Application.Services.API
                 thumbnailUrl = "https://" + thumbnailUrl.Substring("http://".Length);
             }
 
-            return new MediaEntrySearchResultDto(
+            return new MediaEntryExternalSearchResultDto(
                 volume.Id,
                 volume.VolumeInfo?.Title ?? string.Empty,
                 thumbnailUrl,

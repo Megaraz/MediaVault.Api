@@ -26,6 +26,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         ValidationNonMatchingValues = 103,
         ValidationTooShort = 104,
         ValidationTooLong = 105,
+        ValidationAlreadyExists = 106,
 
         DatabaseFailure = 200,
         DatabaseConcurrencyFailure = 201,
@@ -86,18 +87,6 @@ namespace Rasmus.SharedKernel.ResultPattern
             NameOfEntity = nameOfEntity;
             Reason = reason;
         }
-
-        /// <summary>
-        /// Creates a new <see cref="ErrorCode"/> instance for the specified operation type and error reason, associating it with the
-        /// type parameter.
-        /// </summary>
-        /// <typeparam name="T">The type to associate with the error code. Typically represents the context or entity related to the error.</typeparam>
-        /// <param name="operation">The operation for which the error code is being generated.</param>
-        /// <param name="nameOfFieldOrEntity">The name of the field or entity to associate with the error code.</param>
-        /// <param name="reason">The reason code that describes the specific error condition.</param>
-        /// <returns>An ErrorCode instance representing the specified operation and reason, associated with the type parameter.</returns>
-        //public static ErrorCode For(OperationType operation, string nameOfFieldOrEntity, ErrorReasonCode reason) =>
-        //    new(operation, nameOfFieldOrEntity, reason);
 
         public static ErrorCode For(ErrorContext errorContext, ErrorReasonCode reason) =>
             new(errorContext.Operation, errorContext.EntityName, reason);

@@ -78,6 +78,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 ErrorType.Forbidden => (403, new ErrorResponseBody(message, errorCode)),
                 ErrorType.Failure => (500, new ErrorResponseBody(message, errorCode)),
                 ErrorType.Database => (500, new ErrorResponseBody(message, errorCode)),
+                ErrorType.Cancelled => (500, new ErrorResponseBody(message, errorCode)),
                 _ => (400, new ErrorResponseBody(message, errorCode))
             };
         }

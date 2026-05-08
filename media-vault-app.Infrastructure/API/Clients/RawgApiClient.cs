@@ -32,11 +32,11 @@ namespace media_vault_app.Infrastructure.API.Clients
 
         public async Task<Result<RawgGameDetailedResponse>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default)
         {
+            var baseErrorContext = DefineErrorContext(nameof(GetGameByIdAsync), OperationType.Get);
+
             using var response = await _httpClient.GetAsync(BuildRequestUri($"games/{id}"), cancellationToken);
 
-            var httpResponseErrorContext = DefineErrorContext(nameof(GetGameByIdAsync), OperationType.Get, fieldName: $"{id}");
-
-            return await response.MapToResultAsync<RawgGameDetailedResponse>(httpResponseErrorContext, cancellationToken);
+            return await response.MapToResultAsync<RawgGameDetailedResponse>(baseErrorContext, cancellationToken);
         }
 
         public async Task<Result<RawgSearchResponse>> SearchGamesAsync(

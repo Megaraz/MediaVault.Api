@@ -18,6 +18,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             ErrorReasonCode.ValidationNonMatchingValues => "NonMatchingValues",
             ErrorReasonCode.ValidationTooShort => "TooShort",
             ErrorReasonCode.ValidationTooLong => "TooLong",
+            ErrorReasonCode.ValidationAlreadyExists => "AlreadyExists",
 
             ErrorReasonCode.DatabaseFailure => "DbFailure",
             ErrorReasonCode.DatabaseConcurrencyFailure => "DbConcurrencyFailure",
@@ -39,7 +40,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             ErrorReasonCode.HttpMethodNotAllowed => "MethodNotAllowed",
             ErrorReasonCode.HttpRequestTimeout => "RequestTimeout",
             ErrorReasonCode.HttpConflict => "Conflict",
-            ErrorReasonCode.HttpUnprocessableContent => "UnproccessableContent",
+            ErrorReasonCode.HttpUnprocessableContent => "UnprocessableContent",
             ErrorReasonCode.HttpInternalServerError => "InternalServerError",
             ErrorReasonCode.HttpBadGateway => "BadGateway",
             ErrorReasonCode.HttpServiceUnavailable => "ServiceUnavailable",

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
+using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
@@ -54,7 +54,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             List<ValidationError> errors = new();
 
-            if (!ownerId.IsValidId(errorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
+            if (ownerId.IsNotValidId(errorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
                 errors.Add(ownerIdNotValidError);
 
             if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
@@ -75,7 +75,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var repoResult = await _dependentEntityRepo.CreateAsync(entity, ct);
 
-            return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDto);
 
         }
 
@@ -85,10 +85,10 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             List<ValidationError> errors = new();
 
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
+            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
                 errors.Add(ownerIdNotValidError);
 
-            if (!id.IsValidId(baseErrorContext with { FieldName = nameof(id) }, out var idNotValidError))
+            if (id.IsNotValidId(baseErrorContext with { FieldName = nameof(id) }, out var idNotValidError))
                 errors.Add(idNotValidError);
 
             if (!_dtoValidator.IsValidUpdateDto(updateDto, baseErrorContext, out var validationErrors))
@@ -103,7 +103,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                return ownerExistsResult.From();
+                return ownerExistsResult;
             }
 
 
@@ -119,10 +119,10 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             List<ValidationError> errors = new();
 
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
+            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
                 errors.Add(ownerIdNotValidError);
 
-            if (!dependentId.IsValidId(baseErrorContext with { FieldName = nameof(dependentId) }, out var dependentIdNotValidError))
+            if (dependentId.IsNotValidId(baseErrorContext with { FieldName = nameof(dependentId) }, out var dependentIdNotValidError))
                 errors.Add(dependentIdNotValidError);
 
             if (errors.Count > 0)
@@ -132,7 +132,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                return ownerExistsResult.From();
+                return ownerExistsResult;
             }
 
             return await _dependentEntityRepo.DeleteAsync(ownerId, dependentId, ct);

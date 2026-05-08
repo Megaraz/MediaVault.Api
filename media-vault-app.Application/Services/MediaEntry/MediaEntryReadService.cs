@@ -56,7 +56,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             CancellationToken ct = default) =>
             await GetTypedByIdAsync<MangaEntryDetailedDto>(ownerId, id, nameof(GetMangaByIdAsync), "manga", ct);
 
-        public async Task<Result<IEnumerable<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
+        public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
             Guid ownerId,
             SearchRequestDto request,
             int pageNumber = 1,
@@ -67,7 +67,7 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             var validationErrors = new List<ValidationError>();
 
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
             {
                 validationErrors.Add(ownerIdError);
             }
@@ -83,14 +83,14 @@ namespace media_vault_app.Application.Services.MediaEntry
             // If there are any validation errors, return them in a single Result response
             if (validationErrors.Any())
             {
-                return Result<IEnumerable<MediaEntryMinimalDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
+                return Result<IReadOnlyList<MediaEntryMinimalDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
             }
 
             // Ensure the owner exists before attempting to search for media entries
             var ownerExistsResult = await EnsureOwnerExistsAsync(ownerId, ct);
             if (ownerExistsResult.IsFailure)
             {
-                return ownerExistsResult.From<bool, IEnumerable<MediaEntryMinimalDto>>();
+                return ownerExistsResult.From<bool, IReadOnlyList<MediaEntryMinimalDto>>();
             }
 
             Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);

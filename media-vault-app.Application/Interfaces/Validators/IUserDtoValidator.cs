@@ -9,6 +9,6 @@ namespace media_vault_app.Application.Interfaces.Validators
 {
     public interface IUserDtoValidator : IDtoValidator<Guid, UserRegisterDto, UserUpdateDto>
     {
-        bool IsValidLoginDto(UserLoginDto loginDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors);
+        bool IsValidLoginDto(UserLoginDto loginDto, ErrorContext errorContext, out IReadOnlyList<ValidationError> validationErrors);
     }
 }

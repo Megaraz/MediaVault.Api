@@ -22,7 +22,7 @@ using media_vault_app.Infrastructure.Repos;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Rasmus.SharedKernel.Interfaces;
+using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.Interfaces.Validators;
 
 namespace media_vault_app.API

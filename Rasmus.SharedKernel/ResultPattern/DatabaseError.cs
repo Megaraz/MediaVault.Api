@@ -9,7 +9,6 @@ namespace Rasmus.SharedKernel.ResultPattern
         UpdateFailure = 4,
         DeleteFailure = 5,
         ConcurrencyFailure = 6,
-        Cancelled = 7,
     }
 
     public record DatabaseError : Error
@@ -86,17 +85,6 @@ namespace Rasmus.SharedKernel.ResultPattern
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
             return new DatabaseError(errorCode.Code, formattedErrorDescription, DatabaseErrorType.ConcurrencyFailure, defaultDescriptionSuffix, exception);
-        }
-
-        public static DatabaseError Cancelled(ErrorContext errorContext)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.OperationCancelled);
-
-            string defaultDescriptionSuffix = $"The operation on {errorCode.NameOfEntity} was cancelled.";
-
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new DatabaseError(errorCode.Code, formattedErrorDescription, DatabaseErrorType.Cancelled, defaultDescriptionSuffix);
         }
     }
 }

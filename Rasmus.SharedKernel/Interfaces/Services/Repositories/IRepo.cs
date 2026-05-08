@@ -1,7 +1,7 @@
 ﻿using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.ResultPattern;
 
-namespace Rasmus.SharedKernel.Interfaces
+namespace Rasmus.SharedKernel.Interfaces.Services.Repositories
 {
     public interface IRepo<TEntity, TKey> 
         where TEntity : class, IEntity<TKey>

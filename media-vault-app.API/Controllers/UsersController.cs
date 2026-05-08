@@ -26,7 +26,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDetailedDto>>> GetUsers(CancellationToken ct)
+        public async Task<ActionResult<IReadOnlyList<UserDetailedDto>>> GetUsers(CancellationToken ct)
         {
             var result = await _userReadService.GetDetailedCollectionAsync(ct: ct);
 

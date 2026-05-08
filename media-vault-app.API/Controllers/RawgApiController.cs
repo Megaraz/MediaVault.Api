@@ -20,7 +20,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
-        public async Task<ActionResult<IReadOnlyList<MediaEntrySearchResultDto>>> SearchGames(
+        public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchGames(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,

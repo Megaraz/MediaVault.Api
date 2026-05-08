@@ -20,7 +20,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("movie/search")]
-        public async Task<ActionResult<IReadOnlyList<MediaEntrySearchResultDto>>> SearchMovies(
+        public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchMovies(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
@@ -41,7 +41,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("tv/search")]
-        public async Task<ActionResult<IReadOnlyList<MediaEntrySearchResultDto>>> SearchTvSeries(
+        public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchTvSeries(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,

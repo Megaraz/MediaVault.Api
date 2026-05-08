@@ -40,7 +40,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (OperationCanceledException)
             {
                 var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
-                return Result.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -72,7 +72,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (OperationCanceledException)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
-                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -106,7 +106,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result<User>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<User>.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {

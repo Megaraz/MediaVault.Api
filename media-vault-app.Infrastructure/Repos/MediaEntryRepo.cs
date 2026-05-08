@@ -62,7 +62,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -132,7 +132,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -231,7 +231,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (OperationCanceledException)
             {
                 var baseErrorContext = DefineErrorContext(nameof(SearchMediaEntriesAsync), OperationType.GetCollection);
-                return Result<IReadOnlyList<MediaEntry>>.Failure(DatabaseError.Cancelled(baseErrorContext));
+                return Result<IReadOnlyList<MediaEntry>>.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {

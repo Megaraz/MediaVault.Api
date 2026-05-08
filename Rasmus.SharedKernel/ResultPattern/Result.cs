@@ -48,10 +48,11 @@ namespace Rasmus.SharedKernel.ResultPattern
         internal Result(bool isSuccess, string message, IEnumerable<ValidationError> validationErrors, Error primaryError)
         {
             // **|| GUARD CLAUSES TO ENSURE CONSISTENCY OF THE RESULT STATE ||**
-
             ArgumentNullException.ThrowIfNull(message);
             ArgumentNullException.ThrowIfNull(validationErrors);
             ArgumentNullException.ThrowIfNull(primaryError);
+
+            var errorList = validationErrors.ToList(); // Ensure we have a concrete list to work with for validation and assignment to the property 
 
             // SUCCESS GUARD CLAUSES 
             if (isSuccess)
@@ -59,7 +60,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 if (primaryError.Type != ErrorType.None)
                     throw new ArgumentException($"Success result cannot contain errors. {nameof(primaryError)}");
 
-                if (validationErrors.Any())
+                if (errorList.Count > 0)
                     throw new ArgumentException($"Success result cannot contain validation errors. {nameof(validationErrors)}");
             }
 
@@ -75,15 +76,15 @@ namespace Rasmus.SharedKernel.ResultPattern
                     if (primaryError is not ValidationError validationPrimary)
                         throw new ArgumentException($"Validation failure result must have an error of type ValidationError. {nameof(primaryError)}");
 
-                    if (!validationErrors.Any())
+                    if (errorList.Count == 0)
                         throw new ArgumentException($"Validation failure result must contain a collection of validation errors. {nameof(validationErrors)}");
 
-                    if (!validationErrors.Contains(validationPrimary))
-                        validationErrors = validationErrors.Prepend(validationPrimary).ToList();
+                    if (!errorList.Contains(validationPrimary))
+                        errorList.Add(validationPrimary);
                 }
                 else
                 {
-                    if (validationErrors.Any())
+                    if (errorList.Count > 0)
                         throw new ArgumentException($"Non-validation failure result cannot contain validation errors. {nameof(validationErrors)}");
 
                 }
@@ -91,7 +92,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             IsSuccess = isSuccess;
             Message = message;
-            ValidationErrors = validationErrors;
+            ValidationErrors = errorList;
             PrimaryError = primaryError;
         }
 
@@ -124,21 +125,13 @@ namespace Rasmus.SharedKernel.ResultPattern
         public static Result ValidationFailure(
             IEnumerable<ValidationError> validationErrors,
             string? message = null)
-        {
-
-            ArgumentNullException.ThrowIfNull(validationErrors);
-
-            if (!validationErrors.Any())
-                throw new ArgumentException("Validation failure result must contain at least one validation error.", nameof(validationErrors));
-
-            var normalizedValidationErrors = validationErrors.ToList();
-
-            return new Result(
-                isSuccess: false,
-                message: message ?? "Validation Errors occurred, see validation errors for details.",
-                validationErrors: normalizedValidationErrors,
-                primaryError: normalizedValidationErrors.First());
-        }
+                => new Result(
+                    isSuccess: false,
+                    message: string.IsNullOrWhiteSpace(message)
+                        ? "Validation errors occurred, see validation errors for details."
+                        : message,
+                    validationErrors: validationErrors,
+                    primaryError: validationErrors.First());
 
 
         // Convenience Failure factory method, for creating a failed Result with a single error and a message
@@ -157,20 +150,12 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="message">The result message.</param>
         /// <returns>A failed <see cref="Result"/>.</returns>
         public static Result Failure(Error primaryError, string message)
-        {
-            if (primaryError.Type == ErrorType.None)
-                throw new ArgumentException("Failure result must contain a primary error.", nameof(primaryError));
-
-            if (primaryError.Type == ErrorType.Validation)
-                throw new ArgumentException("Validation error must have a collection of validation errors.", nameof(primaryError));
-
-            return new Result(
+            => new Result(
                 isSuccess: false,
                 message: message,
                 validationErrors: Array.Empty<ValidationError>(),
                 primaryError: primaryError);
 
-        }
         #endregion
     }
 
@@ -240,24 +225,15 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="validationErrors">The validation errors to include.</param>
         /// <param name="message">The result message.</param>
         /// <returns>A failed <see cref="Result{TValue}"/> with validation errors.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if the validation errors are null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the validation errors collection is empty.</exception>
         public new static Result<TValue> ValidationFailure(
             IEnumerable<ValidationError> validationErrors,
             string? message = null)
-        {
-            ArgumentNullException.ThrowIfNull(validationErrors);
-
-            if (!validationErrors.Any())
-                throw new ArgumentException("Validation failure result must contain at least one validation error.", nameof(validationErrors));
-
-            var normalizedValidationErrors = validationErrors.ToList();
-
-            return new Result<TValue>(
-                message: message ?? "Validation errors occurred, see validation errors for details.",
-                validationErrors: normalizedValidationErrors,
-                primaryError: normalizedValidationErrors.First());
-        }
+                => new Result<TValue>(
+                    message: string.IsNullOrWhiteSpace(message)
+                        ? "Validation errors occurred, see validation errors for details."
+                        : message,
+                    validationErrors: validationErrors,
+                    primaryError: validationErrors.First());
 
         // Failure factory method, for creating a failed Result using the error's UserMessage
         /// <summary>
@@ -274,22 +250,12 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <param name="primaryError">The main error for the failure.</param>
         /// <param name="message">The result message.</param>
         /// <returns>A failed <see cref="Result{TValue}"/>.</returns>
-        /// <exception cref="ArgumentException">Thrown if the primary error is invalid.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if the message is null.</exception>
         public new static Result<TValue> Failure(Error primaryError, string message)
-        {
-            if (primaryError.Type == ErrorType.None)
-                throw new ArgumentException("Failure result must contain a primary error.", nameof(primaryError));
-
-            if (primaryError.Type == ErrorType.Validation)
-                throw new ArgumentException("Validation error must have a collection of validation errors.", nameof(primaryError));
-
-            return new Result<TValue>(
+            => new Result<TValue>(
                 message: message,
                 validationErrors: Array.Empty<ValidationError>(),
                 primaryError: primaryError);
 
-        }
 
         // Implicit conversions for cleaner syntax
         /// <summary>

@@ -26,7 +26,7 @@ namespace media_vault_app.Application.Services.API
         {
             var idValidationErrorContext = DefineErrorContext(nameof(GetGameByIdAsync), OperationType.Get);
 
-            if (!id.IsValidId(idValidationErrorContext, out var idError))
+            if (id.IsNotValidId(idValidationErrorContext, out var idError))
             {
                 return Result<RawgGameDetailedDto>.ValidationFailure([idError]);
             }
@@ -36,7 +36,7 @@ namespace media_vault_app.Application.Services.API
             return result.Map(ToDetailedDto);
 
         }
-        public async Task<Result<IReadOnlyList<MediaEntrySearchResultDto>>> SearchGamesAsync(
+        public async Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchGamesAsync(
             string search,
             int page = 1,
             int pageSize = 8,
@@ -57,7 +57,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                return Result<IReadOnlyList<MediaEntrySearchResultDto>>.ValidationFailure(errors, "RAWG game search validation failed.");
+                return Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>.ValidationFailure(errors, "RAWG game search validation failed.");
             }
 
             var queryParameters = new List<string>
@@ -101,9 +101,9 @@ namespace media_vault_app.Application.Services.API
                 FieldName: fieldName);
         }
 
-        private static IReadOnlyList<MediaEntrySearchResultDto> MapToGameSearchResult(IReadOnlyList<RawgGameSearchResult>? rawgGames)
+        private static IReadOnlyList<MediaEntryExternalSearchResultDto> MapToGameSearchResult(IReadOnlyList<RawgGameSearchResult>? rawgGames)
         {
-            return rawgGames?.Select(MapToGameSearchResult).ToArray() ?? Array.Empty<MediaEntrySearchResultDto>();
+            return rawgGames?.Select(MapToGameSearchResult).ToArray() ?? Array.Empty<MediaEntryExternalSearchResultDto>();
         }
 
         private static RawgGameDetailedDto ToDetailedDto(RawgGameDetailedResponse rawgGame)
@@ -163,9 +163,9 @@ namespace media_vault_app.Application.Services.API
             return string.IsNullOrWhiteSpace(value) ? null : value;
         }
 
-        private static MediaEntrySearchResultDto MapToGameSearchResult(RawgGameSearchResult rawgGame)
+        private static MediaEntryExternalSearchResultDto MapToGameSearchResult(RawgGameSearchResult rawgGame)
         {
-            return new MediaEntrySearchResultDto(
+            return new MediaEntryExternalSearchResultDto(
                 rawgGame.Id.ToString(),
                 rawgGame.Name ?? string.Empty,
                 rawgGame.BackgroundImage,

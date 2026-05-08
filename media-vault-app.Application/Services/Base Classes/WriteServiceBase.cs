@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
+using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
@@ -47,7 +47,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var repoResult = await _repo.CreateAsync(entity, ct);
 
-            return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDto);
 
         }
 
@@ -55,7 +55,7 @@ namespace media_vault_app.Application.Services.Base_Classes
         {
             var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
-            if (!id.IsValidId(baseErrorContext, out var idNotValidError))
+            if (id.IsNotValidId(baseErrorContext, out var idNotValidError))
                 return Result.ValidationFailure([idNotValidError]);
 
             return await _repo.DeleteAsync(id, ct);
@@ -67,7 +67,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             List<ValidationError> validationErrors = new();
 
-            if (!id.IsValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
+            if (id.IsNotValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
                 validationErrors.Add(idError);
 
             if (!_dtoValidator.IsValidUpdateDto(updateDto, baseErrorContext, out var updateValidationErrors))

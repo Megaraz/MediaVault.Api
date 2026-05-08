@@ -1,146 +1,85 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Rasmus.SharedKernel.ResultPattern;
+﻿using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Tests
 {
-    public class IsValidId
+    public class Validator_IsValidId_Tests
     {
-
-        #region IsValidId Tests
-        [Fact]
-        public void IsValidId_Should_Return_False_For_Null_Integer()
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public void Should_Return_False_For_Invalid_Integer(int id)
         {
-            // Arrange
+            Assert.False(Validator.IsValidId(id));
+        }
+
+        [Fact]
+        public void Should_Return_False_For_Null_Integer()
+        {
             int? id = null;
-            // Act
-            var result = Validator.IsValidId(id);
-            // Assert
-            Assert.False(result);
+
+            Assert.False(Validator.IsValidId(id));
         }
 
         [Fact]
-        public void IsValidId_Should_Return_False_For_Negative_Integer()
+        public void Should_Return_True_For_Valid_Integer()
         {
-            // Arrange
-            int id = -1;
-
-            // Act
-            var result = Validator.IsValidId(id);
-
-            // Assert
-            Assert.False(result);
+            Assert.True(Validator.IsValidId(123));
         }
 
         [Fact]
-        public void IsValidId_Should_Return_False_For_Default_Integer()
+        public void Should_Return_False_For_Null_String()
         {
-            // Arrange
-            int id = default;
-            // Act
-            var result = Validator.IsValidId(id);
-            // Assert
-            Assert.False(result);
+            string? id = null;
+
+            Assert.False(Validator.IsValidId(id));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Should_Return_False_For_Invalid_String(string id)
+        {
+            Assert.False(Validator.IsValidId(id));
         }
 
         [Fact]
-        public void IsValidId_Should_Return_True_For_Valid_Integer()
+        public void Should_Return_True_For_Valid_String()
         {
-            // Arrange
-            int id = 123;
-
-            // Act
-            var result = Validator.IsValidId(id);
-
-            // Assert
-            Assert.True(result);
+            Assert.True(Validator.IsValidId("valid-id"));
         }
 
         [Fact]
-        public void IsValidId_Should_Return_False_For_Null_String()
+        public void Should_Return_False_For_Empty_Guid()
         {
-            // Arrange
-            string id = null!;
-
-            // Act
-            var result = Validator.IsValidId(id);
-
-            // Assert
-            Assert.False(result);
+            Assert.False(Validator.IsValidId(Guid.Empty));
         }
 
         [Fact]
-        public void IsValidId_Should_Return_False_For_Empty_String()
+        public void Should_Return_False_For_Null_Guid()
         {
-            // Arrange
-            string id = string.Empty;
-            // Act
-            var result = Validator.IsValidId(id);
-
-            // Assert
-            Assert.False(result);
-        }
-
-
-        [Fact]
-        public void IsValidId_Should_Return_False_For_Whitespace_String()
-        {
-            // Arrange
-            string id = "   ";
-            // Act
-            var result = Validator.IsValidId(id);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void IsValidId_Should_Return_False_For_Empty_Guid()
-        {
-            // Arrange
-            Guid id = Guid.Empty;
-            // Act
-            var result = Validator.IsValidId(id);
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void IsValidId_Should_Return_False_For_Null_Guid()
-        {
-            // Arrange
             Guid? id = null;
-            // Act
-            var result = Validator.IsValidId(id);
-            // Assert
-            Assert.False(result);
-        }
 
+            Assert.False(Validator.IsValidId(id));
+        }
 
         [Fact]
-        public void IsValidId_Should_Return_True_For_Valid_Guid()
+        public void Should_Return_True_For_Valid_Guid()
         {
-            // Arrange
-            Guid id = Guid.NewGuid();
-            // Act
-            var result = Validator.IsValidId(id);
-            // Assert
-            Assert.True(result);
+            Assert.True(Validator.IsValidId(Guid.NewGuid()));
         }
-
 
         [Fact]
-        public void IsValidId_Should_Return_True_For_Valid_String()
+        public void Should_Return_False_For_Default_Long()
         {
-            // Arrange
-            string id = "valid-id";
-            // Act
-            var result = Validator.IsValidId(id);
-            // Assert
-            Assert.True(result);
-        }
-        #endregion
+            long id = default;
 
+            Assert.False(Validator.IsValidId(id));
+        }
+
+        [Fact]
+        public void Should_Return_True_For_Valid_Long()
+        {
+            Assert.True(Validator.IsValidId(1L));
+        }
     }
 }

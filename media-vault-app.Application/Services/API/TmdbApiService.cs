@@ -24,7 +24,7 @@ namespace media_vault_app.Application.Services.API
         {
             var idValidationErrorContext = DefineErrorContext(nameof(GetTvSeriesByIdAsync), OperationType.Get);
 
-            if (!id.IsValidId(idValidationErrorContext, out var idError))
+            if (id.IsNotValidId(idValidationErrorContext, out var idError))
             {
                 return Result<TmdbTvSeriesDetailedDto>.ValidationFailure([idError]);
             }
@@ -36,7 +36,7 @@ namespace media_vault_app.Application.Services.API
         {
             var idValidationErrorContext = DefineErrorContext(nameof(GetMovieByIdAsync), OperationType.Get);
 
-            if (!id.IsValidId(idValidationErrorContext, out var idError))
+            if (id.IsNotValidId(idValidationErrorContext, out var idError))
             {
                 return Result<TmdbMovieDetailedDto>.ValidationFailure([idError]);
             }
@@ -45,7 +45,7 @@ namespace media_vault_app.Application.Services.API
             return result.Map(ToDetailedDto);
         }
 
-        public async Task<Result<IReadOnlyList<MediaEntrySearchResultDto>>> SearchAsync(
+        public async Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchAsync(
             string search,
             MediaType mediaType,
             int page = 1,
@@ -66,7 +66,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                return Result<IReadOnlyList<MediaEntrySearchResultDto>>.ValidationFailure(errors, "TMDB search validation failed.");
+                return Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>.ValidationFailure(errors, "TMDB search validation failed.");
             }
 
             var queryParameters = new List<string>
@@ -91,9 +91,9 @@ namespace media_vault_app.Application.Services.API
                 FieldName: fieldName);
         }
 
-        private static IReadOnlyList<MediaEntrySearchResultDto> MapToSearchResults(IReadOnlyList<TmdbSearchResult>? results, MediaType mediaType)
+        private static IReadOnlyList<MediaEntryExternalSearchResultDto> MapToSearchResults(IReadOnlyList<TmdbSearchResult>? results, MediaType mediaType)
         {
-            return results?.Select(r => MapToSearchResult(r, mediaType)).ToArray() ?? Array.Empty<MediaEntrySearchResultDto>();
+            return results?.Select(r => MapToSearchResult(r, mediaType)).ToArray() ?? Array.Empty<MediaEntryExternalSearchResultDto>();
         }
 
         private static TmdbTvSeriesDetailedDto ToDetailedDto(TmdbTvSeriesDetailedResult tvSeriesResult)
@@ -149,9 +149,9 @@ namespace media_vault_app.Application.Services.API
             );
         }
 
-        private static MediaEntrySearchResultDto MapToSearchResult(TmdbSearchResult result, MediaType mediaType)
+        private static MediaEntryExternalSearchResultDto MapToSearchResult(TmdbSearchResult result, MediaType mediaType)
         {
-            return new MediaEntrySearchResultDto(
+            return new MediaEntryExternalSearchResultDto(
                 result.Id.ToString(),
                 result.Title ?? result.Name ?? string.Empty,
                 BuildImageUrl(result.PosterPath),

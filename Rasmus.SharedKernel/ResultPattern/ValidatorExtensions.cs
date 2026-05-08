@@ -1,23 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Rasmus.SharedKernel.ResultPattern
 {
+    /// <summary>
+    /// Validation extension methods that produce <see cref="ValidationError"/> instances.
+    /// </summary>
+    /// <remarks>
+    /// Convention: all methods return <see langword="true"/> when the validation check <b>fails</b>
+    /// (i.e., the invalid condition is detected). This matches the BCL pattern used by
+    /// <see cref="string.IsNullOrWhiteSpace"/> and makes validation code read naturally without double-negatives:
+    /// <code>if (value.IsNullOrWhiteSpace(ctx, out var e)) errors.Add(e);</code>
+    /// </remarks>
     public static class ValidatorExtensions
     {
 
         /// <summary>
-        /// Validates if the provided ID is valid.
-        /// And creates a ValidationError if the ID is invalid, with a description that includes the field name (if provided) and the entity name from the error context.
+        /// Returns <see langword="true"/> if the id is <b>not valid</b> and populates <paramref name="idValidationError"/>.
+        /// Returns <see langword="false"/> if the id is valid.
         /// </summary>
-        /// <typeparam name="TKey">The type of the ID.</typeparam>
-        /// <param name="id">The ID to validate.</param>
-        /// <param name="errorContext">The error context for validation.</param>
-        /// <param name="idValidationError">The validation error if the ID is invalid.</param>
-        /// <returns>True if the ID is valid; otherwise, false.</returns>
-        /// <out name="idValidationError">The validation error if the ID is invalid.</out>
-        public static bool IsValidId<TKey>(this TKey id, ErrorContext errorContext, out ValidationError idValidationError)
+        public static bool IsNotValidId<TKey>(this TKey id, ErrorContext errorContext, out ValidationError idValidationError)
         {
             idValidationError = default!;
 
@@ -27,12 +29,16 @@ namespace Rasmus.SharedKernel.ResultPattern
                 string descriptionSuffix = $"A valid {fieldName} is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
 
                 idValidationError = ValidationError.Required(errorContext with { FieldName = fieldName, DescriptionSuffix = descriptionSuffix });
-                return false;
+                return true;
             }
-            return true;
+
+            return false;
         }
 
-
+        /// <summary>
+        /// Returns <see langword="true"/> if <paramref name="value"/> is <see langword="null"/>
+        /// and populates <paramref name="nullValueError"/>. Returns <see langword="false"/> otherwise.
+        /// </summary>
         public static bool IsNull<TValue>(this TValue value, ErrorContext errorContext, out ValidationError nullValueError)
         {
             nullValueError = default!;
@@ -43,126 +49,117 @@ namespace Rasmus.SharedKernel.ResultPattern
                 {
                     DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty."
                 });
-
                 return true;
             }
-            else
-                return false;
+
+            return false;
         }
 
-        public static bool RequiredFieldsAreNullOrWhiteSpace(this IEnumerable<(string FieldName, string Value)> requiredValues, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        /// <summary>
+        /// Returns <see langword="true"/> if any field in <paramref name="requiredValues"/> is null or whitespace
+        /// and populates <paramref name="validationErrors"/> with one error per failing field.
+        /// Returns <see langword="false"/> if all fields have content.
+        /// </summary>
+        public static bool RequiredFieldsAreNullOrWhiteSpace(
+            this IEnumerable<(string FieldName, string Value)> requiredValues,
+            ErrorContext errorContext,
+            out IReadOnlyList<ValidationError> validationErrors)
         {
-            validationErrors = new List<ValidationError>();
-            var internalErrors = new List<ValidationError>();
+            var errors = new List<ValidationError>();
 
-            if (requiredValues.IsNull(errorContext, out var nullValueError))
+            foreach (var (fieldName, value) in requiredValues)
             {
-                internalErrors.Add(nullValueError);
-                validationErrors = internalErrors;
-                return true;
+                if (value.IsNullOrWhiteSpace(fieldName, errorContext, out var error))
+                    errors.Add(error);
             }
 
-            foreach (var (FieldName, Value) in requiredValues)
-            {
-                if (Value.IsNullOrWhiteSpace(FieldName, errorContext, out var nullOrEmptyError))
-                {
-                    internalErrors.Add(nullOrEmptyError);
-                }
-            }
-            validationErrors = internalErrors;
-            return validationErrors.Any();
+            validationErrors = errors;
+            return errors.Count > 0;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if <paramref name="value"/> is null or whitespace
+        /// and populates <paramref name="nullOrEmptyError"/>. Returns <see langword="false"/> otherwise.
+        /// </summary>
         public static bool IsNullOrWhiteSpace(this string value, string fieldName, ErrorContext errorContext, out ValidationError nullOrEmptyError)
         {
             nullOrEmptyError = default!;
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                string localFieldName = string.IsNullOrWhiteSpace(fieldName) ? nameof(value) : fieldName;
-                var localErrorContext = errorContext with
-                {
-                    FieldName = localFieldName,
-                    DescriptionSuffix = $"The field '{localFieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty."
-                };
+                string resolvedFieldName = string.IsNullOrWhiteSpace(fieldName) ? errorContext.FieldName ?? nameof(value) : fieldName;
 
-                nullOrEmptyError = ValidationError.Required(localErrorContext);
+                nullOrEmptyError = ValidationError.Required(errorContext with
+                {
+                    FieldName = resolvedFieldName,
+                    DescriptionSuffix = $"The field '{resolvedFieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty."
+                });
                 return true;
             }
-            else
-                return false;
+
+            return false;
         }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if <paramref name="value"/> is null or whitespace
+        /// and populates <paramref name="nullOrEmptyError"/>. Returns <see langword="false"/> otherwise.
+        /// Uses <see cref="ErrorContext.FieldName"/> as the field label in the error description.
+        /// </summary>
         public static bool IsNullOrWhiteSpace(this string value, ErrorContext errorContext, out ValidationError nullOrEmptyError)
         {
             nullOrEmptyError = default!;
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                var localErrorContext = errorContext with
+                nullOrEmptyError = ValidationError.Required(errorContext with
                 {
                     DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty."
-                };
-
-                nullOrEmptyError = ValidationError.Required(localErrorContext);
+                });
                 return true;
             }
-            else
-                return false;
+
+            return false;
         }
 
-        public static bool IsToLow(this int value, int minValue, ErrorContext errorContext, out ValidationError toLowError)
+        /// <summary>
+        /// Returns <see langword="true"/> if <paramref name="value"/> is below <paramref name="minValue"/>
+        /// and populates <paramref name="tooLowError"/>. Returns <see langword="false"/> otherwise.
+        /// </summary>
+        public static bool IsTooLow(this int value, int minValue, ErrorContext errorContext, out ValidationError tooLowError)
         {
-            toLowError = default!;
+            tooLowError = default!;
+
             if (value < minValue)
             {
-                var localErrorContext = errorContext with
+                tooLowError = ValidationError.OutOfRange(errorContext with
                 {
                     DescriptionSuffix = $"The field '{errorContext.FieldName}' must be greater than or equal to {minValue} for the entity '{errorContext.EntityName}'."
-                };
-
-                toLowError = ValidationError.OutOfRange(localErrorContext, $"Greater than or equal to {minValue}");
-                return false;
-            }
-            else
+                }, $">= {minValue}");
                 return true;
+            }
+
+            return false;
         }
 
-        //public static bool Matches<TOriginal, TConfirm>(
-        //    ErrorContext errorContext,
-        //    out ValidationError notMatchingError)
-        //{
-        //    notMatchingError = default!;
-
-        //    if (typeof(TOriginal) != typeof(TConfirm))
-        //    {
-        //        var localErrorContext = errorContext with
-        //        {
-        //            DescriptionSuffix = $"The types '{typeof(TOriginal).Name}' and '{typeof(TConfirm).Name}' must match be matching"
-        //        };
-
-        //        notMatchingError = ValidationError.NonMatchingValues(localErrorContext);
-        //        return false;
-        //    }
-        //    else
-        //        return true;
-        //}
-
-        public static bool Matches(this string value1, string value2, ErrorContext errorContext, out ValidationError notMatchingError)
+        /// <summary>
+        /// Returns <see langword="true"/> if <paramref name="value1"/> and <paramref name="value2"/> do <b>not</b> match
+        /// and populates <paramref name="notMatchingError"/>. Returns <see langword="false"/> if they match.
+        /// Comparison is ordinal (case-sensitive).
+        /// </summary>
+        public static bool DoesNotMatch(this string value1, string value2, ErrorContext errorContext, out ValidationError notMatchingError)
         {
             notMatchingError = default!;
 
             if (!string.Equals(value1, value2, StringComparison.Ordinal))
             {
-                var localErrorContext = errorContext with
+                notMatchingError = ValidationError.NonMatchingValues(errorContext with
                 {
                     DescriptionSuffix = $"The fields '{errorContext.FieldName}' and '{errorContext.ConfirmFieldName}' must match for the entity '{errorContext.EntityName}'."
-                };
-
-                notMatchingError = ValidationError.NonMatchingValues(localErrorContext);
-                return false;
-            }
-            else
+                });
                 return true;
+            }
+
+            return false;
         }
 
     }

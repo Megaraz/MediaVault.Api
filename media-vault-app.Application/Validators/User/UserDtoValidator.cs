@@ -10,7 +10,7 @@ namespace media_vault_app.Application.Validators.User
 {
     public class UserDtoValidator : IUserDtoValidator
     {
-        public bool IsValidLoginDto(UserLoginDto loginDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidLoginDto(UserLoginDto loginDto, ErrorContext errorContext, out IReadOnlyList<ValidationError> validationErrors)
         {
             var localValidationErrors = new List<ValidationError>();
 
@@ -27,7 +27,7 @@ namespace media_vault_app.Application.Validators.User
                 ("Password", loginDto.Password)
             };
 
-            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IEnumerable<ValidationError> nullOrEmptyErrors))
+            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IReadOnlyList<ValidationError> nullOrEmptyErrors))
             {
                 localValidationErrors.AddRange(nullOrEmptyErrors);
             }
@@ -35,7 +35,7 @@ namespace media_vault_app.Application.Validators.User
             validationErrors = localValidationErrors;
             return !validationErrors.Any();
         }
-        public bool IsValidCreateDto(UserRegisterDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidCreateDto(UserRegisterDto createDto, ErrorContext errorContext, out IReadOnlyList<ValidationError> validationErrors)
         {
             var internalErrors = new List<ValidationError>();
 
@@ -55,7 +55,7 @@ namespace media_vault_app.Application.Validators.User
                 (nameof(createDto.ConfirmPassword), createDto.ConfirmPassword)
             };
 
-            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IEnumerable<ValidationError> nullOrEmptyErrors))
+            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IReadOnlyList<ValidationError> nullOrEmptyErrors))
             {
                 internalErrors.AddRange(nullOrEmptyErrors);
             }
@@ -66,7 +66,7 @@ namespace media_vault_app.Application.Validators.User
                 ConfirmFieldName = nameof(createDto.ConfirmEmail)
             };
 
-            if (!createDto.Email.Matches(createDto.ConfirmEmail, matchingEmailErrorContext, out ValidationError notMatchingEmailError))
+            if (createDto.Email.DoesNotMatch(createDto.ConfirmEmail, matchingEmailErrorContext, out ValidationError notMatchingEmailError))
             {
                 internalErrors.Add(notMatchingEmailError);
             }
@@ -77,7 +77,7 @@ namespace media_vault_app.Application.Validators.User
                 ConfirmFieldName = nameof(createDto.ConfirmPassword)
             };
 
-            if (!createDto.Password.Matches(createDto.ConfirmPassword, matchingPasswordErrorContext, out ValidationError notMatchingPasswordError))
+            if (createDto.Password.DoesNotMatch(createDto.ConfirmPassword, matchingPasswordErrorContext, out ValidationError notMatchingPasswordError))
             {
                 internalErrors.Add(notMatchingPasswordError);
             }
@@ -87,7 +87,7 @@ namespace media_vault_app.Application.Validators.User
         }
 
         // TODO: Implement update DTO validation logic
-        public bool IsValidUpdateDto(UserUpdateDto updateDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidUpdateDto(UserUpdateDto updateDto, ErrorContext errorContext, out IReadOnlyList<ValidationError> validationErrors)
         {
             throw new NotImplementedException();
         }

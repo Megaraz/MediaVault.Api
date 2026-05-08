@@ -62,7 +62,7 @@ namespace media_vault_app.Application.Services.Auth
                 return Result<UserDetailedDto>.Failure(unauthorizedError, "Invalid username/email or password.");
             }
 
-            return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDto);
         }
 
         public async Task<Result> RegisterUserAsync(UserRegisterDto registerDto, CancellationToken ct = default)

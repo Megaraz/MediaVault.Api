@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
+using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.Base_Classes
@@ -46,10 +46,10 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var validationErrors = new List<ValidationError>();
 
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
                 validationErrors.Add(ownerIdError);
 
-            if (!id.IsValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
+            if (id.IsNotValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
                 validationErrors.Add(idError);
 
             if (validationErrors.Count > 0)
@@ -64,7 +64,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct);
 
-            return repoResult.Map(_entityToDtoMapper.ToMinimalDTO);
+            return repoResult.Map(_entityToDtoMapper.ToMinimalDto);
 
         }
 
@@ -74,10 +74,10 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var validationErrors = new List<ValidationError>();
 
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
                 validationErrors.Add(ownerIdError);
 
-            if (!id.IsValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
+            if (id.IsNotValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
                 validationErrors.Add(idError);
 
             if (validationErrors.Count > 0)
@@ -92,18 +92,18 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct);
 
-            return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDto);
 
         }
 
 
-        public async Task<Result<IEnumerable<TDetailedDto>>> GetDetailedCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<Result<IReadOnlyList<TDetailedDto>>> GetDetailedCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetDetailedCollectionByOwnerIdAsync), OperationType.GetCollection);
 
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
             {
-                return Result<IEnumerable<TDetailedDto>>.ValidationFailure(
+                return Result<IReadOnlyList<TDetailedDto>>.ValidationFailure(
                     [ownerIdError],
                     "Validation errors occurred, see validationErrors for details.");
             }
@@ -112,7 +112,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                return ownerExistsResult.From<bool, IEnumerable<TDetailedDto>>();
+                return ownerExistsResult.From<bool, IReadOnlyList<TDetailedDto>>();
             }
 
             Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
@@ -123,13 +123,13 @@ namespace media_vault_app.Application.Services.Base_Classes
 
         }
 
-        public async Task<Result<IEnumerable<TMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<Result<IReadOnlyList<TMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetMinimalCollectionByOwnerIdAsync), OperationType.GetCollection);
 
-            if (!ownerId.IsValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
             {
-                return Result<IEnumerable<TMinimalDto>>.ValidationFailure(
+                return Result<IReadOnlyList<TMinimalDto>>.ValidationFailure(
                     [ownerIdError],
                     "Validation errors occurred, see validationErrors for details.");
             }
@@ -138,7 +138,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                return ownerExistsResult.From<bool, IEnumerable<TMinimalDto>>();
+                return ownerExistsResult.From<bool, IReadOnlyList<TMinimalDto>>();
             }
 
             Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);

@@ -239,7 +239,7 @@ namespace media_vault_app.API.Controllers
         #region Read Operations - Shared Endpoints
 
         [HttpPost("search")]
-        public async Task<ActionResult<IEnumerable<MediaEntryMinimalDto>>> SearchMediaEntries(
+        public async Task<ActionResult<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntries(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
@@ -266,7 +266,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MediaEntryMinimalDto>>> GetMediaEntries(
+        public async Task<ActionResult<IReadOnlyList<MediaEntryMinimalDto>>> GetMediaEntries(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 25,
             CancellationToken ct = default)

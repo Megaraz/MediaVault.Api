@@ -6,6 +6,6 @@ namespace Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces
 {
     public interface IMapEntityToDetailedDto<TEntity, TDetailedDto>
     {
-        TDetailedDto ToDetailedDTO(TEntity entity);
+        TDetailedDto ToDetailedDto(TEntity entity);
     }
 }

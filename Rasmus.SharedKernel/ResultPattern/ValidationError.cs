@@ -30,7 +30,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         public static ValidationError AlreadyExists(ErrorContext errorContext)
         {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.GeneralConflict);
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.ValidationAlreadyExists);
 
             string defaultDescriptionSuffix = $"A {errorContext.EntityName} with that {errorContext.FieldName} already exists, please choose a different {errorContext.FieldName}.";
 

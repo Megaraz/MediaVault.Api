@@ -9,7 +9,7 @@ namespace media_vault_app.Application.Validators.MediaEntry
 {
     public class MediaEntryDtoValidator : IMediaEntryDtoValidator
     {
-        public bool IsValidCreateDto(MediaEntryCreateDto createDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidCreateDto(MediaEntryCreateDto createDto, ErrorContext errorContext, out IReadOnlyList<ValidationError> validationErrors)
         {
             List<ValidationError> internalErrors = new();
 
@@ -32,7 +32,7 @@ namespace media_vault_app.Application.Validators.MediaEntry
 
         }
 
-        public bool IsValidUpdateDto(MediaEntryUpdateDto updateDto, ErrorContext errorContext, out IEnumerable<ValidationError> validationErrors)
+        public bool IsValidUpdateDto(MediaEntryUpdateDto updateDto, ErrorContext errorContext, out IReadOnlyList<ValidationError> validationErrors)
         {
             List<ValidationError> internalErrors = new();
 

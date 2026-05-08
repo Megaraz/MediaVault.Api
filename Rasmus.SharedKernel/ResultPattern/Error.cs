@@ -8,16 +8,17 @@ namespace Rasmus.SharedKernel.ResultPattern
         NotFound = 3,
         Conflict = 4,
         Unauthorized = 5,
-        Forbidden = 6                                            ,
+        Forbidden = 6,
         Database = 7,
-        HttpError = 8
+        HttpError = 8,
+        Cancelled = 9
 
     }
 
     public record Error(string Code, string Description, ErrorType Type, string UserMessage = "", Exception? exception = null)
     {
 
-        public static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
+        internal static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
 
         public override string ToString()
         {
@@ -68,6 +69,17 @@ namespace Rasmus.SharedKernel.ResultPattern
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
             return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Failure, defaultDescriptionSuffix, exception);
+        }
+
+        public static Error Cancelled(ErrorContext errorContext)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.OperationCancelled);
+
+            string defaultDescriptionSuffix = $"The operation on {errorContext.EntityName} was cancelled.";
+
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Cancelled, defaultDescriptionSuffix);
         }
 
         protected static string FormatDescription(ErrorContext errorContext, string defaultDescriptionSuffix)

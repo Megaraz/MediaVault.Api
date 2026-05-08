@@ -18,7 +18,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
     public class MediaEntryEntityMapper : IMediaEntryEntityMapper
     {
 
-        public MediaEntryDetailedDto ToDetailedDTO(MediaEntryEntity entity) =>
+        public MediaEntryDetailedDto ToDetailedDto(MediaEntryEntity entity) =>
             entity switch
             {
                 MovieEntity movie => MapMovie(movie),
@@ -30,9 +30,9 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             };
 
 
-        public IEnumerable<MediaEntryDetailedDto> ToDetailedDtoCollection(IEnumerable<MediaEntryEntity> entities) =>
-            entities.Select(ToDetailedDTO);
-        public MediaEntryMinimalDto ToMinimalDTO(MediaEntryEntity entity)
+        public IReadOnlyList<MediaEntryDetailedDto> ToDetailedDtoCollection(IEnumerable<MediaEntryEntity> entities) =>
+            entities.Select(ToDetailedDto).ToList();
+        public MediaEntryMinimalDto ToMinimalDto(MediaEntryEntity entity)
         {
 
             return new MediaEntryMinimalDto
@@ -49,8 +49,8 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             };
         }
 
-        public IEnumerable<MediaEntryMinimalDto> ToMinimalDtoCollection(IEnumerable<MediaEntryEntity> entities) =>
-            entities.Select(ToMinimalDTO);
+        public IReadOnlyList<MediaEntryMinimalDto> ToMinimalDtoCollection(IEnumerable<MediaEntryEntity> entities) =>
+            entities.Select(ToMinimalDto).ToList();
 
         // Movie
         private static MovieEntryDetailedDto MapMovie(MovieEntity movie) => new()

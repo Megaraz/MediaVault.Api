@@ -7,7 +7,7 @@ namespace media_vault_app.Application.Interfaces.Services
     public interface IRawgApiService
     {
         Task<Result<RawgGameDetailedDto>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default);
-        Task<Result<IReadOnlyList<MediaEntrySearchResultDto>>> SearchGamesAsync(
+        Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchGamesAsync(
             string search, 
             int page = 1, 
             int pageSize = 8, 

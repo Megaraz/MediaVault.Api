@@ -6,6 +6,6 @@ namespace Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces
 {
     public interface IMapEntityToMinimalDto<TEntity, TMinimalDto>
     {
-        TMinimalDto ToMinimalDTO(TEntity entity);
+        TMinimalDto ToMinimalDto(TEntity entity);
     }
 }

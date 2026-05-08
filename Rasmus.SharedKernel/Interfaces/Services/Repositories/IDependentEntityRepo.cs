@@ -4,7 +4,7 @@ using System.Text;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.ResultPattern;
 
-namespace Rasmus.SharedKernel.Interfaces
+namespace Rasmus.SharedKernel.Interfaces.Services.Repositories
 {
     public interface IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent> 
         where TEntityDependent : class, IDependentEntity<TKeyOwner, TKeyDependent>

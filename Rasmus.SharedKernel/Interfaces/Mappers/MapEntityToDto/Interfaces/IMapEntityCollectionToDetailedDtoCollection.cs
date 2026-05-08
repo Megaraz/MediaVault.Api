@@ -6,6 +6,6 @@ namespace Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces
 {
     public interface IMapEntityCollectionToDetailedDtoCollection<TEntity, TDetailedDto>
     {
-        IEnumerable<TDetailedDto> ToDetailedDtoCollection(IEnumerable<TEntity> entities);
+        IReadOnlyList<TDetailedDto> ToDetailedDtoCollection(IEnumerable<TEntity> entities);
     }
 }

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
+using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.Base_Classes
@@ -32,16 +32,16 @@ namespace media_vault_app.Application.Services.Base_Classes
         {
             var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
-            if (!id.IsValidId(baseErrorContext, out var idNotValidError))
+            if (id.IsNotValidId(baseErrorContext, out var idNotValidError))
                 return Result<TDetailedDto>.ValidationFailure([idNotValidError]);
 
             var repoResult = await _repo.GetByIdAsync(id, ct);
 
-            return repoResult.Map(_entityToDtoMapper.ToDetailedDTO);
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDto);
 
         }
 
-        public async Task<Result<IEnumerable<TDetailedDto>>> GetDetailedCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<Result<IReadOnlyList<TDetailedDto>>> GetDetailedCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 
@@ -51,7 +51,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
         }
 
-        public async Task<Result<IEnumerable<TMinimalDto>>> GetMinimalCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<Result<IReadOnlyList<TMinimalDto>>> GetMinimalCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
 

@@ -11,17 +11,17 @@ namespace media_vault_app.Application.Mappers.User
 {
     public class UserEntityMapper : IUserEntityMapper 
     {
-        public UserDetailedDto ToDetailedDTO(UserEntity entity) =>
+        public UserDetailedDto ToDetailedDto(UserEntity entity) =>
             new(entity.Id, entity.Username, entity.Email, entity.CreatedAtUtc);
 
-        public IEnumerable<UserDetailedDto> ToDetailedDtoCollection(IEnumerable<UserEntity> entities) =>
-            entities.Select(ToDetailedDTO);
+        public IReadOnlyList<UserDetailedDto> ToDetailedDtoCollection(IEnumerable<UserEntity> entities) =>
+            entities.Select(ToDetailedDto).ToList();
 
-        public UserMinimalDto ToMinimalDTO(UserEntity entity) =>
+        public UserMinimalDto ToMinimalDto(UserEntity entity) =>
             new(entity.Id, entity.Username, entity.Email);
 
-        public IEnumerable<UserMinimalDto> ToMinimalDtoCollection(IEnumerable<UserEntity> entities) =>
-            entities.Select(ToMinimalDTO);
+        public IReadOnlyList<UserMinimalDto> ToMinimalDtoCollection(IEnumerable<UserEntity> entities) =>
+            entities.Select(ToMinimalDto).ToList();
 
     }
 }

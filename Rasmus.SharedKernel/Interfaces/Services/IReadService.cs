@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
+using Rasmus.SharedKernel.Interfaces.Services.CrudServiceInterfaces;
 
 namespace Rasmus.SharedKernel.Interfaces.Services
 {
