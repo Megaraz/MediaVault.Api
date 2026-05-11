@@ -26,7 +26,8 @@ namespace Rasmus.SharedKernel.ResultPattern
                 return Result<TValue>.Failure(HttpError.MalformedResponse(
                     localErrorContext with
                     {
-                        DescriptionSuffix = $"The external service returned {(int)response.StatusCode} ({response.StatusCode}) without the expected response body."
+                        DescriptionSuffix = $"The external service returned {(int)response.StatusCode}" + 
+                        $" ({response.StatusCode}) without the expected response body."
                     }));
             }
 
@@ -35,7 +36,8 @@ namespace Rasmus.SharedKernel.ResultPattern
                 return Result<TValue>.Failure(HttpError.MalformedResponse(
                     localErrorContext with
                     {
-                        DescriptionSuffix = $"The external service returned {(int)response.StatusCode} ({response.StatusCode}) with unsupported content type '{response.Content.Headers.ContentType?.MediaType ?? "unknown"}'."
+                        DescriptionSuffix = $"The external service returned {(int)response.StatusCode}" + 
+                        $" ({response.StatusCode}) with unsupported content type '{response.Content.Headers.ContentType?.MediaType ?? "unknown"}'."
                     }));
             }
 
@@ -48,7 +50,8 @@ namespace Rasmus.SharedKernel.ResultPattern
                     return Result<TValue>.Failure(HttpError.MalformedResponse(
                         localErrorContext with
                         {
-                            DescriptionSuffix = $"The external service returned {(int)response.StatusCode} ({response.StatusCode}) with an empty or invalid JSON body."
+                            DescriptionSuffix = $"The external service returned {(int)response.StatusCode}" + 
+                            $" ({response.StatusCode}) with an empty or invalid JSON body."
                         }));
                 }
 
