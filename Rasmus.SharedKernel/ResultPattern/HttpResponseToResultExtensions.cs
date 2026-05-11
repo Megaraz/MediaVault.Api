@@ -118,7 +118,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 HttpStatusCode.Unauthorized => HttpError.UnauthorizedAccess(errorContext),
                 HttpStatusCode.Forbidden => HttpError.Forbidden(errorContext),
                 HttpStatusCode.InternalServerError => HttpError.InternalServerError(errorContext),
-                _ => HttpError.Custom(errorContext),
+                _ => HttpError.Custom(errorContext, $"The external service returned an unexpected HTTP status code ({(int)statusCode})."),
             };
         }
 

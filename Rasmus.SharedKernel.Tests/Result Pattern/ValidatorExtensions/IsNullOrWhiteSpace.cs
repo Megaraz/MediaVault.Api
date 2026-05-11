@@ -83,14 +83,15 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public void Should_Fall_Back_To_Value_FieldName_When_FieldName_Argument_Is_Missing(string? fieldName)
+        public void Should_Fall_Back_To_Non_Empty_FieldName_When_FieldName_Argument_Is_Missing(string? fieldName)
         {
             var errorContext = TestErrorContextFactory.Create();
 
             var result = ValidatorExtensions.IsNullOrWhiteSpace(string.Empty, fieldName!, errorContext, out var error);
 
             Assert.True(result);
-            ValidationErrorAssert.IsRequired(error, fieldName: "value", entityName: "User");
+            ValidationErrorAssert.IsRequired(error, entityName: "User");
+            Assert.False(string.IsNullOrWhiteSpace(error.Description));
         }
     }
 }

@@ -9,6 +9,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         UpdateFailure = 4,
         DeleteFailure = 5,
         ConcurrencyFailure = 6,
+        UnexpectedFailure = 7
     }
 
     public record DatabaseError : Error
@@ -85,6 +86,25 @@ namespace Rasmus.SharedKernel.ResultPattern
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
             return new DatabaseError(errorCode.Code, formattedErrorDescription, DatabaseErrorType.ConcurrencyFailure, defaultDescriptionSuffix, exception);
+        }
+        public static DatabaseError UnexpectedFailure(
+            ErrorContext errorContext,
+            Exception exception)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.DatabaseFailure);
+
+            string defaultDescriptionSuffix =
+                $"An unexpected infrastructure failure occurred while performing {errorContext.Operation} for entity {errorCode.NameOfEntity}.";
+
+            string formattedErrorDescription =
+                FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new DatabaseError(
+                errorCode.Code,
+                formattedErrorDescription,
+                DatabaseErrorType.UnexpectedFailure,
+                defaultDescriptionSuffix,
+                exception);
         }
     }
 }

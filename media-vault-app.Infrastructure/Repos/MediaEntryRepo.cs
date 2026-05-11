@@ -2,13 +2,15 @@
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
 {
     public class MediaEntryRepo : DependentEntityRepoBase<MediaEntry, Guid, Guid>, IMediaEntryRepo
     {
-        public MediaEntryRepo(AppDbContext appDbContext) : base(appDbContext)
+        public MediaEntryRepo(AppDbContext appDbContext, IErrorLogger errorLogger) 
+            : base(appDbContext, errorLogger)
         {
         }
 
@@ -16,7 +18,7 @@ namespace media_vault_app.Infrastructure.Repos
         // Uses the base overload that accepts an include-shaping delegate.
         // EF Core supports casting to a derived type inside Include(), so it generates
         // the correct LEFT JOINs for each subtype without needing separate queries.
-        public override Task<Result<MediaEntry>> GetByIdAsync(
+        public Task<Result<MediaEntry>> GetByIdAsync(
             Guid ownerId,
             Guid entityId,
             CancellationToken ct = default)

@@ -3,10 +3,10 @@ using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
 {
-    public class ValidatorExtensions_Matches_Tests
+    public class ValidatorExtensions_DoesNotMatch_Tests
     {
         [Fact]
-        public void Should_Return_False_And_Error_When_Strings_Do_Not_Match()
+        public void Should_Return_True_And_Error_When_Strings_Do_Not_Match()
         {
             string value1 = "password123";
             string value2 = "password456";
@@ -14,12 +14,12 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
 
             var result = ValidatorExtensions.DoesNotMatch(value1, value2, errorContext, out var error);
 
-            Assert.False(result);
+            Assert.True(result);
             ValidationErrorAssert.IsNonMatching(error, "Password", "ConfirmPassword", "User");
         }
 
         [Fact]
-        public void Should_Return_False_And_Error_When_Case_Differs()
+        public void Should_Return_True_And_Error_When_Case_Differs()
         {
             string value1 = "Password";
             string value2 = "password";
@@ -27,38 +27,42 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
 
             var result = ValidatorExtensions.DoesNotMatch(value1, value2, errorContext, out var error);
 
-            Assert.False(result);
+            Assert.True(result);
             ValidationErrorAssert.IsNonMatching(error, "Password", "ConfirmPassword", "User");
         }
 
-        [Fact]
-        public void Should_Return_False_And_Error_When_One_Value_Is_Null()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Should_Return_True_And_Required_Error_When_Value1_Is_Null_Or_Whitespace(string? value1)
         {
-            string value1 = "password123";
-            string value2 = null!;
+            string value2 = "password123";
             var errorContext = TestErrorContextFactory.Create(fieldName: "Password", confirmFieldName: "ConfirmPassword");
 
-            var result = ValidatorExtensions.DoesNotMatch(value1, value2, errorContext, out var error);
-
-            Assert.False(result);
-            ValidationErrorAssert.IsNonMatching(error, "Password", "ConfirmPassword", "User");
-        }
-
-        [Fact]
-        public void Should_Return_True_And_No_Error_When_Both_Values_Are_Null()
-        {
-            string value1 = null!;
-            string value2 = null!;
-            var errorContext = TestErrorContextFactory.Create(fieldName: "Password", confirmFieldName: "ConfirmPassword");
-
-            var result = ValidatorExtensions.DoesNotMatch(value1, value2, errorContext, out var error);
+            var result = ValidatorExtensions.DoesNotMatch(value1!, value2, errorContext, out var error);
 
             Assert.True(result);
-            Assert.Null(error);
+            ValidationErrorAssert.IsRequired(error, fieldName: "Password", entityName: "User");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Should_Return_True_And_Required_Error_When_Value2_Is_Null_Or_Whitespace(string? value2)
+        {
+            string value1 = "password123";
+            var errorContext = TestErrorContextFactory.Create(fieldName: "Password", confirmFieldName: "ConfirmPassword");
+
+            var result = ValidatorExtensions.DoesNotMatch(value1, value2!, errorContext, out var error);
+
+            Assert.True(result);
+            ValidationErrorAssert.IsRequired(error, fieldName: "ConfirmPassword", entityName: "User");
         }
 
         [Fact]
-        public void Should_Return_True_And_No_Error_When_Strings_Match()
+        public void Should_Return_False_And_No_Error_When_Strings_Match()
         {
             string value1 = "password123";
             string value2 = "password123";
@@ -66,20 +70,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
 
             var result = ValidatorExtensions.DoesNotMatch(value1, value2, errorContext, out var error);
 
-            Assert.True(result);
-            Assert.Null(error);
-        }
-
-        [Fact]
-        public void Should_Return_True_And_No_Error_When_Both_Are_Empty()
-        {
-            string value1 = string.Empty;
-            string value2 = string.Empty;
-            var errorContext = TestErrorContextFactory.Create(fieldName: "Password", confirmFieldName: "ConfirmPassword");
-
-            var result = ValidatorExtensions.DoesNotMatch(value1, value2, errorContext, out var error);
-
-            Assert.True(result);
+            Assert.False(result);
             Assert.Null(error);
         }
     }

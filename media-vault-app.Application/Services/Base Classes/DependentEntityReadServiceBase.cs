@@ -62,7 +62,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 return ownerExistsResult.From<bool, TMinimalDto>();
             }
 
-            var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct);
+            var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct: ct);
 
             return repoResult.Map(_entityToDtoMapper.ToMinimalDto);
 
@@ -90,7 +90,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 return ownerExistsResult.From<bool, TDetailedDto>();
             }
 
-            var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct);
+            var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct: ct);
 
             return repoResult.Map(_entityToDtoMapper.ToDetailedDto);
 

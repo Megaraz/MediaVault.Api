@@ -22,8 +22,10 @@ using media_vault_app.Infrastructure.Repos;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.Interfaces.Validators;
+using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.API
 {
@@ -141,6 +143,16 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IGoogleBooksApiService, GoogleBooksApiService>();
             #endregion
 
+            builder.Services.AddSingleton<IErrorLogger, ErrorLogger>(sp =>
+            {
+                var configuration = new ErrorLoggerConfiguration
+                {
+                    BasePath = Path.Combine(AppContext.BaseDirectory, "Logs"),
+                    Filename = "errors.log.ndjson"
+                };
+
+                return new ErrorLogger(configuration);
+            });
 
             builder.Services.AddControllers();
 

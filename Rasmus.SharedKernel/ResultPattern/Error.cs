@@ -15,7 +15,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
     }
 
-    public record Error(string Code, string Description, ErrorType Type, string UserMessage = "", Exception? exception = null)
+    public record Error(string Code, string Description, ErrorType Type, string UserMessage = "", Exception? Exception = null)
     {
 
         internal static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
@@ -51,7 +51,12 @@ namespace Rasmus.SharedKernel.ResultPattern
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.GeneralUnauthorized);
 
-            string defaultDescriptionSuffix = $"Unauthorized access" + (string.IsNullOrWhiteSpace(errorContext.FieldName) ? "" : $" to {errorContext.FieldName}");
+            string defaultDescriptionSuffix = $"Unauthorized access" +
+                (
+                    string.IsNullOrWhiteSpace(errorContext.FieldName)
+                        ? ""
+                        : $" to {errorContext.FieldName}"
+                );
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 

@@ -8,17 +8,14 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
     public class ValidatorExtensions_RequiredFieldsAreNullOrWhiteSpace_Tests
     {
         [Fact]
-        public void Should_Return_True_And_Errors_For_Null_Collection()
+        public void Should_Throw_ArgumentNullException_When_Collection_Is_Null()
         {
             IEnumerable<(string FieldName, string Value)> requiredValues = null!;
             var errorContext = TestErrorContextFactory.Create();
 
-            var result = ValidatorExtensions.RequiredFieldsAreNullOrWhiteSpace(requiredValues, errorContext, out var errors);
-
-            Assert.True(result);
-            Assert.NotNull(errors);
-            Assert.NotEmpty(errors);
-            Assert.All(errors, error => ValidationErrorAssert.IsRequired(error, entityName: "User"));
+            Assert.Throws<ArgumentNullException>(() => 
+                ValidatorExtensions.RequiredFieldsAreNullOrWhiteSpace(
+                    requiredValues, errorContext, out var errors));
         }
 
         [Fact]

@@ -19,8 +19,11 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// Returns <see langword="true"/> if the id is <b>not valid</b> and populates <paramref name="idValidationError"/>.
         /// Returns <see langword="false"/> if the id is valid.
         /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
         public static bool IsNotValidId<TKey>(this TKey id, ErrorContext errorContext, out ValidationError idValidationError)
         {
+            ArgumentNullException.ThrowIfNull(errorContext);
+
             idValidationError = default!;
 
             if (!Validator.IsValidId(id))
@@ -39,8 +42,11 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// Returns <see langword="true"/> if <paramref name="value"/> is <see langword="null"/>
         /// and populates <paramref name="nullValueError"/>. Returns <see langword="false"/> otherwise.
         /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
         public static bool IsNull<TValue>(this TValue value, ErrorContext errorContext, out ValidationError nullValueError)
         {
+            ArgumentNullException.ThrowIfNull(errorContext);
+
             nullValueError = default!;
 
             if (value is null)
@@ -60,11 +66,15 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// and populates <paramref name="validationErrors"/> with one error per failing field.
         /// Returns <see langword="false"/> if all fields have content.
         /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="requiredValues"/> or <paramref name="errorContext"/> is <see langword="null"/>.</exception>
         public static bool RequiredFieldsAreNullOrWhiteSpace(
             this IEnumerable<(string FieldName, string Value)> requiredValues,
             ErrorContext errorContext,
             out IReadOnlyList<ValidationError> validationErrors)
         {
+            ArgumentNullException.ThrowIfNull(requiredValues);
+            ArgumentNullException.ThrowIfNull(errorContext);
+
             var errors = new List<ValidationError>();
 
             foreach (var (fieldName, value) in requiredValues)
@@ -81,8 +91,11 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// Returns <see langword="true"/> if <paramref name="value"/> is null or whitespace
         /// and populates <paramref name="nullOrEmptyError"/>. Returns <see langword="false"/> otherwise.
         /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
         public static bool IsNullOrWhiteSpace(this string value, string fieldName, ErrorContext errorContext, out ValidationError nullOrEmptyError)
         {
+            ArgumentNullException.ThrowIfNull(errorContext);
+
             nullOrEmptyError = default!;
 
             if (string.IsNullOrWhiteSpace(value))
@@ -105,8 +118,11 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// and populates <paramref name="nullOrEmptyError"/>. Returns <see langword="false"/> otherwise.
         /// Uses <see cref="ErrorContext.FieldName"/> as the field label in the error description.
         /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
         public static bool IsNullOrWhiteSpace(this string value, ErrorContext errorContext, out ValidationError nullOrEmptyError)
         {
+            ArgumentNullException.ThrowIfNull(errorContext);
+
             nullOrEmptyError = default!;
 
             if (string.IsNullOrWhiteSpace(value))
@@ -125,8 +141,12 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// Returns <see langword="true"/> if <paramref name="value"/> is below <paramref name="minValue"/>
         /// and populates <paramref name="tooLowError"/>. Returns <see langword="false"/> otherwise.
         /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
         public static bool IsTooLow(this int value, int minValue, ErrorContext errorContext, out ValidationError tooLowError)
         {
+
+            ArgumentNullException.ThrowIfNull(errorContext);
+
             tooLowError = default!;
 
             if (value < minValue)
@@ -146,9 +166,24 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// and populates <paramref name="notMatchingError"/>. Returns <see langword="false"/> if they match.
         /// Comparison is ordinal (case-sensitive).
         /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
         public static bool DoesNotMatch(this string value1, string value2, ErrorContext errorContext, out ValidationError notMatchingError)
         {
+            ArgumentNullException.ThrowIfNull(errorContext);
+
             notMatchingError = default!;
+
+            if (value1.IsNullOrWhiteSpace(errorContext, out var value1Error))
+            {
+                notMatchingError = value1Error;
+                return true;
+            }
+
+            if (value2.IsNullOrWhiteSpace(errorContext with { FieldName = errorContext.ConfirmFieldName }, out var value2Error))
+            {
+                notMatchingError = value2Error;
+                return true;
+            }
 
             if (!string.Equals(value1, value2, StringComparison.Ordinal))
             {
