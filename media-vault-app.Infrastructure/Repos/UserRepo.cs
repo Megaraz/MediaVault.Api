@@ -7,13 +7,14 @@ using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.Repos
 {
     public class UserRepo : RepoBase<User, Guid>, IUserRepo
     {
-        public UserRepo(AppDbContext appDbContext) : base(appDbContext)
+        public UserRepo(AppDbContext appDbContext, IErrorLogger errorLogger) : base(appDbContext, errorLogger)
         {
         }
 

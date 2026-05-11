@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.ResultPattern;
@@ -18,12 +19,15 @@ namespace media_vault_app.Infrastructure.Repos
     {
         protected readonly AppDbContext _appDbContext;
         protected readonly DbSet<TEntity> _dbSet;
+        protected readonly IErrorLogger _errorLogger;
 
-        public RepoBase(AppDbContext appDbContext)
+        public RepoBase(AppDbContext appDbContext, IErrorLogger errorLogger)
         {
             _appDbContext = appDbContext;
             _dbSet = _appDbContext.Set<TEntity>();
+            _errorLogger = errorLogger;
         }
+
         public virtual async Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
@@ -34,24 +38,23 @@ namespace media_vault_app.Infrastructure.Repos
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result<TEntity>.Success(entity);
             }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                return Result<TEntity>.Failure(DatabaseError.ConcurrencyFailure(baseErrorContext, ex));
-            }
-            catch (DbUpdateException ex)
-            {
-                return Result<TEntity>.Failure(DatabaseError.CreateFailure(baseErrorContext, ex));
-            }
             catch (OperationCanceledException)
             {
                 return Result<TEntity>.Failure(Error.Cancelled(baseErrorContext));
             }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                return await LogAndFailAsync<TEntity>(DatabaseError.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
+            }
+            catch (DbUpdateException ex)
+            {
+                return await LogAndFailAsync<TEntity>(DatabaseError.CreateFailure(baseErrorContext, ex), CancellationToken.None);
+            }
             catch (Exception ex)
             {
-                return Result<TEntity>.Failure(DatabaseError.CreateFailure(baseErrorContext, ex));
+                return await LogAndFailAsync<TEntity>(DatabaseError.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
             }
         }
-
 
         public virtual async Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken ct = default)
         {
@@ -73,13 +76,13 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return Result<TEntity>.Failure(DatabaseError.GetFailure(baseErrorContext, ex));
+                return await LogAndFailAsync<TEntity>(DatabaseError.GetFailure(baseErrorContext, ex), CancellationToken.None);
             }
-
         }
 
         public virtual async Task<Result<IReadOnlyList<TEntity>>> GetCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default)
         {
+            var baseErrorContext = DefineErrorContext(nameof(GetCollectionAsync), OperationType.GetCollection);
 
             try
             {
@@ -93,13 +96,11 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                var baseErrorContext = DefineErrorContext(nameof(GetCollectionAsync), OperationType.GetCollection);
                 return Result<IReadOnlyList<TEntity>>.Failure(Error.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
-                var baseErrorContext = DefineErrorContext(nameof(GetCollectionAsync), OperationType.GetCollection);
-                return Result<IReadOnlyList<TEntity>>.Failure(DatabaseError.GetCollectionFailure(baseErrorContext, ex));
+                return await LogAndFailAsync<IReadOnlyList<TEntity>>(DatabaseError.GetCollectionFailure(baseErrorContext, ex), CancellationToken.None);
             }
         }
 
@@ -121,21 +122,21 @@ namespace media_vault_app.Infrastructure.Repos
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
             }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                return Result.Failure(DatabaseError.ConcurrencyFailure(baseErrorContext, ex));
-            }
-            catch (DbUpdateException ex)
-            {
-                return Result.Failure(DatabaseError.DeleteFailure(baseErrorContext, ex));
-            }
             catch (OperationCanceledException)
             {
                 return Result.Failure(Error.Cancelled(baseErrorContext));
             }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                return await LogAndFailAsync(DatabaseError.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
+            }
+            catch (DbUpdateException ex)
+            {
+                return await LogAndFailAsync(DatabaseError.DeleteFailure(baseErrorContext, ex), CancellationToken.None);
+            }
             catch (Exception ex)
             {
-                return Result.Failure(DatabaseError.DeleteFailure(baseErrorContext, ex));
+                return await LogAndFailAsync(DatabaseError.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
             }
         }
 
@@ -161,25 +162,23 @@ namespace media_vault_app.Infrastructure.Repos
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
 
                 return Result.Success();
-
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                return Result.Failure(DatabaseError.ConcurrencyFailure(baseErrorContext, ex));
-            }
-            catch (DbUpdateException ex)
-            {
-                return Result.Failure(DatabaseError.UpdateFailure(baseErrorContext, ex));
             }
             catch (OperationCanceledException)
             {
                 return Result.Failure(Error.Cancelled(baseErrorContext));
             }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                return await LogAndFailAsync(DatabaseError.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
+            }
+            catch (DbUpdateException ex)
+            {
+                return await LogAndFailAsync(DatabaseError.UpdateFailure(baseErrorContext, ex), CancellationToken.None);
+            }
             catch (Exception ex)
             {
-                return Result.Failure(DatabaseError.UpdateFailure(baseErrorContext, ex));
+                return await LogAndFailAsync(DatabaseError.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
             }
-
         }
 
         public virtual async Task<Result<bool>> ExistsAsync(TKey id, CancellationToken ct = default)
@@ -204,8 +203,34 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure(DatabaseError.GetFailure(baseErrorContext, ex));
+                return await LogAndFailAsync<bool>(DatabaseError.GetFailure(baseErrorContext, ex), CancellationToken.None);
             }
+        }
+
+        protected async Task<Result> LogAndFailAsync(Error error, CancellationToken ct = default)
+        {
+            try
+            {
+                await _errorLogger.LogErrorToFileAsync(error, ct);
+            }
+            catch
+            {
+            }
+
+            return Result.Failure(error);
+        }
+
+        protected async Task<Result<T>> LogAndFailAsync<T>(Error error, CancellationToken ct = default)
+        {
+            try
+            {
+                await _errorLogger.LogErrorToFileAsync(error, ct);
+            }
+            catch
+            {
+            }
+
+            return Result<T>.Failure(error);
         }
 
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null, string? confirmFieldName = null)
