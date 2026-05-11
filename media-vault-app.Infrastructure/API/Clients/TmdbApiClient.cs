@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Options;
+using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.API.Clients
@@ -24,33 +22,77 @@ namespace media_vault_app.Infrastructure.API.Clients
         public string ApiAccessToken { get; set; } = string.Empty;
     }
 
-    public class TmdbApiClient : ITmdbApiClient
+    public class TmdbApiClient : ApiClientBase, ITmdbApiClient
     {
 
         private readonly HttpClient _httpClient;
         private readonly TmdbApiOptions _options;
 
-        public TmdbApiClient(HttpClient httpClient, IOptions<TmdbApiOptions> options)
+        public TmdbApiClient(
+            HttpClient httpClient,
+            IOptions<TmdbApiOptions> options,
+            IErrorLogger errorLogger,
+            IErrorLogPolicy errorLogPolicy)
+            : base(errorLogger, errorLogPolicy)
         {
             _httpClient = httpClient;
             _options = options.Value;
         }
 
-        public async Task<Result<TmdbTvSeriesDetailedResult>> GetTvSeriesByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Result<TmdbTvSeriesDetailedResult>> GetTvSeriesByIdAsync(
+            int id,
+            CancellationToken cancellationToken = default)
         {
-            var baseErrorContext = DefineErrorContext(nameof(GetTvSeriesByIdAsync), OperationType.Get);
+            var errorContext = DefineErrorContext(nameof(GetTvSeriesByIdAsync), OperationType.Get);
 
-            using var response = await _httpClient.GetAsync(BuildRequestUri($"tv/{id}"), cancellationToken);
+            try
+            {
+                using var response = await _httpClient.GetAsync(BuildRequestUri($"tv/{id}"), cancellationToken);
 
-            return await response.MapToResultAsync<TmdbTvSeriesDetailedResult>(baseErrorContext, cancellationToken);
+                var result = await response.MapToResultAsync<TmdbTvSeriesDetailedResult>(errorContext, cancellationToken);
+
+                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
+
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                return Result<TmdbTvSeriesDetailedResult>.Failure(Error.Cancelled(errorContext));
+            }
+            catch (HttpRequestException exception)
+            {
+                var error = HttpError.TransportFailure(errorContext, exception);
+                await LogIfNeededAsync(error, CancellationToken.None);
+                return Result<TmdbTvSeriesDetailedResult>.Failure(error);
+            }
         }
-        public async Task<Result<TmdbMovieDetailedResponse>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default)
+
+        public async Task<Result<TmdbMovieDetailedResponse>> GetMovieByIdAsync(
+            int id,
+            CancellationToken cancellationToken = default)
         {
-            var baseErrorContext = DefineErrorContext(nameof(GetMovieByIdAsync), OperationType.Get);
+            var errorContext = DefineErrorContext(nameof(GetMovieByIdAsync), OperationType.Get);
 
-            using var response = await _httpClient.GetAsync(BuildRequestUri($"movie/{id}"), cancellationToken);
+            try
+            {
+                using var response = await _httpClient.GetAsync(BuildRequestUri($"movie/{id}"), cancellationToken);
 
-            return await response.MapToResultAsync<TmdbMovieDetailedResponse>(baseErrorContext, cancellationToken);
+                var result = await response.MapToResultAsync<TmdbMovieDetailedResponse>(errorContext, cancellationToken);
+
+                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
+
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                return Result<TmdbMovieDetailedResponse>.Failure(Error.Cancelled(errorContext));
+            }
+            catch (HttpRequestException exception)
+            {
+                var error = HttpError.TransportFailure(errorContext, exception);
+                await LogIfNeededAsync(error, CancellationToken.None);
+                return Result<TmdbMovieDetailedResponse>.Failure(error);
+            }
         }
 
         public async Task<Result<TmdbSearchResponse>> SearchAsync(
@@ -58,7 +100,7 @@ namespace media_vault_app.Infrastructure.API.Clients
             MediaType mediaType,
             CancellationToken cancellationToken = default)
         {
-            var baseErrorContext = DefineErrorContext(nameof(SearchAsync), OperationType.GetCollection);
+            var errorContext = DefineErrorContext(nameof(SearchAsync), OperationType.GetCollection);
 
             string? endpoint = mediaType switch
             {
@@ -69,8 +111,8 @@ namespace media_vault_app.Infrastructure.API.Clients
 
             if (endpoint is null)
             {
-                var mediaTypeErrorContext = baseErrorContext with 
-                { 
+                var mediaTypeErrorContext = errorContext with
+                {
                     FieldName = $"{nameof(mediaType)}",
                     DescriptionSuffix = "Failed to determine API endpoint for media type."
                 };
@@ -80,11 +122,28 @@ namespace media_vault_app.Infrastructure.API.Clients
                 return Result<TmdbSearchResponse>.ValidationFailure([invalidMediaTypeError], mediaTypeErrorContext.DescriptionSuffix);
             }
 
-            var requestUri = BuildRequestUri($"search/{endpoint}");
+            try
+            {
+                var requestUri = BuildRequestUri($"search/{endpoint}");
 
-            using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
+                using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
 
-            return await response.MapToResultAsync<TmdbSearchResponse>(baseErrorContext, cancellationToken);
+                var result = await response.MapToResultAsync<TmdbSearchResponse>(errorContext, cancellationToken);
+
+                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
+
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                return Result<TmdbSearchResponse>.Failure(Error.Cancelled(errorContext));
+            }
+            catch (HttpRequestException exception)
+            {
+                var error = HttpError.TransportFailure(errorContext, exception);
+                await LogIfNeededAsync(error, CancellationToken.None);
+                return Result<TmdbSearchResponse>.Failure(error);
+            }
         }
 
         private static string BuildRequestUri(string pathAndQuery)

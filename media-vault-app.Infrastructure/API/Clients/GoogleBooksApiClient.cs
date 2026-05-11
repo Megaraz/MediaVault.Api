@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using media_vault_app.Application.DTOs.External_API_Contracts.GoogleBooks;
 using media_vault_app.Application.Interfaces.Clients;
 using Microsoft.Extensions.Options;
+using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Infrastructure.API.Clients
@@ -18,24 +19,52 @@ namespace media_vault_app.Infrastructure.API.Clients
         public string ApiKey { get; set; } = string.Empty;
     }
 
-    public sealed class GoogleBooksApiClient : IGoogleBooksApiClient
+    public sealed class GoogleBooksApiClient : ApiClientBase, IGoogleBooksApiClient
     {
         private readonly HttpClient _httpClient;
         private readonly GoogleBooksApiOptions _options;
 
-        public GoogleBooksApiClient(HttpClient httpClient, IOptions<GoogleBooksApiOptions> options)
+        public GoogleBooksApiClient(
+            HttpClient httpClient,
+            IOptions<GoogleBooksApiOptions> options,
+            IErrorLogger errorLogger,
+            IErrorLogPolicy errorLogPolicy)
+            : base(errorLogger, errorLogPolicy)
         {
             _httpClient = httpClient;
             _options = options.Value;
         }
 
-        public async Task<Result<GoogleBooksVolumeResponse>> GetBookByIdAsync(string volumeId, CancellationToken cancellationToken = default)
+        public async Task<Result<GoogleBooksVolumeResponse>> GetBookByIdAsync(
+            string volumeId,
+            CancellationToken cancellationToken = default)
         {
             var errorContext = DefineErrorContext(nameof(GetBookByIdAsync), OperationType.Get, fieldName: volumeId);
 
-            using var response = await _httpClient.GetAsync(BuildRequestUri($"volumes/{volumeId}"), cancellationToken);
+            try
+            {
+                using var response = await _httpClient.GetAsync(
+                    BuildRequestUri($"volumes/{volumeId}"),
+                    cancellationToken);
 
-            return await response.MapToResultAsync<GoogleBooksVolumeResponse>(errorContext, cancellationToken);
+                var result = await response.MapToResultAsync<GoogleBooksVolumeResponse>(
+                    errorContext,
+                    cancellationToken);
+
+                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
+
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                return Result<GoogleBooksVolumeResponse>.Failure(Error.Cancelled(errorContext));
+            }
+            catch (HttpRequestException exception)
+            {
+                var error = HttpError.TransportFailure(errorContext, exception);
+                await LogIfNeededAsync(error, CancellationToken.None);
+                return Result<GoogleBooksVolumeResponse>.Failure(error);
+            }
         }
 
         public async Task<Result<GoogleBooksSearchResponse>> SearchBooksAsync(
@@ -44,11 +73,30 @@ namespace media_vault_app.Infrastructure.API.Clients
         {
             var errorContext = DefineErrorContext(nameof(SearchBooksAsync), OperationType.GetCollection);
 
-            var requestUri = BuildRequestUri($"volumes?{string.Join("&", queryParameters)}");
+            try
+            {
+                var requestUri = BuildRequestUri($"volumes?{string.Join("&", queryParameters)}");
 
-            using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
+                using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
 
-            return await response.MapToResultAsync<GoogleBooksSearchResponse>(errorContext, cancellationToken);
+                var result = await response.MapToResultAsync<GoogleBooksSearchResponse>(
+                    errorContext,
+                    cancellationToken);
+
+                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
+
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                return Result<GoogleBooksSearchResponse>.Failure(Error.Cancelled(errorContext));
+            }
+            catch (HttpRequestException exception)
+            {
+                var error = HttpError.TransportFailure(errorContext, exception);
+                await LogIfNeededAsync(error, CancellationToken.None);
+                return Result<GoogleBooksSearchResponse>.Failure(error);
+            }
         }
 
 

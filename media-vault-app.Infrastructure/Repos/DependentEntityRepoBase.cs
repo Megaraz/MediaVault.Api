@@ -50,7 +50,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateException ex)
             {
-                var createError = DatabaseError.CreateFailure(baseErrorContext, ex);
+                var createError = DatabaseError.SaveChangesFailure(baseErrorContext, ex);
 
                 return await LogAndFailAsync<TEntityDependent>(createError, CancellationToken.None);
 
@@ -90,7 +90,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                var error = DatabaseError.GetCollectionFailure(baseErrorContext, ex);
+                var error = DatabaseError.QueryFailure(baseErrorContext, ex);
 
                 return await LogAndFailAsync<IReadOnlyList<TEntityDependent>>(error, CancellationToken.None);
             }
@@ -186,7 +186,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateException ex)
             {
-                var error = DatabaseError.UpdateFailure(baseErrorContext, ex);
+                var error = DatabaseError.SaveChangesFailure(baseErrorContext, ex);
                 return await LogAndFailAsync(error, CancellationToken.None);
             }
             catch (Exception ex)
@@ -230,7 +230,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateException ex)
             {
-                var error = DatabaseError.DeleteFailure(baseErrorContext, ex);
+                var error = DatabaseError.SaveChangesFailure(baseErrorContext, ex);
                 return await LogAndFailAsync(error, CancellationToken.None);
             }
             catch (Exception ex)

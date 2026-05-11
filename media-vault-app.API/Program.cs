@@ -143,6 +143,8 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IGoogleBooksApiService, GoogleBooksApiService>();
             #endregion
 
+            builder.Services.AddSingleton<IErrorLogPolicy, ErrorLogPolicy>();
+
             builder.Services.AddSingleton<IErrorLogger, ErrorLogger>(sp =>
             {
                 var configuration = new ErrorLoggerConfiguration

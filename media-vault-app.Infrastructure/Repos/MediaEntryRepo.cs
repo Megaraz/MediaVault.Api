@@ -60,7 +60,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateException ex)
             {
-                return Result.Failure(DatabaseError.UpdateFailure(baseErrorContext, ex));
+                return Result.Failure(DatabaseError.SaveChangesFailure(baseErrorContext, ex));
             }
             catch (OperationCanceledException)
             {
@@ -68,7 +68,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return Result.Failure(DatabaseError.UpdateFailure(baseErrorContext, ex));
+                return Result.Failure(DatabaseError.UnexpectedFailure(baseErrorContext, ex));
             }
         }
 
@@ -130,7 +130,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateException ex)
             {
-                return Result.Failure(DatabaseError.UpdateFailure(baseErrorContext, ex));
+                return Result.Failure(DatabaseError.SaveChangesFailure(baseErrorContext, ex));
             }
             catch (OperationCanceledException)
             {
@@ -138,7 +138,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return Result.Failure(DatabaseError.UpdateFailure(baseErrorContext, ex));
+                return Result.Failure(DatabaseError.UnexpectedFailure(baseErrorContext, ex));
             }
         }
 
@@ -238,7 +238,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(SearchMediaEntriesAsync), OperationType.GetCollection);
-                return Result<IReadOnlyList<MediaEntry>>.Failure(DatabaseError.GetCollectionFailure(baseErrorContext, ex));
+                return Result<IReadOnlyList<MediaEntry>>.Failure(DatabaseError.QueryFailure(baseErrorContext, ex));
             }
         }
     }

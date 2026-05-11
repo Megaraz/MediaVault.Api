@@ -20,8 +20,10 @@ namespace Rasmus.SharedKernel.ResultPattern
             ErrorReasonCode.ValidationTooLong => "TooLong",
             ErrorReasonCode.ValidationAlreadyExists => "AlreadyExists",
 
-            ErrorReasonCode.DatabaseFailure => "DbFailure",
+            ErrorReasonCode.DatabaseSaveChangesFailure => "DbSaveChangesFailure",
             ErrorReasonCode.DatabaseConcurrencyFailure => "DbConcurrencyFailure",
+            ErrorReasonCode.DatabaseQueryFailure => "DbQueryFailure",
+            ErrorReasonCode.DatabaseUnexpectedFailure => "DbUnexpectedFailure",
 
             ErrorReasonCode.OperationCancelled => "Cancelled",
 
@@ -45,7 +47,10 @@ namespace Rasmus.SharedKernel.ResultPattern
             ErrorReasonCode.HttpBadGateway => "BadGateway",
             ErrorReasonCode.HttpServiceUnavailable => "ServiceUnavailable",
             ErrorReasonCode.HttpGatewayTimeout => "GatewayTimeout",
-
+            ErrorReasonCode.HttpTooManyRequests => "TooManyRequests",
+            ErrorReasonCode.HttpTransportFailure => "TransportFailure",
+            ErrorReasonCode.HttpMalformedResponse => "MalformedResponse",
+            ErrorReasonCode.HttpUnexpectedStatusCode => "UnexpectedStatusCode",
 
             _ => "Unknown"
         };

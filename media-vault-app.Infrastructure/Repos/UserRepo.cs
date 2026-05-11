@@ -36,7 +36,7 @@ namespace media_vault_app.Infrastructure.Repos
                     return Result.Failure(Error.Conflict(baseErrorContext));
                 }
 
-                return Result.Failure(DatabaseError.CreateFailure(baseErrorContext, dbEx));
+                return Result.Failure(DatabaseError.SaveChangesFailure(baseErrorContext, dbEx));
             }
             catch (OperationCanceledException)
             {
@@ -46,7 +46,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
-                return Result.Failure(DatabaseError.CreateFailure(baseErrorContext, ex));
+                return Result.Failure(DatabaseError.SaveChangesFailure(baseErrorContext, ex));
             }
 
         }
@@ -78,7 +78,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
-                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(DatabaseError.GetFailure(baseErrorContext, ex));
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(DatabaseError.QueryFailure(baseErrorContext, ex));
             }
         }
 
@@ -111,7 +111,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return Result<User>.Failure(DatabaseError.GetFailure(baseErrorContext, ex));
+                return Result<User>.Failure(DatabaseError.QueryFailure(baseErrorContext, ex));
             }
         }
     }

@@ -12,7 +12,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             var localErrorContext = CloneErrorContext(errorContext);
 
             if (response is null)
-                return CreateFailureResult<TValue>(localErrorContext, CreateTransportFailureMessage());
+                return Result<TValue>.Failure(HttpError.TransportFailure(localErrorContext));
 
             if (!response.IsSuccessStatusCode)
             {
@@ -23,16 +23,20 @@ namespace Rasmus.SharedKernel.ResultPattern
             var responseBody = await ReadResponseBodyAsync(response, ct);
             if (string.IsNullOrWhiteSpace(responseBody))
             {
-                return CreateFailureResult<TValue>(
-                    localErrorContext,
-                    $"The external service returned {(int)response.StatusCode} ({response.StatusCode}) without the expected response body.");
+                return Result<TValue>.Failure(HttpError.MalformedResponse(
+                    localErrorContext with
+                    {
+                        DescriptionSuffix = $"The external service returned {(int)response.StatusCode} ({response.StatusCode}) without the expected response body."
+                    }));
             }
 
             if (!HasJsonContentType(response))
             {
-                return CreateFailureResult<TValue>(
-                    localErrorContext,
-                    $"The external service returned {(int)response.StatusCode} ({response.StatusCode}) with unsupported content type '{response.Content.Headers.ContentType?.MediaType ?? "unknown"}'.");
+                return Result<TValue>.Failure(HttpError.MalformedResponse(
+                    localErrorContext with
+                    {
+                        DescriptionSuffix = $"The external service returned {(int)response.StatusCode} ({response.StatusCode}) with unsupported content type '{response.Content.Headers.ContentType?.MediaType ?? "unknown"}'."
+                    }));
             }
 
             try
@@ -41,20 +45,24 @@ namespace Rasmus.SharedKernel.ResultPattern
 
                 if (value is null)
                 {
-                    return CreateFailureResult<TValue>(
-                        localErrorContext,
-                        $"The external service returned {(int)response.StatusCode} ({response.StatusCode}) with an empty or invalid JSON body.");
+                    return Result<TValue>.Failure(HttpError.MalformedResponse(
+                        localErrorContext with
+                        {
+                            DescriptionSuffix = $"The external service returned {(int)response.StatusCode} ({response.StatusCode}) with an empty or invalid JSON body."
+                        }));
                 }
 
                 return Result<TValue>.Success(value);
             }
             catch (JsonException exception)
             {
-                return CreateFailureResult<TValue>(localErrorContext, "The external service returned malformed JSON.", exception);
+                return Result<TValue>.Failure(HttpError.MalformedResponse(
+                    localErrorContext with { DescriptionSuffix = "The external service returned malformed JSON." }, exception));
             }
             catch (NotSupportedException exception)
             {
-                return CreateFailureResult<TValue>(localErrorContext, "The external service returned an unsupported JSON payload.", exception);
+                return Result<TValue>.Failure(HttpError.MalformedResponse(
+                    localErrorContext with { DescriptionSuffix = "The external service returned an unsupported JSON payload." }, exception));
             }
         }
 
@@ -63,7 +71,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             var localErrorContext = CloneErrorContext(errorContext);
 
             if (response is null)
-                return Result.Failure(Error.Failure(localErrorContext, CreateTransportFailureMessage()));
+                return Result.Failure(HttpError.TransportFailure(localErrorContext));
 
             if (response.IsSuccessStatusCode)
             {
@@ -90,11 +98,6 @@ namespace Rasmus.SharedKernel.ResultPattern
             };
         }
 
-        private static Result<TValue> CreateFailureResult<TValue>(ErrorContext errorContext, string message, Exception? exception = null)
-        {
-            return Result<TValue>.Failure(Error.Failure(errorContext, message, exception));
-        }
-
         private static Result<TValue> CreateHttpFailureResult<TValue>(HttpStatusCode statusCode, ErrorContext errorContext, string message)
         {
             var localErrorContext = errorContext with { DescriptionSuffix = message };
@@ -118,7 +121,8 @@ namespace Rasmus.SharedKernel.ResultPattern
                 HttpStatusCode.Unauthorized => HttpError.UnauthorizedAccess(errorContext),
                 HttpStatusCode.Forbidden => HttpError.Forbidden(errorContext),
                 HttpStatusCode.InternalServerError => HttpError.InternalServerError(errorContext),
-                _ => HttpError.Custom(errorContext, $"The external service returned an unexpected HTTP status code ({(int)statusCode})."),
+                HttpStatusCode.TooManyRequests => HttpError.TooManyRequests(errorContext),
+                _ => HttpError.UnexpectedStatusCode(errorContext, statusCode),
             };
         }
 
@@ -144,13 +148,9 @@ namespace Rasmus.SharedKernel.ResultPattern
                 HttpStatusCode.Conflict => "The external service reported a conflict.",
                 HttpStatusCode.UnprocessableContent => "The external service could not process the request.",
                 HttpStatusCode.InternalServerError => "The external service encountered an internal server error.",
+                HttpStatusCode.TooManyRequests => "The external service has rate-limited this request.",
                 _ => $"The external service returned an unexpected HTTP status code {(int)statusCode} ({statusCode}).",
             };
-        }
-
-        private static string CreateTransportFailureMessage()
-        {
-            return "No HTTP response was received from the external service.";
         }
 
         private static bool HasJsonContentType(HttpResponseMessage response)
@@ -237,7 +237,8 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         private static string FirstNonEmpty(params string?[] values)
         {
-            return values.FirstOrDefault(value => string.IsNullOrWhiteSpace(value))!;
+            return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))
+                ?? "An error occurred while calling the external service.";
         }
 
     }

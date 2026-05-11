@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Net;
 
 namespace Rasmus.SharedKernel.ResultPattern
 {
@@ -15,6 +13,12 @@ namespace Rasmus.SharedKernel.ResultPattern
         Conflict = 5,
         InternalServerError = 6,
         UnprocessableContent = 7,
+
+        // new additions
+        TooManyRequests = 8,
+        TransportFailure = 9,
+        MalformedResponse = 10,
+        UnexpectedStatusCode = 11
     }
 
     public record HttpError : Error
@@ -23,12 +27,11 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         // Private constructor to enforce the use of static factory methods for creating HttpError instances
         // Sets the ErrorType of base-class to HttpError for all instances of HttpError
-        private HttpError(string code, string description, HttpErrorType type, string userMessage)
-            : base(code, description, ErrorType.HttpError, userMessage)
+        private HttpError(string code, string description, HttpErrorType type, string userMessage, Exception? exception = null)
+            : base(code, description, ErrorType.HttpError, userMessage, exception)
         {
             HttpErrorType = type;
         }
-
 
         public static HttpError Custom(ErrorContext errorContext, string customDescriptionSuffix)
         {
@@ -37,6 +40,46 @@ namespace Rasmus.SharedKernel.ResultPattern
             string formattedErrorDescription = FormatDescription(errorContext, customDescriptionSuffix);
 
             return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Custom, customDescriptionSuffix);
+        }
+
+        public static HttpError TransportFailure(ErrorContext errorContext, Exception? exception = null)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpTransportFailure);
+
+            string defaultDescriptionSuffix = $"Transport Failure";
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.TransportFailure, defaultDescriptionSuffix, exception);
+        }
+
+        public static HttpError TooManyRequests(ErrorContext errorContext)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpTooManyRequests);
+
+            string defaultDescriptionSuffix = $"Too Many Requests";
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.TooManyRequests, defaultDescriptionSuffix);
+        }
+
+        public static HttpError MalformedResponse(ErrorContext errorContext, Exception? exception = null)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpMalformedResponse);
+
+            string defaultDescriptionSuffix = $"The external service returned a malformed or unexpected response.";
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.MalformedResponse, defaultDescriptionSuffix, exception);
+        }
+
+        public static HttpError UnexpectedStatusCode(ErrorContext errorContext, HttpStatusCode statusCode)
+        {
+            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpUnexpectedStatusCode);
+
+            string defaultDescriptionSuffix = $"The external service returned an unexpected HTTP status code {(int)statusCode} ({statusCode}).";
+            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.UnexpectedStatusCode, defaultDescriptionSuffix);
         }
 
         public static HttpError UnprocessableContent(ErrorContext errorContext)
@@ -116,3 +159,5 @@ namespace Rasmus.SharedKernel.ResultPattern
 
     }
 }
+
+

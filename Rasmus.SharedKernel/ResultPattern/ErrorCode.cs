@@ -28,8 +28,10 @@ namespace Rasmus.SharedKernel.ResultPattern
         ValidationTooLong = 105,
         ValidationAlreadyExists = 106,
 
-        DatabaseFailure = 200,
+        DatabaseSaveChangesFailure = 200,
         DatabaseConcurrencyFailure = 201,
+        DatabaseQueryFailure = 202,
+        DatabaseUnexpectedFailure = 203,
 
         OperationCancelled = 250,
 
@@ -49,10 +51,15 @@ namespace Rasmus.SharedKernel.ResultPattern
         HttpRequestTimeout = 408,
         HttpConflict = 409,
         HttpUnprocessableContent = 422,
+        HttpTooManyRequests = 429,
+
         HttpInternalServerError = 500,
         HttpBadGateway = 502,
         HttpServiceUnavailable = 503, 
-        HttpGatewayTimeout = 504
+        HttpGatewayTimeout = 504,
+        HttpTransportFailure = 550,
+        HttpMalformedResponse = 551,
+        HttpUnexpectedStatusCode = 552
 
     }
 
