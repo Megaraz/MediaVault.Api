@@ -1,18 +1,5 @@
 namespace Rasmus.SharedKernel.ResultPattern
 {
-    // public enum DatabaseErrorType
-    // {
-    //     Custom = 0,
-    //     CreateFailure = 1,
-    //     GetFailure = 2,
-    //     GetCollectionFailure = 3,
-    //     UpdateFailure = 4,
-    //     DeleteFailure = 5,
-    //     ConcurrencyFailure = 6,
-    //     UnexpectedFailure = 7
-    // }
-
-    // new enum
     public enum DatabaseErrorType
     {
         Custom = 0,

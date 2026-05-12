@@ -18,7 +18,7 @@ namespace Rasmus.SharedKernel.ResultPattern
     public record Error(string Code, string Description, ErrorType Type, string UserMessage = "", Exception? Exception = null)
     {
 
-        internal static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
+        public static readonly Error None = new Error(string.Empty, string.Empty, ErrorType.None);
 
         public override string ToString()
         {
