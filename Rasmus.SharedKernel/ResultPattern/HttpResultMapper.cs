@@ -53,34 +53,63 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         private static MappedHttpResponse MapFailure(Result result)
         {
-            var errorType = result.PrimaryError.Type;
-            var errorCode = result.PrimaryError.Code;
+            var primaryError = result.PrimaryError;
             var message = result.Message;
-            var validationErrors = result.ValidationErrors?.Select(x => x.Code);
+            var validationErrors = result.ValidationErrors.Select(x => x.Code);
 
-            var (statusCode, body) = BuildFailureResponse(message, errorType, errorCode, validationErrors);
+            var (statusCode, body) = BuildFailureResponse(
+                message,
+                primaryError,
+                validationErrors);
 
             return new MappedHttpResponse(statusCode, body);
         }
 
         private static (int StatusCode, object Body) BuildFailureResponse(
             string message,
-            ErrorType errorType,
-            string errorCode,
+            Error primaryError,
             IEnumerable<string>? validationErrors)
         {
-            return errorType switch
+            return primaryError.Type switch
             {
                 ErrorType.Validation => (422, new ValidationErrorResponseBody(message, validationErrors)),
-                ErrorType.NotFound => (404, new ErrorResponseBody(message, errorCode)),
-                ErrorType.Conflict => (409, new ErrorResponseBody(message, errorCode)),
-                ErrorType.Unauthorized => (401, new ErrorResponseBody(message, errorCode)),
-                ErrorType.Forbidden => (403, new ErrorResponseBody(message, errorCode)),
-                ErrorType.Failure => (500, new ErrorResponseBody(message, errorCode)),
-                ErrorType.Database => (500, new ErrorResponseBody(message, errorCode)),
-                ErrorType.Cancelled => (500, new ErrorResponseBody(message, errorCode)),
-                _ => (400, new ErrorResponseBody(message, errorCode))
+                ErrorType.NotFound => (404, new ErrorResponseBody(message, primaryError.Code)),
+                ErrorType.Conflict => (409, new ErrorResponseBody(message, primaryError.Code)),
+                ErrorType.Unauthorized => (401, new ErrorResponseBody(message, primaryError.Code)),
+                ErrorType.Forbidden => (403, new ErrorResponseBody(message, primaryError.Code)),
+                ErrorType.Failure => (500, new ErrorResponseBody(message, primaryError.Code)),
+                ErrorType.Database => (500, new ErrorResponseBody(message, primaryError.Code)),
+                ErrorType.Cancelled => (500, new ErrorResponseBody(message, primaryError.Code)),
+                ErrorType.HttpError => MapHttpErrorFailure(message, primaryError),
+                _ => (400, new ErrorResponseBody(message, primaryError.Code))
             };
+        }
+        private static (int StatusCode, object Body) MapHttpErrorFailure(
+            string message,
+            Error error)
+        {
+            if (error is not HttpError httpError)
+                return (502, new ErrorResponseBody(message, error.Code));
+
+            var statusCode = httpError.HttpErrorType switch
+            {
+                HttpErrorType.BadRequest => 400,
+                HttpErrorType.Unauthorized => 401,
+                HttpErrorType.Forbidden => 403,
+                HttpErrorType.NotFound => 404,
+                HttpErrorType.Conflict => 409,
+                HttpErrorType.UnprocessableContent => 422,
+                HttpErrorType.TooManyRequests => 429,
+
+                HttpErrorType.InternalServerError => 502,
+                HttpErrorType.TransportFailure => 503,
+                HttpErrorType.MalformedResponse => 502,
+                HttpErrorType.UnexpectedStatusCode => 502,
+
+                _ => 502
+            };
+
+            return (statusCode, new ErrorResponseBody(message, error.Code));
         }
     }
 }
