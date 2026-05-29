@@ -24,7 +24,5 @@
       <Deploy />
     </Project>
   </Folder>
-  <Folder Name="/Solution Instructions/">
-    <File Path="code_review.md" />
-  </Folder>
+  <Folder Name="/Solution Instructions/" />
 </Solution>
