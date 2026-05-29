@@ -4,14 +4,13 @@
 
 This file is the root instruction set for AI work in this repository. Treat the current codebase as the source of truth. If you suggest a target direction that does not exist yet, label it clearly as desired future state rather than current implementation.
 
-Use this file as the single root instruction file for the repo. Do not add an overlapping `copilot-instructions.md`.
+Use this file as the single root instruction file for the repo. Do not duplicate these instructions in `copilot-instructions.md` or other tool-specific files. If a tool-specific file is required, make it a short pointer to this `AGENTS.md`.
 
 ## Source-of-truth rules
 
 - Treat the codebase as more authoritative than this file when they disagree.
 - When version-specific guidance matters, verify current versions from `.csproj`, `package.json`, `Directory.Packages.props`, lock files, or other project files.
 - Do not create new top-level folders, projects, architectural layers, or naming schemes without first checking whether an existing convention already fits.
-- If a tool-specific instruction file is required, keep it as a short pointer to this `AGENTS.md` instead of duplicating these instructions.
 
 ## Project snapshot
 
@@ -53,6 +52,7 @@ Treat these as the current default priority order unless the active task clearly
 - When uncertainty remains, say so explicitly and suggest the safest next step.
 - Do not add new packages without explaining why the existing stack is not enough.
 - Do not introduce major patterns without comparing them to simpler alternatives.
+- Do not delete files, remove public APIs, rename projects, or perform broad formatting-only changes unless explicitly asked or clearly required by the current task.
 - Prefer code that a junior developer can understand, debug, and maintain.
 - Aim to improve the repo as both a public portfolio project and a real personal app.
 
@@ -152,6 +152,7 @@ For larger changes, prefer this order:
 - Check whether setup, behavior, or public API changes require documentation updates.
 - Check that API keys, tokens, and secrets remain out of source control.
 - Check whether the change would still make sense in a public portfolio repository.
+- If validation commands cannot be run, state exactly what was changed and which command should be run manually.
 
 ## Documentation standards
 
@@ -164,7 +165,7 @@ For larger changes, prefer this order:
 - Mention honestly that the project began as a solo school project and was later polished into a stronger portfolio and personal-use codebase.
 - Avoid inflated wording such as "enterprise-grade" unless the repository genuinely supports that claim. Prefer honest language such as "production-inspired", "portfolio-quality", or "business-level direction".
 
-## Documentation and future AI files
+## Future AI customization
 
 - Keep this file short and repo-wide. Put deeper or task-specific AI guidance under `.github/docs/ai`, `.github/prompts`, `.github/agents`, or `.github/skills` as those are added.
 - Future AI prompts, agents, and skills should match the actual current codebase first and separate current state from desired direction explicitly.
