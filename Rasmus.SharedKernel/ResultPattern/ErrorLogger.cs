@@ -27,6 +27,10 @@ namespace Rasmus.SharedKernel.ResultPattern
 
     public class ErrorLogger : IErrorLogger
     {
+        // One lock shared across all instances so that two loggers pointing at the same
+        // file path cannot race each other. SemaphoreSlim(1,1) = mutex semantics.
+        // "Slim" is used instead of lock{} because await requires an async-compatible wait.
+        private static readonly SemaphoreSlim s_fileLock = new SemaphoreSlim(1, 1);
 
         private readonly ErrorLoggerConfiguration _configuration;
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -45,21 +49,35 @@ namespace Rasmus.SharedKernel.ResultPattern
             if (!File.Exists(_configuration.FullPath))
                 return;
 
-            var cutoffDate = DateTimeOffset.UtcNow - _configuration.RetentionPeriod;
+            // Acquire the lock before touching the file.
+            // WaitAsync forwards the CancellationToken: if cancelled before we acquire,
+            // an OperationCanceledException is thrown and Release() is never called — which
+            // is correct, because we never entered the protected section.
+            await s_fileLock.WaitAsync(ct);
+            try
+            {
+                var cutoffDate = DateTimeOffset.UtcNow - _configuration.RetentionPeriod;
 
-            var lines = await File.ReadAllLinesAsync(_configuration.FullPath, ct);
+                var lines = await File.ReadAllLinesAsync(_configuration.FullPath, ct);
 
-            var recentLogs = lines
-                .Where(line => !string.IsNullOrWhiteSpace(line))
-                .Select(TryDeserializeLog)
-                .Where(log => log is not null && log.WriteDate >= cutoffDate)
-                .Cast<ErrorLog>()
-                .ToList();
+                var recentLogs = lines
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .Select(TryDeserializeLog)
+                    .Where(log => log is not null && log.WriteDate >= cutoffDate)
+                    .Cast<ErrorLog>()
+                    .ToList();
 
-            var newLines = recentLogs
-                .Select(log => JsonSerializer.Serialize(log, _jsonOptions));
+                var newLines = recentLogs
+                    .Select(log => JsonSerializer.Serialize(log, _jsonOptions));
 
-            await File.WriteAllLinesAsync(_configuration.FullPath, newLines, ct);
+                await File.WriteAllLinesAsync(_configuration.FullPath, newLines, ct);
+            }
+            finally
+            {
+                // Always release, even if an exception was thrown inside the try block.
+                // Without this, any exception would permanently block all future callers.
+                s_fileLock.Release();
+            }
         }
 
         public async Task<List<ErrorLog>> GetErrorLogsAsync(CancellationToken ct = default)
@@ -67,19 +85,28 @@ namespace Rasmus.SharedKernel.ResultPattern
             if (!File.Exists(_configuration.FullPath))
                 return new List<ErrorLog>();
 
-            var lines = await File.ReadAllLinesAsync(_configuration.FullPath, ct);
-            var logs = lines
-                .Where(line => !string.IsNullOrWhiteSpace(line))
-                .Select(line => JsonSerializer.Deserialize<ErrorLog>(line, _jsonOptions))
-                .Where(log => log is not null)
-                .Cast<ErrorLog>()
-                .ToList();
-            return logs;
+            // Reading also needs the lock: AppendAllTextAsync writes in chunks, so a
+            // concurrent read could see a partial JSON line mid-flush.
+            await s_fileLock.WaitAsync(ct);
+            try
+            {
+                var lines = await File.ReadAllLinesAsync(_configuration.FullPath, ct);
+                var logs = lines
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .Select(line => JsonSerializer.Deserialize<ErrorLog>(line, _jsonOptions))
+                    .Where(log => log is not null)
+                    .Cast<ErrorLog>()
+                    .ToList();
+                return logs;
+            }
+            finally
+            {
+                s_fileLock.Release();
+            }
         }
 
         public async Task LogErrorToFileAsync(Error error, CancellationToken ct = default)
         {
-
             Directory.CreateDirectory(_configuration.BasePath);
 
             var currentLogEntry = new ErrorLog(
@@ -92,8 +119,15 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             var json = JsonSerializer.Serialize(currentLogEntry, _jsonOptions);
 
-            await File.AppendAllTextAsync(_configuration.FullPath, json + Environment.NewLine, ct);
-
+            await s_fileLock.WaitAsync(ct);
+            try
+            {
+                await File.AppendAllTextAsync(_configuration.FullPath, json + Environment.NewLine, ct);
+            }
+            finally
+            {
+                s_fileLock.Release();
+            }
         }
         private ErrorLog? TryDeserializeLog(string line)
         {

@@ -1,7 +1,5 @@
 using System.Net.Http.Headers;
 using media_vault_app.API.Security;
-using media_vault_app.Application.DTOs.MediaEntry.Request;
-using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
@@ -9,6 +7,7 @@ using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Interfaces.Validators;
 using media_vault_app.Application.Mappers.MediaEntry;
 using media_vault_app.Application.Mappers.User;
+using media_vault_app.Application.Services;
 using media_vault_app.Application.Services.API;
 using media_vault_app.Application.Services.Auth;
 using media_vault_app.Application.Services.MediaEntry;
@@ -24,7 +23,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
-using Rasmus.SharedKernel.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.API
@@ -155,6 +153,8 @@ namespace media_vault_app.API
 
                 return new ErrorLogger(configuration);
             });
+
+            builder.Services.AddHostedService<ErrorLogCleanupService>();
 
             builder.Services.AddControllers();
 
