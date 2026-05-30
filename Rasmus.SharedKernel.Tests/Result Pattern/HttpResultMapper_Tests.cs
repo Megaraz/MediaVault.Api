@@ -107,6 +107,21 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             yield return [new Error("Test.Unknown.Code", "Unknown description.", (ErrorType)999, "Unknown failure."), 400];
         }
 
+        // ── ErrorType.None is blocked before reaching the mapper ─────────────────
+
+        [Fact]
+        public void ToHttpResponse_WithErrorNone_IsBlockedByResultGuard_BeforeReachingMapper()
+        {
+            // Result.Failure rejects ErrorType.None — it can never reach MapFailure.
+            // This test documents the architectural boundary: the mapper's _ fallback
+            // is unreachable from Error.None; the guard fires first.
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var result = Result.Failure(Error.None, "Should not reach mapper.");
+                HttpResultMapper.ToHttpResponse(result);
+            });
+        }
+
         // ── HttpError status mappings ────────────────────────────────────────────
 
         [Theory]

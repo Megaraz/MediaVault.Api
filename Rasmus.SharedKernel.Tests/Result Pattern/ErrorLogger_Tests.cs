@@ -98,5 +98,40 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             }
         }
 
+        [Fact]
+        public async Task LogErrorToFileAsync_ConcurrentWrites_ShouldNotLoseEntries()
+        {
+            // Arrange — unique file per test run to avoid cross-test interference
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var config = new ErrorLoggerConfiguration
+                {
+                    BasePath = tempDir,
+                    Filename = "concurrent-test.log.ndjson",
+                };
+                var errorLogger = new ErrorLogger(config);
+
+                const int concurrentWriters = 20;
+
+                // Act — fire all writes simultaneously
+                var tasks = Enumerable.Range(0, concurrentWriters)
+                    .Select(i => errorLogger.LogErrorToFileAsync(
+                        Error.Failure(TestErrorContextFactory.Create(), $"Concurrent entry {i}")))
+                    .ToList();
+
+                await Task.WhenAll(tasks);
+
+                // Assert — every write must have landed; nothing lost to a race
+                var logs = await errorLogger.GetErrorLogsAsync();
+                Assert.Equal(concurrentWriters, logs.Count);
+            }
+            finally
+            {
+                Directory.Delete(tempDir, recursive: true);
+            }
+        }
+
     }
 }

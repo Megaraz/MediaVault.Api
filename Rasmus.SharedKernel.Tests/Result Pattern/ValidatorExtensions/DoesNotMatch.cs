@@ -73,5 +73,21 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
             Assert.False(result);
             Assert.Null(error);
         }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData("", "")]
+        [InlineData("   ", "   ")]
+        public void Should_Return_Required_Error_For_Value1_When_Both_Are_Null_Or_Whitespace(string? value1, string? value2)
+        {
+            // DoesNotMatch short-circuits on the first empty argument.
+            // When both are null/whitespace, value1 fails first and its field name is reported.
+            var errorContext = TestErrorContextFactory.Create();
+
+            var result = ValidatorExtensions.DoesNotMatch(value1!, value2!, "Password", "ConfirmPassword", errorContext, out var error);
+
+            Assert.True(result);
+            ValidationErrorAssert.IsRequired(error, fieldName: "Password", entityName: "User");
+        }
     }
 }
