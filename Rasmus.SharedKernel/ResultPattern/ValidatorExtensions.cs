@@ -43,7 +43,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// and populates <paramref name="nullValueError"/>. Returns <see langword="false"/> otherwise.
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
-        public static bool IsNull<TValue>(this TValue value, ErrorContext errorContext, out ValidationError nullValueError)
+        public static bool IsNull<TValue>(this TValue? value, ErrorContext errorContext, out ValidationError nullValueError)
         {
             ArgumentNullException.ThrowIfNull(errorContext);
 
@@ -68,7 +68,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="requiredValues"/> or <paramref name="errorContext"/> is <see langword="null"/>.</exception>
         public static bool RequiredFieldsAreNullOrWhiteSpace(
-            this IEnumerable<(string FieldName, string Value)> requiredValues,
+            this IEnumerable<(string FieldName, string? Value)> requiredValues,
             ErrorContext errorContext,
             out IReadOnlyList<ValidationError> validationErrors)
         {
@@ -92,7 +92,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// and populates <paramref name="nullOrEmptyError"/>. Returns <see langword="false"/> otherwise.
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
-        public static bool IsNullOrWhiteSpace(this string value, string fieldName, ErrorContext errorContext, out ValidationError nullOrEmptyError)
+        public static bool IsNullOrWhiteSpace(this string? value, string fieldName, ErrorContext errorContext, out ValidationError nullOrEmptyError)
         {
             ArgumentNullException.ThrowIfNull(errorContext);
 
@@ -119,7 +119,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// Uses <see cref="ErrorContext.FieldName"/> as the field label in the error description.
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
-        public static bool IsNullOrWhiteSpace(this string value, ErrorContext errorContext, out ValidationError nullOrEmptyError)
+        public static bool IsNullOrWhiteSpace(this string? value, ErrorContext errorContext, out ValidationError nullOrEmptyError)
         {
             ArgumentNullException.ThrowIfNull(errorContext);
 
