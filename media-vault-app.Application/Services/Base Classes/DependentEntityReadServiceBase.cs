@@ -115,9 +115,9 @@ namespace media_vault_app.Application.Services.Base_Classes
                 return ownerExistsResult.From<bool, IReadOnlyList<TDetailedDto>>();
             }
 
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
+            var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
 
-            var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pageNumber, pageSize, ct);
+            var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pagination.PageNumber, pagination.PageSize, ct);
 
             return repoResult.Map(_entityToDtoMapper.ToDetailedDtoCollection);
 
@@ -141,9 +141,9 @@ namespace media_vault_app.Application.Services.Base_Classes
                 return ownerExistsResult.From<bool, IReadOnlyList<TMinimalDto>>();
             }
 
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
+            var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
 
-            var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pageNumber, pageSize, ct);
+            var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pagination.PageNumber, pagination.PageSize, ct);
 
             return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
         }

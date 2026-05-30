@@ -62,7 +62,9 @@ namespace media_vault_app.Application.Services.API
                 errors.Add(searchError);
             }
 
-            Validator.ValidateAndAdjustPaginationParameters(ref page, ref pageSize);
+            var pagination = PaginationParameters.Normalize(page, pageSize);
+            page = pagination.PageNumber;
+            pageSize = pagination.PageSize;
 
             if (errors.Any())
             {

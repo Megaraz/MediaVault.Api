@@ -48,9 +48,11 @@ namespace media_vault_app.Application.Services.API
                 errors.Add(searchError);
             }
 
-            Validator.ValidateAndAdjustPaginationParameters(ref page, ref pageSize);
+            var pagination = PaginationParameters.Normalize(page, pageSize);
+            page = pagination.PageNumber;
+            pageSize = pagination.PageSize;
 
-            if (errors.Any())
+            if (errors.Count > 0)
             {
                 return Result<IReadOnlyList<GoogleBooksDetailedDto>>.ValidationFailure(errors, "Google Books search validation failed.");
             }
@@ -104,7 +106,7 @@ namespace media_vault_app.Application.Services.API
             // Google Books may return http:// URLs — upgrade to https://
             if (thumbnailUrl != null && thumbnailUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
             {
-                thumbnailUrl = "https://" + thumbnailUrl.Substring("http://".Length);
+                thumbnailUrl = string.Concat("https://", thumbnailUrl.AsSpan("http://".Length));
             }
             return new GoogleBooksDetailedDto(
                 Author: volume.VolumeInfo?.Authors != null && volume.VolumeInfo.Authors.Any()
@@ -131,7 +133,7 @@ namespace media_vault_app.Application.Services.API
             // Google Books may return http:// URLs — upgrade to https://
             if (thumbnailUrl != null && thumbnailUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
             {
-                thumbnailUrl = "https://" + thumbnailUrl.Substring("http://".Length);
+                thumbnailUrl = string.Concat("https://", thumbnailUrl.AsSpan("http://".Length));
             }
 
             return new MediaEntryExternalSearchResultDto(

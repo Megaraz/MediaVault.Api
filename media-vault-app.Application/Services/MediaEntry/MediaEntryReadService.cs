@@ -93,7 +93,9 @@ namespace media_vault_app.Application.Services.MediaEntry
                 return ownerExistsResult.From<bool, IReadOnlyList<MediaEntryMinimalDto>>();
             }
 
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
+            var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
+            pageNumber = pagination.PageNumber;
+            pageSize = pagination.PageSize;
 
             var repoResult = await MediaEntryRepo.SearchMediaEntriesAsync(ownerId, request.Query, pageNumber, pageSize, ct);
 

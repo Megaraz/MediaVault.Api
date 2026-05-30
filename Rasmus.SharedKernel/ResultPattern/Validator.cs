@@ -18,14 +18,5 @@ namespace Rasmus.SharedKernel.ResultPattern
                      id.Equals(default(TKey)));
         }
 
-        public static void ValidateAndAdjustPaginationParameters(ref int pageNumber, ref int pageSize)
-        {
-            if (pageNumber < 1)
-                pageNumber = 1; // Default to page 1 if the provided page number is too low
-            if (pageSize < 1)
-                pageSize = 1; // Default to a minimum page size of 1 if the provided page size is too low
-        }
-
-
     }
 }

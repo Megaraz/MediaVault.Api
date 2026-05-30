@@ -43,9 +43,9 @@ namespace media_vault_app.Application.Services.Base_Classes
 
         public async Task<Result<IReadOnlyList<TDetailedDto>>> GetDetailedCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
+            var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
 
-            var repoResult = await _repo.GetCollectionAsync(pageNumber, pageSize, ct);
+            var repoResult = await _repo.GetCollectionAsync(pagination.PageNumber, pagination.PageSize, ct);
 
             return repoResult.Map(_entityToDtoMapper.ToDetailedDtoCollection);
 
@@ -53,9 +53,9 @@ namespace media_vault_app.Application.Services.Base_Classes
 
         public async Task<Result<IReadOnlyList<TMinimalDto>>> GetMinimalCollectionAsync(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
+            var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
 
-            var repoResult = await _repo.GetCollectionAsync(pageNumber, pageSize, ct);
+            var repoResult = await _repo.GetCollectionAsync(pagination.PageNumber, pagination.PageSize, ct);
 
             return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
         }

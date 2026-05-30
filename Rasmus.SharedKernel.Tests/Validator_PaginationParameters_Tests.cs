@@ -4,72 +4,83 @@ namespace Rasmus.SharedKernel.Tests
 {
     public class Validator_PaginationParameters_Tests
     {
-        // ── pageNumber clamping ───────────────────────────────────────────────
+        // ── pageNumber low-end clamping ──────────────────────────────────────
 
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
         [InlineData(-100)]
-        public void PageNumber_Below_One_Should_Be_Set_To_One(int invalidPageNumber)
+        public void PageNumber_Below_One_Is_Clamped_To_One(int invalidPageNumber)
         {
-            int pageNumber = invalidPageNumber;
-            int pageSize = 10;
+            var result = PaginationParameters.Normalize(invalidPageNumber, 10);
 
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
-
-            Assert.Equal(1, pageNumber);
+            Assert.Equal(1, result.PageNumber);
         }
 
         [Fact]
-        public void Valid_PageNumber_Should_Not_Be_Changed()
+        public void Valid_PageNumber_Is_Unchanged()
         {
-            int pageNumber = 5;
-            int pageSize = 10;
+            var result = PaginationParameters.Normalize(5, 10);
 
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
-
-            Assert.Equal(5, pageNumber);
+            Assert.Equal(5, result.PageNumber);
         }
 
-        // ── pageSize clamping ─────────────────────────────────────────────────
+        // ── pageSize low-end clamping ────────────────────────────────────────
 
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
         [InlineData(-100)]
-        public void PageSize_Below_One_Should_Be_Set_To_One(int invalidPageSize)
+        public void PageSize_Below_One_Is_Clamped_To_One(int invalidPageSize)
         {
-            int pageNumber = 1;
-            int pageSize = invalidPageSize;
+            var result = PaginationParameters.Normalize(1, invalidPageSize);
 
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
-
-            Assert.Equal(1, pageSize);
+            Assert.Equal(1, result.PageSize);
         }
 
         [Fact]
-        public void Valid_PageSize_Should_Not_Be_Changed()
+        public void Valid_PageSize_Within_Default_Cap_Is_Unchanged()
         {
-            int pageNumber = 1;
-            int pageSize = 25;
+            var result = PaginationParameters.Normalize(1, 25);
 
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
-
-            Assert.Equal(25, pageSize);
+            Assert.Equal(25, result.PageSize);
         }
 
-        // ── Both parameters adjusted independently ────────────────────────────
+        // ── pageSize high-end clamping ───────────────────────────────────────
 
         [Fact]
-        public void Both_Invalid_PageNumber_And_PageSize_Should_Each_Be_Clamped_To_One()
+        public void PageSize_Above_Default_MaxPageSize_Is_Clamped_To_100()
         {
-            int pageNumber = -5;
-            int pageSize = -10;
+            var result = PaginationParameters.Normalize(1, 10_000);
 
-            Validator.ValidateAndAdjustPaginationParameters(ref pageNumber, ref pageSize);
+            Assert.Equal(100, result.PageSize);
+        }
 
-            Assert.Equal(1, pageNumber);
-            Assert.Equal(1, pageSize);
+        [Fact]
+        public void PageSize_Exactly_At_Default_MaxPageSize_Is_Not_Clamped()
+        {
+            var result = PaginationParameters.Normalize(1, 100);
+
+            Assert.Equal(100, result.PageSize);
+        }
+
+        [Fact]
+        public void Custom_MaxPageSize_Is_Respected()
+        {
+            var result = PaginationParameters.Normalize(1, 50, maxPageSize: 25);
+
+            Assert.Equal(25, result.PageSize);
+        }
+
+        // ── both parameters clamped ──────────────────────────────────────────
+
+        [Fact]
+        public void Both_Invalid_PageNumber_And_PageSize_Are_Each_Clamped()
+        {
+            var result = PaginationParameters.Normalize(-5, -10);
+
+            Assert.Equal(1, result.PageNumber);
+            Assert.Equal(1, result.PageSize);
         }
     }
 }

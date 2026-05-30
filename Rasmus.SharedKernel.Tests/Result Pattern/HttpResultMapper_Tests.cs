@@ -99,7 +99,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
 
             yield return [new Error("Test.Forbidden.Code", "Forbidden description.", ErrorType.Forbidden, "Forbidden."), 403];
             yield return [Error.Failure(ctx), 500];
-            yield return [Error.Cancelled(ctx), 500];
+            yield return [Error.Cancelled(ctx), 503];
 
             yield return [new Error("Test.Database.Code", "Database description.", ErrorType.Database, "Database failure."), 500];
 

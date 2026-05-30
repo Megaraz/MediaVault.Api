@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
@@ -93,7 +94,7 @@ namespace Rasmus.SharedKernel.ResultPattern
                 var lines = await File.ReadAllLinesAsync(_configuration.FullPath, ct);
                 var logs = lines
                     .Where(line => !string.IsNullOrWhiteSpace(line))
-                    .Select(line => JsonSerializer.Deserialize<ErrorLog>(line, _jsonOptions))
+                    .Select(TryDeserializeLog)
                     .Where(log => log is not null)
                     .Cast<ErrorLog>()
                     .ToList();
@@ -135,8 +136,9 @@ namespace Rasmus.SharedKernel.ResultPattern
             {
                 return JsonSerializer.Deserialize<ErrorLog>(line, _jsonOptions);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
+                Debug.WriteLine($"[ErrorLogger] Skipping corrupted log entry: {ex.Message} | Line: {line}");
                 return null;
             }
         }
