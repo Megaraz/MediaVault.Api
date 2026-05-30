@@ -87,9 +87,13 @@ namespace Rasmus.SharedKernel.ResultPattern
             return new Error(errorCode.Code, formattedErrorDescription, ErrorType.Cancelled, defaultDescriptionSuffix);
         }
 
-        protected static string FormatDescription(ErrorContext errorContext, string defaultDescriptionSuffix)
+        protected static string FormatDescription(ErrorContext errorContext, string descriptionSuffix)
         {
-            return $"{errorContext.DescriptionPrefix}: {(string.IsNullOrWhiteSpace(errorContext.DescriptionSuffix) ? defaultDescriptionSuffix : errorContext.DescriptionSuffix)}";
+            string prefix = $"An error occurred during {errorContext.Operation} on entity {errorContext.EntityName}:{Environment.NewLine}" +
+                            $"Layer: {errorContext.Layer}{Environment.NewLine}" +
+                            $"Service: {errorContext.ServiceName}{Environment.NewLine}" +
+                            $"Method: {errorContext.MethodName}";
+            return $"{prefix}: {descriptionSuffix}";
         }
 
     }

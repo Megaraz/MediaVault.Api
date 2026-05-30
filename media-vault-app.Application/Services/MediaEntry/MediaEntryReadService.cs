@@ -124,11 +124,7 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             var mismatchErrorContext = DefineErrorContext(methodName, OperationType.Get);
 
-            return Result<TDetailedSubtype>.Failure(
-                Error.NotFound(mismatchErrorContext with
-                {
-                    DescriptionSuffix = $"No media entry with the specified ID was found, or the media entry is not a {subtypeDisplayName} entry."
-                }));
+            return Result<TDetailedSubtype>.Failure(Error.NotFound(mismatchErrorContext));
         }
 
     }

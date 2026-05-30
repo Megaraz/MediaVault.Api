@@ -133,7 +133,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         }
 
 
-        private ErrorContext DefineErrorContext(string? fieldName = null, string? confirmFieldName = null)
+        private ErrorContext DefineErrorContext(string? fieldName = null)
         {
             return new ErrorContext(
                 Layer: "Service",
@@ -141,8 +141,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
                 MethodName: "LoginUserAsync",
                 Operation: OperationType.Login,
                 EntityName: "User",
-                FieldName: fieldName,
-                ConfirmFieldName: confirmFieldName);
+                FieldName: fieldName);
         }
     }
 }

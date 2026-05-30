@@ -111,15 +111,11 @@ namespace media_vault_app.Infrastructure.API.Clients
 
             if (endpoint is null)
             {
-                var mediaTypeErrorContext = errorContext with
-                {
-                    FieldName = $"{nameof(mediaType)}",
-                    DescriptionSuffix = "Failed to determine API endpoint for media type."
-                };
+                var invalidMediaTypeError = ValidationError.InvalidFormat(
+                    errorContext with { FieldName = nameof(mediaType) },
+                    $"Unsupported media type: {mediaType}");
 
-                var invalidMediaTypeError = ValidationError.InvalidFormat(mediaTypeErrorContext, $"Unsupported media type: {mediaType}");
-
-                return Result<TmdbSearchResponse>.ValidationFailure([invalidMediaTypeError], mediaTypeErrorContext.DescriptionSuffix);
+                return Result<TmdbSearchResponse>.ValidationFailure([invalidMediaTypeError], invalidMediaTypeError.UserMessage);
             }
 
             try

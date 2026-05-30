@@ -9,36 +9,30 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         public static async Task<Result<TValue>> MapToResultAsync<TValue>(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
         {
-            var localErrorContext = CloneErrorContext(errorContext);
-
             if (response is null)
-                return Result<TValue>.Failure(HttpError.TransportFailure(localErrorContext));
+                return Result<TValue>.Failure(HttpError.TransportFailure(errorContext));
 
             if (!response.IsSuccessStatusCode)
             {
-                var failureMessage = await GetFailureMessageAsync(response, localErrorContext, ct);
-                return CreateHttpFailureResult<TValue>(response.StatusCode, localErrorContext, failureMessage);
+                var failureMessage = await GetFailureMessageAsync(response, ct);
+                return CreateHttpFailureResult<TValue>(response.StatusCode, errorContext, failureMessage);
             }
 
             var responseBody = await ReadResponseBodyAsync(response, ct);
             if (string.IsNullOrWhiteSpace(responseBody))
             {
                 return Result<TValue>.Failure(HttpError.MalformedResponse(
-                    localErrorContext with
-                    {
-                        DescriptionSuffix = $"The external service returned {(int)response.StatusCode}" + 
-                        $" ({response.StatusCode}) without the expected response body."
-                    }));
+                    errorContext,
+                    detail: $"The external service returned {(int)response.StatusCode}" +
+                    $" ({response.StatusCode}) without the expected response body."));
             }
 
             if (!HasJsonContentType(response))
             {
                 return Result<TValue>.Failure(HttpError.MalformedResponse(
-                    localErrorContext with
-                    {
-                        DescriptionSuffix = $"The external service returned {(int)response.StatusCode}" + 
-                        $" ({response.StatusCode}) with unsupported content type '{response.Content.Headers.ContentType?.MediaType ?? "unknown"}'."
-                    }));
+                    errorContext,
+                    detail: $"The external service returned {(int)response.StatusCode}" +
+                    $" ({response.StatusCode}) with unsupported content type '{response.Content.Headers.ContentType?.MediaType ?? "unknown"}'."));
             }
 
             try
@@ -48,96 +42,73 @@ namespace Rasmus.SharedKernel.ResultPattern
                 if (value is null)
                 {
                     return Result<TValue>.Failure(HttpError.MalformedResponse(
-                        localErrorContext with
-                        {
-                            DescriptionSuffix = $"The external service returned {(int)response.StatusCode}" + 
-                            $" ({response.StatusCode}) with an empty or invalid JSON body."
-                        }));
+                        errorContext,
+                        detail: $"The external service returned {(int)response.StatusCode}" +
+                        $" ({response.StatusCode}) with an empty or invalid JSON body."));
                 }
 
                 return Result<TValue>.Success(value);
             }
             catch (JsonException exception)
             {
-                return Result<TValue>.Failure(HttpError.MalformedResponse(
-                    localErrorContext with { DescriptionSuffix = "The external service returned malformed JSON." }, exception));
+                return Result<TValue>.Failure(HttpError.MalformedResponse(errorContext, exception, "The external service returned malformed JSON."));
             }
             catch (NotSupportedException exception)
             {
-                return Result<TValue>.Failure(HttpError.MalformedResponse(
-                    localErrorContext with { DescriptionSuffix = "The external service returned an unsupported JSON payload." }, exception));
+                return Result<TValue>.Failure(HttpError.MalformedResponse(errorContext, exception, "The external service returned an unsupported JSON payload."));
             }
         }
 
         public static async Task<Result> MapToResultAsync(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
         {
-            var localErrorContext = CloneErrorContext(errorContext);
-
             if (response is null)
-                return Result.Failure(HttpError.TransportFailure(localErrorContext));
+                return Result.Failure(HttpError.TransportFailure(errorContext));
 
             if (response.IsSuccessStatusCode)
             {
                 return Result.Success();
             }
 
-            var failureMessage = await GetFailureMessageAsync(response, localErrorContext, ct);
+            var failureMessage = await GetFailureMessageAsync(response, ct);
 
-            return CreateHttpFailureResult(response.StatusCode, localErrorContext, failureMessage);
+            return CreateHttpFailureResult(response.StatusCode, errorContext, failureMessage);
         }
 
-        private static ErrorContext CloneErrorContext(ErrorContext errorContext)
+        private static Result<TValue> CreateHttpFailureResult<TValue>(HttpStatusCode statusCode, ErrorContext errorContext, string callerMessage)
         {
-            return new ErrorContext(
-                Layer: errorContext.Layer,
-                ServiceName: errorContext.ServiceName,
-                MethodName: errorContext.MethodName,
-                Operation: errorContext.Operation,
-                EntityName: errorContext.EntityName,
-                FieldName: errorContext.FieldName,
-                ConfirmFieldName: errorContext.ConfirmFieldName)
-            {
-                DescriptionSuffix = errorContext.DescriptionSuffix,
-            };
+            return Result<TValue>.Failure(MapHttpError(statusCode, errorContext, callerMessage));
         }
 
-        private static Result<TValue> CreateHttpFailureResult<TValue>(HttpStatusCode statusCode, ErrorContext errorContext, string message)
+        private static Result CreateHttpFailureResult(HttpStatusCode statusCode, ErrorContext errorContext, string callerMessage)
         {
-            var localErrorContext = errorContext with { DescriptionSuffix = message };
-            return Result<TValue>.Failure(MapHttpError(statusCode, localErrorContext));
+            return Result.Failure(MapHttpError(statusCode, errorContext, callerMessage));
         }
 
-        private static Result CreateHttpFailureResult(HttpStatusCode statusCode, ErrorContext errorContext, string message)
-        {
-            var localErrorContext = errorContext with { DescriptionSuffix = message };
-            return Result.Failure(MapHttpError(statusCode, localErrorContext));
-        }
-
-        private static HttpError MapHttpError(HttpStatusCode statusCode, ErrorContext errorContext)
+        private static HttpError MapHttpError(HttpStatusCode statusCode, ErrorContext errorContext, string? callerMessage = null)
         {
             return statusCode switch
             {
-                HttpStatusCode.NotFound => HttpError.NotFound(errorContext),
-                HttpStatusCode.BadRequest => HttpError.BadRequest(errorContext),
-                HttpStatusCode.UnprocessableContent => HttpError.UnprocessableContent(errorContext),
-                HttpStatusCode.Conflict => HttpError.Conflict(errorContext),
-                HttpStatusCode.Unauthorized => HttpError.UnauthorizedAccess(errorContext),
-                HttpStatusCode.Forbidden => HttpError.Forbidden(errorContext),
-                HttpStatusCode.InternalServerError => HttpError.InternalServerError(errorContext),
-                HttpStatusCode.TooManyRequests => HttpError.TooManyRequests(errorContext),
+                HttpStatusCode.NotFound => HttpError.NotFound(errorContext, callerMessage),
+                HttpStatusCode.BadRequest => HttpError.BadRequest(errorContext, callerMessage),
+                HttpStatusCode.UnprocessableContent => HttpError.UnprocessableContent(errorContext, callerMessage),
+                HttpStatusCode.Conflict => HttpError.Conflict(errorContext, callerMessage),
+                HttpStatusCode.Unauthorized => HttpError.UnauthorizedAccess(errorContext, callerMessage),
+                HttpStatusCode.Forbidden => HttpError.Forbidden(errorContext, callerMessage),
+                HttpStatusCode.InternalServerError => HttpError.InternalServerError(errorContext, callerMessage),
+                HttpStatusCode.TooManyRequests => HttpError.TooManyRequests(errorContext, callerMessage),
                 _ => HttpError.UnexpectedStatusCode(errorContext, statusCode),
             };
         }
 
-        private static async Task<string> GetFailureMessageAsync(HttpResponseMessage response, ErrorContext errorContext, CancellationToken ct)
+        private static async Task<string> GetFailureMessageAsync(HttpResponseMessage response, CancellationToken ct)
         {
             var responseMessage = await TryGetResponseMessageAsync(response, ct);
-            return BuildFailureMessage(responseMessage, errorContext.DescriptionSuffix, GetDefaultFailureMessage(response.StatusCode), response.ReasonPhrase);
+            return BuildFailureMessage(responseMessage, GetDefaultFailureMessage(response.StatusCode), response.ReasonPhrase);
         }
 
-        private static string BuildFailureMessage(string? responseMessage, string? descriptionSuffix, string defaultMessage, string? reasonPhrase)
+        private static string BuildFailureMessage(string? responseMessage, string defaultMessage, string? reasonPhrase)
         {
-            return FirstNonEmpty(responseMessage, descriptionSuffix, defaultMessage, reasonPhrase, "An error occurred while calling the external service.");
+            return FirstNonEmpty(responseMessage, defaultMessage, reasonPhrase, "An error occurred while calling the external service.");
         }
 
         private static string GetDefaultFailureMessage(HttpStatusCode statusCode)

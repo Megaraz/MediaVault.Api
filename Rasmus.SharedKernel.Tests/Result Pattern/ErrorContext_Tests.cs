@@ -4,10 +4,13 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
 {
     public class ErrorContext_Tests
     {
-        // ── DescriptionPrefix — contains all context fields ──────────────────
+        // ── Metadata fields ──────────────────────────────────────────────────
+        // ErrorContext is metadata-only: it carries the technical context used
+        // to generate error codes and diagnostic descriptions. It does not own
+        // any description-formatting state.
 
         [Fact]
-        public void DescriptionPrefix_Should_Include_Operation_And_EntityName()
+        public void ErrorContext_Should_Expose_All_Metadata_Fields()
         {
             var ctx = new ErrorContext(
                 Layer: "Application",
@@ -16,29 +19,17 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
                 Operation: OperationType.Create,
                 EntityName: "User");
 
-            Assert.Contains("Create", ctx.DescriptionPrefix);
-            Assert.Contains("User", ctx.DescriptionPrefix);
+            Assert.Equal("Application", ctx.Layer);
+            Assert.Equal("UserService", ctx.ServiceName);
+            Assert.Equal("CreateAsync", ctx.MethodName);
+            Assert.Equal(OperationType.Create, ctx.Operation);
+            Assert.Equal("User", ctx.EntityName);
         }
 
-        [Fact]
-        public void DescriptionPrefix_Should_Include_Layer_ServiceName_And_MethodName()
-        {
-            var ctx = new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: "OrderRepo",
-                MethodName: "GetByIdAsync",
-                Operation: OperationType.Get,
-                EntityName: "Order");
-
-            Assert.Contains("Infrastructure", ctx.DescriptionPrefix);
-            Assert.Contains("OrderRepo", ctx.DescriptionPrefix);
-            Assert.Contains("GetByIdAsync", ctx.DescriptionPrefix);
-        }
-
-        // ── FullDescription — suffix fallback ────────────────────────────────
+        // ── Optional FieldName ───────────────────────────────────────────────
 
         [Fact]
-        public void FullDescription_Should_Contain_Unknown_Or_Unspecified_When_DescriptionSuffix_Is_Null()
+        public void FieldName_Should_Default_To_Null()
         {
             var ctx = new ErrorContext(
                 Layer: "Application",
@@ -47,54 +38,42 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
                 Operation: OperationType.Create,
                 EntityName: "User");
 
-            Assert.Contains("Unknown or unspecified", ctx.FullDescription);
+            Assert.Null(ctx.FieldName);
         }
 
         [Fact]
-        public void FullDescription_Should_Contain_Custom_Suffix_When_DescriptionSuffix_Is_Set()
+        public void FieldName_Can_Be_Set()
         {
             var ctx = new ErrorContext(
                 Layer: "Application",
                 ServiceName: "UserService",
                 MethodName: "CreateAsync",
                 Operation: OperationType.Create,
-                EntityName: "User")
-            {
-                DescriptionSuffix = "Database timed out."
-            };
+                EntityName: "User",
+                FieldName: "Email");
 
-            Assert.Contains("Database timed out.", ctx.FullDescription);
+            Assert.Equal("Email", ctx.FieldName);
+        }
+
+        // ── Record equality ──────────────────────────────────────────────────
+
+        [Fact]
+        public void ErrorContext_Should_Support_Value_Equality()
+        {
+            var ctx1 = new ErrorContext("Application", "UserService", "CreateAsync", OperationType.Create, "User");
+            var ctx2 = new ErrorContext("Application", "UserService", "CreateAsync", OperationType.Create, "User");
+
+            Assert.Equal(ctx1, ctx2);
         }
 
         [Fact]
-        public void FullDescription_Should_Not_Contain_Unknown_Or_Unspecified_When_DescriptionSuffix_Is_Set()
+        public void With_Expression_Should_Produce_New_Instance_With_Updated_FieldName()
         {
-            var ctx = new ErrorContext(
-                Layer: "Application",
-                ServiceName: "UserService",
-                MethodName: "CreateAsync",
-                Operation: OperationType.Create,
-                EntityName: "User")
-            {
-                DescriptionSuffix = "Something specific."
-            };
+            var original = new ErrorContext("Application", "UserService", "CreateAsync", OperationType.Create, "User");
+            var withField = original with { FieldName = "Email" };
 
-            Assert.DoesNotContain("Unknown or unspecified", ctx.FullDescription);
-        }
-
-        // ── DescriptionSuffix — default ──────────────────────────────────────
-
-        [Fact]
-        public void DescriptionSuffix_Should_Default_To_Null()
-        {
-            var ctx = new ErrorContext(
-                Layer: "Application",
-                ServiceName: "UserService",
-                MethodName: "CreateAsync",
-                Operation: OperationType.Create,
-                EntityName: "User");
-
-            Assert.Null(ctx.DescriptionSuffix);
+            Assert.Null(original.FieldName);
+            Assert.Equal("Email", withField.FieldName);
         }
     }
 }

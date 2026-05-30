@@ -27,7 +27,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
             UserRegisterDto userDto = new("Testuser", "test@mail.com", "test@mail.com", "Test@4321", "Test@1234");
 
-            var errorContext = DefineErrorContext(fieldName: "Password", confirmFieldName: "ConfirmPassword");
+            var errorContext = DefineErrorContext(fieldName: "Password");
 
             // Act
             var result = userDtoValidator.IsValidCreateDto(userDto, errorContext, out var errors);
@@ -309,7 +309,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
                 );
         }
 
-        private ErrorContext DefineErrorContext(string? fieldName = null, string? confirmFieldName = null)
+        private ErrorContext DefineErrorContext(string? fieldName = null)
         {
             return new ErrorContext(
                 Layer: "Service",
@@ -317,8 +317,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
                 MethodName: "RegisterUserAsync",
                 Operation: OperationType.Create,
                 EntityName: "User",
-                FieldName: fieldName,
-                ConfirmFieldName: confirmFieldName);
+                FieldName: fieldName);
         }
     }
 }

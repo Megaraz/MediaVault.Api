@@ -121,7 +121,7 @@ namespace media_vault_app.Application.Services.Auth
 
         //}
 
-        private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null, string? confirmFieldName = null)
+        private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
                 Layer: "Service",
@@ -129,8 +129,7 @@ namespace media_vault_app.Application.Services.Auth
                 MethodName: methodName,
                 Operation: operation,
                 EntityName: "User",
-                FieldName: fieldName,
-                ConfirmFieldName: confirmFieldName);
+                FieldName: fieldName);
         }
     }
 }

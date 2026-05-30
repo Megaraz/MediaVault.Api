@@ -60,26 +60,20 @@ namespace media_vault_app.Application.Validators.User
                 internalErrors.AddRange(nullOrEmptyErrors);
             }
 
-            var matchingEmailErrorContext = errorContext with
+            if (!string.IsNullOrWhiteSpace(createDto.Email) && !string.IsNullOrWhiteSpace(createDto.ConfirmEmail))
             {
-                FieldName = nameof(createDto.Email),
-                ConfirmFieldName = nameof(createDto.ConfirmEmail)
-            };
-
-            if (createDto.Email.DoesNotMatch(createDto.ConfirmEmail, matchingEmailErrorContext, out ValidationError notMatchingEmailError))
-            {
-                internalErrors.Add(notMatchingEmailError);
+                if (createDto.Email.DoesNotMatch(createDto.ConfirmEmail, nameof(createDto.Email), nameof(createDto.ConfirmEmail), errorContext, out ValidationError notMatchingEmailError))
+                {
+                    internalErrors.Add(notMatchingEmailError);
+                }
             }
 
-            var matchingPasswordErrorContext = errorContext with
+            if (!string.IsNullOrWhiteSpace(createDto.Password) && !string.IsNullOrWhiteSpace(createDto.ConfirmPassword))
             {
-                FieldName = nameof(createDto.Password),
-                ConfirmFieldName = nameof(createDto.ConfirmPassword)
-            };
-
-            if (createDto.Password.DoesNotMatch(createDto.ConfirmPassword, matchingPasswordErrorContext, out ValidationError notMatchingPasswordError))
-            {
-                internalErrors.Add(notMatchingPasswordError);
+                if (createDto.Password.DoesNotMatch(createDto.ConfirmPassword, nameof(createDto.Password), nameof(createDto.ConfirmPassword), errorContext, out ValidationError notMatchingPasswordError))
+                {
+                    internalErrors.Add(notMatchingPasswordError);
+                }
             }
 
             validationErrors = internalErrors;

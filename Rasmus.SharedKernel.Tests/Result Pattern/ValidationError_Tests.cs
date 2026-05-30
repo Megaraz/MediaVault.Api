@@ -16,7 +16,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
 
         public static IEnumerable<object[]> AllFactoryInstances()
         {
-            var ctx = TestErrorContextFactory.Create(fieldName: "Email", confirmFieldName: "ConfirmEmail");
+            var ctx = TestErrorContextFactory.Create(fieldName: "Email");
 
             yield return [ValidationError.Required(ctx)];
             yield return [ValidationError.InvalidFormat(ctx, "name@example.com")];
@@ -24,7 +24,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             yield return [ValidationError.TooShort(ctx, "3-50")];
             yield return [ValidationError.TooLong(ctx, "3-50")];
             yield return [ValidationError.OutOfRange(ctx, "1-100")];
-            yield return [ValidationError.NonMatchingValues(ctx)];
+            yield return [ValidationError.NonMatchingValues(ctx, confirmFieldName: "ConfirmEmail")];
             yield return [ValidationError.Custom(ctx)];
         }
 
@@ -116,9 +116,9 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void NonMatchingValues_With_Both_Fields_Should_Mention_Both_Fields_In_UserMessage()
         {
-            var ctx = TestErrorContextFactory.Create(fieldName: "Password", confirmFieldName: "ConfirmPassword");
+            var ctx = TestErrorContextFactory.Create(fieldName: "Password");
 
-            var error = ValidationError.NonMatchingValues(ctx);
+            var error = ValidationError.NonMatchingValues(ctx, confirmFieldName: "ConfirmPassword");
 
             Assert.Contains("Password", error.UserMessage);
             Assert.Contains("ConfirmPassword", error.UserMessage);

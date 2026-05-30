@@ -25,9 +25,8 @@ namespace media_vault_app.Application.Services.API
 
             if (string.IsNullOrWhiteSpace(volumeId))
             {
-                var volumeIdErrorContext = errorContext with { FieldName = nameof(volumeId), DescriptionSuffix = "Volume ID must not be empty." };
-                var error = ValidationError.Required(volumeIdErrorContext);
-                return Result<GoogleBooksDetailedDto>.ValidationFailure([error], volumeIdErrorContext.DescriptionSuffix);
+                var error = ValidationError.Required(errorContext with { FieldName = nameof(volumeId) });
+                return Result<GoogleBooksDetailedDto>.ValidationFailure([error], error.UserMessage);
             }
 
             var result = await _client.GetBookByIdAsync(volumeId, cancellationToken);

@@ -29,9 +29,8 @@ namespace Rasmus.SharedKernel.ResultPattern
             if (!Validator.IsValidId(id))
             {
                 string fieldName = string.IsNullOrWhiteSpace(errorContext.FieldName) ? nameof(id) : errorContext.FieldName;
-                string descriptionSuffix = $"A valid {fieldName} is required for the entity '{errorContext.EntityName}' and cannot be null or empty.";
 
-                idValidationError = ValidationError.Required(errorContext with { FieldName = fieldName, DescriptionSuffix = descriptionSuffix });
+                idValidationError = ValidationError.Required(errorContext with { FieldName = fieldName });
                 return true;
             }
 
@@ -51,10 +50,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             if (value is null)
             {
-                nullValueError = ValidationError.Required(errorContext with
-                {
-                    DescriptionSuffix = $"A value for the entity '{errorContext.EntityName}' is required and cannot be null or empty."
-                });
+                nullValueError = ValidationError.Required(errorContext);
                 return true;
             }
 
@@ -102,11 +98,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             {
                 string resolvedFieldName = string.IsNullOrWhiteSpace(fieldName) ? errorContext.FieldName ?? nameof(value) : fieldName;
 
-                nullOrEmptyError = ValidationError.Required(errorContext with
-                {
-                    FieldName = resolvedFieldName,
-                    DescriptionSuffix = $"The field '{resolvedFieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty."
-                });
+                nullOrEmptyError = ValidationError.Required(errorContext with { FieldName = resolvedFieldName });
                 return true;
             }
 
@@ -127,10 +119,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                nullOrEmptyError = ValidationError.Required(errorContext with
-                {
-                    DescriptionSuffix = $"The field '{errorContext.FieldName}' is required for the entity '{errorContext.EntityName}' and cannot be null or empty."
-                });
+                nullOrEmptyError = ValidationError.Required(errorContext);
                 return true;
             }
 
@@ -144,17 +133,13 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
         public static bool IsTooLow(this int value, int minValue, ErrorContext errorContext, out ValidationError tooLowError)
         {
-
             ArgumentNullException.ThrowIfNull(errorContext);
 
             tooLowError = default!;
 
             if (value < minValue)
             {
-                tooLowError = ValidationError.OutOfRange(errorContext with
-                {
-                    DescriptionSuffix = $"The field '{errorContext.FieldName}' must be greater than or equal to {minValue} for the entity '{errorContext.EntityName}'."
-                }, $">= {minValue}");
+                tooLowError = ValidationError.OutOfRange(errorContext, $">= {minValue}");
                 return true;
             }
 
@@ -166,20 +151,22 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// and populates <paramref name="notMatchingError"/>. Returns <see langword="false"/> if they match.
         /// Comparison is ordinal (case-sensitive).
         /// </summary>
+        /// <param name="fieldName">Label for <paramref name="value1"/>, used in error descriptions.</param>
+        /// <param name="confirmFieldName">Label for <paramref name="value2"/>, used in error descriptions.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="errorContext"/> is <see langword="null"/>.</exception>
-        public static bool DoesNotMatch(this string value1, string value2, ErrorContext errorContext, out ValidationError notMatchingError)
+        public static bool DoesNotMatch(this string value1, string value2, string fieldName, string confirmFieldName, ErrorContext errorContext, out ValidationError notMatchingError)
         {
             ArgumentNullException.ThrowIfNull(errorContext);
 
             notMatchingError = default!;
 
-            if (value1.IsNullOrWhiteSpace(errorContext, out var value1Error))
+            if (value1.IsNullOrWhiteSpace(fieldName, errorContext, out var value1Error))
             {
                 notMatchingError = value1Error;
                 return true;
             }
 
-            if (value2.IsNullOrWhiteSpace(errorContext with { FieldName = errorContext.ConfirmFieldName }, out var value2Error))
+            if (value2.IsNullOrWhiteSpace(confirmFieldName, errorContext, out var value2Error))
             {
                 notMatchingError = value2Error;
                 return true;
@@ -187,10 +174,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             if (!string.Equals(value1, value2, StringComparison.Ordinal))
             {
-                notMatchingError = ValidationError.NonMatchingValues(errorContext with
-                {
-                    DescriptionSuffix = $"The fields '{errorContext.FieldName}' and '{errorContext.ConfirmFieldName}' must match for the entity '{errorContext.EntityName}'."
-                });
+                notMatchingError = ValidationError.NonMatchingValues(errorContext with { FieldName = fieldName }, confirmFieldName);
                 return true;
             }
 

@@ -52,24 +52,25 @@ namespace Rasmus.SharedKernel.ResultPattern
             return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.TransportFailure, defaultDescriptionSuffix, exception);
         }
 
-        public static HttpError TooManyRequests(ErrorContext errorContext)
+        public static HttpError TooManyRequests(ErrorContext errorContext, string? callerMessage = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpTooManyRequests);
 
-            string defaultDescriptionSuffix = $"Too Many Requests";
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Too Many Requests" : callerMessage;
+            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.TooManyRequests, defaultDescriptionSuffix);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.TooManyRequests, userMessage);
         }
 
-        public static HttpError MalformedResponse(ErrorContext errorContext, Exception? exception = null)
+        public static HttpError MalformedResponse(ErrorContext errorContext, Exception? exception = null, string? detail = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpMalformedResponse);
 
-            string defaultDescriptionSuffix = $"The external service returned a malformed or unexpected response.";
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+            string userMessage = "The external service returned a malformed or unexpected response.";
+            string descriptionSuffix = string.IsNullOrWhiteSpace(detail) ? userMessage : detail;
+            string formattedErrorDescription = FormatDescription(errorContext, descriptionSuffix);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.MalformedResponse, defaultDescriptionSuffix, exception);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.MalformedResponse, userMessage, exception);
         }
 
         public static HttpError UnexpectedStatusCode(ErrorContext errorContext, HttpStatusCode statusCode)
@@ -82,79 +83,76 @@ namespace Rasmus.SharedKernel.ResultPattern
             return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.UnexpectedStatusCode, defaultDescriptionSuffix);
         }
 
-        public static HttpError UnprocessableContent(ErrorContext errorContext)
+        public static HttpError UnprocessableContent(ErrorContext errorContext, string? callerMessage = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpUnprocessableContent);
 
-            string defaultDescriptionSuffix = $"Unprocessable Content";
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Unprocessable Content" : callerMessage;
+            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.UnprocessableContent, defaultDescriptionSuffix);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.UnprocessableContent, userMessage);
         }
 
-        public static HttpError BadRequest(ErrorContext errorContext)
+        public static HttpError BadRequest(ErrorContext errorContext, string? callerMessage = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpBadRequest);
 
-            string defaultDescriptionSuffix = $"Bad Request";
+            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Bad Request" : callerMessage;
+            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
 
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.BadRequest, defaultDescriptionSuffix);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.BadRequest, userMessage);
         }
 
-        public static HttpError UnauthorizedAccess(ErrorContext errorContext)
+        public static HttpError UnauthorizedAccess(ErrorContext errorContext, string? callerMessage = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpUnauthorized);
 
-            string defaultDescriptionSuffix = $"Unauthorized";
+            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Unauthorized" : callerMessage;
+            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
 
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Unauthorized, defaultDescriptionSuffix);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Unauthorized, userMessage);
         }
 
 
-        public static HttpError Forbidden(ErrorContext errorContext)
+        public static HttpError Forbidden(ErrorContext errorContext, string? callerMessage = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpForbidden);
 
-            string defaultDescriptionSuffix = $"Forbidden";
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Forbidden" : callerMessage;
+            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Forbidden, defaultDescriptionSuffix);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Forbidden, userMessage);
         }
 
 
-        public static new HttpError NotFound(ErrorContext errorContext)
+        public static new HttpError NotFound(ErrorContext errorContext, string? callerMessage = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpNotFound);
 
-            string defaultDescriptionSuffix = $"Not Found";
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Not Found" : callerMessage;
+            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.NotFound, defaultDescriptionSuffix);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.NotFound, userMessage);
         }
 
-        public static new HttpError Conflict(ErrorContext errorContext)
+        public static new HttpError Conflict(ErrorContext errorContext, string? callerMessage = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpConflict);
 
-            string defaultDescriptionSuffix = $"Conflict";
+            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Conflict" : callerMessage;
+            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
 
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Conflict, defaultDescriptionSuffix);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Conflict, userMessage);
         }
 
-        public static HttpError InternalServerError(ErrorContext errorContext)
+        public static HttpError InternalServerError(ErrorContext errorContext, string? callerMessage = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpInternalServerError);
 
-            string defaultDescriptionSuffix = $"Internal Server Error";
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
+            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Internal Server Error" : callerMessage;
+            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
 
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.InternalServerError, defaultDescriptionSuffix);
+            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.InternalServerError, userMessage);
         }
 
     }

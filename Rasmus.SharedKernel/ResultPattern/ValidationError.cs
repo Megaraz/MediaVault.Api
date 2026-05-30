@@ -96,12 +96,12 @@ namespace Rasmus.SharedKernel.ResultPattern
             return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooShort, defaultDescriptionSuffix);
         }
 
-        public static ValidationError NonMatchingValues(ErrorContext errorContext)
+        public static ValidationError NonMatchingValues(ErrorContext errorContext, string? confirmFieldName = null)
         {
             var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.ValidationNonMatchingValues);
 
-            string defaultDescriptionSuffix = !string.IsNullOrWhiteSpace(errorContext.FieldName) && !string.IsNullOrWhiteSpace(errorContext.ConfirmFieldName)
-                ? $"The values for '{errorContext.FieldName}' and '{errorContext.ConfirmFieldName}' do not match."
+            string defaultDescriptionSuffix = !string.IsNullOrWhiteSpace(errorContext.FieldName) && !string.IsNullOrWhiteSpace(confirmFieldName)
+                ? $"The values for '{errorContext.FieldName}' and '{confirmFieldName}' do not match."
                 : "The provided values do not match.";
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);

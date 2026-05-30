@@ -233,7 +233,7 @@ namespace media_vault_app.Infrastructure.Repos
             return Result<T>.Failure(error);
         }
 
-        protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null, string? confirmFieldName = null)
+        protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
                 Layer: "Infrastructure",
@@ -241,8 +241,7 @@ namespace media_vault_app.Infrastructure.Repos
                 MethodName: methodName,
                 Operation: operation,
                 EntityName: typeof(TEntity).Name,
-                FieldName: fieldName,
-                ConfirmFieldName: confirmFieldName);
+                FieldName: fieldName);
         }
     }
 }
