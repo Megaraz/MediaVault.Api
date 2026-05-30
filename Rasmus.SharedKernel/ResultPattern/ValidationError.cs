@@ -20,12 +20,19 @@ namespace Rasmus.SharedKernel.ResultPattern
     {
         public ValidationErrorType ValidationErrorType { get; }
 
+        /// <summary>
+        /// The name of the field this error is associated with, for UI binding.
+        /// <c>null</c> means the error applies to the whole form rather than a specific field.
+        /// </summary>
+        public string? FieldName { get; }
+
         // Private constructor to enforce the use of static factory methods for creating ValidationError instances
         // Sets the ErrorType of base-class to Validation for all instances of ValidationError
-        private ValidationError(string code, string description, ValidationErrorType type, string userMessage)
+        private ValidationError(string code, string description, ValidationErrorType type, string userMessage, string? fieldName)
             : base(code, description, ErrorType.Validation, userMessage)
         {
             ValidationErrorType = type;
+            FieldName = fieldName;
         }
 
         public static ValidationError AlreadyExists(ErrorContext errorContext)
@@ -36,7 +43,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.AlreadyExists, defaultDescriptionSuffix);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.AlreadyExists, defaultDescriptionSuffix, errorContext.FieldName);
         }
 
         public static ValidationError InvalidFormat(ErrorContext errorContext, string expectedFormat)
@@ -47,7 +54,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.InvalidFormat, defaultDescriptionSuffix);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.InvalidFormat, defaultDescriptionSuffix, errorContext.FieldName);
         }
 
         public static ValidationError Required(ErrorContext errorContext)
@@ -60,7 +67,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Required, defaultDescriptionSuffix);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Required, defaultDescriptionSuffix, errorContext.FieldName);
         }
 
         public static ValidationError TooLong(ErrorContext errorContext, string range)
@@ -71,7 +78,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooLong, defaultDescriptionSuffix);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooLong, defaultDescriptionSuffix, errorContext.FieldName);
         }
 
         public static ValidationError OutOfRange(ErrorContext errorContext, string range)
@@ -82,7 +89,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.OutOfRange, defaultDescriptionSuffix);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.OutOfRange, defaultDescriptionSuffix, errorContext.FieldName);
         }
 
         public static ValidationError TooShort(ErrorContext errorContext, string range)
@@ -93,7 +100,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooShort, defaultDescriptionSuffix);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.TooShort, defaultDescriptionSuffix, errorContext.FieldName);
         }
 
         public static ValidationError NonMatchingValues(ErrorContext errorContext, string? confirmFieldName = null)
@@ -106,7 +113,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.NonMatchingValues, defaultDescriptionSuffix);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.NonMatchingValues, defaultDescriptionSuffix, confirmFieldName ?? errorContext.FieldName);
         }
 
         public static ValidationError Custom(ErrorContext errorContext)
@@ -117,7 +124,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
             string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
 
-            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Custom, defaultDescriptionSuffix);
+            return new ValidationError(errorCode.Code, formattedErrorDescription, ValidationErrorType.Custom, defaultDescriptionSuffix, errorContext.FieldName);
         }
     }
 }

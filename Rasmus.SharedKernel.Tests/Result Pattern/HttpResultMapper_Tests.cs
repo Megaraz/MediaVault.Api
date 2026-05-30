@@ -183,11 +183,11 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             AssertValidationErrorResponse(
                 response,
                 "Validation failed.",
-                validationError.Code);
+                new ValidationErrorItem(validationError.FieldName, validationError.UserMessage));
         }
 
         [Fact]
-        public void ValidationFailure_Should_Include_All_ValidationError_Codes()
+        public void ValidationFailure_Should_Include_All_ValidationErrorItems()
         {
             var emailContext = CreateErrorContext(fieldName: "Email");
             var passwordContext = CreateErrorContext(fieldName: "Password");
@@ -209,8 +209,8 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             AssertValidationErrorResponse(
                 response,
                 "Validation failed.",
-                emailError.Code,
-                passwordError.Code);
+                new ValidationErrorItem(emailError.FieldName, emailError.UserMessage),
+                new ValidationErrorItem(passwordError.FieldName, passwordError.UserMessage));
         }
 
         // ── Failure should override success-style response methods ───────────────
@@ -250,7 +250,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             AssertValidationErrorResponse(
                 response,
                 "Validation failed.",
-                validationError.Code);
+                new ValidationErrorItem(validationError.FieldName, validationError.UserMessage));
         }
 
         [Fact]
@@ -309,7 +309,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         private static void AssertValidationErrorResponse(
             MappedHttpResponse response,
             string expectedMessage,
-            params string[] expectedValidationErrorCodes)
+            params ValidationErrorItem[] expectedItems)
         {
             Assert.Equal(422, response.StatusCode);
 
@@ -318,14 +318,13 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             Assert.Equal(expectedMessage, body.Message);
             Assert.NotNull(body.ValidationErrors);
 
-            var actualValidationErrorCodes = body.ValidationErrors!.ToList();
+            var actualItems = body.ValidationErrors!.ToList();
 
-            Assert.Equal(expectedValidationErrorCodes.Length, actualValidationErrorCodes.Count);
+            Assert.Equal(expectedItems.Length, actualItems.Count);
 
-            foreach (var expectedCode in expectedValidationErrorCodes)
-            {
-                Assert.Contains(expectedCode, actualValidationErrorCodes);
-            }
+            foreach (var expected in expectedItems)
+                Assert.Contains(actualItems, actual =>
+                    actual.Field == expected.Field && actual.Message == expected.Message);
 
             Assert.Null(response.Location);
         }

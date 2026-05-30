@@ -55,12 +55,13 @@ namespace Rasmus.SharedKernel.ResultPattern
         {
             var primaryError = result.PrimaryError;
             var message = result.Message;
-            var validationErrors = result.ValidationErrors.Select(x => x.Code);
+            var validationErrorItems = result.ValidationErrors
+                .Select(x => new ValidationErrorItem(x.FieldName, x.UserMessage));
 
             var (statusCode, body) = BuildFailureResponse(
                 message,
                 primaryError,
-                validationErrors);
+                validationErrorItems);
 
             return new MappedHttpResponse(statusCode, body);
         }
@@ -68,11 +69,11 @@ namespace Rasmus.SharedKernel.ResultPattern
         private static (int StatusCode, object Body) BuildFailureResponse(
             string message,
             Error primaryError,
-            IEnumerable<string>? validationErrors)
+            IEnumerable<ValidationErrorItem>? validationErrorItems)
         {
             return primaryError.Type switch
             {
-                ErrorType.Validation => (422, new ValidationErrorResponseBody(message, validationErrors)),
+                ErrorType.Validation => (422, new ValidationErrorResponseBody(message, validationErrorItems)),
                 ErrorType.NotFound => (404, new ErrorResponseBody(message, primaryError.Code)),
                 ErrorType.Conflict => (409, new ErrorResponseBody(message, primaryError.Code)),
                 ErrorType.Unauthorized => (401, new ErrorResponseBody(message, primaryError.Code)),

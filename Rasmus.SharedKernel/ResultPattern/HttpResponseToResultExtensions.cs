@@ -127,6 +127,10 @@ namespace Rasmus.SharedKernel.ResultPattern
             };
         }
 
+        // Returns true when the Content-Type header is absent (null or whitespace) as well as when it
+        // contains "json". This leniency is intentional: some real-world external APIs (e.g. RAWG)
+        // return valid JSON bodies without setting a Content-Type header on success responses.
+        // Callers that need strict enforcement should inspect the header themselves before mapping.
         private static bool HasJsonContentType(HttpResponseMessage response)
         {
             var mediaType = response.Content?.Headers.ContentType?.MediaType;

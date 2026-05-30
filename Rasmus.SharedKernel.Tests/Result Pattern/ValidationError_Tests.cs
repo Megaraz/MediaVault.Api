@@ -133,5 +133,40 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
 
             Assert.Contains("do not match", error.UserMessage, StringComparison.OrdinalIgnoreCase);
         }
+
+        // ── FieldName — captured for UI binding ───────────────────────────────
+
+        [Theory]
+        [InlineData("Email")]
+        [InlineData("Password")]
+        [InlineData(null)]
+        public void Required_Should_Set_FieldName_From_ErrorContext(string? fieldName)
+        {
+            var ctx = TestErrorContextFactory.Create(fieldName: fieldName);
+
+            var error = ValidationError.Required(ctx);
+
+            Assert.Equal(fieldName, error.FieldName);
+        }
+
+        [Fact]
+        public void NonMatchingValues_FieldName_Should_Be_ConfirmFieldName_When_Provided()
+        {
+            var ctx = TestErrorContextFactory.Create(fieldName: "Password");
+
+            var error = ValidationError.NonMatchingValues(ctx, confirmFieldName: "ConfirmPassword");
+
+            Assert.Equal("ConfirmPassword", error.FieldName);
+        }
+
+        [Fact]
+        public void NonMatchingValues_FieldName_Should_Fall_Back_To_ErrorContext_FieldName_When_No_ConfirmFieldName()
+        {
+            var ctx = TestErrorContextFactory.Create(fieldName: "Password");
+
+            var error = ValidationError.NonMatchingValues(ctx);
+
+            Assert.Equal("Password", error.FieldName);
+        }
     }
 }
