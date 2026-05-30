@@ -80,7 +80,7 @@ namespace Rasmus.SharedKernel.ResultPattern
             }
         }
 
-        public async Task<List<ErrorLog>> GetErrorLogsAsync(CancellationToken ct = default)
+        public async Task<IReadOnlyList<ErrorLog>> GetErrorLogsAsync(CancellationToken ct = default)
         {
             if (!File.Exists(_configuration.FullPath))
                 return new List<ErrorLog>();
