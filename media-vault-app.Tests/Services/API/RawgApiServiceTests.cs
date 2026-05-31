@@ -1,6 +1,7 @@
 using media_vault_app.Application.DTOs.External_API_Contracts.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Services.API;
+using media_vault_app.Tests.TestHelpers;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Tests.Services.API
@@ -44,7 +45,7 @@ namespace media_vault_app.Tests.Services.API
                     ]
                 }));
 
-            var service = new RawgApiService(client);
+            var service = new RawgApiService(client, ServiceTestLogger.Create<RawgApiService>());
 
             // Act
             var result = await service.GetGameByIdAsync(42);

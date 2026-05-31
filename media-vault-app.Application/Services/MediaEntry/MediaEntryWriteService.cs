@@ -6,6 +6,7 @@ using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Interfaces.Validators;
 using media_vault_app.Application.Services.Base_Classes;
+using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Validators;
@@ -23,8 +24,9 @@ namespace media_vault_app.Application.Services.MediaEntry
             IUserRepo ownerRepo,
             IMediaEntryEntityMapper entityMapper,
             IMediaEntryDtoMapper dtoMapper,
-            IMediaEntryDtoValidator dtoValidator
-            ) : base(dependentEntityRepo, ownerRepo, entityMapper, dtoMapper, dtoValidator)
+            IMediaEntryDtoValidator dtoValidator,
+            ILogger<MediaEntryWriteService> logger
+            ) : base(dependentEntityRepo, ownerRepo, entityMapper, dtoMapper, dtoValidator, logger)
         {
         }
     }

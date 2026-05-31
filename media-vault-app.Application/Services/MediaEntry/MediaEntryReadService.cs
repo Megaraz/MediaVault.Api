@@ -4,7 +4,9 @@ using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Services;
 using media_vault_app.Application.Services.Base_Classes;
+using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.ResultPattern;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
@@ -21,8 +23,9 @@ namespace media_vault_app.Application.Services.MediaEntry
         public MediaEntryReadService(
             IMediaEntryRepo mediaEntryRepo,
             IUserRepo ownerRepo,
-            IMediaEntryEntityMapper entityMapper
-            ) : base(mediaEntryRepo, entityMapper, ownerRepo)
+            IMediaEntryEntityMapper entityMapper,
+            ILogger<MediaEntryReadService> logger
+            ) : base(mediaEntryRepo, entityMapper, ownerRepo, logger)
         {
         }
 
@@ -83,6 +86,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             // If there are any validation errors, return them in a single Result response
             if (validationErrors.Any())
             {
+                _logger.LogDebug("SearchMediaEntriesAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(validationErrors));
                 return Result<IReadOnlyList<MediaEntryMinimalDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
             }
 
@@ -90,6 +94,9 @@ namespace media_vault_app.Application.Services.MediaEntry
             var ownerExistsResult = await EnsureOwnerExistsAsync(ownerId, ct);
             if (ownerExistsResult.IsFailure)
             {
+                _logger.LogDebug("SearchMediaEntriesAsync owner check failed: {Code} — {Description}", 
+                    ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
+
                 return ownerExistsResult.From<bool, IReadOnlyList<MediaEntryMinimalDto>>();
             }
 
@@ -100,7 +107,10 @@ namespace media_vault_app.Application.Services.MediaEntry
             var repoResult = await MediaEntryRepo.SearchMediaEntriesAsync(ownerId, request.Query, pageNumber, pageSize, ct);
 
             // Maps the result internally  
-            return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
+            var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
+            if (mappedRepoResult.IsFailure)
+                _logger.LogDebug("SearchMediaEntriesAsync failed: {Code} — {Description}", mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
+            return mappedRepoResult;
 
         }
 
@@ -116,6 +126,9 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             if (baseResult.IsFailure)
             {
+                _logger.LogDebug("GetTypedByIdAsync ({Subtype}) failed: {Code} — {Description}", 
+                    subtypeDisplayName, baseResult.PrimaryError.Code, baseResult.PrimaryError.Description);
+
                 return baseResult.From<MediaEntryDetailedDto, TDetailedSubtype>();
             }
 

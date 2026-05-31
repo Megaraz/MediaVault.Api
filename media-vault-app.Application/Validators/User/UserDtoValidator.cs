@@ -21,7 +21,7 @@ namespace media_vault_app.Application.Validators.User
                 return false;
             }
 
-            var requiredFields = new (string FieldName, string Value)[]
+            var requiredFields = new (string FieldName, string? Value)[]
             {
                 ("Username or Email", loginDto.UsernameOrEmail),
                 ("Password", loginDto.Password)
@@ -46,7 +46,7 @@ namespace media_vault_app.Application.Validators.User
                 return false;
             }
 
-            var requiredFields = new (string FieldName, string Value)[]
+            var requiredFields = new (string FieldName, string? Value)[]
             {
                 (nameof(createDto.Username), createDto.Username),
                 (nameof(createDto.Email), createDto.Email),

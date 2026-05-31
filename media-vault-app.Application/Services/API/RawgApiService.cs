@@ -8,7 +8,9 @@ using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.DTOs.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Services;
 using media_vault_app.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.API
@@ -16,10 +18,12 @@ namespace media_vault_app.Application.Services.API
     public class RawgApiService : IRawgApiService
     {
         private readonly IRawgApiClient _client;
+        private readonly ILogger<RawgApiService> _logger;
 
-        public RawgApiService(IRawgApiClient client)
+        public RawgApiService(IRawgApiClient client, ILogger<RawgApiService> logger)
         {
             _client = client;
+            _logger = logger;
         }
 
         public async Task<Result<RawgGameDetailedDto>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -28,12 +32,21 @@ namespace media_vault_app.Application.Services.API
 
             if (id.IsNotValidId(idValidationErrorContext, out var idError))
             {
+                _logger.LogDebug("GetGameByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idError]));
                 return Result<RawgGameDetailedDto>.ValidationFailure([idError]);
             }
 
-            var result = await _client.GetGameByIdAsync(id, cancellationToken);
+            var clientResult = await _client.GetGameByIdAsync(id, cancellationToken);
 
-            return result.Map(ToDetailedDto);
+            var mappedClientResult = clientResult.Map(ToDetailedDto);
+
+            if (mappedClientResult.IsFailure)
+            {
+                _logger.LogDebug("GetGameByIdAsync failed: {Code} - {Description}",
+                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
+            }
+
+            return mappedClientResult;
 
         }
         public async Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchGamesAsync(
@@ -59,6 +72,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
+                _logger.LogDebug("SearchGamesAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(errors));
                 return Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>.ValidationFailure(errors, "RAWG game search validation failed.");
             }
 
@@ -84,9 +98,17 @@ namespace media_vault_app.Application.Services.API
                 queryParameters.Add($"ordering={Uri.EscapeDataString(ordering)}");
             }
 
-            var result = await _client.SearchGamesAsync(queryParameters, cancellationToken);
+            var clientResult = await _client.SearchGamesAsync(queryParameters, cancellationToken);
 
-            return result.Map(searchResponse => MapToGameSearchResult(searchResponse.Results));
+            var mappedClientResult = clientResult.Map(searchResponse => MapToGameSearchResult(searchResponse.Results));
+
+            if (mappedClientResult.IsFailure)
+            {
+                _logger.LogDebug("SearchGamesAsync failed: {Code} - {Description}",
+                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
+            }
+
+            return mappedClientResult;
 
         }
 

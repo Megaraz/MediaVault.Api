@@ -1,4 +1,3 @@
-using media_vault_app.Application.DTOs;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries;
@@ -7,6 +6,7 @@ using media_vault_app.Application.DTOs.Tmdb;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.API
@@ -14,10 +14,12 @@ namespace media_vault_app.Application.Services.API
     public class TmdbApiService : ITmdbApiService
     {
         private readonly ITmdbApiClient _client;
+        private readonly ILogger<TmdbApiService> _logger;
 
-        public TmdbApiService(ITmdbApiClient client)
+        public TmdbApiService(ITmdbApiClient client, ILogger<TmdbApiService> logger)
         {
             _client = client;
+            _logger = logger;
         }
 
         public async Task<Result<TmdbTvSeriesDetailedDto>> GetTvSeriesByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -26,11 +28,21 @@ namespace media_vault_app.Application.Services.API
 
             if (id.IsNotValidId(idValidationErrorContext, out var idError))
             {
+                _logger.LogDebug("GetTvSeriesByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idError]));
                 return Result<TmdbTvSeriesDetailedDto>.ValidationFailure([idError]);
             }
 
-            var result = await _client.GetTvSeriesByIdAsync(id, cancellationToken);
-            return result.Map(ToDetailedDto);
+            var clientResult = await _client.GetTvSeriesByIdAsync(id, cancellationToken);
+
+            var mappedClientResult = clientResult.Map(ToDetailedDto);
+
+            if (mappedClientResult.IsFailure)
+            {
+                _logger.LogDebug("GetTvSeriesByIdAsync failed: {Code} - {Description}",
+                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
+            }
+
+            return mappedClientResult;
         }
         public async Task<Result<TmdbMovieDetailedDto>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default)
         {
@@ -38,11 +50,21 @@ namespace media_vault_app.Application.Services.API
 
             if (id.IsNotValidId(idValidationErrorContext, out var idError))
             {
+                _logger.LogDebug("GetMovieByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idError]));
                 return Result<TmdbMovieDetailedDto>.ValidationFailure([idError]);
             }
 
-            var result = await _client.GetMovieByIdAsync(id, cancellationToken);
-            return result.Map(ToDetailedDto);
+            var clientResult = await _client.GetMovieByIdAsync(id, cancellationToken);
+
+            var mappedClientResult = clientResult.Map(ToDetailedDto);
+
+            if (mappedClientResult.IsFailure)
+            {
+                _logger.LogDebug("GetMovieByIdAsync failed: {Code} - {Description}",
+                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
+            }
+
+            return mappedClientResult;
         }
 
         public async Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchAsync(
@@ -68,6 +90,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
+                _logger.LogDebug("SearchAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(errors));
                 return Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>.ValidationFailure(errors, "TMDB search validation failed.");
             }
 
@@ -77,9 +100,17 @@ namespace media_vault_app.Application.Services.API
                 $"page={page}"
             };
 
-            var result = await _client.SearchAsync(queryParameters, mediaType, cancellationToken);
+            var clientResult = await _client.SearchAsync(queryParameters, mediaType, cancellationToken);
 
-            return result.Map(searchResponse => MapToSearchResults(searchResponse.Results, mediaType));
+            var mappedClientResult = clientResult.Map(searchResponse => MapToSearchResults(searchResponse.Results, mediaType));
+
+            if (mappedClientResult.IsFailure)
+            {
+                _logger.LogDebug("SearchAsync failed: {Code} - {Description}",
+                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
+            }
+
+            return mappedClientResult;
         }
 
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)

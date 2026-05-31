@@ -5,7 +5,9 @@ using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.Application.Services;
 using media_vault_app.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.API
@@ -13,10 +15,12 @@ namespace media_vault_app.Application.Services.API
     public class GoogleBooksApiService : IGoogleBooksApiService
     {
         private readonly IGoogleBooksApiClient _client;
+        private readonly ILogger<GoogleBooksApiService> _logger;
 
-        public GoogleBooksApiService(IGoogleBooksApiClient client)
+        public GoogleBooksApiService(IGoogleBooksApiClient client, ILogger<GoogleBooksApiService> logger)
         {
             _client = client;
+            _logger = logger;
         }
 
         public async Task<Result<GoogleBooksDetailedDto>> GetBookByIdAsync(string volumeId, CancellationToken cancellationToken = default)
@@ -26,12 +30,21 @@ namespace media_vault_app.Application.Services.API
             if (string.IsNullOrWhiteSpace(volumeId))
             {
                 var error = ValidationError.Required(errorContext with { FieldName = nameof(volumeId) });
+                _logger.LogDebug("GetBookByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([error]));
                 return Result<GoogleBooksDetailedDto>.ValidationFailure([error], error.UserMessage);
             }
 
-            var result = await _client.GetBookByIdAsync(volumeId, cancellationToken);
+            var clientResult = await _client.GetBookByIdAsync(volumeId, cancellationToken);
 
-            return result.Map(ToDetailedDto);
+            var mappedClientResult = clientResult.Map(ToDetailedDto);
+
+            if (mappedClientResult.IsFailure)
+            {
+                _logger.LogDebug("GetBookByIdAsync failed: {Code} - {Description}", 
+                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
+            }
+
+            return mappedClientResult;
         }
 
         public async Task<Result<IReadOnlyList<GoogleBooksDetailedDto>>> SearchBooksAsync(
@@ -54,6 +67,7 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Count > 0)
             {
+                _logger.LogDebug("SearchBooksAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(errors));
                 return Result<IReadOnlyList<GoogleBooksDetailedDto>>.ValidationFailure(errors, "Google Books search validation failed.");
             }
 
@@ -66,9 +80,17 @@ namespace media_vault_app.Application.Services.API
                 $"maxResults={pageSize}"
             };
 
-            var result = await _client.SearchBooksAsync(queryParameters, cancellationToken);
+            var clientResult = await _client.SearchBooksAsync(queryParameters, cancellationToken);
 
-            return result.Map(searchResponse => ToDetailedDtoCollection(searchResponse.Items));
+            var mappedClientResult = clientResult.Map(searchResponse => ToDetailedDtoCollection(searchResponse.Items));
+
+            if (mappedClientResult.IsFailure)
+            {
+                _logger.LogDebug("SearchBooksAsync failed: {Code} - {Description}", 
+                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
+            }
+
+            return mappedClientResult;
         }
 
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
