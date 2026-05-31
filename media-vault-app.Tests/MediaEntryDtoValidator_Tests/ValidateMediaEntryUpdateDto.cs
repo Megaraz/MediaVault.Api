@@ -62,7 +62,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Title = "Test Media Entry",
                 Rating = 4.5m,
                 Review = "Great media entry!",
-                Genres = null,
+                Genres = [],
                 ReleaseDate = default,
                 ImageUrl = null,
                 RuntimeMinutes = 120
@@ -93,7 +93,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
                 Title = value!,
                 Rating = 4.5m,
                 Review = "Great media entry!",
-                Genres = null!,
+                Genres = [],
                 ReleaseDate = default,
                 ImageUrl = null,
                 RuntimeMinutes = 120

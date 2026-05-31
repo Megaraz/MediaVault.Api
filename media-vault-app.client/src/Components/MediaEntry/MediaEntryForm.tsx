@@ -59,11 +59,13 @@ export type MediaEntryFormData = {
   author?: string;
 };
 
+type MediaEntryFormValue = string | number | string[] | null;
+
 type MediaEntryFormProps = {
   formData: MediaEntryFormData;
   onChange: (
     field: keyof MediaEntryFormData,
-    value: string | number | null,
+    value: MediaEntryFormValue,
   ) => void;
   onSeasonsChange: (seasons: SeasonFormData[]) => void;
   onSelectResult: (result: SearchResult) => void;
@@ -237,11 +239,7 @@ export default function MediaEntryForm({
                 Genres
               </label>
               <InputText
-                value={
-                  Array.isArray(formData.genres)
-                    ? formData.genres.join(", ")
-                    : formData.genres
-                }
+                value={formData.genres.join(", ")}
                 placeholder="e.g. Action, Drama"
                 onChange={(val) => onChange("genres", val)}
               />
@@ -298,6 +296,16 @@ export default function MediaEntryForm({
                   onChange={(val) => onChange("numberOfEpisodes", val)}
                 />
               </div>
+            </div>
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Genres
+              </label>
+              <InputText
+                value={formData.genres.join(", ")}
+                placeholder="e.g. Drama, Thriller"
+                onChange={(val) => onChange("genres", val)}
+              />
             </div>
             <div>
               <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">

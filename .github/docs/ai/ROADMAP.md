@@ -93,6 +93,12 @@ Why this matters now:
 
 After the review and documentation pass, the next major technical track is broader backend test coverage.
 
+Current baseline:
+
+- validator coverage is no longer the only meaningful backend coverage
+- Application service coverage now includes the current API services, auth service, user read/write services, media-entry read/write services, and the error-log cleanup background service
+- the next testing work should move outward from unit-only service coverage into higher-value boundaries
+
 Focus:
 
 - missing unit tests in Application and SharedKernel-adjacent behavior
@@ -106,6 +112,18 @@ Why this comes before major feature expansion:
 - it makes future refactoring safer
 - it helps separate real defects from architecture anxiety
 - it improves public credibility when the repo goes public
+
+Immediate testing follow-up:
+
+1. Add controller and result-mapping tests for the API layer.
+2. Add lightweight integration tests for important repository and database-backed flows.
+3. Run coverage collection for `media-vault-app.Tests` and use the report to target the next highest-value gaps instead of guessing.
+
+Suggested order inside this follow-up:
+
+- start with controller/result-to-HTTP mapping behavior because it is close to the current Application test work and guards public API behavior
+- then cover repository and database paths where ownership checks, persistence, and query behavior matter most
+- use coverage after those slices to decide whether the next gap is mappers, edge-case validators, or additional integration scenarios
 
 ### 5. Clean up the frontend and strengthen UX basics
 

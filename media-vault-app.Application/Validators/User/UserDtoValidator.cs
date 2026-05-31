@@ -80,10 +80,30 @@ namespace media_vault_app.Application.Validators.User
             return !validationErrors.Any();
         }
 
-        // TODO: Implement update DTO validation logic
         public bool IsValidUpdateDto(UserUpdateDto updateDto, ErrorContext errorContext, out IReadOnlyList<ValidationError> validationErrors)
         {
-            throw new NotImplementedException();
+            var internalErrors = new List<ValidationError>();
+
+            if (updateDto.IsNull(errorContext, out ValidationError nullValueError))
+            {
+                internalErrors.Add(nullValueError);
+                validationErrors = internalErrors;
+                return false;
+            }
+
+            var requiredFields = new (string FieldName, string? Value)[]
+            {
+                (nameof(updateDto.UserName), updateDto.UserName),
+                (nameof(updateDto.Email), updateDto.Email)
+            };
+
+            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IReadOnlyList<ValidationError> nullOrEmptyErrors))
+            {
+                internalErrors.AddRange(nullOrEmptyErrors);
+            }
+
+            validationErrors = internalErrors;
+            return !validationErrors.Any();
         }
 
     }

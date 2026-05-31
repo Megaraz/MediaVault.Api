@@ -153,6 +153,7 @@ export default function Dashboard() {
       imageUrl: formData.imageUrl?.trim() || null,
       review: formData.review || null,
       overview: formData.overview || null,
+      genres: formData.genres.map((genre) => genre.trim()).filter(Boolean),
       releaseDate: formData.releaseDate || null,
     };
 

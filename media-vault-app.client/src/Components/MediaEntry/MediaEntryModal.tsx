@@ -42,6 +42,8 @@ type MediaEntryProps = {
   onCancel: () => void;
 };
 
+type MediaEntryFormValue = string | number | string[] | null;
+
 // Pre-populate form data from an existing entry when in edit mode.
 // We cast the base entry to each specific sub-type to safely read
 // type-specific fields — fields that don't exist will simply be undefined.
@@ -107,6 +109,21 @@ function formatSubtitle(entry?: MediaEntryDetailedDto): string | undefined {
   return `Created ${date.toLocaleDateString()}`;
 }
 
+function normalizeGenres(value: string | string[] | null): string[] {
+  if (Array.isArray(value)) {
+    return value.map((genre) => genre.trim()).filter(Boolean);
+  }
+
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((genre) => genre.trim())
+    .filter(Boolean);
+}
+
 export default function MediaEntryModal({
   detailedEntry,
   onSubmit,
@@ -134,9 +151,12 @@ export default function MediaEntryModal({
 
   const handleChange = (
     field: keyof MediaEntryFormData,
-    value: string | number | null,
+    value: MediaEntryFormValue,
   ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: field === "genres" ? normalizeGenres(value as string | string[] | null) : value,
+    }));
   };
 
   const handleSeasonsChange = (seasons: SeasonFormData[]) => {
@@ -231,7 +251,7 @@ export default function MediaEntryModal({
         if (movie.tmdbGenres)
           handleChange(
             "genres",
-            movie.tmdbGenres.map((g) => g.tmdbGenreName || "").join(", "),
+            movie.tmdbGenres.map((g) => g.tmdbGenreName || ""),
           );
 
         if (movie.tmdbOverview) handleChange("overview", movie.tmdbOverview);
