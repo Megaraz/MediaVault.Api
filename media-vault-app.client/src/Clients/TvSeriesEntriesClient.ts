@@ -1,12 +1,13 @@
 // Handles create and update API calls for TV Series entries.
 // Hits /mediaentries/tv-series which expects TvSeriesEntryCreateDto / TvSeriesEntryUpdateDto.
 import type { TvSeriesEntryCreateDto, TvSeriesEntryDetailedDto, TvSeriesEntryUpdateDto } from "../Types/DTOs/TvSeriesEntry";
+import { apiFetch } from "./apiFetch";
 
 export default class TvSeriesEntriesClient {
     private baseUrl = "/mediaentries/tv-series";
 
     async createTvSeries(dto: TvSeriesEntryCreateDto): Promise<TvSeriesEntryDetailedDto> {
-        const response = await fetch(this.baseUrl, {
+        const response = await apiFetch(this.baseUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),
@@ -19,7 +20,7 @@ export default class TvSeriesEntriesClient {
     }
 
     async updateTvSeries(id: string, dto: TvSeriesEntryUpdateDto): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/${id}`, {
+        const response = await apiFetch(`${this.baseUrl}/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),

@@ -14,7 +14,16 @@ namespace Rasmus.SharedKernel.Interfaces.Services
     {
         Task<Result<TDetailedDto>> GetDetailedByIdAsync(TKeyOwner ownerId, TKeyDependent id, CancellationToken ct = default);
         Task<Result<TMinimalDto>> GetMinimalByIdAsync(TKeyOwner ownerId, TKeyDependent id, CancellationToken ct = default);
-        Task<Result<IReadOnlyList<TDetailedDto>>> GetDetailedCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default);
-        Task<Result<IReadOnlyList<TMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default);
+        Task<Result<IReadOnlyList<TDetailedDto>>> GetDetailedCollectionByOwnerIdAsync(
+            TKeyOwner ownerId, 
+            int pageNumber = 1, 
+            int pageSize = 10, 
+            CancellationToken ct = default);
+
+        Task<Result<IReadOnlyList<TMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
+            TKeyOwner ownerId, 
+            int pageNumber = 1, 
+            int pageSize = 10, 
+            CancellationToken ct = default);
     }
 }

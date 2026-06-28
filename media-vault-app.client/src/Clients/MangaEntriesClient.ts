@@ -1,12 +1,13 @@
 // Handles create and update API calls for Manga entries.
 // Hits /mediaentries/manga which expects MangaEntryCreateDto / MangaEntryUpdateDto.
 import type { MangaEntryCreateDto, MangaEntryDetailedDto, MangaEntryUpdateDto } from "../Types/DTOs/MangaEntry";
+import { apiFetch } from "./apiFetch";
 
 export default class MangaEntriesClient {
     private baseUrl = "/mediaentries/manga";
 
     async createManga(dto: MangaEntryCreateDto): Promise<MangaEntryDetailedDto> {
-        const response = await fetch(this.baseUrl, {
+        const response = await apiFetch(this.baseUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),
@@ -19,7 +20,7 @@ export default class MangaEntriesClient {
     }
 
     async updateManga(id: string, dto: MangaEntryUpdateDto): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/${id}`, {
+        const response = await apiFetch(`${this.baseUrl}/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),

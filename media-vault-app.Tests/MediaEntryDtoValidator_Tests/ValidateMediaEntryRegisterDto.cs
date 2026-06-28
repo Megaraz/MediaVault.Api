@@ -117,7 +117,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
 
             Assert.NotNull(requiredError);
 
-            _output.WriteLine(requiredError.Code);
+            _output.WriteLine($"Code: {requiredError.Code}");
             _output.WriteLine(requiredError.Description);
 
         }

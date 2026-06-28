@@ -67,7 +67,9 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (errors.Count > 0)
             {
-                _logger.LogDebug("CreateAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(errors));
+                _logger.LogDebug("CreateAsync validation failed: {ValidationErrors}", 
+                    ServiceValidationLogging.FormatValidationErrors(errors));
+
                 return Result<TDetailedDto>.ValidationFailure(errors);
             }
 

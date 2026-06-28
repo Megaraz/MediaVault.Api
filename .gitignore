@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 # Client obj artifacts
 media-vault-app.client/obj*
+.aider*

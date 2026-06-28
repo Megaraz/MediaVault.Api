@@ -5,8 +5,6 @@ using media_vault_app.Application.DTOs.User.Response;
 using System.Diagnostics;
 using media_vault_app.Application.Interfaces.Services;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 
 namespace media_vault_app.API.Controllers

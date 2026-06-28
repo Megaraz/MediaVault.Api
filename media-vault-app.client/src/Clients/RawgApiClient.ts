@@ -1,4 +1,5 @@
 import type { MediaEntrySearchResultDto, SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
+import { apiFetch } from "./apiFetch";
 
 export interface RawgGameDetailedDto {
     rawgId: number;
@@ -39,12 +40,11 @@ export default class RawgApiClient {
         if (searchExact !== undefined) params.set("searchExact", searchExact.toString());
         if (ordering) params.set("ordering", ordering);
 
-        const response = await fetch(`${this.baseUrl}/search?${params}`, {
+        const response = await apiFetch(`${this.baseUrl}/search?${params}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            credentials: "include",
             body: JSON.stringify(request),
         });
 
@@ -57,9 +57,7 @@ export default class RawgApiClient {
     }
 
     async getGameById(id: number): Promise<RawgGameDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/${id}`, {
-            credentials: "include",
-        });
+        const response = await apiFetch(`${this.baseUrl}/${id}`);
 
         if (!response.ok) {
             const errorMessage = await response.text();

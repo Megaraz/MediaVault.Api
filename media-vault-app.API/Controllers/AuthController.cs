@@ -1,9 +1,8 @@
 ﻿using System.Security.Claims;
+using media_vault_app.API.Security;
 using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
 using media_vault_app.Application.Interfaces.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,13 +15,18 @@ namespace media_vault_app.API.Controllers
         private readonly IAuthService _authService;
         private readonly IUserReadService _userReadService;
         private readonly IUserWriteService _userWriteService;
+        private readonly IJwtTokenService _jwtTokenService;
 
-
-        public AuthController(IAuthService authService, IUserReadService userReadService, IUserWriteService userWriteService)
+        public AuthController(
+            IAuthService authService,
+            IUserReadService userReadService,
+            IUserWriteService userWriteService,
+            IJwtTokenService jwtTokenService)
         {
             _authService = authService;
             _userReadService = userReadService;
             _userWriteService = userWriteService;
+            _jwtTokenService = jwtTokenService;
         }
 
         [HttpPost("register")]
@@ -31,37 +35,18 @@ namespace media_vault_app.API.Controllers
             CancellationToken ct = default) =>
                 this.ToActionResult(await _authService.RegisterUserAsync(createDto, ct));
 
-
         [HttpPost("login")]
-        public async Task<ActionResult<UserDetailedDto>> LoginUser(
+        public async Task<IActionResult> LoginUser(
             [FromBody] UserLoginDto loginDto,
             CancellationToken ct = default)
         {
             var result = await _authService.LoginAsync(loginDto, ct);
 
             if (result.IsFailure)
-            {
-                return this.ToActionResult(result);
-            }
+                return this.ToActionResult(result).Result!;
 
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, result.Value.Id.ToString()),
-                new(ClaimTypes.Name, result.Value.Username),
-                new(ClaimTypes.Email, result.Value.Email)
-            };
-
-            var identity = new ClaimsIdentity(
-                claims,
-                CookieAuthenticationDefaults.AuthenticationScheme);
-
-            var principal = new ClaimsPrincipal(identity);
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                principal);
-
-            return this.ToActionResult(result);
+            var token = _jwtTokenService.GenerateToken(result.Value);
+            return Ok(new LoginResponseDto(result.Value, token));
         }
 
         [Authorize]
@@ -72,14 +57,6 @@ namespace media_vault_app.API.Controllers
                 !TryGetCurrentUserId(out var userId)
                     ? Unauthorized()
                     : this.ToNoContentResult(await _userWriteService.UpdateAsync(userId, updateDto, ct));
-
-        [Authorize]
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout(CancellationToken ct = default)
-        {
-            await HttpContext.SignOutAsync();
-            return NoContent();
-        }
 
         [Authorize]
         [HttpGet("me")]
@@ -96,9 +73,7 @@ namespace media_vault_app.API.Controllers
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(userIdClaim, out userId))
-            {
                 return false;
-            }
             return true;
         }
     }

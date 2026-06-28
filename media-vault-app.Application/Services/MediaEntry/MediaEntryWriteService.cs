@@ -7,16 +7,20 @@ using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Interfaces.Validators;
 using media_vault_app.Application.Services.Base_Classes;
 using Microsoft.Extensions.Logging;
-using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
-using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
-using Rasmus.SharedKernel.Interfaces.Validators;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using UserEntity = media_vault_app.Domain.Entities.User;
 
 namespace media_vault_app.Application.Services.MediaEntry
 {
     public class MediaEntryWriteService
-        : DependentEntityWriteServiceBase<UserEntity, MediaEntryEntity, Guid, Guid, MediaEntryCreateDto, MediaEntryUpdateDto, MediaEntryDetailedDto>,
+        : DependentEntityWriteServiceBase<
+            UserEntity, 
+            MediaEntryEntity, 
+            Guid, 
+            Guid, 
+            MediaEntryCreateDto, 
+            MediaEntryUpdateDto, 
+            MediaEntryDetailedDto>,
         IMediaEntryWriteService
     {
         public MediaEntryWriteService(

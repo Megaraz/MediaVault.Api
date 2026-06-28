@@ -42,7 +42,7 @@ namespace media_vault_app.Infrastructure.Repos
             try
             {
                 var existing = await _appDbContext.GameEntries
-                    .Include(g => g.PcRequirements)
+                    //.Include(g => g.PcRequirements)
                     .FirstOrDefaultAsync(g => g.Id == updatedGame.Id && g.OwnerId == ownerId, ct)
                     .ConfigureAwait(false);
 

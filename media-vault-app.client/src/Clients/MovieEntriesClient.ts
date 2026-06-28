@@ -1,12 +1,13 @@
 // Handles create and update API calls for Movie entries.
 // Hits /mediaentries/movies which expects MovieEntryCreateDto / MovieEntryUpdateDto.
 import type { MovieEntryCreateDto, MovieEntryDetailedDto, MovieEntryUpdateDto } from "../Types/DTOs/MovieEntry";
+import { apiFetch } from "./apiFetch";
 
 export default class MovieEntriesClient {
     private baseUrl = "/mediaentries/movies";
 
     async createMovie(dto: MovieEntryCreateDto): Promise<MovieEntryDetailedDto> {
-        const response = await fetch(this.baseUrl, {
+        const response = await apiFetch(this.baseUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),
@@ -19,7 +20,7 @@ export default class MovieEntriesClient {
     }
 
     async updateMovie(id: string, dto: MovieEntryUpdateDto): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/${id}`, {
+        const response = await apiFetch(`${this.baseUrl}/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),

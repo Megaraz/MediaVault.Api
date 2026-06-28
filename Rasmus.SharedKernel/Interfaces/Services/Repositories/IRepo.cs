@@ -8,7 +8,6 @@ namespace Rasmus.SharedKernel.Interfaces.Services.Repositories
         where TKey : notnull, IEquatable<TKey>
     {
         Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default);
-        // TODO: Maybe split to minimal/detailed DTOs in the future if needed.
         Task<Result<IReadOnlyList<TEntity>>> GetCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default);
         Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken ct = default);
         Task<Result> UpdateAsync(TEntity updatedEntity, CancellationToken ct = default);

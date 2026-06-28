@@ -1,12 +1,13 @@
 // Handles create and update API calls for Game entries.
 // Hits /mediaentries/games which expects GameEntryCreateDto / GameEntryUpdateDto.
 import type { GameEntryCreateDto, GameEntryDetailedDto, GameEntryUpdateDto } from "../Types/DTOs/GameEntry";
+import { apiFetch } from "./apiFetch";
 
 export default class GameEntriesClient {
     private baseUrl = "/mediaentries/games";
 
     async createGame(dto: GameEntryCreateDto): Promise<GameEntryDetailedDto> {
-        const response = await fetch(this.baseUrl, {
+        const response = await apiFetch(this.baseUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),
@@ -19,7 +20,7 @@ export default class GameEntriesClient {
     }
 
     async updateGame(id: string, dto: GameEntryUpdateDto): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/${id}`, {
+        const response = await apiFetch(`${this.baseUrl}/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),

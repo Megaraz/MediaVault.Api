@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Text;
 using media_vault_app.API.Security;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Mappers;
@@ -18,9 +19,10 @@ using media_vault_app.Domain.Entities;
 using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.API.Clients;
 using media_vault_app.Infrastructure.Repos;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.ResultPattern;
@@ -160,27 +162,57 @@ namespace media_vault_app.API
 
             builder.Services.AddOpenApi();
 
-            builder.Services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
                 {
-                    options.Cookie.Name = "media-vault-auth";
-                    options.Cookie.HttpOnly = true;
-                    options.Cookie.SameSite = SameSiteMode.Lax;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
-                    options.SlidingExpiration = true;
+                    policy
+                        .WithOrigins(
+                            "http://localhost:3000",
+                            "http://localhost:5173",
+                            "http://localhost:8081",
+                            "http://192.168.0.12:8081")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                });
+            });
 
-                    options.Events.OnRedirectToLogin = context =>
+            builder.Services
+                .AddOptions<JwtOptions>()
+                .BindConfiguration(JwtOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
+
+            var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+                ?? throw new InvalidOperationException("JWT configuration is missing.");
+
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        return Task.CompletedTask;
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtOptions.Issuer,
+                        ValidAudience = jwtOptions.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
                     };
 
-                    options.Events.OnRedirectToAccessDenied = context =>
+                    options.Events = new JwtBearerEvents
                     {
-                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                        return Task.CompletedTask;
+                        OnChallenge = context =>
+                        {
+                            context.HandleResponse();
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -188,24 +220,23 @@ namespace media_vault_app.API
 
             var app = builder.Build();
 
-            app.UseDefaultFiles();
-            app.MapStaticAssets();
-
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
             }
 
-            app.UseHttpsRedirection();
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
+
+            app.UseCors("AllowAll");
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-
             app.MapControllers();
-
-            app.MapFallbackToFile("/index.html");
 
             app.Run();
         }

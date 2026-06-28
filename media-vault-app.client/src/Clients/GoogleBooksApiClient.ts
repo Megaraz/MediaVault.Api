@@ -1,5 +1,6 @@
 import type { SearchResult } from "../Components/MediaEntry/TitleSearchInput";
 import type { SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
+import { apiFetch } from "./apiFetch";
 
 export interface GoogleBooksDetailedDto extends SearchResult {
     author: string;
@@ -17,12 +18,9 @@ export default class GoogleBooksApiClient {
         params.set("page", page.toString());
         params.set("pageSize", pageSize.toString());
 
-        const response = await fetch(`${this.baseUrl}/search?${params}`, {
+        const response = await apiFetch(`${this.baseUrl}/search?${params}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(request),
         });
 
@@ -35,9 +33,7 @@ export default class GoogleBooksApiClient {
     }
 
     async getBookById(volumeId: string): Promise<GoogleBooksDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/${volumeId}`, {
-            credentials: "include",
-        });
+        const response = await apiFetch(`${this.baseUrl}/${volumeId}`);
 
         if (!response.ok) {
             const errorMessage = await response.text();

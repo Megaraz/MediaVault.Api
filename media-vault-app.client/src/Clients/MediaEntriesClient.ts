@@ -24,6 +24,7 @@ import type {
 } from "../Types/DTOs/MediaEntryBase";
 import type { MovieEntryDetailedDto } from "../Types/DTOs/MovieEntry";
 import type { TvSeriesEntryDetailedDto } from "../Types/DTOs/TvSeriesEntry";
+import { apiFetch } from "./apiFetch";
 
 // Re-export shared types and constants so existing component imports keep working
 export type {
@@ -48,12 +49,11 @@ export default class MediaEntriesClient {
         params.set("page", page.toString());
         params.set("pageSize", pageSize.toString());
 
-        const response = await fetch(`${this.baseUrl}/search?${params}`, {
+        const response = await apiFetch(`${this.baseUrl}/search?${params}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            credentials: "include",
             body: JSON.stringify(request),
         });
 
@@ -66,7 +66,7 @@ export default class MediaEntriesClient {
     }
 
     async getMediaEntries(pageNumber = 1, pageSize = 25): Promise<MediaEntryMinimalDto[]> {
-        const response = await fetch(
+        const response = await apiFetch(
             `${this.baseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
         );
         if (!response.ok) {
@@ -77,7 +77,7 @@ export default class MediaEntriesClient {
     }
 
     async getMangaById(entryId: string): Promise<MangaEntryDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/manga/${entryId}`);
+        const response = await apiFetch(`${this.baseUrl}/manga/${entryId}`);
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error("Failed to fetch media entry: " + errorMessage);
@@ -85,7 +85,7 @@ export default class MediaEntriesClient {
         return response.json();
     }
     async getTvSeriesById(entryId: string): Promise<TvSeriesEntryDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/tv-series/${entryId}`);
+        const response = await apiFetch(`${this.baseUrl}/tv-series/${entryId}`);
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error("Failed to fetch media entry: " + errorMessage);
@@ -93,7 +93,7 @@ export default class MediaEntriesClient {
         return response.json();
     }
     async getMovieById(entryId: string): Promise<MovieEntryDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/movies/${entryId}`);
+        const response = await apiFetch(`${this.baseUrl}/movies/${entryId}`);
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error("Failed to fetch media entry: " + errorMessage);
@@ -101,7 +101,7 @@ export default class MediaEntriesClient {
         return response.json();
     }
     async getGameById(entryId: string): Promise<GameEntryDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/games/${entryId}`);
+        const response = await apiFetch(`${this.baseUrl}/games/${entryId}`);
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error("Failed to fetch media entry: " + errorMessage);
@@ -110,7 +110,7 @@ export default class MediaEntriesClient {
     }
 
     async getBookById(entryId: string): Promise<BookEntryDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/books/${entryId}`);
+        const response = await apiFetch(`${this.baseUrl}/books/${entryId}`);
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error("Failed to fetch media entry: " + errorMessage);
@@ -119,7 +119,7 @@ export default class MediaEntriesClient {
     }
 
     async getMediaEntryById(entryId: string): Promise<MediaEntryDetailedDto> {
-        const response = await fetch(`${this.baseUrl}/${entryId}`);
+        const response = await apiFetch(`${this.baseUrl}/${entryId}`);
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error("Failed to fetch media entry: " + errorMessage);
@@ -128,7 +128,7 @@ export default class MediaEntriesClient {
     }
 
     async deleteMediaEntry(entryId: string): Promise<void> {
-        const response = await fetch(`${this.baseUrl}/${entryId}`, {
+        const response = await apiFetch(`${this.baseUrl}/${entryId}`, {
             method: "DELETE",
         });
         if (!response.ok) {
