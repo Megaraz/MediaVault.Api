@@ -45,8 +45,11 @@ namespace media_vault_app.API.Controllers
             if (result.IsFailure)
                 return this.ToActionResult(result).Result!;
 
-            var token = _jwtTokenService.GenerateToken(result.Value);
-            return Ok(new LoginResponseDto(result.Value, token));
+            var userDto = result.Value;
+
+            var token = _jwtTokenService.GenerateToken(userDto.Id, userDto.Username, userDto.Email);
+
+            return Ok(new LoginResponseDto(userDto, token));
         }
 
         [Authorize]
@@ -54,7 +57,7 @@ namespace media_vault_app.API.Controllers
         public async Task<IActionResult> UpdateUser(
             [FromBody] UserUpdateDto updateDto,
             CancellationToken ct = default) =>
-                !TryGetCurrentUserId(out var userId)
+                !User.TryGetUserId(out var userId)
                     ? Unauthorized()
                     : this.ToNoContentResult(await _userWriteService.UpdateAsync(userId, updateDto, ct));
 
@@ -62,19 +65,12 @@ namespace media_vault_app.API.Controllers
         [HttpGet("me")]
         public async Task<ActionResult<UserDetailedDto>> GetCurrentUser(CancellationToken ct = default)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _userReadService.GetByIdAsync(userId, ct);
             return this.ToActionResult(result);
         }
 
-        private bool TryGetCurrentUserId(out Guid userId)
-        {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdClaim, out userId))
-                return false;
-            return true;
-        }
     }
 }

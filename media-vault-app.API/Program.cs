@@ -42,7 +42,8 @@ namespace media_vault_app.API
                 throw new InvalidOperationException("Connection string 'Default' not found.");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+                //options.UseSqlServer(connectionString));
 
 
             #region Rawg API
@@ -178,34 +179,39 @@ namespace media_vault_app.API
                 });
             });
 
+            #region JWT Auth
+
             builder.Services
                 .AddOptions<JwtOptions>()
                 .BindConfiguration(JwtOptions.SectionName)
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
-
-            var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
-                ?? throw new InvalidOperationException("JWT configuration is missing.");
+            builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
             builder.Services
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+                .AddJwtBearer();
+
+            builder.Services
+                .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+                .Configure<IOptions<JwtOptions>>((bearerOptions, jwtOptions) =>
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
+                    var jwt = jwtOptions.Value;
+
+                    bearerOptions.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtOptions.Issuer,
-                        ValidAudience = jwtOptions.Audience,
+                        ValidIssuer = jwt.Issuer,
+                        ValidAudience = jwt.Audience,
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+                            Encoding.UTF8.GetBytes(jwt.SecretKey))
                     };
 
-                    options.Events = new JwtBearerEvents
+                    bearerOptions.Events = new JwtBearerEvents
                     {
                         OnChallenge = context =>
                         {
@@ -215,6 +221,7 @@ namespace media_vault_app.API
                         }
                     };
                 });
+            #endregion
 
             builder.Services.AddAuthorization();
 

@@ -31,7 +31,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] MovieEntryCreateDto createDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.CreateAsync(userId, createDto, ct);
@@ -44,7 +44,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] TvSeriesEntryCreateDto createDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.CreateAsync(userId, createDto, ct);
@@ -57,7 +57,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] GameEntryCreateDto createDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.CreateAsync(userId, createDto, ct);
@@ -70,7 +70,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] BookEntryCreateDto createDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.CreateAsync(userId, createDto, ct);
@@ -83,7 +83,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] MangaEntryCreateDto createDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.CreateAsync(userId, createDto, ct);
@@ -101,7 +101,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] MovieEntryUpdateDto updateDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
@@ -115,7 +115,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] TvSeriesEntryUpdateDto updateDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
@@ -129,7 +129,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] GameEntryUpdateDto updateDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
@@ -143,7 +143,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] BookEntryUpdateDto updateDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
@@ -157,7 +157,7 @@ namespace media_vault_app.API.Controllers
             [FromBody] MangaEntryUpdateDto updateDto,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
@@ -175,7 +175,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] Guid id,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _readService.GetMovieByIdAsync(userId, id, ct);
@@ -188,7 +188,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] Guid id,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _readService.GetTvSeriesByIdAsync(userId, id, ct);
@@ -201,7 +201,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] Guid id,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _readService.GetGameByIdAsync(userId, id, ct);
@@ -214,7 +214,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] Guid id,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _readService.GetBookByIdAsync(userId, id, ct);
@@ -227,7 +227,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] Guid id,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _readService.GetMangaByIdAsync(userId, id, ct);
@@ -245,7 +245,7 @@ namespace media_vault_app.API.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _readService.SearchMediaEntriesAsync(userId, request, page, pageSize, ct);
@@ -257,7 +257,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] Guid id,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+                if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _readService.GetDetailedByIdAsync(userId, id, ct);
@@ -271,7 +271,7 @@ namespace media_vault_app.API.Controllers
             [FromQuery] int pageSize = 25,
             CancellationToken ct = default)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _readService.GetMinimalCollectionByOwnerIdAsync(userId, pageNumber, pageSize, ct);
@@ -288,7 +288,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] Guid id,
             CancellationToken ct)
         {
-            if (!TryGetCurrentUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _writeService.DeleteAsync(userId, id, ct);
@@ -298,14 +298,5 @@ namespace media_vault_app.API.Controllers
 
         #endregion
 
-        private bool TryGetCurrentUserId(out Guid userId)
-        {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdClaim, out userId))
-            {
-                return false;
-            }
-            return true;
-        }
     }
 }

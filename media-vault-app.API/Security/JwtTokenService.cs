@@ -13,41 +13,46 @@ namespace media_vault_app.API.Security
         public string SecretKey { get; set; } = string.Empty;
         public string Issuer { get; set; } = string.Empty;
         public string Audience { get; set; } = string.Empty;
-        public int ExpiryDays { get; set; } = 7;
+        public int ExpiryMinutes { get; set; } = 7 * 24 * 60;
     }
 
     public interface IJwtTokenService
     {
-        string GenerateToken(UserDetailedDto user);
+        string GenerateToken(Guid id, string username, string email);
     }
 
     public class JwtTokenService : IJwtTokenService
     {
+        private readonly SymmetricSecurityKey _key;
         private readonly JwtOptions _options;
+        private readonly SigningCredentials _credentials;
 
         public JwtTokenService(IOptions<JwtOptions> options)
         {
             _options = options.Value;
+            _key = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(_options.SecretKey));
+            _credentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
         }
 
-        public string GenerateToken(UserDetailedDto user)
+        public string GenerateToken(Guid id, string username, string email)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, id.ToString()),
+                new Claim(ClaimTypes.Name, username),
+                new Claim(JwtRegisteredClaimNames.UniqueName, username),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             var token = new JwtSecurityToken(
                 issuer: _options.Issuer,
                 audience: _options.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(_options.ExpiryDays),
-                signingCredentials: credentials);
+                expires: DateTime.UtcNow.AddMinutes(_options.ExpiryMinutes),
+                signingCredentials: _credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
