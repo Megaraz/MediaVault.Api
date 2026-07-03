@@ -45,10 +45,10 @@ namespace media_vault_app.Infrastructure
                     rating => rating.Value,
                     value => new Rating(value));
 
-            modelBuilder.Entity<MediaEntry>()
-                .ToTable(t =>
-                    t.HasCheckConstraint("CK_MediaEntry_Rating",
-                    "Rating >= 0 AND Rating <= 5 AND Rating * 2 = FLOOR(Rating * 2)"));
+            //modelBuilder.Entity<MediaEntry>()
+            //    .ToTable(t =>
+            //        t.HasCheckConstraint("CK_MediaEntry_Rating",
+            //        "Rating >= 0 AND Rating <= 5 AND Rating * 2 = FLOOR(Rating * 2)"));
 
             // Configure relationships
             modelBuilder.Entity<User>()
@@ -83,10 +83,10 @@ namespace media_vault_app.Infrastructure
                     rating => rating.Value,
                     value => new Rating(value));
 
-            modelBuilder.Entity<Season>()
-                .ToTable(t =>
-                    t.HasCheckConstraint("CK_Season_Rating",
-                    "Rating >= 0 AND Rating <= 5 AND Rating * 2 = FLOOR(Rating * 2)"));
+            //modelBuilder.Entity<Season>()
+            //    .ToTable(t =>
+            //        t.HasCheckConstraint("CK_Season_Rating",
+            //        "Rating >= 0 AND Rating <= 5 AND Rating * 2 = FLOOR(Rating * 2)"));
         }
     }
 }

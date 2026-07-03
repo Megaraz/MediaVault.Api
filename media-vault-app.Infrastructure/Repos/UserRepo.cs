@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.ResultPattern;
@@ -30,8 +29,8 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
 
-                if (dbEx.InnerException is SqlException sqlEx &&
-                    (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+                if (dbEx.InnerException is DbException dbInnerEx &&
+                    (dbInnerEx.ErrorCode == 2601 || dbInnerEx.ErrorCode == 2627))
                 {
                     return Result.Failure(Error.Conflict(baseErrorContext));
                 }

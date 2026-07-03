@@ -40,9 +40,10 @@ namespace media_vault_app.API
             var connectionString = builder.Configuration
                 .GetConnectionString("Default") ??
                 throw new InvalidOperationException("Connection string 'Default' not found.");
+            //var connectionString = "Data Source=mediavault.db";
 
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+                options.UseSqlite(connectionString));
                 //options.UseSqlServer(connectionString));
 
 
