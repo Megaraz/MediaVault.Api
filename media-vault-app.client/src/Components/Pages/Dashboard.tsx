@@ -154,7 +154,7 @@ export default function Dashboard() {
       review: formData.review || null,
       overview: formData.overview || null,
       genres: formData.genres.map((genre) => genre.trim()).filter(Boolean),
-      releaseDate: formData.releaseDate || null,
+      ...(formData.releaseDate ? { releaseDate: formData.releaseDate } : {}),
     };
 
     const gamePlatforms = formData.platforms

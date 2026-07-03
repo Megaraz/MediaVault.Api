@@ -136,12 +136,14 @@ export default function MediaEntryModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessState, setShowSuccessState] = useState(false);
   const [deleteSuccessState, setDeleteSuccessState] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [rawgClient] = useState(() => new RawgApiClient());
   const [tmdbClient] = useState(() => new TmdbApiClient());
 
   useEffect(() => {
     setFormData(buildInitialFormData(detailedEntry));
+    setSubmitError(null);
   }, [detailedEntry]);
 
   // isEditMode = true when we opened the modal by clicking an existing entry.
@@ -167,6 +169,7 @@ export default function MediaEntryModal({
     e.preventDefault();
     setIsSubmitting(true);
     setShowSuccessState(false);
+    setSubmitError(null);
 
     try {
       await onSubmit(formData, detailedEntry?.id);
@@ -176,7 +179,8 @@ export default function MediaEntryModal({
         window.setTimeout(resolve, SUCCESS_STATE_DELAY_MS);
       });
       onCancel();
-    } catch {
+    } catch (err) {
+      setSubmitError((err as Error).message || "Failed to save entry.");
       setIsSubmitting(false);
       setShowSuccessState(false);
     }
@@ -187,6 +191,7 @@ export default function MediaEntryModal({
       setIsSubmitting(true);
       setShowSuccessState(false);
       setDeleteSuccessState(false);
+      setSubmitError(null);
 
       try {
         await onDelete(detailedEntry.id);
@@ -197,7 +202,8 @@ export default function MediaEntryModal({
           window.setTimeout(resolve, SUCCESS_STATE_DELAY_MS);
         });
         onCancel();
-      } catch {
+      } catch (err) {
+        setSubmitError((err as Error).message || "Failed to delete entry.");
         setDeleteSuccessState(false);
         setIsSubmitting(false);
         setShowSuccessState(false);
@@ -351,6 +357,11 @@ export default function MediaEntryModal({
                 isEditMode={isEditMode}
                 onSelectResult={handleSelectResult}
               />
+              {submitError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+                  {submitError}
+                </div>
+              )}
 
               <FormFooter
                 isEditMode={isEditMode}
