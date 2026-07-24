@@ -1,5 +1,4 @@
-﻿using System;
-using media_vault_app.Application.Interfaces.Repos;
+﻿using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
@@ -9,7 +8,7 @@ namespace media_vault_app.Infrastructure.Repos
 {
     public class MediaEntryRepo : DependentEntityRepoBase<MediaEntry, Guid, Guid>, IMediaEntryRepo
     {
-        public MediaEntryRepo(AppDbContext appDbContext, IErrorLogger errorLogger) 
+        public MediaEntryRepo(AppDbContext appDbContext, IErrorLogger errorLogger)
             : base(appDbContext, errorLogger)
         {
         }

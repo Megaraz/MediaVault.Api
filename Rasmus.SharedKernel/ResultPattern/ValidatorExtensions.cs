@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Rasmus.SharedKernel.ResultPattern
+﻿namespace Rasmus.SharedKernel.ResultPattern
 {
     /// <summary>
     /// Validation extension methods that produce <see cref="ValidationError"/> instances.

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Rasmus.SharedKernel.Interfaces.Identifiers;
+﻿using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Application.DTOs.User.Response
 {

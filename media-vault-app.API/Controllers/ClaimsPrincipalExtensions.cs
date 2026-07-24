@@ -7,7 +7,7 @@ namespace media_vault_app.API.Controllers
     {
         public static bool TryGetUserId(this ClaimsPrincipal user, out Guid userId)
         {
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier) 
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)
                 ?? user.FindFirst(JwtRegisteredClaimNames.Sub);
 
             if (Guid.TryParse(userIdClaim?.Value, out userId))

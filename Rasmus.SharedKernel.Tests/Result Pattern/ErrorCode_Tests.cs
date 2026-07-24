@@ -49,10 +49,10 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         }
 
         [Theory]
-        [InlineData(ErrorReasonCode.GeneralNotFound,              "Create.User.NotFound")]
-        [InlineData(ErrorReasonCode.DatabaseSaveChangesFailure,   "Create.User.DbSaveChangesFailure")]
-        [InlineData(ErrorReasonCode.GeneralUnauthorized,          "Create.User.Unauthorized")]
-        [InlineData(ErrorReasonCode.HttpInternalServerError,      "Create.User.InternalServerError")]
+        [InlineData(ErrorReasonCode.GeneralNotFound, "Create.User.NotFound")]
+        [InlineData(ErrorReasonCode.DatabaseSaveChangesFailure, "Create.User.DbSaveChangesFailure")]
+        [InlineData(ErrorReasonCode.GeneralUnauthorized, "Create.User.Unauthorized")]
+        [InlineData(ErrorReasonCode.HttpInternalServerError, "Create.User.InternalServerError")]
         public void Code_Should_Reflect_Different_Reasons(ErrorReasonCode reason, string expectedCode)
         {
             var ctx = TestErrorContextFactory.Create();

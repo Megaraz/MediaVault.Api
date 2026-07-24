@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
+﻿using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Domain.Enums;
 
 namespace media_vault_app.Application.DTOs.Tmdb
@@ -13,9 +11,9 @@ namespace media_vault_app.Application.DTOs.Tmdb
         public IReadOnlyList<int> GenreIds { get; init; } = new List<int>();
 
         public TmdbSearchResultDto(
-            string ExternalId, 
-            string Title, 
-            string? CoverImageUrl, 
+            string ExternalId,
+            string Title,
+            string? CoverImageUrl,
             MediaType MediaType
             ) : base(ExternalId, Title, CoverImageUrl, MediaType)
         {

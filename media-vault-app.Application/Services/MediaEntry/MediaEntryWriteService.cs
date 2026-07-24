@@ -1,5 +1,4 @@
-﻿using System;
-using media_vault_app.Application.DTOs.MediaEntry.Request;
+﻿using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
@@ -14,12 +13,12 @@ namespace media_vault_app.Application.Services.MediaEntry
 {
     public class MediaEntryWriteService
         : DependentEntityWriteServiceBase<
-            UserEntity, 
-            MediaEntryEntity, 
-            Guid, 
-            Guid, 
-            MediaEntryCreateDto, 
-            MediaEntryUpdateDto, 
+            UserEntity,
+            MediaEntryEntity,
+            Guid,
+            Guid,
+            MediaEntryCreateDto,
+            MediaEntryUpdateDto,
             MediaEntryDetailedDto>,
         IMediaEntryWriteService
     {

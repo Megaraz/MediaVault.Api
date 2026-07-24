@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Rasmus.SharedKernel.Interfaces.ErrorLogger;
+﻿using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 
 namespace Rasmus.SharedKernel.ResultPattern
 {

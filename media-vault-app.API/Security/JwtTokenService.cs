@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using media_vault_app.Application.DTOs.User.Response;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Rasmus.SharedKernel.ResultPattern
+﻿namespace Rasmus.SharedKernel.ResultPattern
 {
     public enum ValidationErrorType
     {

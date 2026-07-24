@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using media_vault_app.Application.Services;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
@@ -16,11 +12,11 @@ namespace media_vault_app.Application.Services.Base_Classes
 
     public abstract class DependentEntityWriteServiceBase<
         TEntityOwner,
-        TEntityDependent, 
-        TKeyOwner, 
-        TKeyDependent, 
-        TCreateDto, 
-        TUpdateDto, 
+        TEntityDependent,
+        TKeyOwner,
+        TKeyDependent,
+        TCreateDto,
+        TUpdateDto,
         TDetailedDto>
         : IDependentEntityWriteService<TKeyOwner, TKeyDependent, TCreateDto, TUpdateDto, TDetailedDto>
             where TEntityOwner : class, IEntity<TKeyOwner>
@@ -67,7 +63,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (errors.Count > 0)
             {
-                _logger.LogDebug("CreateAsync validation failed: {ValidationErrors}", 
+                _logger.LogDebug("CreateAsync validation failed: {ValidationErrors}",
                     ServiceValidationLogging.FormatValidationErrors(errors));
 
                 return Result<TDetailedDto>.ValidationFailure(errors);
@@ -77,7 +73,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("CreateAsync owner check failed: {Code} — {Description}", 
+                _logger.LogDebug("CreateAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
                 return ownerExistsResult.From<bool, TDetailedDto>();
@@ -92,7 +88,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("CreateAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("CreateAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 
@@ -125,7 +121,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("UpdateAsync owner check failed: {Code} — {Description}", 
+                _logger.LogDebug("UpdateAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
                 return ownerExistsResult;
@@ -139,7 +135,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("UpdateAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("UpdateAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 
@@ -168,7 +164,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("DeleteAsync owner check failed: {Code} — {Description}", 
+                _logger.LogDebug("DeleteAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
                 return ownerExistsResult;
@@ -177,7 +173,7 @@ namespace media_vault_app.Application.Services.Base_Classes
             var mappedRepoResult = await _dependentEntityRepo.DeleteAsync(ownerId, dependentId, ct);
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("DeleteAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("DeleteAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 

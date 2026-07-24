@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Rasmus.SharedKernel.Interfaces.Identifiers
+﻿namespace Rasmus.SharedKernel.Interfaces.Identifiers
 {
-    public interface IOwnerEntity<TKeyOwner> 
+    public interface IOwnerEntity<TKeyOwner>
         : IEntity<TKeyOwner>
             where TKeyOwner : notnull, IEquatable<TKeyOwner>
     {

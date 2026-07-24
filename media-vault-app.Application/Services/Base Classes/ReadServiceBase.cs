@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using media_vault_app.Application.Services;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
@@ -49,7 +45,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("GetByIdAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("GetByIdAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 
@@ -67,7 +63,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("GetDetailedCollectionAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("GetDetailedCollectionAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 
@@ -85,7 +81,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("GetMinimalCollectionAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("GetMinimalCollectionAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 

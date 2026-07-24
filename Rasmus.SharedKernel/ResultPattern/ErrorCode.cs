@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Rasmus.SharedKernel.ResultPattern
+﻿namespace Rasmus.SharedKernel.ResultPattern
 {
     public enum OperationType
     {
@@ -55,7 +51,7 @@ namespace Rasmus.SharedKernel.ResultPattern
 
         HttpInternalServerError = 500,
         HttpBadGateway = 502,
-        HttpServiceUnavailable = 503, 
+        HttpServiceUnavailable = 503,
         HttpGatewayTimeout = 504,
         HttpTransportFailure = 550,
         HttpMalformedResponse = 551,

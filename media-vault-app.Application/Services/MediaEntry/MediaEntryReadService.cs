@@ -1,13 +1,10 @@
-﻿using System;
-using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
+﻿using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
-using media_vault_app.Application.Services;
 using media_vault_app.Application.Services.Base_Classes;
 using Microsoft.Extensions.Logging;
-using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.ResultPattern;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using UserEntity = media_vault_app.Domain.Entities.User;
@@ -94,7 +91,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             var ownerExistsResult = await EnsureOwnerExistsAsync(ownerId, ct);
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("SearchMediaEntriesAsync owner check failed: {Code} — {Description}", 
+                _logger.LogDebug("SearchMediaEntriesAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
                 return ownerExistsResult.From<bool, IReadOnlyList<MediaEntryMinimalDto>>();
@@ -126,7 +123,7 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             if (baseResult.IsFailure)
             {
-                _logger.LogDebug("GetTypedByIdAsync ({Subtype}) failed: {Code} — {Description}", 
+                _logger.LogDebug("GetTypedByIdAsync ({Subtype}) failed: {Code} — {Description}",
                     subtypeDisplayName, baseResult.PrimaryError.Code, baseResult.PrimaryError.Description);
 
                 return baseResult.From<MediaEntryDetailedDto, TDetailedSubtype>();

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using media_vault_app.Application.DTOs.User.Request;
+﻿using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
 using media_vault_app.Application.Interfaces.Mappers;
 using UserEntity = media_vault_app.Domain.Entities.User;

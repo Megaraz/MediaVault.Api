@@ -1,5 +1,4 @@
-﻿using System;
-using media_vault_app.Domain.Entities;
+﻿using media_vault_app.Domain.Entities;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.ResultPattern;
 

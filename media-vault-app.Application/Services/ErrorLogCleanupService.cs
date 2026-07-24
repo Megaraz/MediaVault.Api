@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 
 namespace media_vault_app.Application.Services

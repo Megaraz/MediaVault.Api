@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
-using media_vault_app.Application.DTOs.Season;
 using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Domain.Entities;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;

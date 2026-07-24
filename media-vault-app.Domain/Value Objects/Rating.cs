@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace media_vault_app.Domain.Value_Objects
+﻿namespace media_vault_app.Domain.Value_Objects
 {
     public readonly record struct Rating
     {

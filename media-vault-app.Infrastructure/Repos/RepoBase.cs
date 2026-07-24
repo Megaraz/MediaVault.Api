@@ -13,7 +13,7 @@ namespace media_vault_app.Infrastructure.Repos
     /// <typeparam name="TKey"></typeparam>
     /// <remarks> This class implements the generic repository interface <see cref="IRepo{TEntity, TKey}"/></remarks>
     public class RepoBase<TEntity, TKey> :
-        IRepo<TEntity, TKey> 
+        IRepo<TEntity, TKey>
         where TEntity : class, IEntity<TKey>
         where TKey : notnull, IEquatable<TKey>
     {

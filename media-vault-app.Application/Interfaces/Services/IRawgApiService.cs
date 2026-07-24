@@ -8,12 +8,12 @@ namespace media_vault_app.Application.Interfaces.Services
     {
         Task<Result<RawgGameDetailedDto>> GetGameByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchGamesAsync(
-            string search, 
-            int page = 1, 
-            int pageSize = 8, 
-            bool? searchPrecise = null, 
-            bool? searchExact = null, 
-            string? ordering = null, 
+            string search,
+            int page = 1,
+            int pageSize = 8,
+            bool? searchPrecise = null,
+            bool? searchExact = null,
+            string? ordering = null,
             CancellationToken cancellationToken = default);
     }
 }

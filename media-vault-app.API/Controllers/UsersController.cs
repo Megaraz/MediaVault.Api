@@ -1,11 +1,6 @@
-using media_vault_app.Application.DTOs.User.Request;
-using Rasmus.SharedKernel.ResultPattern;
-using Microsoft.AspNetCore.Mvc;
 using media_vault_app.Application.DTOs.User.Response;
-using System.Diagnostics;
 using media_vault_app.Application.Interfaces.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace media_vault_app.API.Controllers
 {

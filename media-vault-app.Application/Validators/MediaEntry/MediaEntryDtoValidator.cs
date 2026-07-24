@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using media_vault_app.Application.DTOs.MediaEntry.Request;
+﻿using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.Interfaces.Validators;
 using Rasmus.SharedKernel.ResultPattern;
 
@@ -50,7 +47,7 @@ namespace media_vault_app.Application.Validators.MediaEntry
                 internalErrors.Add(nullOrEmptyError);
             }
 
-            validationErrors= internalErrors;
+            validationErrors = internalErrors;
             return internalErrors.Count == 0;
         }
 

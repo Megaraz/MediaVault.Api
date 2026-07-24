@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using media_vault_app.Application.DTOs.User.Request;
+﻿using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
 using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
-using media_vault_app.Application.Services;
 using media_vault_app.Application.Interfaces.Validators;
-using media_vault_app.Application.Mappers.User;
-using media_vault_app.Application.Validators.User;
 using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.ResultPattern;
 
@@ -118,7 +112,7 @@ namespace media_vault_app.Application.Services.Auth
 
             if (registrationValidationErrors.Count > 0)
             {
-                _logger.LogDebug("RegisterUserAsync registration validation failed: {ValidationErrors}", 
+                _logger.LogDebug("RegisterUserAsync registration validation failed: {ValidationErrors}",
                     ServiceValidationLogging.FormatValidationErrors(registrationValidationErrors));
 
                 return Result.ValidationFailure(registrationValidationErrors, "User register validation failed.");
@@ -138,7 +132,7 @@ namespace media_vault_app.Application.Services.Auth
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("RegisterUserAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("RegisterUserAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 

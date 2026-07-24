@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Rasmus.SharedKernel.Interfaces.Identifiers;
-using Rasmus.SharedKernel.ResultPattern;
+﻿using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Interfaces.Services
 {

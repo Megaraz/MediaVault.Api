@@ -44,7 +44,7 @@ namespace media_vault_app.API
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite(connectionString));
-                //options.UseSqlServer(connectionString));
+            //options.UseSqlServer(connectionString));
 
 
             #region Rawg API

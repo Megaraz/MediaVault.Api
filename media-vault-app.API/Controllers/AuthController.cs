@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using media_vault_app.API.Security;
+﻿using media_vault_app.API.Security;
 using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
 using media_vault_app.Application.Interfaces.Services;

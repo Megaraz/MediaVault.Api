@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Rasmus.SharedKernel.Interfaces
+﻿namespace Rasmus.SharedKernel.Interfaces
 {
     public interface IUpdatedAtUtc
     {

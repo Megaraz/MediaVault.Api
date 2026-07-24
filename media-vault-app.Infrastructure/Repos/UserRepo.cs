@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
+﻿using System.Data.Common;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
 using Microsoft.EntityFrameworkCore;

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Rasmus.SharedKernel.ResultPattern;
+﻿using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
 {
@@ -13,7 +10,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
             IEnumerable<(string FieldName, string Value)> requiredValues = null!;
             var errorContext = TestErrorContextFactory.Create();
 
-            Assert.Throws<ArgumentNullException>(() => 
+            Assert.Throws<ArgumentNullException>(() =>
                 ValidatorExtensions.RequiredFieldsAreNullOrWhiteSpace(
                     requiredValues, errorContext, out var errors));
         }

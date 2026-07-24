@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
@@ -257,7 +256,7 @@ namespace media_vault_app.API.Controllers
             [FromRoute] Guid id,
             CancellationToken ct)
         {
-                if (!User.TryGetUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
             var result = await _readService.GetDetailedByIdAsync(userId, id, ct);

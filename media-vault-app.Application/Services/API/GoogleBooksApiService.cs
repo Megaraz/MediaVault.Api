@@ -1,11 +1,8 @@
-using media_vault_app.Application.DTOs;
 using media_vault_app.Application.DTOs.External_API_Contracts.GoogleBooks;
 using media_vault_app.Application.DTOs.GoogleBooks;
 using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
-using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
-using media_vault_app.Application.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.ResultPattern;
@@ -40,7 +37,7 @@ namespace media_vault_app.Application.Services.API
 
             if (mappedClientResult.IsFailure)
             {
-                _logger.LogDebug("GetBookByIdAsync failed: {Code} - {Description}", 
+                _logger.LogDebug("GetBookByIdAsync failed: {Code} - {Description}",
                     mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
             }
 
@@ -86,7 +83,7 @@ namespace media_vault_app.Application.Services.API
 
             if (mappedClientResult.IsFailure)
             {
-                _logger.LogDebug("SearchBooksAsync failed: {Code} - {Description}", 
+                _logger.LogDebug("SearchBooksAsync failed: {Code} - {Description}",
                     mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
             }
 

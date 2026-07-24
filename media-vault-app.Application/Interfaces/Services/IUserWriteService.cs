@@ -1,10 +1,7 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using media_vault_app.Application.DTOs.User.Request;
+﻿using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
 using media_vault_app.Domain.Entities;
 using Rasmus.SharedKernel.Interfaces.Services;
-using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Services
 {

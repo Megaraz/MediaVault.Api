@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using media_vault_app.Application.Services;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
@@ -68,7 +64,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("GetMinimalByIdAsync owner check failed: {Code} — {Description}", 
+                _logger.LogDebug("GetMinimalByIdAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
                 return ownerExistsResult.From<bool, TMinimalDto>();
@@ -80,7 +76,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("GetMinimalByIdAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("GetMinimalByIdAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 
@@ -110,7 +106,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("GetDetailedByIdAsync owner check failed: {Code} — {Description}", 
+                _logger.LogDebug("GetDetailedByIdAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
                 return ownerExistsResult.From<bool, TDetailedDto>();
@@ -122,7 +118,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("GetDetailedByIdAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("GetDetailedByIdAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 
@@ -159,7 +155,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("GetDetailedCollectionByOwnerIdAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("GetDetailedCollectionByOwnerIdAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 
@@ -183,7 +179,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("GetMinimalCollectionByOwnerIdAsync owner check failed: {Code} — {Description}", 
+                _logger.LogDebug("GetMinimalCollectionByOwnerIdAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
                 return ownerExistsResult.From<bool, IReadOnlyList<TMinimalDto>>();
@@ -197,7 +193,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (mappedRepoResult.IsFailure)
             {
-                _logger.LogDebug("GetMinimalCollectionByOwnerIdAsync failed: {Code} — {Description}", 
+                _logger.LogDebug("GetMinimalCollectionByOwnerIdAsync failed: {Code} — {Description}",
                     mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
             }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using Rasmus.SharedKernel.ResultPattern;
+﻿using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern.Validator_Tests
 {

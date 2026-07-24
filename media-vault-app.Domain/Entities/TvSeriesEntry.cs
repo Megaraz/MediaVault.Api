@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using media_vault_app.Domain.Enums;
 using media_vault_app.Domain.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
-using media_vault_app.Domain.Enums;
 
 namespace media_vault_app.Domain.Entities
 {

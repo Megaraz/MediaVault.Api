@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.DTOs.Season;
 using media_vault_app.Application.Interfaces.Mappers;
+using BookEntity = media_vault_app.Domain.Entities.BookEntry;
+using GameEntity = media_vault_app.Domain.Entities.GameEntry;
+using MangaEntity = media_vault_app.Domain.Entities.MangaEntry;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using MovieEntity = media_vault_app.Domain.Entities.MovieEntry;
 using TvSeriesEntity = media_vault_app.Domain.Entities.TvSeriesEntry;
-using GameEntity = media_vault_app.Domain.Entities.GameEntry;
-using BookEntity = media_vault_app.Domain.Entities.BookEntry;
-using MangaEntity = media_vault_app.Domain.Entities.MangaEntry;
-using media_vault_app.Application.DTOs.Season;
 
 namespace media_vault_app.Application.Mappers.MediaEntry
 {

@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using media_vault_app.Application.DTOs;
-using media_vault_app.Application.DTOs.External_API_Contracts.Rawg;
+﻿using media_vault_app.Application.DTOs.External_API_Contracts.Rawg;
 using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.DTOs.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
-using media_vault_app.Application.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.ResultPattern;
