@@ -23,6 +23,20 @@ namespace Rasmus.SharedKernel.ResultPattern
         string? StackTrace
     );
 
+    // TODO: Consider adding UserMessage and ExceptionType to the ErrorLog record if needed for logging purposes.
+    //    public record ErrorLog
+    //(
+    //    DateTimeOffset Timestamp,
+    //    string Code,
+    //    string Description,
+    //    string ErrorType,
+    //    string? UserMessage,
+    //    string? ExceptionType,
+    //    string? ExceptionMessage,
+    //    string? StackTrace
+    //);
+
+
     public class ErrorLogger : IErrorLogger
     {
         // One lock shared across all instances so that two loggers pointing at the same

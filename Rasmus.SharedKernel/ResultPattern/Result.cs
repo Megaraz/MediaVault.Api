@@ -328,15 +328,6 @@ namespace Rasmus.SharedKernel.ResultPattern
                 primaryError: primaryError);
         }
 
-
-        // Implicit conversions for cleaner syntax
-        /// <summary>
-        /// Converts a value to a successful result.
-        /// </summary>
-        /// <param name="value">The value to wrap.</param>
-        public static implicit operator Result<TValue>(TValue value) => Success(value);
-        //public static implicit operator Result<TValue>(Error error) => Failure(error);
-
         #endregion
 
     }
