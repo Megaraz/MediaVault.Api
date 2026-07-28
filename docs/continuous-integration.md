@@ -20,6 +20,8 @@ and a newer run for the same pull request or branch cancels an older run.
 The workflow grants the GitHub token read-only repository-content access and
 disables credential persistence after checkout. Pull-request code receives no
 write permission, deployment credential, or repository secret.
+Official GitHub actions are pinned to reviewed commit SHAs so a mutable tag
+cannot silently change the code executed by CI.
 
 No secret or provider credential is required. The test projects use
 test-controlled dependencies and do not start the API, connect to external
