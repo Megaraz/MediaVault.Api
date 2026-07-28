@@ -1,0 +1,4 @@
+interface:
+  display_name: "Write GitHub Issues"
+  short_description: "Create clear, AI-ready MediaVault issues"
+  default_prompt: "Use $write-github-issues to draft a clear, AI-ready implementation issue for this repository."

@@ -1,5 +1,5 @@
 import { MediaType } from "../../Clients/MediaEntriesClient";
-import { useUser } from "../../Shared/UserContext";
+import { useUser } from "../../Shared/useUser";
 import { mediaSections } from "../../Shared/mediaConstants";
 
 type Props = {

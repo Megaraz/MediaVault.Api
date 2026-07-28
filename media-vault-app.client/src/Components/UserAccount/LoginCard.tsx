@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ModalWindow from "../Shared/ModalWindow";
-import { useUser } from "../../Shared/UserContext";
+import { useUser } from "../../Shared/useUser";
 import { useNavigate } from "react-router-dom";
 
 type LoginProps = {
