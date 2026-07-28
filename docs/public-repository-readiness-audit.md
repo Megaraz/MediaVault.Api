@@ -22,7 +22,7 @@ The command scanned all reachable history and used full redaction. Its JSON repo
 
 ## Findings
 
-### Runtime database history is sensitive
+### Runtime database history is development-only
 
 The following files are tracked in the current tree and occur in the reachable history at commits `1fe6450` and `37c1ba6`:
 
@@ -30,9 +30,9 @@ The following files are tracked in the current tree and occur in the reachable h
 - `media-vault-app.API/mediavault.db-wal`
 - `media-vault-app.API/mediavault.db-shm`
 
-The database contains a `Users` table with username, email, and password-hash fields, along with user-owned media and review data. The audit did not read or reproduce any values. These are private runtime data, so the files must not be published and their reachable history must be removed before the repository becomes public.
+The database contains a `Users` table with username, email, and password-hash fields, along with user-owned media and review data. The audit did not read or reproduce any values. The repository owner confirmed that every row is deliberately disposable local development/test data: the account is not used elsewhere, no password is reused, and the media/reviews are junk data.
 
-No plaintext credential was detected by Gitleaks. As a defence-in-depth measure, the owner should reset the password of any account represented by this database before the rewritten repository is published, because a password hash was present in history.
+No plaintext credential was detected by Gitleaks. The database schema itself is already represented by the checked-in entities and EF Core migrations, so its historical presence does not add a material public-exposure risk after the owner's assessment. The files are nevertheless removed from the current tree and ignored going forward because runtime state does not belong in source control.
 
 ### Configuration and machine-local data
 
@@ -59,23 +59,19 @@ The `.gitignore` rules added by this issue protect conventional `.env` files, ce
 
 There are no checked-in GitHub Actions workflow files, no Actions secrets or variables, and no retained workflow artifacts. The repository has three historical Copilot-generated workflow runs (2026-03-22 through 2026-03-24). Their logs are no longer retrievable through the GitHub CLI/API, so their contents could not be re-scanned. Record this limitation before changing visibility; there is no retained artifact to expose from those runs.
 
-## Required history-rewrite gate
+## History-rewrite decision
 
-A normal commit or pull request cannot remove the database blobs from ancestor commits. Do not change repository visibility until a coordinated rewrite has removed them from every public-bound ref.
+A normal commit or pull request cannot remove the database blobs from ancestor commits. A coordinated history rewrite is therefore the only way to remove them from every reachable historical ref.
 
-Before that rewrite:
+It is not required for the planned public release because the owner confirmed that the historical data is entirely synthetic and disposable, and the audit found no live credentials. Avoiding a rewrite preserves current commit identities and avoids unnecessary force-push coordination.
 
-1. Confirm the database is preserved only in an approved private backup and reset any password associated with the recorded account.
-2. Freeze merges and new branches, notify all clone owners, and identify every branch, tag, pull-request head, and backup that can reintroduce the old commits.
-3. In a fresh private clone, use a history-rewrite tool to remove exactly the three database paths from all refs. Re-run the Gitleaks command above and the tracked-file checks against the rewritten clone.
-4. Have the repository owner approve the new history, coordinate protected-branch handling, force-push each rewritten public-bound ref, and ask collaborators to reclone or reset according to the agreed plan.
-5. Verify that GitHub no longer exposes the old blobs or relevant Actions artifacts before changing repository visibility.
+Revisit this decision and perform a coordinated rewrite if later evidence shows that a real credential, reusable password, personal data, or non-disposable review was present.
 
-This gate is deliberately not executed by the issue pull request: it changes published commit identities and requires explicit owner coordination.
+The owner may still choose a rewrite for repository hygiene, but it is a discretionary cleanup rather than a security prerequisite.
 
 ## Clean-clone verification
 
-Run the following from a new clone after the history-rewrite gate is complete. These commands use only checked-in projects, the lock file, and public package registries.
+Run the following from a new clone. These commands use only checked-in projects, the lock file, and public package registries.
 
 ```powershell
 dotnet restore media-vault-app.slnx
