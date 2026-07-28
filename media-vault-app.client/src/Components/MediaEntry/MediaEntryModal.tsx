@@ -11,7 +11,7 @@
 // After a successful save or delete, a brief success screen is shown
 // before the modal closes automatically.
 // ─────────────────────────────────────────────────────────────
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   MediaType,
   type MediaEntryDetailedDto,
@@ -140,11 +140,6 @@ export default function MediaEntryModal({
 
   const [rawgClient] = useState(() => new RawgApiClient());
   const [tmdbClient] = useState(() => new TmdbApiClient());
-
-  useEffect(() => {
-    setFormData(buildInitialFormData(detailedEntry));
-    setSubmitError(null);
-  }, [detailedEntry]);
 
   // isEditMode = true when we opened the modal by clicking an existing entry.
   const isEditMode = detailedEntry != null && detailedEntry.id != null;

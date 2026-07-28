@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, Link } from "react-router-dom";
 import RegisterUserCard from "../Components/UserAccount/RegisterUserCard";
 import Login from "../Components/UserAccount/LoginCard";
-import { useUser } from "./UserContext";
+import { useUser } from "./useUser";
 
 export default function Layout() {
   const [showRegisterPopup, setShowRegisterPopup] = useState(false);

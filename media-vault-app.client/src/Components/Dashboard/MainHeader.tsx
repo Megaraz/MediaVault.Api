@@ -53,7 +53,7 @@ export default function MainHeader({
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [searchQuery]);
+  }, [client, searchQuery]);
 
   const handleSelectResult = (entry: MediaEntryMinimalDto) => {
     setSearchQuery("");
