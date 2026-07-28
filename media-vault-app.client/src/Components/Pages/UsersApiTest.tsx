@@ -24,15 +24,14 @@ export default function UsersApiTest() {
 
   const createUser = async (newUser: UserCreateDto) => {
     setLoading(true);
-    await client
-      .registerUser(newUser)
-      .then((createdUser) => {
-        setUsers((prevUsers) => [...prevUsers, createdUser]);
-      })
-      .catch((error) => {
-        console.error("Failed to create user:", error);
-      });
-    setLoading(false);
+    try {
+      await client.registerUser(newUser);
+      setUsers(await client.getUsers());
+    } catch (error) {
+      console.error("Failed to create user:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchUsers = async () => {

@@ -23,7 +23,7 @@ import BookEntriesClient from "../../Clients/BookEntriesClient";
 import MangaEntriesClient from "../../Clients/MangaEntriesClient";
 import type { MediaEntryFormData } from "../MediaEntry/MediaEntryForm";
 import MediaEntryModal from "../MediaEntry/MediaEntryModal";
-import { useUser } from "../../Shared/UserContext";
+import { useUser } from "../../Shared/useUser";
 import MainHeader from "../Dashboard/MainHeader";
 import Sidebar from "../Dashboard/Sidebar";
 import EntriesSectionMain from "../Dashboard/EntriesSectionMain";
@@ -51,38 +51,30 @@ export default function Dashboard() {
     MediaType.All,
   );
 
-  useEffect(() => {}, [isAuthenticated]);
+  useEffect(() => {
+    if (!isAuthenticated || !currentUser) {
+      return;
+    }
+
+    const fetchMediaEntries = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const fetched = await client.getMediaEntries();
+        setEntries(fetched);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchMediaEntries();
+  }, [client, currentUser, isAuthenticated]);
 
   if (!isAuthenticated) {
     return <Navigate to="/" />;
   }
-
-  useEffect(() => {
-    const fetchMediaEntries = async () => {
-      await handleFetchMediaEntries();
-    };
-    fetchMediaEntries();
-  }, [currentUser]);
-
-  const handleFetchMediaEntries = async () => {
-    if (!isAuthenticated || !currentUser) {
-      setError(
-        "Select a user from the Users API Test page before fetching media entries.",
-      );
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const fetched = await client.getMediaEntries();
-      setEntries(fetched);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadDetailedEntry = async (
     entry: Pick<MediaEntryMinimalDto, "id" | "mediaType">,
@@ -348,6 +340,7 @@ export default function Dashboard() {
           {/* Media Entry Modal Popup Window */}
           {showPopup && (
             <MediaEntryModal
+              key={selectedEntry?.id ?? "new-entry"}
               detailedEntry={selectedEntry}
               onCancel={onCancel}
               onSubmit={handleSubmitMediaEntry}

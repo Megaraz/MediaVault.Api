@@ -1,0 +1,4 @@
+interface:
+  display_name: "Work GitHub Issue"
+  short_description: "Take a MediaVault issue from branch to review-ready PR"
+  default_prompt: "Use $work-github-issue to implement the specified GitHub issue through a verified, review-ready pull request without merging it."

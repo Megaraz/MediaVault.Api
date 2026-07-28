@@ -1,39 +1,25 @@
 import {
-  createContext,
-  useContext,
+  useCallback,
   useEffect,
   useMemo,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from "react";
 import UsersClient, {
   type UserDetailedDto,
   type UserLoginDto,
 } from "../Clients/UsersClient";
-
-type UserContextType = {
-  currentUser: UserDetailedDto | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (credentials: UserLoginDto) => Promise<UserDetailedDto>;
-  logout: () => Promise<void>;
-  refreshCurrentUser: () => Promise<UserDetailedDto | null>;
-  setCurrentUser: Dispatch<SetStateAction<UserDetailedDto | null>>;
-};
+import { UserContext } from "./UserContextDefinition";
 
 type UserProviderProps = {
   children: React.ReactNode;
 };
-
-const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: UserProviderProps) {
   const [currentUser, setCurrentUser] = useState<UserDetailedDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [client] = useState(() => new UsersClient());
 
-  const refreshCurrentUser = async () => {
+  const refreshCurrentUser = useCallback(async () => {
     try {
       const user = await client.getCurrentUser();
       setCurrentUser(user);
@@ -42,7 +28,7 @@ export function UserProvider({ children }: UserProviderProps) {
       setCurrentUser(null);
       return null;
     }
-  };
+  }, [client]);
 
   useEffect(() => {
     let isMounted = true;
@@ -72,16 +58,16 @@ export function UserProvider({ children }: UserProviderProps) {
     };
   }, [client]);
 
-  const login = async (credentials: UserLoginDto) => {
+  const login = useCallback(async (credentials: UserLoginDto) => {
     const user = await client.login(credentials);
     setCurrentUser(user);
     return user;
-  };
+  }, [client]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await client.logout();
     setCurrentUser(null);
-  };
+  }, [client]);
 
   const value = useMemo(
     () => ({
@@ -93,18 +79,8 @@ export function UserProvider({ children }: UserProviderProps) {
       refreshCurrentUser,
       setCurrentUser,
     }),
-    [currentUser, isLoading],
+    [currentUser, isLoading, login, logout, refreshCurrentUser],
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
-}
-
-export function useUser() {
-  const context = useContext(UserContext);
-
-  if (!context) {
-    throw new Error("useUser must be used inside UserProvider");
-  }
-
-  return context;
 }

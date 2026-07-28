@@ -121,7 +121,14 @@ export default function TitleSearchInput({
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [value, isSearchEnabled]);
+  }, [
+    googleBooksClient,
+    isSearchEnabled,
+    mediaType,
+    rawgClient,
+    tmdbClient,
+    value,
+  ]);
 
   const handleSelectResult = (result: SearchResult) => {
     // Tell the effect to skip the search triggered by this value change
