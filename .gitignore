@@ -364,3 +364,15 @@ FodyWeavers.xsd
 # Client obj artifacts
 media-vault-app.client/obj*
 .aider*
+
+# Local secrets and certificate material. Commit only intentionally safe example files.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# API SQLite runtime state. These files can contain authentication and library data.
+/media-vault-app.API/mediavault.db
+/media-vault-app.API/mediavault.db-wal
+/media-vault-app.API/mediavault.db-shm
