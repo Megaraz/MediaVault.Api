@@ -1,11 +1,11 @@
 ---
 name: write-github-issues
-description: Create, refine, or review professional GitHub issues and parent/subissue hierarchies for MediaVault. Use when Codex drafts or publishes implementation issues, turns plans or backlog items into AI-executable tasks, prepares sprint or milestone issues, or improves issue specifications for portfolio-quality public work.
+description: Create, refine, or review professional GitHub issues and parent/subissue hierarchies for MediaVault. Use when Codex drafts or publishes implementation issues, turns plans or backlog items into AI-executable tasks, prepares sprint or milestone issues, or improves issue specifications for technically rigorous public work.
 ---
 
 # Write GitHub Issues
 
-Create issues that are readable by recruiters and developers and executable by an AI agent without hidden context.
+Create issues that communicate the technical problem clearly to maintainers and contributors and are executable by an AI agent without hidden context.
 
 ## Build context first
 
@@ -41,6 +41,17 @@ Use `.github/ISSUE_TEMPLATE/implementation.md` as the canonical structure.
 
 Do not prescribe an implementation unless an existing decision or boundary requires it. Preserve room for the implementer to choose the smallest correct approach.
 
+## Write safely for public Projects and issues
+
+- Treat the repositories, GitHub Projects, issues, pull requests, and comments as public and permanently discoverable unless current GitHub state proves otherwise.
+- Lead with the technical or user problem, its consequence, and the observable engineering outcome. Do not justify routine work through recruiter appeal, portfolio optics, contribution counts, AI activity, or performative professionalism.
+- Mention public presentation, hiring, learning, or build-in-public communication only when that is the issue's actual product or documentation outcome. Even then, keep technical claims evidence-based and secondary motivations concise.
+- Do not publish secrets, personal data, private URLs, internal incident detail, exploit steps, vulnerable payloads, embargoed findings, private advisory content, or security evidence that would materially help an attacker.
+- In a public security issue, describe the affected control or boundary and the safe end state. Keep detailed alert inventories, vulnerable-version analysis, reproductions, logs, and exploitability decisions in GitHub's private security features or another approved private channel.
+- Do not put exact private alert counts, severity distributions, or signed-in-only security-dashboard output into a public issue unless the owner explicitly approves that disclosure and it is necessary for the work.
+- Split public remediation tracking from confidential disclosure when one issue cannot be both executable and safe. The public issue may require private evidence without copying that evidence into its body or comments.
+- Use repository-relative paths, public documentation, stable symbols, and safe verification commands as context. Avoid machine-local paths and hidden context that a future implementer cannot access.
+
 ## Create issue hierarchies
 
 For a parent issue:
@@ -63,9 +74,11 @@ Use GitHub subissues when available. Otherwise, use a task list of linked issues
 
 Confirm that:
 
+- current repository and Project visibility has been checked, and the issue is safe to index publicly;
 - the issue matches checked-out code and current documentation;
 - the title and opening paragraphs make sense to an external reader;
-- no credentials, personal data, private URLs, or exploitable vulnerability detail is exposed;
+- no credentials, personal data, private URLs, signed-in-only security evidence, or exploitable vulnerability detail is exposed;
+- the problem and desired outcome are framed around technical or user value rather than recruiter, portfolio, or activity optics;
 - acceptance criteria can be conclusively checked;
 - commands use versions and scripts from the repository;
 - contract impact covers API status, headers, JSON, authentication, web, and Android where relevant;
