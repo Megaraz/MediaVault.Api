@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.ResultPatternCompatibility;
+using PackageHttpError = Megaraz.ResultPattern.AspNetCore.HttpError;
+using PackageHttpMapper = Megaraz.ResultPattern.AspNetCore.HttpResultMapper;
+using PackageHttpPolicy = Megaraz.ResultPattern.AspNetCore.HttpResultMappingPolicy;
 
 namespace media_vault_app.API.Controllers
 {
@@ -10,6 +13,13 @@ namespace media_vault_app.API.Controllers
     /// </summary>
     public static class ResultResponseMapper
     {
+        private static readonly PackageHttpPolicy PackageHttpErrorPolicy =
+            PackageHttpPolicy.Default with
+            {
+                FailureBodyFactory = result =>
+                    new ErrorResponseBody(result.Message, result.PrimaryError.Code)
+            };
+
         /// <summary>
         /// Maps a <see cref="Result{TValue}"/> to a 200 OK <see cref="ActionResult{TValue}"/> on success,
         /// or the appropriate error response on failure.
@@ -17,7 +27,7 @@ namespace media_vault_app.API.Controllers
         public static ActionResult<TValue> ToActionResult<TValue>(this ControllerBase c, Result<TValue> result)
             where TValue : notnull
         {
-            var response = HttpResultMapper.ToHttpResponse(result);
+            var response = MapToHttpResponse(result);
             return c.ToActionResult<TValue>(response);
         }
 
@@ -27,7 +37,7 @@ namespace media_vault_app.API.Controllers
         /// </summary>
         public static IActionResult ToActionResult(this ControllerBase c, Result result)
         {
-            var response = HttpResultMapper.ToHttpResponse(result);
+            var response = MapToHttpResponse(result);
             return c.ToActionResult(response);
         }
 
@@ -55,11 +65,34 @@ namespace media_vault_app.API.Controllers
         {
             if (result.IsFailure)
             {
-                var failureResponse = HttpResultMapper.ToHttpResponse(result);
+                var failureResponse = MapToHttpResponse(result);
                 return c.ToActionResult<TValue>(failureResponse);
             }
 
             return c.CreatedAtAction(actionName, routeValuesFactory(result.Value), result.Value);
+        }
+
+        private static MappedHttpResponse MapToHttpResponse<TValue>(Result<TValue> result)
+            where TValue : notnull
+        {
+            if (result.IsFailure && result.PrimaryError is PackageHttpError)
+            {
+                var response = PackageHttpMapper.ToHttpResponse(result, PackageHttpErrorPolicy);
+                return new MappedHttpResponse(response.StatusCode, response.Body, response.Location);
+            }
+
+            return HttpResultMapper.ToHttpResponse(result);
+        }
+
+        private static MappedHttpResponse MapToHttpResponse(Result result)
+        {
+            if (result.IsFailure && result.PrimaryError is PackageHttpError)
+            {
+                var response = PackageHttpMapper.ToHttpResponse(result, PackageHttpErrorPolicy);
+                return new MappedHttpResponse(response.StatusCode, response.Body, response.Location);
+            }
+
+            return HttpResultMapper.ToHttpResponse(result);
         }
 
         private static ActionResult<TValue> ToActionResult<TValue>(this ControllerBase c, MappedHttpResponse response)
