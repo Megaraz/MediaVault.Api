@@ -20,14 +20,14 @@ Do not disclose suspected vulnerabilities, exploit details, credentials,
 private data, or reproduction secrets in a public issue, pull request,
 discussion, or commit.
 
-When this repository is public, use GitHub's private
+MediaVault is a public repository. Use GitHub's private
 [Report a vulnerability](https://github.com/Megaraz/media-vault-app/security/advisories/new)
-form. Private vulnerability reporting will be enabled as part of the repository
-visibility gate.
+form to submit a confidential report.
 
 If the private form is unexpectedly unavailable, open a normal issue asking
-only for a private security contact. Do not include vulnerability details. A
-maintainer can then establish a private GitHub Security Advisory conversation.
+only for the form to be restored or for a private security contact. Do not
+include vulnerability details. A maintainer can then establish a private GitHub
+Security Advisory conversation.
 
 Include the affected area, impact, reproduction conditions, and any suggested
 mitigation in the private report. Share only the minimum sensitive material
