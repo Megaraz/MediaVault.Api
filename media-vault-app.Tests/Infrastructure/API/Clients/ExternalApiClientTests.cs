@@ -11,7 +11,7 @@ using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.ExternalServices;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using ErrorLog = Rasmus.SharedKernel.Diagnostics.ErrorLog;
-using ErrorResponseBody = Rasmus.SharedKernel.ResultPatternCompatibility.ErrorResponseBody;
+using ApiErrorResponseBody = media_vault_app.API.Controllers.ErrorResponseBody;
 
 namespace media_vault_app.Tests.Infrastructure.API.Clients;
 
@@ -136,7 +136,7 @@ public class ExternalApiClientTests
         var action = ResultResponseMapper.ToActionResult(new TestController(), result);
         var objectResult = Assert.IsType<ObjectResult>(action.Result);
         Assert.Equal(expectedApiStatusCode, objectResult.StatusCode);
-        var body = Assert.IsType<ErrorResponseBody>(objectResult.Value);
+        var body = Assert.IsType<ApiErrorResponseBody>(objectResult.Value);
         Assert.Equal(result.Message, body.Message);
         Assert.DoesNotContain(upstreamText, body.Message, StringComparison.Ordinal);
     }
@@ -244,7 +244,7 @@ public class ExternalApiClientTests
 
         var objectResult = Assert.IsType<ObjectResult>(action.Result);
         Assert.Equal(503, objectResult.StatusCode);
-        var body = Assert.IsType<ErrorResponseBody>(objectResult.Value);
+        var body = Assert.IsType<ApiErrorResponseBody>(objectResult.Value);
         Assert.Equal(ExternalServiceResponsePolicy.TransportFailureMessage, body.Message);
         Assert.DoesNotContain("private timeout detail", body.Message, StringComparison.Ordinal);
     }
