@@ -2,7 +2,7 @@ using media_vault_app.Application.Services;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Diagnostics;
-using ErrorLog = Rasmus.SharedKernel.ResultPattern.ErrorLog;
+using ErrorLog = Rasmus.SharedKernel.Diagnostics.ErrorLog;
 
 namespace media_vault_app.Tests.Services
 {
