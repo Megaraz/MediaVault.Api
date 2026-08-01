@@ -1,13 +1,15 @@
 ﻿using System.Net;
 using System.Text.Json;
+using Megaraz.ResultPattern;
 
-namespace Rasmus.SharedKernel.ResultPattern
+namespace Rasmus.SharedKernel.ResultPatternCompatibility
 {
     public static class HttpResponseToResultExtensions
     {
         private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
         public static async Task<Result<TValue>> MapToResultAsync<TValue>(this HttpResponseMessage? response, ErrorContext errorContext, CancellationToken ct = default)
+            where TValue : notnull
         {
             if (response is null)
                 return Result<TValue>.Failure(HttpError.TransportFailure(errorContext));
@@ -75,6 +77,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         }
 
         private static Result<TValue> CreateHttpFailureResult<TValue>(HttpStatusCode statusCode, ErrorContext errorContext, string callerMessage)
+            where TValue : notnull
         {
             return Result<TValue>.Failure(MapHttpError(statusCode, errorContext, callerMessage));
         }

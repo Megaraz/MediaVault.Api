@@ -1,18 +1,23 @@
 using System.Net;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Diagnostics;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
+using LegacyErrorLogger = Rasmus.SharedKernel.ResultPattern.ErrorLogger;
+using LegacyErrorLoggerConfiguration = Rasmus.SharedKernel.ResultPattern.ErrorLoggerConfiguration;
+using LegacyErrorLogPolicy = Rasmus.SharedKernel.ResultPattern.ErrorLogPolicy;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern
 {
     public class ErrorLogPolicy_Tests
     {
-        private readonly ErrorLogPolicy _policy = new();
+        private readonly LegacyErrorLogPolicy _policy = new();
 
         // ── Never log ─────────────────────────────────────────────────────────
 
         [Fact]
         public void Should_Not_Log_ValidationError()
         {
-            var ctx = TestErrorContextFactory.Create(fieldName: "Email");
+            var ctx = PackageErrorContextFactory.Create(fieldName: "Email");
             var error = ValidationError.Required(ctx);
 
             Assert.False(_policy.ShouldLog(error));
@@ -21,7 +26,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void Should_Not_Log_Cancelled_Error()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
             var error = Error.Cancelled(ctx);
 
             Assert.False(_policy.ShouldLog(error));
@@ -38,7 +43,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
 
         public static IEnumerable<object[]> HttpErrorsThatShouldNotBeLogged()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
 
             yield return [HttpError.BadRequest(ctx)];
             yield return [HttpError.NotFound(ctx)];
@@ -51,7 +56,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void Should_Log_DatabaseError()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
             var error = DatabaseError.SaveChangesFailure(ctx, new Exception("db failure"));
 
             Assert.True(_policy.ShouldLog(error));
@@ -60,7 +65,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void Should_Log_General_Failure()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
             var error = Error.Failure(ctx);
 
             Assert.True(_policy.ShouldLog(error));
@@ -69,7 +74,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void Should_Log_NotFound_Error()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
             var error = Error.NotFound(ctx);
 
             Assert.True(_policy.ShouldLog(error));
@@ -86,7 +91,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
 
         public static IEnumerable<object[]> HttpErrorsThatShouldBeLogged()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
 
             yield return [HttpError.UnauthorizedAccess(ctx)];
             yield return [HttpError.Forbidden(ctx)];

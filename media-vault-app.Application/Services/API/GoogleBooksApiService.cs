@@ -6,7 +6,8 @@ using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.Pagination;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Services.API
 {
@@ -27,7 +28,7 @@ namespace media_vault_app.Application.Services.API
 
             if (string.IsNullOrWhiteSpace(volumeId))
             {
-                var error = ValidationError.Required(errorContext with { FieldName = nameof(volumeId) });
+                var error = MediaVaultValidationError.Required(errorContext with { FieldName = nameof(volumeId) });
                 _logger.LogDebug("GetBookByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([error]));
                 return Result<GoogleBooksDetailedDto>.ValidationFailure([error], error.UserMessage);
             }
@@ -54,7 +55,7 @@ namespace media_vault_app.Application.Services.API
             var errorContext = DefineErrorContext(nameof(SearchBooksAsync), OperationType.GetCollection);
             List<ValidationError> errors = new();
 
-            if (search.IsNullOrWhiteSpace(errorContext with { FieldName = nameof(search) }, out var searchError))
+            if (search.IsMissingMediaVaultValue(errorContext with { FieldName = nameof(search) }, out var searchError))
             {
                 errors.Add(searchError);
             }
@@ -94,12 +95,9 @@ namespace media_vault_app.Application.Services.API
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Application",
-                ServiceName: GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: entityName ?? "Google Books Volume",
-                FieldName: fieldName);
+                operation: operation,
+                entityName: entityName ?? "Google Books Volume",
+                fieldName: fieldName);
         }
 
         private static IReadOnlyList<MediaEntryExternalSearchResultDto> MapToSearchResults(IReadOnlyList<GoogleBooksVolumeResponse>? volumes)

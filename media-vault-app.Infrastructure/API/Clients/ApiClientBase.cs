@@ -1,5 +1,8 @@
+using System.Runtime.CompilerServices;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
-using Rasmus.SharedKernel.ResultPattern;
+using Rasmus.SharedKernel.Diagnostics;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.API.Clients
 {
@@ -14,14 +17,18 @@ namespace media_vault_app.Infrastructure.API.Clients
             _errorLogPolicy = errorLogPolicy;
         }
 
-        protected async Task LogIfNeededAsync(Error? error, CancellationToken ct)
+        protected async Task LogIfNeededAsync(
+            Error? error,
+            CancellationToken ct,
+            [CallerMemberName] string methodName = "")
         {
             if (error is null || error.Type == ErrorType.None || !_errorLogPolicy.ShouldLog(error))
                 return;
 
             try
             {
-                await _errorLogger.LogErrorToFileAsync(error, CancellationToken.None);
+                var context = new ErrorLogContext("Infrastructure", GetType().Name, methodName);
+                await _errorLogger.LogErrorToFileAsync(error, context, CancellationToken.None);
             }
             catch
             {

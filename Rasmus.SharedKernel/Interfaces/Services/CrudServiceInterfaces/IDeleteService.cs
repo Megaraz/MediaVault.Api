@@ -1,4 +1,4 @@
-﻿using Rasmus.SharedKernel.ResultPattern;
+﻿using Megaraz.ResultPattern;
 
 namespace Rasmus.SharedKernel.Interfaces.Services.CrudServiceInterfaces
 {

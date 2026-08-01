@@ -3,7 +3,8 @@ using media_vault_app.Application.Mappers.User;
 using media_vault_app.Application.Services.User;
 using media_vault_app.Application.Validators.User;
 using media_vault_app.Tests.TestHelpers;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
 using UserEntity = media_vault_app.Domain.Entities.User;
 
 namespace media_vault_app.Tests.Services.User
@@ -56,7 +57,7 @@ namespace media_vault_app.Tests.Services.User
         [Fact]
         public async Task CreateAsync_Should_Propagate_RepoFailure()
         {
-            var expectedError = Error.Conflict(DefineErrorContext("CreateAsync", OperationType.Create));
+            var expectedError = MediaVaultErrors.Conflict(DefineErrorContext("CreateAsync", OperationType.Create));
             var userRepo = new FakeUserRepo
             {
                 CreateResult = Result<UserEntity>.Failure(expectedError, "User already exists.")
@@ -116,7 +117,7 @@ namespace media_vault_app.Tests.Services.User
         [Fact]
         public async Task DeleteAsync_Should_Propagate_RepoFailure()
         {
-            var expectedError = Error.NotFound(DefineErrorContext("DeleteAsync", OperationType.Delete));
+            var expectedError = MediaVaultErrors.NotFound(DefineErrorContext("DeleteAsync", OperationType.Delete));
             var userRepo = new FakeUserRepo
             {
                 DeleteResult = Result.Failure(expectedError, "User not found.")
@@ -148,11 +149,8 @@ namespace media_vault_app.Tests.Services.User
         private static ErrorContext DefineErrorContext(string methodName, OperationType operation)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: nameof(UserWriteService),
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: "User");
+                operation: operation,
+                entityName: "User");
         }
     }
 }

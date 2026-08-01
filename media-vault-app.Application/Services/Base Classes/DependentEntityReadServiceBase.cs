@@ -4,7 +4,8 @@ using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.Pagination;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Services.Base_Classes
 {
@@ -48,10 +49,10 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var validationErrors = new List<ValidationError>();
 
-            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
                 validationErrors.Add(ownerIdError);
 
-            if (id.IsNotValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
+            if (id.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
                 validationErrors.Add(idError);
 
             if (validationErrors.Count > 0)
@@ -68,7 +69,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 _logger.LogDebug("GetMinimalByIdAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
-                return ownerExistsResult.From<bool, TMinimalDto>();
+                return ownerExistsResult.ToResult<TMinimalDto>();
             }
 
             var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct: ct);
@@ -91,10 +92,10 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var validationErrors = new List<ValidationError>();
 
-            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
                 validationErrors.Add(ownerIdError);
 
-            if (id.IsNotValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
+            if (id.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
                 validationErrors.Add(idError);
 
             if (validationErrors.Count > 0)
@@ -110,7 +111,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 _logger.LogDebug("GetDetailedByIdAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
-                return ownerExistsResult.From<bool, TDetailedDto>();
+                return ownerExistsResult.ToResult<TDetailedDto>();
             }
 
             var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct: ct);
@@ -132,7 +133,7 @@ namespace media_vault_app.Application.Services.Base_Classes
         {
             var baseErrorContext = DefineErrorContext(nameof(GetDetailedCollectionByOwnerIdAsync), OperationType.GetCollection);
 
-            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
             {
                 _logger.LogDebug("GetDetailedCollectionByOwnerIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([ownerIdError]));
                 return Result<IReadOnlyList<TDetailedDto>>.ValidationFailure(
@@ -145,7 +146,7 @@ namespace media_vault_app.Application.Services.Base_Classes
             if (ownerExistsResult.IsFailure)
             {
                 _logger.LogDebug("GetDetailedCollectionByOwnerIdAsync owner check failed: {Code} — {Description}", ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
-                return ownerExistsResult.From<bool, IReadOnlyList<TDetailedDto>>();
+                return ownerExistsResult.ToResult<IReadOnlyList<TDetailedDto>>();
             }
 
             var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
@@ -168,7 +169,7 @@ namespace media_vault_app.Application.Services.Base_Classes
         {
             var baseErrorContext = DefineErrorContext(nameof(GetMinimalCollectionByOwnerIdAsync), OperationType.GetCollection);
 
-            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
             {
                 _logger.LogDebug("GetMinimalCollectionByOwnerIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([ownerIdError]));
                 return Result<IReadOnlyList<TMinimalDto>>.ValidationFailure(
@@ -183,7 +184,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 _logger.LogDebug("GetMinimalCollectionByOwnerIdAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
-                return ownerExistsResult.From<bool, IReadOnlyList<TMinimalDto>>();
+                return ownerExistsResult.ToResult<IReadOnlyList<TMinimalDto>>();
             }
 
             var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
@@ -209,12 +210,9 @@ namespace media_vault_app.Application.Services.Base_Classes
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: this.GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: typeof(TEntityDependent).Name,
-                FieldName: fieldName);
+                operation: operation,
+                entityName: typeof(TEntityDependent).Name,
+                fieldName: fieldName);
         }
     }
 }

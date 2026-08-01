@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
+using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 
 namespace Rasmus.SharedKernel.ResultPattern
@@ -19,6 +20,9 @@ namespace Rasmus.SharedKernel.ResultPattern
         string Code,
         string Description,
         string ErrorType,
+        string Layer,
+        string Service,
+        string Method,
         string? ExceptionMessage,
         string? StackTrace
     );
@@ -117,8 +121,10 @@ namespace Rasmus.SharedKernel.ResultPattern
             }
         }
 
-        public async Task LogErrorToFileAsync(Error error, CancellationToken ct = default)
+        public async Task LogErrorToFileAsync(Megaraz.ResultPattern.Error error, ErrorLogContext context, CancellationToken ct = default)
         {
+            ArgumentNullException.ThrowIfNull(error);
+            ArgumentNullException.ThrowIfNull(context);
             Directory.CreateDirectory(_configuration.BasePath);
 
             var currentLogEntry = new ErrorLog(
@@ -126,6 +132,9 @@ namespace Rasmus.SharedKernel.ResultPattern
                 error.Code,
                 error.Description,
                 error.Type.ToString(),
+                context.Layer,
+                context.Service,
+                context.Method,
                 error.Exception?.Message,
                 error.Exception?.StackTrace);
 

@@ -3,7 +3,9 @@ using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -28,7 +30,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (dbEx.InnerException is DbException dbInnerEx &&
                     (dbInnerEx.ErrorCode == 2601 || dbInnerEx.ErrorCode == 2627))
                 {
-                    return Result.Failure(Error.Conflict(baseErrorContext));
+                    return Result.Failure(MediaVaultErrors.Conflict(baseErrorContext));
                 }
 
                 return Result.Failure(DatabaseError.SaveChangesFailure(baseErrorContext, dbEx));
@@ -36,7 +38,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (OperationCanceledException)
             {
                 var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
-                return Result.Failure(Error.Cancelled(baseErrorContext));
+                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -68,7 +70,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (OperationCanceledException)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
-                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -94,7 +96,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (user is null)
                 {
                     return Result<User>.Failure(
-                        Error.Unauthorized(baseErrorContext),
+                        MediaVaultErrors.Unauthorized(baseErrorContext),
                         "Invalid username/email or password.");
                 }
 
@@ -102,7 +104,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result<User>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<User>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {

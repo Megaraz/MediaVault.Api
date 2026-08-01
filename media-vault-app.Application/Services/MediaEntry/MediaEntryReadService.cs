@@ -6,7 +6,9 @@ using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Services.Base_Classes;
 using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.Pagination;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
+using Rasmus.SharedKernel.Validation;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using UserEntity = media_vault_app.Domain.Entities.User;
 
@@ -68,7 +70,7 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             var validationErrors = new List<ValidationError>();
 
-            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
             {
                 validationErrors.Add(ownerIdError);
             }
@@ -76,7 +78,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             // Validate search query
             var queryErrorContext = baseErrorContext with { FieldName = nameof(request.Query) };
 
-            if (request.Query.IsNullOrWhiteSpace(queryErrorContext, out var nullOrEmptyError))
+            if (request.Query.IsMissingMediaVaultValue(queryErrorContext, out var nullOrEmptyError))
             {
                 validationErrors.Add(nullOrEmptyError);
             }
@@ -95,7 +97,7 @@ namespace media_vault_app.Application.Services.MediaEntry
                 _logger.LogDebug("SearchMediaEntriesAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
-                return ownerExistsResult.From<bool, IReadOnlyList<MediaEntryMinimalDto>>();
+                return ownerExistsResult.ToResult<IReadOnlyList<MediaEntryMinimalDto>>();
             }
 
             var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
@@ -127,7 +129,7 @@ namespace media_vault_app.Application.Services.MediaEntry
                 _logger.LogDebug("GetTypedByIdAsync ({Subtype}) failed: {Code} — {Description}",
                     subtypeDisplayName, baseResult.PrimaryError.Code, baseResult.PrimaryError.Description);
 
-                return baseResult.From<MediaEntryDetailedDto, TDetailedSubtype>();
+                return baseResult.ToResult<TDetailedSubtype>();
             }
 
             if (baseResult.Value is TDetailedSubtype typedDetailedDto)
@@ -137,7 +139,7 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             var mismatchErrorContext = DefineErrorContext(methodName, OperationType.Get);
 
-            return Result<TDetailedSubtype>.Failure(Error.NotFound(mismatchErrorContext));
+            return Result<TDetailedSubtype>.Failure(MediaVaultErrors.NotFound(mismatchErrorContext));
         }
 
     }

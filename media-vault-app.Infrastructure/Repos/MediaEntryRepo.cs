@@ -2,7 +2,9 @@
 using media_vault_app.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -46,7 +48,7 @@ namespace media_vault_app.Infrastructure.Repos
                     .ConfigureAwait(false);
 
                 if (existing is null)
-                    return Result.Failure(Error.NotFound(baseErrorContext));
+                    return Result.Failure(MediaVaultErrors.NotFound(baseErrorContext));
 
                 ApplyGameProperties(existing, updatedGame);
 
@@ -63,7 +65,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(Error.Cancelled(baseErrorContext));
+                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -115,7 +117,7 @@ namespace media_vault_app.Infrastructure.Repos
                     .ConfigureAwait(false);
 
                 if (existing is null)
-                    return Result.Failure(Error.NotFound(baseErrorContext));
+                    return Result.Failure(MediaVaultErrors.NotFound(baseErrorContext));
 
                 ApplyTvSeriesProperties(existing, updatedTvSeries);
                 MergeSeasons(existing, updatedTvSeries.Seasons);
@@ -133,7 +135,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(Error.Cancelled(baseErrorContext));
+                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -232,7 +234,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (OperationCanceledException)
             {
                 var baseErrorContext = DefineErrorContext(nameof(SearchMediaEntriesAsync), OperationType.GetCollection);
-                return Result<IReadOnlyList<MediaEntry>>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<IReadOnlyList<MediaEntry>>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {

@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
+using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -40,7 +44,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result<TEntityDependent>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<TEntityDependent>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -86,7 +90,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result<IReadOnlyList<TEntityDependent>>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<IReadOnlyList<TEntityDependent>>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -123,14 +127,14 @@ namespace media_vault_app.Infrastructure.Repos
 
                 if (dependentEntity is null)
                 {
-                    return Result<TEntityDependent>.Failure(Error.NotFound(baseErrorContext));
+                    return Result<TEntityDependent>.Failure(MediaVaultErrors.NotFound(baseErrorContext));
                 }
 
                 return Result<TEntityDependent>.Success(dependentEntity);
             }
             catch (OperationCanceledException)
             {
-                return Result<TEntityDependent>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<TEntityDependent>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -156,7 +160,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (existingDependentEntity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound(baseErrorContext));
+                        MediaVaultErrors.NotFound(baseErrorContext));
                 }
                 var originalId = existingDependentEntity.Id;
                 var originalOwnerId = existingDependentEntity.OwnerId;
@@ -177,7 +181,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(Error.Cancelled(baseErrorContext));
+                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -211,7 +215,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (dependentEntity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound(baseErrorContext));
+                        MediaVaultErrors.NotFound(baseErrorContext));
                 }
 
                 _dbSet.Remove(dependentEntity);
@@ -221,7 +225,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(Error.Cancelled(baseErrorContext));
+                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -239,11 +243,15 @@ namespace media_vault_app.Infrastructure.Repos
                 return await LogAndFailAsync(error, CancellationToken.None);
             }
         }
-        protected async Task<Result> LogAndFailAsync(Error error, CancellationToken ct = default)
+        protected async Task<Result> LogAndFailAsync(
+            Error error,
+            CancellationToken ct = default,
+            [CallerMemberName] string methodName = "")
         {
             try
             {
-                await _errorLogger.LogErrorToFileAsync(error, ct);
+                var context = new ErrorLogContext("Infrastructure", GetType().Name, methodName);
+                await _errorLogger.LogErrorToFileAsync(error, context, ct);
             }
             catch
             {
@@ -251,11 +259,16 @@ namespace media_vault_app.Infrastructure.Repos
 
             return Result.Failure(error);
         }
-        protected async Task<Result<T>> LogAndFailAsync<T>(Error error, CancellationToken ct = default)
+        protected async Task<Result<T>> LogAndFailAsync<T>(
+            Error error,
+            CancellationToken ct = default,
+            [CallerMemberName] string methodName = "")
+            where T : notnull
         {
             try
             {
-                await _errorLogger.LogErrorToFileAsync(error, ct);
+                var context = new ErrorLogContext("Infrastructure", GetType().Name, methodName);
+                await _errorLogger.LogErrorToFileAsync(error, context, ct);
             }
             catch
             {
@@ -268,12 +281,9 @@ namespace media_vault_app.Infrastructure.Repos
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: this.GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: typeof(TEntityDependent).Name,
-                FieldName: fieldName);
+                operation: operation,
+                entityName: typeof(TEntityDependent).Name,
+                fieldName: fieldName);
         }
 
     }

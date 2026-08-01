@@ -4,7 +4,7 @@
 
 - **Purpose:** Source of truth for replacing MediaVault's internal ResultPattern implementation with the published Megaraz NuGet packages.
 - **Scope:** Backend only.
-- **Status:** Compatibility baseline and all owner decisions are locked; package type-identity migration has not started.
+- **Status:** Core package type identity is migrated; the database, outbound HTTP, ASP.NET mapping, logger relocation, and legacy-removal phases remain.
 - **Initial analysis:** 2026-07-26.
 - **Document created:** 2026-07-28.
 - **Rule:** Update this document when a compatibility decision is made, a phase is completed, or implementation discovers a material difference from this baseline.
@@ -646,7 +646,9 @@ This table records the owner-approved Phase 2 baseline. Do not silently reinterp
 
 ### Phase 3 — Core ResultPattern migration
 
-**Status:** Not started.
+**Status:** Complete under issue #91 on 2026-08-01.
+
+The SharedKernel and Application public contracts now expose `Megaraz.ResultPattern` core types, and their Infrastructure, API, and test callers use the same identities. MediaVault-owned error-message, validation, pagination, logging-context, and HTTP-response policies remain explicit. The still-local database/HTTP errors and mapper are isolated under `Rasmus.SharedKernel.ResultPatternCompatibility` as a narrow bridge for Phases 4 and 5; Phase 6 removes that bridge and the legacy implementation.
 
 **Objective:** Change the backend's core result, error, and validation type identity to `Megaraz.ResultPattern`.
 
@@ -977,3 +979,4 @@ The migration is complete when:
 |---|---|
 | 2026-07-28 | Created the source-of-truth document from the completed repository and package analysis. |
 | 2026-08-01 | Completed Phases 1-2 under issue #90: pinned public packages for coexistence, added characterization coverage and MediaVault-owned policy seams, and recorded owner-approved resolutions for D1-D11. |
+| 2026-08-01 | Completed Phase 3 under issue #91: migrated backend contracts and callers to package core types, preserved MediaVault-owned policies, and isolated the temporary database/HTTP compatibility bridge. |

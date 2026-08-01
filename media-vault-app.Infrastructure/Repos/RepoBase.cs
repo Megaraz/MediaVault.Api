@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
+using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -40,7 +44,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result<TEntity>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<TEntity>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -66,13 +70,13 @@ namespace media_vault_app.Infrastructure.Repos
                 if (entity is null)
                 {
                     return Result<TEntity>.Failure(
-                        Error.NotFound(baseErrorContext));
+                        MediaVaultErrors.NotFound(baseErrorContext));
                 }
                 return Result<TEntity>.Success(entity);
             }
             catch (OperationCanceledException)
             {
-                return Result<TEntity>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<TEntity>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -96,7 +100,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result<IReadOnlyList<TEntity>>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<IReadOnlyList<TEntity>>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -115,7 +119,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (entity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound(baseErrorContext));
+                        MediaVaultErrors.NotFound(baseErrorContext));
                 }
 
                 _dbSet.Remove(entity);
@@ -124,7 +128,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(Error.Cancelled(baseErrorContext));
+                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -153,7 +157,7 @@ namespace media_vault_app.Infrastructure.Repos
                 if (oldEntity is null)
                 {
                     return Result.Failure(
-                        Error.NotFound(baseErrorContext));
+                        MediaVaultErrors.NotFound(baseErrorContext));
                 }
 
                 var createdAt = oldEntity.CreatedAtUtc;
@@ -165,7 +169,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (OperationCanceledException)
             {
-                return Result.Failure(Error.Cancelled(baseErrorContext));
+                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -192,14 +196,14 @@ namespace media_vault_app.Infrastructure.Repos
                 if (!exists)
                 {
                     return Result<bool>.Failure(
-                        Error.NotFound(baseErrorContext));
+                        MediaVaultErrors.NotFound(baseErrorContext));
                 }
 
                 return Result<bool>.Success(true);
             }
             catch (OperationCanceledException)
             {
-                return Result<bool>.Failure(Error.Cancelled(baseErrorContext));
+                return Result<bool>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (Exception ex)
             {
@@ -207,11 +211,15 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        protected async Task<Result> LogAndFailAsync(Error error, CancellationToken ct = default)
+        protected async Task<Result> LogAndFailAsync(
+            Error error,
+            CancellationToken ct = default,
+            [CallerMemberName] string methodName = "")
         {
             try
             {
-                await _errorLogger.LogErrorToFileAsync(error, ct);
+                var context = new ErrorLogContext("Infrastructure", GetType().Name, methodName);
+                await _errorLogger.LogErrorToFileAsync(error, context, ct);
             }
             catch
             {
@@ -220,11 +228,16 @@ namespace media_vault_app.Infrastructure.Repos
             return Result.Failure(error);
         }
 
-        protected async Task<Result<T>> LogAndFailAsync<T>(Error error, CancellationToken ct = default)
+        protected async Task<Result<T>> LogAndFailAsync<T>(
+            Error error,
+            CancellationToken ct = default,
+            [CallerMemberName] string methodName = "")
+            where T : notnull
         {
             try
             {
-                await _errorLogger.LogErrorToFileAsync(error, ct);
+                var context = new ErrorLogContext("Infrastructure", GetType().Name, methodName);
+                await _errorLogger.LogErrorToFileAsync(error, context, ct);
             }
             catch
             {
@@ -236,12 +249,9 @@ namespace media_vault_app.Infrastructure.Repos
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: this.GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: typeof(TEntity).Name,
-                FieldName: fieldName);
+                operation: operation,
+                entityName: typeof(TEntity).Name,
+                fieldName: fieldName);
         }
     }
 }

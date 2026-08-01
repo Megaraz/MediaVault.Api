@@ -1,4 +1,6 @@
-namespace Rasmus.SharedKernel.ResultPattern
+using Megaraz.ResultPattern;
+
+namespace Rasmus.SharedKernel.ResultPatternCompatibility
 {
     /// <summary>
     /// Pure mapper that converts domain <see cref="Result"/> instances
@@ -12,6 +14,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// or maps a failure to the appropriate HTTP error response.
         /// </summary>
         public static MappedHttpResponse ToHttpResponse<TValue>(Result<TValue> result)
+            where TValue : notnull
         {
             return result.IsSuccess
                 ? new MappedHttpResponse(200, result.Value)
@@ -45,6 +48,7 @@ namespace Rasmus.SharedKernel.ResultPattern
         /// and an optional location, or maps a failure to the appropriate HTTP error response.
         /// </summary>
         public static MappedHttpResponse ToCreatedResponse<TValue>(Result<TValue> result, string? location = null)
+            where TValue : notnull
         {
             return result.IsSuccess
                 ? new MappedHttpResponse(201, result.Value, location)
@@ -71,6 +75,12 @@ namespace Rasmus.SharedKernel.ResultPattern
             Error primaryError,
             IEnumerable<ValidationErrorItem>? validationErrorItems)
         {
+            if (primaryError is HttpError)
+                return MapHttpErrorFailure(message, primaryError);
+
+            if (primaryError is DatabaseError)
+                return (500, new ErrorResponseBody(message, primaryError.Code));
+
             return primaryError.Type switch
             {
                 ErrorType.Validation => (422, new ValidationErrorResponseBody(message, validationErrorItems)),
@@ -79,9 +89,8 @@ namespace Rasmus.SharedKernel.ResultPattern
                 ErrorType.Unauthorized => (401, new ErrorResponseBody(message, primaryError.Code)),
                 ErrorType.Forbidden => (403, new ErrorResponseBody(message, primaryError.Code)),
                 ErrorType.Failure => (500, new ErrorResponseBody(message, primaryError.Code)),
-                ErrorType.Database => (500, new ErrorResponseBody(message, primaryError.Code)),
                 ErrorType.Cancelled => (503, new ErrorResponseBody(message, primaryError.Code)),
-                ErrorType.HttpError => MapHttpErrorFailure(message, primaryError),
+                ErrorType.External => (500, new ErrorResponseBody(message, primaryError.Code)),
                 _ => (400, new ErrorResponseBody(message, primaryError.Code))
             };
         }

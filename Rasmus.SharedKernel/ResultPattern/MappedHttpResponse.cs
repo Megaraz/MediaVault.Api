@@ -1,4 +1,6 @@
-namespace Rasmus.SharedKernel.ResultPattern
+using Megaraz.ResultPattern;
+
+namespace Rasmus.SharedKernel.ResultPatternCompatibility
 {
     /// <summary>
     /// Framework-agnostic HTTP response descriptor produced by mapping a domain <see cref="Result"/>.

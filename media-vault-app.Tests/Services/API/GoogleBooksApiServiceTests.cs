@@ -4,7 +4,8 @@ using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Services.API;
 using media_vault_app.Domain.Enums;
 using media_vault_app.Tests.TestHelpers;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
 
 namespace media_vault_app.Tests.Services.API
 {
@@ -58,12 +59,9 @@ namespace media_vault_app.Tests.Services.API
         [Fact]
         public async Task GetBookByIdAsync_Should_Propagate_ClientFailure()
         {
-            var expectedError = Error.NotFound(new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: "GoogleBooksApiClient",
-                MethodName: "GetBookByIdAsync",
-                Operation: OperationType.Get,
-                EntityName: "Google Books Volume"));
+            var expectedError = MediaVaultErrors.NotFound(new ErrorContext(
+                operation: OperationType.Get,
+                entityName: "Google Books Volume"));
 
             var client = new FakeGoogleBooksApiClient(
                 getBookByIdResult: Result<GoogleBooksVolumeResponse>.Failure(expectedError, "Book not found."));
@@ -134,12 +132,9 @@ namespace media_vault_app.Tests.Services.API
         [Fact]
         public async Task SearchBooksAsync_Should_Propagate_ClientFailure()
         {
-            var expectedError = Error.Failure(new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: "GoogleBooksApiClient",
-                MethodName: "SearchBooksAsync",
-                Operation: OperationType.GetCollection,
-                EntityName: "Google Books Volume"), "Search failed.");
+            var expectedError = MediaVaultErrors.Failure(new ErrorContext(
+                operation: OperationType.GetCollection,
+                entityName: "Google Books Volume"), "Search failed.");
 
             var client = new FakeGoogleBooksApiClient(
                 searchBooksResult: Result<GoogleBooksSearchResponse>.Failure(expectedError, "Search failed."));

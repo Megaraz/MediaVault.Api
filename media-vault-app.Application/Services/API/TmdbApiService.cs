@@ -8,7 +8,9 @@ using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.Pagination;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Results;
+using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Services.API
 {
@@ -27,10 +29,10 @@ namespace media_vault_app.Application.Services.API
         {
             var idValidationErrorContext = DefineErrorContext(nameof(GetTvSeriesByIdAsync), OperationType.Get);
 
-            if (id.IsNotValidId(idValidationErrorContext, out var idError))
+            if (id.IsNotValidMediaVaultId(idValidationErrorContext, out var idError))
             {
                 _logger.LogDebug("GetTvSeriesByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idError]));
-                return Result<TmdbTvSeriesDetailedDto>.ValidationFailure([idError]);
+                return Result<TmdbTvSeriesDetailedDto>.ValidationFailure([idError], MediaVaultResultMessages.ValidationFailure);
             }
 
             var clientResult = await _client.GetTvSeriesByIdAsync(id, cancellationToken);
@@ -49,10 +51,10 @@ namespace media_vault_app.Application.Services.API
         {
             var idValidationErrorContext = DefineErrorContext(nameof(GetMovieByIdAsync), OperationType.Get);
 
-            if (id.IsNotValidId(idValidationErrorContext, out var idError))
+            if (id.IsNotValidMediaVaultId(idValidationErrorContext, out var idError))
             {
                 _logger.LogDebug("GetMovieByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idError]));
-                return Result<TmdbMovieDetailedDto>.ValidationFailure([idError]);
+                return Result<TmdbMovieDetailedDto>.ValidationFailure([idError], MediaVaultResultMessages.ValidationFailure);
             }
 
             var clientResult = await _client.GetMovieByIdAsync(id, cancellationToken);
@@ -80,7 +82,7 @@ namespace media_vault_app.Application.Services.API
 
             List<ValidationError> errors = new();
 
-            if (search.IsNullOrWhiteSpace(baseErrorContext with { FieldName = nameof(search) }, out var searchError))
+            if (search.IsMissingMediaVaultValue(baseErrorContext with { FieldName = nameof(search) }, out var searchError))
             {
                 errors.Add(searchError);
             }
@@ -117,12 +119,9 @@ namespace media_vault_app.Application.Services.API
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Application",
-                ServiceName: GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: entityName ?? "Tmdb",
-                FieldName: fieldName);
+                operation: operation,
+                entityName: entityName ?? "Tmdb",
+                fieldName: fieldName);
         }
 
         private static IReadOnlyList<MediaEntryExternalSearchResultDto> MapToSearchResults(IReadOnlyList<TmdbSearchResult>? results, MediaType mediaType)

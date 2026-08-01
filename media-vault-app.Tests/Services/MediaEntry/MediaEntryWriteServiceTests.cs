@@ -4,7 +4,8 @@ using media_vault_app.Application.Services.MediaEntry;
 using media_vault_app.Application.Validators.MediaEntry;
 using media_vault_app.Domain.Enums;
 using media_vault_app.Tests.TestHelpers;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using MovieEntryEntity = media_vault_app.Domain.Entities.MovieEntry;
 
@@ -31,7 +32,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
         [Fact]
         public async Task CreateAsync_Should_ReturnOwnerFailure_When_OwnerDoesNotExist()
         {
-            var expectedError = Error.NotFound(DefineErrorContext("CreateAsync", OperationType.Create));
+            var expectedError = MediaVaultErrors.NotFound(DefineErrorContext("CreateAsync", OperationType.Create));
             var ownerRepo = new FakeUserRepo
             {
                 ExistsResult = Result<bool>.Failure(expectedError, "Owner not found.")
@@ -83,7 +84,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
         [Fact]
         public async Task UpdateAsync_Should_ReturnOwnerFailure_When_OwnerDoesNotExist()
         {
-            var expectedError = Error.NotFound(DefineErrorContext("UpdateAsync", OperationType.Update));
+            var expectedError = MediaVaultErrors.NotFound(DefineErrorContext("UpdateAsync", OperationType.Update));
             var ownerRepo = new FakeUserRepo
             {
                 ExistsResult = Result<bool>.Failure(expectedError, "Owner not found.")
@@ -133,7 +134,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
         [Fact]
         public async Task DeleteAsync_Should_Propagate_RepoFailure()
         {
-            var expectedError = Error.NotFound(DefineErrorContext("DeleteAsync", OperationType.Delete));
+            var expectedError = MediaVaultErrors.NotFound(DefineErrorContext("DeleteAsync", OperationType.Delete));
             var mediaRepo = new FakeMediaEntryRepo
             {
                 DeleteResult = Result.Failure(expectedError, "Media entry not found.")
@@ -204,11 +205,8 @@ namespace media_vault_app.Tests.Services.MediaEntry
         private static ErrorContext DefineErrorContext(string methodName, OperationType operation)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: nameof(MediaEntryWriteService),
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: "MediaEntry");
+                operation: operation,
+                entityName: "MediaEntry");
         }
     }
 }

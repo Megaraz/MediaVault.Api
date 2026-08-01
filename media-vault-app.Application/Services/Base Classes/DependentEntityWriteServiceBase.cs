@@ -5,7 +5,9 @@ using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.Interfaces.Validators;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Results;
+using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Services.Base_Classes
 {
@@ -55,7 +57,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             List<ValidationError> errors = new();
 
-            if (ownerId.IsNotValidId(errorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
+            if (ownerId.IsNotValidMediaVaultId(errorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
                 errors.Add(ownerIdNotValidError);
 
             if (!_dtoValidator.IsValidCreateDto(createDto, errorContext, out var validationErrors))
@@ -66,7 +68,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 _logger.LogDebug("CreateAsync validation failed: {ValidationErrors}",
                     ServiceValidationLogging.FormatValidationErrors(errors));
 
-                return Result<TDetailedDto>.ValidationFailure(errors);
+                return Result<TDetailedDto>.ValidationFailure(errors, MediaVaultResultMessages.ValidationFailure);
             }
 
             var ownerExistsResult = await EnsureOwnerExistsAsync(ownerId, ct);
@@ -76,7 +78,7 @@ namespace media_vault_app.Application.Services.Base_Classes
                 _logger.LogDebug("CreateAsync owner check failed: {Code} — {Description}",
                     ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
 
-                return ownerExistsResult.From<bool, TDetailedDto>();
+                return ownerExistsResult.ToResult<TDetailedDto>();
             }
 
             var entity = _dtoToEntityMapper.ToEntity(createDto);
@@ -102,10 +104,10 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             List<ValidationError> errors = new();
 
-            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
+            if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
                 errors.Add(ownerIdNotValidError);
 
-            if (id.IsNotValidId(baseErrorContext with { FieldName = nameof(id) }, out var idNotValidError))
+            if (id.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(id) }, out var idNotValidError))
                 errors.Add(idNotValidError);
 
             if (!_dtoValidator.IsValidUpdateDto(updateDto, baseErrorContext, out var validationErrors))
@@ -148,10 +150,10 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             List<ValidationError> errors = new();
 
-            if (ownerId.IsNotValidId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
+            if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdNotValidError))
                 errors.Add(ownerIdNotValidError);
 
-            if (dependentId.IsNotValidId(baseErrorContext with { FieldName = nameof(dependentId) }, out var dependentIdNotValidError))
+            if (dependentId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(dependentId) }, out var dependentIdNotValidError))
                 errors.Add(dependentIdNotValidError);
 
             if (errors.Count > 0)
@@ -188,12 +190,9 @@ namespace media_vault_app.Application.Services.Base_Classes
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: this.GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: typeof(TEntityDependent).Name,
-                FieldName: fieldName);
+                operation: operation,
+                entityName: typeof(TEntityDependent).Name,
+                fieldName: fieldName);
         }
     }
 }

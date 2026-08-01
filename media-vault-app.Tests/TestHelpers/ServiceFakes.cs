@@ -1,7 +1,7 @@
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Entities;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
 
 namespace media_vault_app.Tests.TestHelpers
 {

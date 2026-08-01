@@ -1,5 +1,5 @@
 using media_vault_app.Application.DTOs.GoogleBooks;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Services
 {

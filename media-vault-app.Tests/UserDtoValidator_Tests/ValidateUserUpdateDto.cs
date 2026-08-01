@@ -1,6 +1,6 @@
 using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.Validators.User;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
 
 namespace media_vault_app.Tests.UserDtoValidator_Tests
 {
@@ -83,12 +83,9 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         private static ErrorContext DefineErrorContext(string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: "UserWriteService",
-                MethodName: "UpdateAsync",
-                Operation: OperationType.Update,
-                EntityName: "User",
-                FieldName: fieldName);
+                operation: OperationType.Update,
+                entityName: "User",
+                fieldName: fieldName);
         }
     }
 }
