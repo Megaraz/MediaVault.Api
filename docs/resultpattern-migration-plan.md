@@ -4,7 +4,7 @@
 
 - **Purpose:** Source of truth for replacing MediaVault's internal ResultPattern implementation with the published Megaraz NuGet packages.
 - **Scope:** Backend only.
-- **Status:** Analysis and implementation plan approved as the migration baseline; implementation has not started.
+- **Status:** Compatibility baseline and all owner decisions are locked; package type-identity migration has not started.
 - **Initial analysis:** 2026-07-26.
 - **Document created:** 2026-07-28.
 - **Rule:** Update this document when a compatibility decision is made, a phase is completed, or implementation discovers a material difference from this baseline.
@@ -16,11 +16,11 @@ The migration targets these published package versions:
 
 | Package | Version | Source repository |
 |---|---:|---|
-| `Megaraz.ResultPattern` | `0.2.2` | `C:/Users/Rasmu/source/repos/Megaraz.ResultPattern` |
-| `Megaraz.ResultPattern.AspNetCore` | `0.1.1` | `C:/Users/Rasmu/source/repos/Megaraz.ResultPattern.AspNetCore` |
-| `Megaraz.ResultPattern.Infrastructure` | `0.1.0` | `C:/Users/Rasmu/source/repos/Megaraz.ResultPattern.Infrastructure` |
+| `Megaraz.ResultPattern` | `0.2.2` | https://github.com/Megaraz/Megaraz.ResultPattern |
+| `Megaraz.ResultPattern.AspNetCore` | `0.1.1` | https://github.com/Megaraz/Megaraz.ResultPattern.AspNetCore |
+| `Megaraz.ResultPattern.Infrastructure` | `0.1.0` | https://github.com/Megaraz/Megaraz.ResultPattern.Infrastructure |
 
-All three packages support `net10.0`.
+All three packages support `net10.0`. The coexistence baseline restores these exact versions from `https://api.nuget.org/v3/index.json`; no repository or machine-local package source is required.
 
 ## Executive summary
 
@@ -106,7 +106,7 @@ The initial inventory found approximately:
 - `Rasmus.SharedKernel/ResultPattern/HttpResponseToResultExtensions.cs`
 - `Rasmus.SharedKernel/ResultPattern/HttpResultMapper.cs`
 - `Rasmus.SharedKernel/ResultPattern/MappedHttpResponse.cs`
-- `Rasmus.SharedKernel/ResultPattern/PaginationParameters.cs`
+- `Rasmus.SharedKernel/Pagination/PaginationParameters.cs`
 - `Rasmus.SharedKernel/ResultPattern/ErrorLogger.cs`
 - `Rasmus.SharedKernel/ResultPattern/ErrorLogPolicy.cs`
 - `Rasmus.SharedKernel/Interfaces/ErrorLogger/IErrorLogger.cs`
@@ -270,6 +270,23 @@ Recommended direct references:
 
 Do not add the ASP.NET Core package to Application solely for pagination.
 
+The Phase 2 coexistence baseline implements this placement. `Rasmus.SharedKernel.Tests` directly references all three packages because it owns the cross-package characterization suite. `media-vault-app.Tests` directly references only the core package so reflection tests can prove Application contracts remain bound to the legacy type identity during coexistence.
+
+### Temporary coexistence convention
+
+- Production contracts and implementations continue to bind to `Rasmus.SharedKernel.ResultPattern` until their dedicated migration phases.
+- Package types are exercised by characterization tests under explicit `Package...` aliases; legacy types use explicit `Legacy...` aliases whenever both identities appear in one file.
+- Do not add a global using for either ResultPattern namespace while both implementations exist.
+- A package reference does not authorize a piecemeal production type replacement. A contract and all of its in-scope implementations and consumers must move together in the appropriate child issue.
+- Restore verification must use public NuGet explicitly at least once and inspect the resolved package graph before the local implementation is removed.
+
+### First-party API and namespace consumers
+
+- The React web client consumes safe top-level API `message` values through its transport/client layer. No first-party web path was found branching on ResultPattern error `code`.
+- The Android client is TypeScript and consumes the HTTP contract; it does not reference the .NET SharedKernel assembly or namespace. Its separate TypeScript ResultPattern code retains legacy database-code names but is not a supported .NET consumer.
+- Repository and GitHub code searches found no other .NET consumer of `Rasmus.SharedKernel.ResultPattern`, and the owner confirmed on 2026-08-01 that no supported external .NET consumer has been distributed or promised.
+- D11 therefore permits removing the old namespace in Phase 6 after all in-repository callsites have migrated.
+
 ### Constructors and invariants
 
 The local `ErrorContext` carries:
@@ -383,7 +400,12 @@ The packages do not map EF Core exceptions automatically. Existing repository ca
 
 The ASP.NET Core package adds `MapTransportExceptionToResult`, which distinguishes caller cancellation from timeout and transport failures. Current clients catch every `OperationCanceledException` and return `Error.Cancelled`, including some timeout cases.
 
-For behavior preservation, retain current catch ordering initially. Adopting the package transport helper should be an explicit compatibility decision rather than a mechanical migration step.
+Approved migration behavior:
+
+- Caller-token cancellation propagates as cancellation, is not converted to a failed result, and is not logged as an unexpected failure.
+- A non-caller `TaskCanceledException`, `TimeoutException`, or `HttpRequestException` becomes a logged `HttpErrorType.TransportFailure` with the fixed safe client message `"The external service is currently unavailable."`; API mapping remains HTTP 503.
+- Repository cancellation behavior is unchanged during this migration.
+- Cancellation behavior across the complete controller-to-database/outbound stack needs a separate future review; the package migration must not imply that broader review has happened.
 
 ### Outbound HTTP behavior
 
@@ -401,7 +423,15 @@ It changes:
 - Oversized error bodies fall back to a status-specific message.
 - Extracted upstream text stays technical and is not copied to `UserMessage` unless `UserMessageFactory` opts in.
 
-The current implementation exposes extracted upstream messages to clients. Configuring `UserMessageFactory = message => message` would preserve behavior but may expose untrusted text. Prefer an allowlisted or sanitized policy.
+The current implementation exposes extracted upstream messages to clients. The approved policy intentionally fixes that oversight:
+
+- Inspect at most 2 MiB (`2,097,152` bytes) from an upstream response body.
+- Accept a body exactly at the limit and reject inspection at limit + 1 byte on both success and error paths.
+- Retain bounded upstream text only in private technical descriptions used for diagnostics and logging.
+- Never copy upstream text into `UserMessage` or the API response. Use MediaVault-owned fixed messages from `ExternalServiceResponsePolicy`.
+- Oversized error bodies are not inspected and use the same fixed safe message policy.
+
+The 2 MiB ceiling is deliberately above observed TMDB examples and bounded Google Books responses while accommodating RAWG searches at MediaVault's current page-size maximum. It is a safety ceiling, not a claim that providers guarantee responses below it.
 
 ### HTTP response mapping
 
@@ -451,13 +481,11 @@ The local helper:
 - Is used from Application.
 - Defaults the maximum page size to 100.
 
-Recommended migration:
+Approved migration:
 
-- Relocate the existing normalization behavior to a neutral SharedKernel namespace.
-- Keep the current maximum of 100.
-- Do not introduce an ASP.NET Core reference into Application.
-
-Moving pagination normalization to the API boundary is architecturally cleaner but is outside the narrow replacement scope unless explicitly approved.
+- `PaginationParameters` is MediaVault-owned under `Rasmus.SharedKernel.Pagination`.
+- Preserve the current minimum of 1, default maximum of 100, and optional custom maximum.
+- Keep normalization available to Application without introducing an ASP.NET Core dependency.
 
 ### Logging
 
@@ -481,6 +509,9 @@ Recommended placement:
 - Keep logging contracts accessible from SharedKernel.
 - Move the concrete file logger and extension-aware logging policy to Infrastructure.
 - Do not move the contracts into Infrastructure, because `ErrorLogCleanupService` in Application would create an Application-to-Infrastructure cycle.
+- Replace the legacy multiline origin formatting with the package error description plus a MediaVault-owned `ErrorLogContext` containing structured `Layer`, `Service`, and `Method` fields.
+- Existing NDJSON records do not need backward-compatible reading. The schema change occurs with the logger migration, not in the coexistence baseline.
+- Retain the current seven-day default retention, daily cleanup, asynchronous file locking, corrupt-line handling, and failure isolation.
 
 ## Mechanical replacements
 
@@ -498,42 +529,33 @@ The following changes are primarily mechanical after compatibility decisions are
 - Update DI namespaces after relocating the logger implementation.
 - Remove tests that only duplicate package implementation tests.
 
-## Changes requiring decisions
+## Resolved compatibility decisions
 
-1. Preserve or change the validation HTTP response shape.
-2. Preserve or change database error codes.
-3. Define explicit user-facing messages for built-in factories.
-4. Decide whether upstream service messages may be exposed.
-5. Set an outbound response-body size limit.
-6. Accept shorter technical descriptions or retain origin metadata locally.
-7. Keep pagination neutral in SharedKernel/Application or move it to API.
-8. Keep current cancellation semantics or adopt package timeout mapping.
-9. Retain file logging unchanged or replace it in a separately scoped change.
-10. Decide whether `ErrorType.External => 500` is an acceptable application rule for non-HTTP external errors.
+All compatibility decisions were presented individually to and approved by the repository owner on 2026-08-01. Later migration issues implement these decisions; they must not reopen or silently reinterpret them without recording a superseding owner decision here.
 
 ## Decision register
 
-Update this table before or during Phase 2. Do not silently resolve these questions in code.
+This table records the owner-approved Phase 2 baseline. Do not silently reinterpret these resolutions in later code.
 
 | ID | Decision | Recommended default | Status | Resolution |
 |---|---|---|---|---|
-| D1 | Validation response includes top-level `code` | Preserve current shape initially | Open | |
-| D2 | Database error-code format | Preserve externally observable codes unless confirmed unused | Open | |
-| D3 | Core and validation user messages | Preserve current safe client messages explicitly | Open | |
-| D4 | Upstream error text exposure | Use fixed or sanitized allowlisted messages | Open | |
-| D5 | Maximum upstream response body | Configure explicitly after checking realistic RAWG/TMDB/Books sizes | Open | |
-| D6 | Layer/service/method diagnostics | Preserve as structured logging metadata if needed; do not force it into package types | Open | |
-| D7 | Non-HTTP `External` HTTP status | Map to 500 | Open | |
-| D8 | Pagination placement | Keep a neutral SharedKernel helper with max 100 | Open | |
-| D9 | Cancellation and timeout semantics | Preserve current behavior during migration | Open | |
-| D10 | File logger | Retain and relocate implementation to Infrastructure | Open | |
-| D11 | External consumers of old namespace | Confirm none before removal | Open | |
+| D1 | Validation response includes top-level `code` | Preserve current shape initially | Approved | Keep `{ message, validationErrors }` with no top-level or item `code`; validation codes remain internal diagnostics. |
+| D2 | Database error-code format | Preserve externally observable codes unless confirmed unused | Approved | Adopt package-native `Database...` code suffixes. No first-party client branches on database codes; this is an intentional diagnostic-contract change. |
+| D3 | Core and validation user messages | Preserve current safe client messages explicitly | Approved | Preserve current safe workflow, core, and validation wording explicitly when creating package errors; do not accept empty package defaults. Editorial cleanup is separate work. |
+| D4 | Upstream error text exposure | Use fixed or sanitized allowlisted messages | Approved | Upstream text is untrusted and never user/API-visible. Retain bounded text only in private descriptions/logs and return MediaVault-owned fixed messages. |
+| D5 | Maximum upstream response body | Configure explicitly after checking realistic RAWG/TMDB/Books sizes | Approved | Use exactly 2 MiB (`2,097,152` bytes), accepting the exact boundary and rejecting boundary + 1 on success and error paths. |
+| D6 | Layer/service/method diagnostics | Preserve as structured logging metadata if needed; do not force it into package types | Approved | Add MediaVault-owned `ErrorLogContext(Layer, Service, Method)` and combine it with the package description. Discard the legacy multiline format and old-record compatibility. |
+| D7 | Non-HTTP `External` HTTP status | Map to 500 | Approved | Pattern-match concrete `HttpError` first; map every other current `External` to 500. Future external types require an explicit mapping decision. |
+| D8 | Pagination placement | Keep a neutral SharedKernel helper with max 100 | Approved | Keep MediaVault-owned normalization in `Rasmus.SharedKernel.Pagination`, preserving min 1, default max 100, and optional custom max without an Application ASP.NET dependency. |
+| D9 | Cancellation and timeout semantics | Preserve current behavior during migration | Approved with change | Propagate caller cancellation without logging; map non-caller task cancellation, timeout, and transport failure to logged `TransportFailure`, safe fixed text, and HTTP 503. Keep repository cancellation unchanged and review full-stack cancellation separately. |
+| D10 | File logger | Retain and relocate implementation to Infrastructure | Approved | Retain NDJSON behavior and neutral contracts; later move concrete configuration, persistence, and extension-aware policy to Infrastructure with the D6 schema. Observability replacement is separate. |
+| D11 | External consumers of old namespace | Confirm none before removal | Approved | Owner confirmed no supported external .NET consumer. Web and Android consume HTTP only; Android's similarly named TypeScript code is independent. Remove the old namespace only after repository callsites migrate. |
 
 ## Incremental implementation plan
 
 ### Phase 1 — Inventory and dependency analysis
 
-**Status:** Complete as analysis; implementation baseline still needs a clean build/test run.
+**Status:** Complete. Baseline on 2026-08-01: clean restore/build, 292 SharedKernel tests and 103 application tests passed before the coexistence changes.
 
 **Objective:** Freeze the current scope and contract surface.
 
@@ -567,7 +589,7 @@ Update this table before or during Phase 2. Do not silently resolve these questi
 
 ### Phase 2 — Migration mapping and compatibility decisions
 
-**Status:** Not started.
+**Status:** Complete under issue #90 on 2026-08-01.
 
 **Objective:** Resolve compatibility behavior before changing type identity.
 
@@ -594,6 +616,15 @@ Update this table before or during Phase 2. Do not silently resolve these questi
   - Central HTTP mapping policy.
   - Configured response-body limit.
 - Document that package and local types coexist temporarily under different namespaces.
+
+**Implemented baseline:**
+
+- Added exact direct package references according to the dependency matrix while retaining every legacy type and production call path.
+- Added explicit alias-based coexistence tests and contract tests for HTTP status/body/`Location`, validation messages and JSON, legacy and package database codes, safe upstream diagnostics, exact 2 MiB boundaries, cancellation/transport classification, logging policy, and NDJSON schema.
+- Added package-agnostic `ExternalServiceResponsePolicy` and `ErrorLogContext` seams.
+- Relocated pagination to `Rasmus.SharedKernel.Pagination` without changing normalization behavior.
+- Resolved D1-D11 with owner approval. The remaining phases implement those locked decisions.
+- Final Phase 2 verification passed 320 SharedKernel tests and 104 application tests. The full build retained the nine pre-existing package-advisory warnings and introduced no new warning category or occurrence.
 
 **Expected risks:**
 
@@ -905,7 +936,7 @@ Within each implementation phase, migrate vertical slices together—contract, i
 
 - Database error-code changes breaking clients or diagnostics.
 - Loss of layer, service, and method logging context.
-- The 64 KiB body limit rejecting legitimate search payloads.
+- A later outbound adapter failing to configure the approved 2 MiB body limit on every relevant path.
 - Returning untrusted upstream error text if compatibility is implemented unsafely.
 - Missing `notnull` constraints on generic public APIs.
 
@@ -945,3 +976,4 @@ The migration is complete when:
 | Date | Change |
 |---|---|
 | 2026-07-28 | Created the source-of-truth document from the completed repository and package analysis. |
+| 2026-08-01 | Completed Phases 1-2 under issue #90: pinned public packages for coexistence, added characterization coverage and MediaVault-owned policy seams, and recorded owner-approved resolutions for D1-D11. |

@@ -12,27 +12,78 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public async Task LogErrorToFileAsync_ShouldLogErrorToFile()
         {
-            // Arrange
-            ErrorLogger errorLogger = new(
-                new ErrorLoggerConfiguration());
+            var tempDir = CreateTempDirectory();
+            try
+            {
+                var errorLogger = new ErrorLogger(new ErrorLoggerConfiguration { BasePath = tempDir });
+                var error = Error.Failure(
+                    TestErrorContextFactory.Create(),
+                    "Test error description",
+                    new Exception("Test exception"));
 
-            Error error = Error.Failure(TestErrorContextFactory.Create(), "Test error description", new Exception("Test exception"));
+                await errorLogger.LogErrorToFileAsync(error);
 
-            // Act
-            await errorLogger.LogErrorToFileAsync(error);
+                Assert.NotEmpty(await errorLogger.GetErrorLogsAsync());
+            }
+            finally
+            {
+                Directory.Delete(tempDir, recursive: true);
+            }
+        }
 
-            // Assert
-            Assert.NotEmpty(await errorLogger.GetErrorLogsAsync());
+        [Fact]
+        public async Task LogErrorToFileAsync_Writes_The_Characterized_Ndjson_Schema()
+        {
+            var tempDir = CreateTempDirectory();
+            try
+            {
+                var configuration = new ErrorLoggerConfiguration
+                {
+                    BasePath = tempDir,
+                    Filename = "schema.log.ndjson"
+                };
+                var errorLogger = new ErrorLogger(configuration);
+                var error = Error.Failure(
+                    TestErrorContextFactory.Create(),
+                    "Technical description",
+                    new InvalidOperationException("diagnostic exception"));
 
+                await errorLogger.LogErrorToFileAsync(error);
 
+                var lines = await File.ReadAllLinesAsync(configuration.FullPath);
+                var line = Assert.Single(lines);
+                using var document = System.Text.Json.JsonDocument.Parse(line);
+                var root = document.RootElement;
+
+                Assert.Equal(
+                    ["writeDate", "code", "description", "errorType", "exceptionMessage", "stackTrace"],
+                    root.EnumerateObject().Select(x => x.Name));
+                Assert.Equal(error.Code, root.GetProperty("code").GetString());
+                Assert.Equal(error.Description, root.GetProperty("description").GetString());
+                Assert.Equal(error.Type.ToString(), root.GetProperty("errorType").GetString());
+                Assert.Equal("diagnostic exception", root.GetProperty("exceptionMessage").GetString());
+                Assert.Equal(System.Text.Json.JsonValueKind.Null, root.GetProperty("stackTrace").ValueKind);
+            }
+            finally
+            {
+                Directory.Delete(tempDir, recursive: true);
+            }
+        }
+
+        [Fact]
+        public void ErrorLoggerConfiguration_Defaults_ArePartOfTheOperationalContract()
+        {
+            var configuration = new ErrorLoggerConfiguration();
+
+            Assert.Equal(TimeSpan.FromDays(7), configuration.RetentionPeriod);
+            Assert.Equal("errors.log.ndjson", configuration.Filename);
         }
 
         [Fact]
         public async Task CleanOldLogsAsync_CorruptedEntry_IsDroppedWithoutThrowing()
         {
             // Arrange
-            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            Directory.CreateDirectory(tempDir);
+            var tempDir = CreateTempDirectory();
             try
             {
                 var config = new ErrorLoggerConfiguration
@@ -66,8 +117,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         public async Task GetErrorLogsAsync_CorruptedEntry_IsDroppedWithoutThrowing()
         {
             // Arrange
-            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            Directory.CreateDirectory(tempDir);
+            var tempDir = CreateTempDirectory();
             try
             {
                 var config = new ErrorLoggerConfiguration
@@ -99,8 +149,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         public async Task LogErrorToFileAsync_ConcurrentWrites_ShouldNotLoseEntries()
         {
             // Arrange — unique file per test run to avoid cross-test interference
-            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            Directory.CreateDirectory(tempDir);
+            var tempDir = CreateTempDirectory();
             try
             {
                 var config = new ErrorLoggerConfiguration
@@ -128,6 +177,13 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             {
                 Directory.Delete(tempDir, recursive: true);
             }
+        }
+
+        private static string CreateTempDirectory()
+        {
+            var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(path);
+            return path;
         }
 
     }

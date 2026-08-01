@@ -1,4 +1,4 @@
-namespace Rasmus.SharedKernel.ResultPattern
+namespace Rasmus.SharedKernel.Pagination
 {
     /// <summary>
     /// Represents normalised pagination parameters. Construct via <see cref="Normalize"/>.
