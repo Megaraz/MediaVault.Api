@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Megaraz.ResultPattern;
-using Rasmus.SharedKernel.ResultPatternCompatibility;
 using PackageMvcMapper = Megaraz.ResultPattern.AspNetCore.AspNetCoreResultExtensions;
 using PackageHttpPolicy = Megaraz.ResultPattern.AspNetCore.HttpResultMappingPolicy;
 

@@ -4,7 +4,7 @@
 
 - **Purpose:** Source of truth for replacing MediaVault's internal ResultPattern implementation with the published Megaraz NuGet packages.
 - **Scope:** Backend only.
-- **Status:** Core, database, outbound HTTP, and inbound API result mapping are migrated; legacy removal and final verification remain.
+- **Status:** Core, database, outbound HTTP, inbound API result mapping, and legacy removal are complete; final verification and documentation remain.
 - **Initial analysis:** 2026-07-26.
 - **Document created:** 2026-07-28.
 - **Rule:** Update this document when a compatibility decision is made, a phase is completed, or implementation discovers a material difference from this baseline.
@@ -843,7 +843,7 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 
 ### Phase 6 — Remove the old implementation
 
-**Status:** Not started.
+**Status:** Complete under issue #95 on 2026-08-01.
 
 **Objective:** Eliminate the internal ResultPattern implementation without deleting retained MediaVault behavior.
 
@@ -1005,3 +1005,4 @@ The migration is complete when:
 | 2026-08-01 | Completed Phases 1-2 under issue #90: pinned public packages for coexistence, added characterization coverage and MediaVault-owned policy seams, and recorded owner-approved resolutions for D1-D11. |
 | 2026-08-01 | Completed Phase 3 under issue #91: migrated backend contracts and callers to package core types, preserved MediaVault-owned policies, and isolated the temporary database/HTTP compatibility bridge. |
 | 2026-08-01 | Completed Phase 5 under issue #94: adopted the package MVC result mapper through MediaVault's explicit inbound policy, preserved the approved error JSON/status contracts, and retained the route-aware `CreatedAtAction` adapter. |
+| 2026-08-01 | Completed Phase 6 under issue #95: removed the legacy ResultPattern implementation, migration bridge, and package-duplicate tests while retaining MediaVault-owned validation, pagination, logging, external-response, and API response policies. |

@@ -104,7 +104,7 @@ boundary. The clients communicate with the system only through the API.
 | `media-vault-app.Infrastructure` | EF Core, SQLite, repositories, migrations, and external HTTP clients |
 | `media-vault-app.API` | Composition root, JWT bearer authentication, controllers, and HTTP response mapping |
 | `media-vault-app.client` | React 19, TypeScript, Vite, and Tailwind web client |
-| `Rasmus.SharedKernel` | Legacy in-repository ResultPattern implementation during migration |
+| `Rasmus.SharedKernel` | Shared entity contracts plus MediaVault-owned validation and pagination helpers |
 | `media-vault-app.Tests` | Application and API-focused xUnit tests |
 | `Rasmus.SharedKernel.Tests` | Tests for the transitional shared kernel |
 | `docs` | Architecture decisions, active plans, and repository documentation |

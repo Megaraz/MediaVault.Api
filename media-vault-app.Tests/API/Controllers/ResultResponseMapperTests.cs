@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using CompatibilityErrorResponseBody = Rasmus.SharedKernel.ResultPatternCompatibility.ErrorResponseBody;
-using CompatibilityValidationErrorResponseBody = Rasmus.SharedKernel.ResultPatternCompatibility.ValidationErrorResponseBody;
 using PackageDatabaseError = Megaraz.ResultPattern.Infrastructure.DatabaseError;
 using PackageHttpError = Megaraz.ResultPattern.AspNetCore.HttpError;
 
@@ -74,7 +72,7 @@ public class ResultResponseMapperTests
 
         var result = Assert.IsType<ObjectResult>(action.Result);
         Assert.Equal(expectedStatus, result.StatusCode);
-        var body = Assert.IsType<CompatibilityErrorResponseBody>(result.Value);
+        var body = Assert.IsType<ErrorResponseBody>(result.Value);
         Assert.Equal(message, body.Message);
         Assert.Equal(error.Code, body.Code);
     }
@@ -91,7 +89,7 @@ public class ResultResponseMapperTests
 
         var result = Assert.IsType<ObjectResult>(action.Result);
         Assert.Equal(422, result.StatusCode);
-        var body = Assert.IsType<CompatibilityValidationErrorResponseBody>(result.Value);
+        var body = Assert.IsType<ValidationErrorResponseBody>(result.Value);
         var json = JsonSerializer.Serialize(body, body.GetType(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
