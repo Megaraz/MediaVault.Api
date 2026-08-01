@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
-using Rasmus.SharedKernel.ResultPatternCompatibility;
+using media_vault_app.Infrastructure.Diagnostics;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -33,7 +33,7 @@ namespace media_vault_app.Infrastructure.Repos
                     return Result.Failure(MediaVaultErrors.Conflict(baseErrorContext));
                 }
 
-                return Result.Failure(DatabaseError.SaveChangesFailure(baseErrorContext, dbEx));
+                return Result.Failure(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, dbEx));
             }
             catch (OperationCanceledException)
             {
@@ -43,7 +43,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
-                return Result.Failure(DatabaseError.SaveChangesFailure(baseErrorContext, ex));
+                return Result.Failure(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex));
             }
 
         }
@@ -75,7 +75,7 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
-                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(DatabaseError.QueryFailure(baseErrorContext, ex));
+                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex));
             }
         }
 
@@ -108,7 +108,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return Result<User>.Failure(DatabaseError.QueryFailure(baseErrorContext, ex));
+                return Result<User>.Failure(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex));
             }
         }
     }

@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.ExternalServices;
-using LegacyDatabaseError = Rasmus.SharedKernel.ResultPatternCompatibility.DatabaseError;
 using LegacyErrorResponseBody = Rasmus.SharedKernel.ResultPatternCompatibility.ErrorResponseBody;
 using LegacyResult = Rasmus.SharedKernel.ResultPattern.Result;
 using LegacyValidationErrorItem = Rasmus.SharedKernel.ResultPatternCompatibility.ValidationErrorItem;
@@ -43,14 +42,12 @@ public class ResultPatternCompatibilityBaseline_Tests
     }
 
     [Fact]
-    public void DatabaseCodeFormat_RecordsTemporaryBridgeAndApprovedPackageNativeValues()
+    public void DatabaseCodeFormat_UsesApprovedPackageNativeValues()
     {
         var packageContext = new PackageErrorContext(PackageOperationType.Update, "MediaEntry");
 
-        var legacyError = LegacyDatabaseError.SaveChangesFailure(packageContext, new Exception("database"));
         var packageError = PackageDatabaseError.SaveChangesFailure(packageContext, new Exception("database"));
 
-        Assert.Equal("Update.MediaEntry.DbSaveChangesFailure", legacyError.Code);
         Assert.Equal("Update.MediaEntry.DatabaseSaveChangesFailure", packageError.Code);
     }
 

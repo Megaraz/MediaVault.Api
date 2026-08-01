@@ -6,7 +6,7 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
-using Rasmus.SharedKernel.ResultPatternCompatibility;
+using media_vault_app.Infrastructure.Diagnostics;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -48,20 +48,20 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var concurrencyError = DatabaseError.ConcurrencyFailure(baseErrorContext, ex);
+                var concurrencyError = DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex);
 
                 return await LogAndFailAsync<TEntityDependent>(concurrencyError, CancellationToken.None);
             }
             catch (DbUpdateException ex)
             {
-                var createError = DatabaseError.SaveChangesFailure(baseErrorContext, ex);
+                var createError = DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex);
 
                 return await LogAndFailAsync<TEntityDependent>(createError, CancellationToken.None);
 
             }
             catch (Exception ex)
             {
-                var error = DatabaseError.UnexpectedFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex);
 
                 return await LogAndFailAsync<TEntityDependent>(error, CancellationToken.None);
             }
@@ -94,7 +94,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                var error = DatabaseError.QueryFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex);
 
                 return await LogAndFailAsync<IReadOnlyList<TEntityDependent>>(error, CancellationToken.None);
             }
@@ -138,7 +138,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                var error = DatabaseError.UnexpectedFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex);
 
                 return await LogAndFailAsync<TEntityDependent>(error, CancellationToken.None);
             }
@@ -185,17 +185,17 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var error = DatabaseError.ConcurrencyFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex);
                 return await LogAndFailAsync(error, CancellationToken.None);
             }
             catch (DbUpdateException ex)
             {
-                var error = DatabaseError.SaveChangesFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex);
                 return await LogAndFailAsync(error, CancellationToken.None);
             }
             catch (Exception ex)
             {
-                var error = DatabaseError.UnexpectedFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex);
                 return await LogAndFailAsync(error, CancellationToken.None);
             }
         }
@@ -229,17 +229,17 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var error = DatabaseError.ConcurrencyFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex);
                 return await LogAndFailAsync(error, CancellationToken.None);
             }
             catch (DbUpdateException ex)
             {
-                var error = DatabaseError.SaveChangesFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex);
                 return await LogAndFailAsync(error, CancellationToken.None);
             }
             catch (Exception ex)
             {
-                var error = DatabaseError.UnexpectedFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex);
                 return await LogAndFailAsync(error, CancellationToken.None);
             }
         }

@@ -700,7 +700,7 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 
 ### Phase 4 — Infrastructure and database-error migration
 
-**Status:** Not started.
+**Status:** Complete via issue #93 (pending review).
 
 **Objective:** Replace the local database error model while preserving repository behavior.
 
@@ -747,6 +747,12 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 - Assert database failures still map to HTTP 500.
 - Verify NDJSON records retain exception message and stack trace.
 - Confirm SharedKernel references only the core package.
+
+**Completed implementation notes:**
+
+- Infrastructure now creates package-native `DatabaseError` values through a MediaVault-owned safe-message policy; package-native `Database...` code suffixes are intentional.
+- Concrete NDJSON persistence and extension-aware logging classification now live in Infrastructure. SharedKernel retains only neutral `IErrorLogger`, `IErrorLogPolicy`, `ErrorLog`, and `ErrorLogContext` contracts so Application cleanup remains dependency-safe.
+- The HTTP bridge relies on the approved generic `ErrorType.External` 500 mapping; it no longer names a local database error type.
 
 **Suggested checkpoint:**
 

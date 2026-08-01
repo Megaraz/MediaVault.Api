@@ -2,9 +2,6 @@ using System.Net;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.ResultPatternCompatibility;
-using LegacyErrorLogger = Rasmus.SharedKernel.ResultPattern.ErrorLogger;
-using LegacyErrorLoggerConfiguration = Rasmus.SharedKernel.ResultPattern.ErrorLoggerConfiguration;
-using LegacyErrorLogPolicy = Rasmus.SharedKernel.ResultPattern.ErrorLogPolicy;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern
 {

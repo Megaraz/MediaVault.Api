@@ -6,7 +6,7 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
-using Rasmus.SharedKernel.ResultPatternCompatibility;
+using media_vault_app.Infrastructure.Diagnostics;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -48,15 +48,15 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                return await LogAndFailAsync<TEntity>(DatabaseError.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync<TEntity>(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
             }
             catch (DbUpdateException ex)
             {
-                return await LogAndFailAsync<TEntity>(DatabaseError.SaveChangesFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync<TEntity>(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), CancellationToken.None);
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync<TEntity>(DatabaseError.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync<TEntity>(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
             }
         }
 
@@ -80,7 +80,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync<TEntity>(DatabaseError.QueryFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync<TEntity>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), CancellationToken.None);
             }
         }
 
@@ -104,7 +104,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync<IReadOnlyList<TEntity>>(DatabaseError.QueryFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync<IReadOnlyList<TEntity>>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), CancellationToken.None);
             }
         }
 
@@ -132,15 +132,15 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                return await LogAndFailAsync(DatabaseError.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
             }
             catch (DbUpdateException ex)
             {
-                return await LogAndFailAsync(DatabaseError.SaveChangesFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), CancellationToken.None);
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync(DatabaseError.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
             }
         }
 
@@ -173,15 +173,15 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                return await LogAndFailAsync(DatabaseError.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
             }
             catch (DbUpdateException ex)
             {
-                return await LogAndFailAsync(DatabaseError.SaveChangesFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), CancellationToken.None);
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync(DatabaseError.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
             }
         }
 
@@ -207,7 +207,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync<bool>(DatabaseError.QueryFailure(baseErrorContext, ex), CancellationToken.None);
+                return await LogAndFailAsync<bool>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), CancellationToken.None);
             }
         }
 

@@ -18,6 +18,7 @@ using media_vault_app.Application.Validators.User;
 using media_vault_app.Domain.Entities;
 using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.API.Clients;
+using media_vault_app.Infrastructure.Diagnostics;
 using media_vault_app.Infrastructure.Repos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -25,9 +26,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
-using ErrorLogger = Rasmus.SharedKernel.ResultPattern.ErrorLogger;
-using ErrorLoggerConfiguration = Rasmus.SharedKernel.ResultPattern.ErrorLoggerConfiguration;
-using ErrorLogPolicy = Rasmus.SharedKernel.ResultPattern.ErrorLogPolicy;
 
 namespace media_vault_app.API
 {

@@ -78,9 +78,6 @@ namespace Rasmus.SharedKernel.ResultPatternCompatibility
             if (primaryError is HttpError)
                 return MapHttpErrorFailure(message, primaryError);
 
-            if (primaryError is DatabaseError)
-                return (500, new ErrorResponseBody(message, primaryError.Code));
-
             return primaryError.Type switch
             {
                 ErrorType.Validation => (422, new ValidationErrorResponseBody(message, validationErrorItems)),

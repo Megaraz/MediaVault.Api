@@ -3,9 +3,7 @@ using System.Text.Json;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.ResultPatternCompatibility;
-using LegacyErrorLogger = Rasmus.SharedKernel.ResultPattern.ErrorLogger;
-using LegacyErrorLoggerConfiguration = Rasmus.SharedKernel.ResultPattern.ErrorLoggerConfiguration;
-using LegacyErrorLogPolicy = Rasmus.SharedKernel.ResultPattern.ErrorLogPolicy;
+using PackageDatabaseError = Megaraz.ResultPattern.Infrastructure.DatabaseError;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern
 {
@@ -104,7 +102,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             yield return [Error.Failure(ctx), 500];
             yield return [Error.Cancelled(ctx), 503];
 
-            yield return [DatabaseError.QueryFailure(ctx, new Exception("database")), 500];
+            yield return [PackageDatabaseError.QueryFailure(ctx, new Exception("database")), 500];
 
             // Non-HTTP external errors follow MediaVault's approved 500 policy.
             yield return [Error.Custom("Test.External.Code", "External description.", ErrorType.External, "External failure."), 500];

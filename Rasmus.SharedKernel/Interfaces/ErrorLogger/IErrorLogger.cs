@@ -1,6 +1,5 @@
 ﻿using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Diagnostics;
-using ErrorLog = Rasmus.SharedKernel.ResultPattern.ErrorLog;
 
 namespace Rasmus.SharedKernel.Interfaces.ErrorLogger
 {
