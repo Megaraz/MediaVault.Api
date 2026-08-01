@@ -4,8 +4,6 @@ using media_vault_app.Application.Interfaces.Clients;
 using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Megaraz.ResultPattern;
-using Rasmus.SharedKernel.Errors;
-using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.API.Clients
 {
@@ -43,26 +41,10 @@ namespace media_vault_app.Infrastructure.API.Clients
         {
             var errorContext = DefineErrorContext(nameof(GetGameByIdAsync), OperationType.Get);
 
-            try
-            {
-                using var response = await _httpClient.GetAsync(BuildRequestUri($"games/{id}"), cancellationToken);
-
-                var result = await response.MapToResultAsync<RawgGameDetailedResponse>(errorContext, cancellationToken);
-
-                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
-
-                return result;
-            }
-            catch (OperationCanceledException)
-            {
-                return Result<RawgGameDetailedResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
-            }
-            catch (HttpRequestException exception)
-            {
-                var error = HttpError.TransportFailure(errorContext, exception);
-                await LogIfNeededAsync(error, CancellationToken.None);
-                return Result<RawgGameDetailedResponse>.Failure(error);
-            }
+            return await SendAndMapAsync<RawgGameDetailedResponse>(
+                ct => _httpClient.GetAsync(BuildRequestUri($"games/{id}"), ct),
+                errorContext,
+                cancellationToken);
         }
 
         public async Task<Result<RawgSearchResponse>> SearchGamesAsync(
@@ -71,28 +53,12 @@ namespace media_vault_app.Infrastructure.API.Clients
         {
             var errorContext = DefineErrorContext(nameof(SearchGamesAsync), OperationType.GetCollection);
 
-            try
-            {
-                var requestUri = BuildRequestUri($"games?{string.Join("&", queryParameters)}");
+            var requestUri = BuildRequestUri($"games?{string.Join("&", queryParameters)}");
 
-                using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
-
-                var result = await response.MapToResultAsync<RawgSearchResponse>(errorContext, cancellationToken);
-
-                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
-
-                return result;
-            }
-            catch (OperationCanceledException)
-            {
-                return Result<RawgSearchResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
-            }
-            catch (HttpRequestException exception)
-            {
-                var error = HttpError.TransportFailure(errorContext, exception);
-                await LogIfNeededAsync(error, CancellationToken.None);
-                return Result<RawgSearchResponse>.Failure(error);
-            }
+            return await SendAndMapAsync<RawgSearchResponse>(
+                ct => _httpClient.GetAsync(requestUri, ct),
+                errorContext,
+                cancellationToken);
         }
 
         private string BuildRequestUri(string pathAndQuery)

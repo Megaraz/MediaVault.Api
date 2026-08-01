@@ -756,7 +756,7 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 
 ### Phase 5 — ASP.NET Core and HTTP-mapping migration
 
-**Status:** Not started.
+**Status:** In progress. Outbound mapping completed under issue #92; inbound API mapping remains under issue #94.
 
 **Objective:** Replace outbound HTTP conversion and inbound API response mapping.
 
@@ -791,6 +791,16 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 - Avoid importing both competing `ToActionResult` extensions into controllers while both exist.
 - Resolve pagination according to D8.
 - Update HTTP mapper and client tests.
+
+**Implemented outbound slice (#92):**
+
+- All Google Books, RAWG, and TMDB responses flow through one Infrastructure-owned package mapping path.
+- `HttpResponseMappingOptions.MaxResponseBodyBytes` is explicitly set to the approved 2 MiB ceiling; exact-boundary and boundary-plus-one tests cover success and error bodies.
+- Package web-default JSON handling and missing-content-type compatibility are retained.
+- Bounded provider text remains in the technical error description, while every result message is replaced with the fixed `ExternalServiceResponsePolicy` message for the response status.
+- Caller cancellation propagates without logging; non-caller task cancellation, timeout, and transport failures become one logged `TransportFailure` result with the fixed safe message.
+- The existing API adapter has a narrow migration bridge for package `HttpError` status selection, preserving the current response body and HTTP 503 transport contract until issue #94 replaces the inbound mapper.
+- Provider endpoints, DTOs, authentication, inbound API mapping, persistence, and first-party client contracts are unchanged.
 
 **Expected risks:**
 

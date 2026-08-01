@@ -18,7 +18,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\media-vault-app.Application\media-vault-app.Application.csproj" />
+    <ProjectReference Include="..\media-vault-app.API\media-vault-app.API.csproj" />
     <ProjectReference Include="..\media-vault-app.Domain\media-vault-app.Domain.csproj" />
+    <ProjectReference Include="..\media-vault-app.Infrastructure\media-vault-app.Infrastructure.csproj" />
     <ProjectReference Include="..\Rasmus.SharedKernel\Rasmus.SharedKernel.csproj" />
   </ItemGroup>
 

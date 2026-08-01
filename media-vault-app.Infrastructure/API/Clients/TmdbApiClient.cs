@@ -7,9 +7,7 @@ using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Megaraz.ResultPattern;
-using Rasmus.SharedKernel.Errors;
 using Rasmus.SharedKernel.Validation;
-using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.API.Clients
 {
@@ -48,26 +46,10 @@ namespace media_vault_app.Infrastructure.API.Clients
         {
             var errorContext = DefineErrorContext(nameof(GetTvSeriesByIdAsync), OperationType.Get);
 
-            try
-            {
-                using var response = await _httpClient.GetAsync(BuildRequestUri($"tv/{id}"), cancellationToken);
-
-                var result = await response.MapToResultAsync<TmdbTvSeriesDetailedResult>(errorContext, cancellationToken);
-
-                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
-
-                return result;
-            }
-            catch (OperationCanceledException)
-            {
-                return Result<TmdbTvSeriesDetailedResult>.Failure(MediaVaultErrors.Cancelled(errorContext));
-            }
-            catch (HttpRequestException exception)
-            {
-                var error = HttpError.TransportFailure(errorContext, exception);
-                await LogIfNeededAsync(error, CancellationToken.None);
-                return Result<TmdbTvSeriesDetailedResult>.Failure(error);
-            }
+            return await SendAndMapAsync<TmdbTvSeriesDetailedResult>(
+                ct => _httpClient.GetAsync(BuildRequestUri($"tv/{id}"), ct),
+                errorContext,
+                cancellationToken);
         }
 
         public async Task<Result<TmdbMovieDetailedResponse>> GetMovieByIdAsync(
@@ -76,26 +58,10 @@ namespace media_vault_app.Infrastructure.API.Clients
         {
             var errorContext = DefineErrorContext(nameof(GetMovieByIdAsync), OperationType.Get);
 
-            try
-            {
-                using var response = await _httpClient.GetAsync(BuildRequestUri($"movie/{id}"), cancellationToken);
-
-                var result = await response.MapToResultAsync<TmdbMovieDetailedResponse>(errorContext, cancellationToken);
-
-                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
-
-                return result;
-            }
-            catch (OperationCanceledException)
-            {
-                return Result<TmdbMovieDetailedResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
-            }
-            catch (HttpRequestException exception)
-            {
-                var error = HttpError.TransportFailure(errorContext, exception);
-                await LogIfNeededAsync(error, CancellationToken.None);
-                return Result<TmdbMovieDetailedResponse>.Failure(error);
-            }
+            return await SendAndMapAsync<TmdbMovieDetailedResponse>(
+                ct => _httpClient.GetAsync(BuildRequestUri($"movie/{id}"), ct),
+                errorContext,
+                cancellationToken);
         }
 
         public async Task<Result<TmdbSearchResponse>> SearchAsync(
@@ -121,28 +87,12 @@ namespace media_vault_app.Infrastructure.API.Clients
                 return Result<TmdbSearchResponse>.ValidationFailure([invalidMediaTypeError], invalidMediaTypeError.UserMessage);
             }
 
-            try
-            {
-                var requestUri = BuildRequestUri($"search/{endpoint}");
+            var requestUri = BuildRequestUri($"search/{endpoint}");
 
-                using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
-
-                var result = await response.MapToResultAsync<TmdbSearchResponse>(errorContext, cancellationToken);
-
-                await LogIfNeededAsync(result.PrimaryError, cancellationToken);
-
-                return result;
-            }
-            catch (OperationCanceledException)
-            {
-                return Result<TmdbSearchResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
-            }
-            catch (HttpRequestException exception)
-            {
-                var error = HttpError.TransportFailure(errorContext, exception);
-                await LogIfNeededAsync(error, CancellationToken.None);
-                return Result<TmdbSearchResponse>.Failure(error);
-            }
+            return await SendAndMapAsync<TmdbSearchResponse>(
+                ct => _httpClient.GetAsync(requestUri, ct),
+                errorContext,
+                cancellationToken);
         }
 
         private static string BuildRequestUri(string pathAndQuery)
