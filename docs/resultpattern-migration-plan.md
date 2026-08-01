@@ -4,7 +4,7 @@
 
 - **Purpose:** Source of truth for replacing MediaVault's internal ResultPattern implementation with the published Megaraz NuGet packages.
 - **Scope:** Backend only.
-- **Status:** Core, database, outbound HTTP, inbound API result mapping, and legacy removal are complete; final verification and documentation remain.
+- **Status:** Complete. Final integrated verification finished under issue #96 on 2026-08-01.
 - **Initial analysis:** 2026-07-26.
 - **Document created:** 2026-07-28.
 - **Rule:** Update this document when a compatibility decision is made, a phase is completed, or implementation discovers a material difference from this baseline.
@@ -21,6 +21,29 @@ The migration targets these published package versions:
 | `Megaraz.ResultPattern.Infrastructure` | `0.1.0` | https://github.com/Megaraz/Megaraz.ResultPattern.Infrastructure |
 
 All three packages support `net10.0`. The coexistence baseline restores these exact versions from `https://api.nuget.org/v3/index.json`; no repository or machine-local package source is required.
+
+## Final ownership and compatibility contract
+
+The completed backend uses the packages and MediaVault-owned policy at these boundaries:
+
+| Project or boundary | Final ownership |
+|---|---|
+| `Rasmus.SharedKernel` | Core `Megaraz.ResultPattern` contracts plus MediaVault validation, pagination, result-message, logging-contract, and outbound-response policies |
+| Application | Core `Megaraz.ResultPattern` values only; no ASP.NET Core or database ResultPattern dependency |
+| Infrastructure | Core, ASP.NET Core HTTP conversion, and Infrastructure database errors; concrete NDJSON logging |
+| API | Core and ASP.NET Core result mapping; MediaVault failure-body policy, response metadata, and route-aware `CreatedAtAction` adapter |
+| Domain | No direct ResultPattern package reference; the core package is transitive through SharedKernel |
+
+The final observable and operational policy is:
+
+- Ordinary failures use `{ message, code }`; validation failures use `{ message, validationErrors }` without public validation codes.
+- MediaVault supplies explicit safe workflow and validation messages. Package-native database codes use the `Database...` suffix intentionally.
+- Concrete package HTTP errors retain their status-specific mappings. Every other current `External` error, including database errors, maps to HTTP 500.
+- Outbound responses are inspected up to exactly 2 MiB (`2,097,152` bytes). Raw provider text remains private; clients receive fixed MediaVault messages.
+- Caller cancellation propagates without failure logging. Non-caller task cancellation, timeout, and transport failures become one logged HTTP 503 `TransportFailure`. Repository cancellation remains unchanged, and broader controller-to-database/outbound cancellation still needs a future review.
+- `Rasmus.SharedKernel.Validation`, `Rasmus.SharedKernel.Pagination`, `Rasmus.SharedKernel.Results`, `Rasmus.SharedKernel.Diagnostics`, and `Rasmus.SharedKernel.ExternalServices` retain application-specific policy that the packages do not own.
+- Concrete seven-day NDJSON persistence and extension-aware log classification live in Infrastructure; SharedKernel exposes only the neutral logging records and interfaces needed by Application.
+- Development OpenAPI now declares the central ordinary/validation error schemas and the actual 200, 201, and 204 success statuses used by controller actions.
 
 ## Executive summary
 
@@ -58,7 +81,9 @@ Tests → Application / Domain / SharedKernel
 
 `Domain` has no direct ResultPattern callsites, but it references SharedKernel for entity contracts. Result types are exposed by SharedKernel service and repository interfaces and therefore flow transitively through the backend.
 
-## Current implementation inventory
+## Pre-migration implementation inventory
+
+This section preserves the Phase 1 baseline for historical comparison. The local symbols and files listed here were removed or relocated by Phases 3-6; they do not describe the final implementation.
 
 ### Callsite footprint
 
@@ -77,7 +102,7 @@ The initial inventory found approximately:
 - 63 `DefineErrorContext` calls or declarations.
 - 40 directly affected test files: 25 SharedKernel tests and 15 application tests.
 
-### Locally implemented types
+### Baseline locally implemented types
 
 | Area | Local symbols | Main consumers |
 |---|---|---|
@@ -92,7 +117,7 @@ The initial inventory found approximately:
 | File logging | `ErrorLoggerConfiguration`, `ErrorLog`, `ErrorLogger`, `ErrorLogPolicy` | API DI, repository bases, outbound clients, cleanup hosted service |
 | Logging contracts | `IErrorLogger`, `IErrorLogPolicy` | Application cleanup service, Infrastructure repositories/clients, API composition |
 
-### Important local files
+### Baseline local files
 
 - `Rasmus.SharedKernel/ResultPattern/Result.cs`
 - `Rasmus.SharedKernel/ResultPattern/Error.cs`
@@ -117,7 +142,9 @@ The initial inventory found approximately:
 - `media-vault-app.Infrastructure/API/Clients/ApiClientBase.cs`
 - `media-vault-app.API/Program.cs`
 
-## Project and layer dependencies
+## Pre-migration project and layer dependencies
+
+The following subsections describe the dependency and callsite inventory before implementation. The final ownership table above is authoritative for the completed state.
 
 ### Rasmus.SharedKernel
 
@@ -270,9 +297,11 @@ Recommended direct references:
 
 Do not add the ASP.NET Core package to Application solely for pagination.
 
-The Phase 2 coexistence baseline implements this placement. `Rasmus.SharedKernel.Tests` directly references all three packages because it owns the cross-package characterization suite. `media-vault-app.Tests` directly references only the core package so reflection tests can prove Application contracts remain bound to the legacy type identity during coexistence.
+The Phase 2 coexistence baseline implemented this placement temporarily. In the final state, both test projects directly reference only the core package; API and Infrastructure project references provide the extension packages transitively where integration tests need them.
 
 ### Temporary coexistence convention
+
+This historical convention applied only during Phases 2-5. Phase 6 removed the aliases, bridge, and local implementation.
 
 - Production contracts and implementations continue to bind to `Rasmus.SharedKernel.ResultPattern` until their dedicated migration phases.
 - Package types are exercised by characterization tests under explicit `Package...` aliases; legacy types use explicit `Legacy...` aliases whenever both identities appear in one file.
@@ -700,7 +729,7 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 
 ### Phase 4 — Infrastructure and database-error migration
 
-**Status:** Complete via issue #93 (pending review).
+**Status:** Complete under issue #93 on 2026-08-01.
 
 **Objective:** Replace the local database error model while preserving repository behavior.
 
@@ -892,7 +921,13 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 
 ### Phase 7 — Final verification, cleanup, and documentation
 
-**Status:** Not started.
+**Status:** Complete under issue #96 on 2026-08-01.
+
+The final audit restored exclusively from NuGet.org, verified the package graph project by project, built the full solution with no compile/nullability errors, and passed both focused policy suites and all backend tests. The 13 build warnings are the same known dependency advisories recorded by the predecessor work; the migration introduced no warning category or occurrence.
+
+Repository searches found no live old namespace, compatibility bridge, local package replacement, or package-internal duplicate test. Generated OpenAPI 3.1.1 exposes 27 paths, the ordinary and validation error schemas, and the controller actions' real 200/201/204 success statuses. Web and Android client review confirmed that both consume HTTP messages rather than .NET type identities or database-code suffixes, so neither client requires a migration change.
+
+`dotnet list media-vault-app.slnx package --include-transitive` emits the backend graph but exits nonzero because the solution includes a JavaScript `.esproj`, which that command does not support. Running the same command for each backend `.csproj` succeeds and confirms the approved direct/transitive package shape.
 
 **Objective:** Prove behavioral compatibility and leave the dependency model explicit.
 
@@ -983,19 +1018,19 @@ Within each implementation phase, migrate vertical slices together—contract, i
 
 ## Definition of Done
 
-The migration is complete when:
+The migration is complete because:
 
-- [ ] The backend uses the three pinned published packages for core, database, and HTTP ResultPattern types.
-- [ ] No local ResultPattern implementation or old namespace remains.
-- [ ] SharedKernel depends only on the core package.
-- [ ] Application has no ASP.NET Core or database package dependency.
-- [ ] MediaVault-owned validation, pagination, HTTP contract, and logging behavior is retained in clearly named non-package components.
-- [ ] Every project builds from a clean restore.
-- [ ] All tests pass.
-- [ ] HTTP statuses, JSON shapes, error codes, user messages, cancellation behavior, and logs match the decision register.
-- [ ] No temporary adapters remain.
-- [ ] Tests no longer duplicate package implementation tests.
-- [ ] Package ownership and application-specific policies are documented.
+- [x] The backend uses the three pinned published packages for core, database, and HTTP ResultPattern types.
+- [x] No local ResultPattern implementation or old namespace remains.
+- [x] SharedKernel depends only on the core package.
+- [x] Application has no ASP.NET Core or database package dependency.
+- [x] MediaVault-owned validation, pagination, HTTP contract, and logging behavior is retained in clearly named non-package components.
+- [x] Every project builds from a clean restore.
+- [x] All tests pass.
+- [x] HTTP statuses, JSON shapes, error codes, user messages, cancellation behavior, and logs match the decision register.
+- [x] No temporary adapters remain.
+- [x] Tests no longer duplicate package implementation tests.
+- [x] Package ownership and application-specific policies are documented.
 
 ## Change log
 
@@ -1004,5 +1039,8 @@ The migration is complete when:
 | 2026-07-28 | Created the source-of-truth document from the completed repository and package analysis. |
 | 2026-08-01 | Completed Phases 1-2 under issue #90: pinned public packages for coexistence, added characterization coverage and MediaVault-owned policy seams, and recorded owner-approved resolutions for D1-D11. |
 | 2026-08-01 | Completed Phase 3 under issue #91: migrated backend contracts and callers to package core types, preserved MediaVault-owned policies, and isolated the temporary database/HTTP compatibility bridge. |
+| 2026-08-01 | Completed Phase 4 under issue #93: adopted package-native database errors and moved concrete NDJSON logging ownership to Infrastructure. |
+| 2026-08-01 | Completed the outbound half of Phase 5 under issue #92: adopted bounded package HTTP conversion with fixed safe messages and approved cancellation/transport semantics. |
 | 2026-08-01 | Completed Phase 5 under issue #94: adopted the package MVC result mapper through MediaVault's explicit inbound policy, preserved the approved error JSON/status contracts, and retained the route-aware `CreatedAtAction` adapter. |
 | 2026-08-01 | Completed Phase 6 under issue #95: removed the legacy ResultPattern implementation, migration bridge, and package-duplicate tests while retaining MediaVault-owned validation, pagination, logging, external-response, and API response policies. |
+| 2026-08-01 | Completed Phase 7 under issue #96: verified published package resolution, dependency direction, focused and full tests, OpenAPI, logs, clients, and legacy-removal searches; finalized durable ownership and compatibility documentation. |

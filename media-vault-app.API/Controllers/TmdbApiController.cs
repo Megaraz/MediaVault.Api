@@ -10,7 +10,7 @@ namespace media_vault_app.API.Controllers
     [ApiController]
     [Authorize]
     [Route("[controller]")]
-    public class TmdbApiController : ControllerBase
+    public class TmdbApiController : MediaVaultControllerBase
     {
         private readonly ITmdbApiService _tmdbApiService;
 
@@ -20,6 +20,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("movie/search")]
+        [ProducesResponseType(typeof(IReadOnlyList<MediaEntryExternalSearchResultDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchMovies(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
@@ -32,6 +33,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("movie/{id:int}")]
+        [ProducesResponseType(typeof(TmdbMovieDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<TmdbMovieDetailedDto>> GetMovieById(
             [FromRoute] int id,
             CancellationToken ct)
@@ -41,6 +43,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("tv/search")]
+        [ProducesResponseType(typeof(IReadOnlyList<MediaEntryExternalSearchResultDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchTvSeries(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
@@ -53,6 +56,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("tv/{id:int}")]
+        [ProducesResponseType(typeof(TmdbTvSeriesDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<TmdbTvSeriesDetailedDto>> GetTvSeriesById(
             [FromRoute] int id,
             CancellationToken ct)

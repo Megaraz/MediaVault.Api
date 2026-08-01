@@ -9,7 +9,7 @@ namespace media_vault_app.API.Controllers
     [ApiController]
     [Authorize]
     [Route("[controller]")]
-    public class GoogleBooksApiController : ControllerBase
+    public class GoogleBooksApiController : MediaVaultControllerBase
     {
         private readonly IGoogleBooksApiService _googleBooksApiService;
 
@@ -19,6 +19,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
+        [ProducesResponseType(typeof(IReadOnlyList<GoogleBooksDetailedDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<GoogleBooksDetailedDto>>> SearchBooks(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
@@ -30,6 +31,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{volumeId}")]
+        [ProducesResponseType(typeof(GoogleBooksDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<GoogleBooksDetailedDto>> GetBookById(
             [FromRoute] string volumeId,
             CancellationToken ct)

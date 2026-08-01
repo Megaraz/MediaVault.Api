@@ -10,7 +10,7 @@ namespace media_vault_app.API.Controllers
     [ApiController]
     [Authorize]
     [Route("[controller]")]
-    public class MediaEntriesController : ControllerBase
+    public class MediaEntriesController : MediaVaultControllerBase
     {
         private readonly IMediaEntryReadService _readService;
         private readonly IMediaEntryWriteService _writeService;
@@ -26,6 +26,7 @@ namespace media_vault_app.API.Controllers
         #region Create Operations - Type-Specific Endpoints
 
         [HttpPost("movies")]
+        [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateMovie(
             [FromBody] MovieEntryCreateDto createDto,
             CancellationToken ct)
@@ -39,6 +40,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("tv-series")]
+        [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateTvSeries(
             [FromBody] TvSeriesEntryCreateDto createDto,
             CancellationToken ct)
@@ -52,6 +54,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("games")]
+        [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateGame(
             [FromBody] GameEntryCreateDto createDto,
             CancellationToken ct)
@@ -65,6 +68,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("books")]
+        [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateBook(
             [FromBody] BookEntryCreateDto createDto,
             CancellationToken ct)
@@ -78,6 +82,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("manga")]
+        [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateManga(
             [FromBody] MangaEntryCreateDto createDto,
             CancellationToken ct)
@@ -95,6 +100,7 @@ namespace media_vault_app.API.Controllers
         #region Update Operations - Type-Specific Endpoints
 
         [HttpPut("movies/{id:Guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateMovie(
             [FromRoute] Guid id,
             [FromBody] MovieEntryUpdateDto updateDto,
@@ -109,6 +115,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPut("tv-series/{id:Guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateTvSeries(
             [FromRoute] Guid id,
             [FromBody] TvSeriesEntryUpdateDto updateDto,
@@ -123,6 +130,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPut("games/{id:Guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateGame(
             [FromRoute] Guid id,
             [FromBody] GameEntryUpdateDto updateDto,
@@ -137,6 +145,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPut("books/{id:Guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateBook(
             [FromRoute] Guid id,
             [FromBody] BookEntryUpdateDto updateDto,
@@ -151,6 +160,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPut("manga/{id:Guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateManga(
             [FromRoute] Guid id,
             [FromBody] MangaEntryUpdateDto updateDto,
@@ -170,6 +180,7 @@ namespace media_vault_app.API.Controllers
         #region Read Operations - Type-Specific Endpoints
 
         [HttpGet("movies/{id:Guid}")]
+        [ProducesResponseType(typeof(MovieEntryDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<MovieEntryDetailedDto>> GetMovieById(
             [FromRoute] Guid id,
             CancellationToken ct)
@@ -183,6 +194,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("tv-series/{id:Guid}")]
+        [ProducesResponseType(typeof(TvSeriesEntryDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<TvSeriesEntryDetailedDto>> GetTvSeriesById(
             [FromRoute] Guid id,
             CancellationToken ct)
@@ -196,6 +208,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("games/{id:Guid}")]
+        [ProducesResponseType(typeof(GameEntryDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<GameEntryDetailedDto>> GetGameById(
             [FromRoute] Guid id,
             CancellationToken ct)
@@ -209,6 +222,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("books/{id:Guid}")]
+        [ProducesResponseType(typeof(BookEntryDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<BookEntryDetailedDto>> GetBookById(
             [FromRoute] Guid id,
             CancellationToken ct)
@@ -222,6 +236,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("manga/{id:Guid}")]
+        [ProducesResponseType(typeof(MangaEntryDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<MangaEntryDetailedDto>> GetMangaById(
             [FromRoute] Guid id,
             CancellationToken ct)
@@ -238,6 +253,7 @@ namespace media_vault_app.API.Controllers
         #region Read Operations - Shared Endpoints
 
         [HttpPost("search")]
+        [ProducesResponseType(typeof(IReadOnlyList<MediaEntryMinimalDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntries(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
@@ -252,6 +268,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{id:Guid}")]
+        [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<MediaEntryDetailedDto>> GetMediaEntryById(
             [FromRoute] Guid id,
             CancellationToken ct)
@@ -265,6 +282,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<MediaEntryMinimalDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryMinimalDto>>> GetMediaEntries(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 25,
@@ -283,6 +301,7 @@ namespace media_vault_app.API.Controllers
         #region Delete Operations - Shared Endpoint
 
         [HttpDelete("{id:Guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteMediaEntry(
             [FromRoute] Guid id,
             CancellationToken ct)
