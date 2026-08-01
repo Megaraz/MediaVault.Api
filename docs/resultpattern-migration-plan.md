@@ -4,7 +4,7 @@
 
 - **Purpose:** Source of truth for replacing MediaVault's internal ResultPattern implementation with the published Megaraz NuGet packages.
 - **Scope:** Backend only.
-- **Status:** Core package type identity is migrated; the database, outbound HTTP, ASP.NET mapping, logger relocation, and legacy-removal phases remain.
+- **Status:** Core, database, outbound HTTP, and inbound API result mapping are migrated; legacy removal and final verification remain.
 - **Initial analysis:** 2026-07-26.
 - **Document created:** 2026-07-28.
 - **Rule:** Update this document when a compatibility decision is made, a phase is completed, or implementation discovers a material difference from this baseline.
@@ -762,7 +762,7 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 
 ### Phase 5 — ASP.NET Core and HTTP-mapping migration
 
-**Status:** In progress. Outbound mapping completed under issue #92; inbound API mapping remains under issue #94.
+**Status:** Complete. Outbound mapping completed under issue #92; inbound API mapping completed under issue #94.
 
 **Objective:** Replace outbound HTTP conversion and inbound API response mapping.
 
@@ -807,6 +807,14 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 - Caller cancellation propagates without logging; non-caller task cancellation, timeout, and transport failures become one logged `TransportFailure` result with the fixed safe message.
 - The existing API adapter has a narrow migration bridge for package `HttpError` status selection, preserving the current response body and HTTP 503 transport contract until issue #94 replaces the inbound mapper.
 - Provider endpoints, DTOs, authentication, inbound API mapping, persistence, and first-party client contracts are unchanged.
+
+**Implemented inbound slice (#94):**
+
+- `ResultResponseMapper` delegates every ordinary success and failure result to the published MVC mapper through one MediaVault-owned policy.
+- The policy preserves the approved statuses, including 500 for every non-HTTP `External` error, while concrete package `HttpError` values retain their detailed mappings.
+- Failure bodies preserve ordinary `{ message, code }` and validation `{ message, validationErrors }` contracts with no public validation codes.
+- The adapter retains `CreatedAtAction(actionName, routeValues, value)` for route-derived created responses; controller routes, authorization, ownership, DTOs, pagination, and first-party client contracts are unchanged.
+- Explicit package aliases avoid local/package extension ambiguity while the compatibility bridge remains for the later removal phase.
 
 **Expected risks:**
 
@@ -996,3 +1004,4 @@ The migration is complete when:
 | 2026-07-28 | Created the source-of-truth document from the completed repository and package analysis. |
 | 2026-08-01 | Completed Phases 1-2 under issue #90: pinned public packages for coexistence, added characterization coverage and MediaVault-owned policy seams, and recorded owner-approved resolutions for D1-D11. |
 | 2026-08-01 | Completed Phase 3 under issue #91: migrated backend contracts and callers to package core types, preserved MediaVault-owned policies, and isolated the temporary database/HTTP compatibility bridge. |
+| 2026-08-01 | Completed Phase 5 under issue #94: adopted the package MVC result mapper through MediaVault's explicit inbound policy, preserved the approved error JSON/status contracts, and retained the route-aware `CreatedAtAction` adapter. |
