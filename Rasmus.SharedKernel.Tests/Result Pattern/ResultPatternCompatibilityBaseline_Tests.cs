@@ -3,13 +3,11 @@ using System.Text;
 using System.Text.Json;
 using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.ExternalServices;
-using LegacyDatabaseError = Rasmus.SharedKernel.ResultPattern.DatabaseError;
-using LegacyErrorContext = Rasmus.SharedKernel.ResultPattern.ErrorContext;
-using LegacyErrorResponseBody = Rasmus.SharedKernel.ResultPattern.ErrorResponseBody;
-using LegacyOperationType = Rasmus.SharedKernel.ResultPattern.OperationType;
+using LegacyDatabaseError = Rasmus.SharedKernel.ResultPatternCompatibility.DatabaseError;
+using LegacyErrorResponseBody = Rasmus.SharedKernel.ResultPatternCompatibility.ErrorResponseBody;
 using LegacyResult = Rasmus.SharedKernel.ResultPattern.Result;
-using LegacyValidationErrorItem = Rasmus.SharedKernel.ResultPattern.ValidationErrorItem;
-using LegacyValidationErrorResponseBody = Rasmus.SharedKernel.ResultPattern.ValidationErrorResponseBody;
+using LegacyValidationErrorItem = Rasmus.SharedKernel.ResultPatternCompatibility.ValidationErrorItem;
+using LegacyValidationErrorResponseBody = Rasmus.SharedKernel.ResultPatternCompatibility.ValidationErrorResponseBody;
 using PackageDatabaseError = Megaraz.ResultPattern.Infrastructure.DatabaseError;
 using PackageError = Megaraz.ResultPattern.Error;
 using PackageErrorContext = Megaraz.ResultPattern.ErrorContext;
@@ -45,17 +43,11 @@ public class ResultPatternCompatibilityBaseline_Tests
     }
 
     [Fact]
-    public void DatabaseCodeFormat_RecordsLegacyAndApprovedPackageNativeValues()
+    public void DatabaseCodeFormat_RecordsTemporaryBridgeAndApprovedPackageNativeValues()
     {
-        var legacyContext = new LegacyErrorContext(
-            "Infrastructure",
-            "MediaEntryRepo",
-            "UpdateAsync",
-            LegacyOperationType.Update,
-            "MediaEntry");
         var packageContext = new PackageErrorContext(PackageOperationType.Update, "MediaEntry");
 
-        var legacyError = LegacyDatabaseError.SaveChangesFailure(legacyContext, new Exception("database"));
+        var legacyError = LegacyDatabaseError.SaveChangesFailure(packageContext, new Exception("database"));
         var packageError = PackageDatabaseError.SaveChangesFailure(packageContext, new Exception("database"));
 
         Assert.Equal("Update.MediaEntry.DbSaveChangesFailure", legacyError.Code);

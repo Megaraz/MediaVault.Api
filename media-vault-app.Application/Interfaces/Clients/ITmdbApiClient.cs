@@ -2,7 +2,7 @@
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries;
 using media_vault_app.Domain.Enums;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Clients
 {

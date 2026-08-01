@@ -6,7 +6,8 @@ using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Services.API;
 using media_vault_app.Domain.Enums;
 using media_vault_app.Tests.TestHelpers;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
 
 namespace media_vault_app.Tests.Services.API
 {
@@ -92,12 +93,9 @@ namespace media_vault_app.Tests.Services.API
         [Fact]
         public async Task GetTvSeriesByIdAsync_Should_Propagate_ClientFailure()
         {
-            var expectedError = Error.NotFound(new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: "TmdbApiClient",
-                MethodName: "GetTvSeriesByIdAsync",
-                Operation: OperationType.Get,
-                EntityName: "Tmdb"));
+            var expectedError = MediaVaultErrors.NotFound(new ErrorContext(
+                operation: OperationType.Get,
+                entityName: "Tmdb"));
 
             var client = new FakeTmdbApiClient(
                 getTvSeriesByIdResult: Result<TmdbTvSeriesDetailedResult>.Failure(expectedError, "Series not found."));
@@ -154,12 +152,9 @@ namespace media_vault_app.Tests.Services.API
         [Fact]
         public async Task SearchAsync_Should_Propagate_ClientFailure()
         {
-            var expectedError = Error.Failure(new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: "TmdbApiClient",
-                MethodName: "SearchAsync",
-                Operation: OperationType.GetCollection,
-                EntityName: "Tmdb"), "TMDB search failed.");
+            var expectedError = MediaVaultErrors.Failure(new ErrorContext(
+                operation: OperationType.GetCollection,
+                entityName: "Tmdb"), "TMDB search failed.");
 
             var client = new FakeTmdbApiClient(
                 searchResult: Result<TmdbSearchResponse>.Failure(expectedError, "TMDB search failed."));

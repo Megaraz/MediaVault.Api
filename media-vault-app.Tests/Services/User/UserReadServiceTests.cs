@@ -1,7 +1,8 @@
 using media_vault_app.Application.Mappers.User;
 using media_vault_app.Application.Services.User;
 using media_vault_app.Tests.TestHelpers;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
 using UserEntity = media_vault_app.Domain.Entities.User;
 
 namespace media_vault_app.Tests.Services.User
@@ -44,7 +45,7 @@ namespace media_vault_app.Tests.Services.User
         [Fact]
         public async Task GetByIdAsync_Should_Propagate_RepoFailure()
         {
-            var expectedError = Error.NotFound(DefineErrorContext("GetByIdAsync", OperationType.Get));
+            var expectedError = MediaVaultErrors.NotFound(DefineErrorContext("GetByIdAsync", OperationType.Get));
             var userRepo = new FakeUserRepo
             {
                 GetByIdResult = Result<UserEntity>.Failure(expectedError, "User not found.")
@@ -79,7 +80,7 @@ namespace media_vault_app.Tests.Services.User
         [Fact]
         public async Task GetMinimalCollectionAsync_Should_Propagate_RepoFailure()
         {
-            var expectedError = Error.Failure(DefineErrorContext("GetMinimalCollectionAsync", OperationType.GetCollection), "Collection failed.");
+            var expectedError = MediaVaultErrors.Failure(DefineErrorContext("GetMinimalCollectionAsync", OperationType.GetCollection), "Collection failed.");
             var userRepo = new FakeUserRepo
             {
                 GetCollectionResult = Result<IReadOnlyList<UserEntity>>.Failure(expectedError, "Collection failed.")
@@ -112,11 +113,8 @@ namespace media_vault_app.Tests.Services.User
         private static ErrorContext DefineErrorContext(string methodName, OperationType operation)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: nameof(UserReadService),
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: "User");
+                operation: operation,
+                entityName: "User");
         }
     }
 }

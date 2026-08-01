@@ -25,7 +25,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
-using Rasmus.SharedKernel.ResultPattern;
+using ErrorLogger = Rasmus.SharedKernel.ResultPattern.ErrorLogger;
+using ErrorLoggerConfiguration = Rasmus.SharedKernel.ResultPattern.ErrorLoggerConfiguration;
+using ErrorLogPolicy = Rasmus.SharedKernel.ResultPattern.ErrorLogPolicy;
 
 namespace media_vault_app.API
 {

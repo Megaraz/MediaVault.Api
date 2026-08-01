@@ -1,6 +1,8 @@
 using media_vault_app.Application.Services;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Diagnostics;
+using ErrorLog = Rasmus.SharedKernel.ResultPattern.ErrorLog;
 
 namespace media_vault_app.Tests.Services
 {
@@ -54,7 +56,7 @@ namespace media_vault_app.Tests.Services
                 return Task.FromResult<IReadOnlyList<ErrorLog>>(Array.Empty<ErrorLog>());
             }
 
-            public Task LogErrorToFileAsync(Error error, CancellationToken ct = default)
+            public Task LogErrorToFileAsync(Error error, ErrorLogContext context, CancellationToken ct = default)
             {
                 return Task.CompletedTask;
             }

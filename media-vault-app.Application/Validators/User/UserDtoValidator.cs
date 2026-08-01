@@ -1,6 +1,7 @@
 ﻿using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.Interfaces.Validators;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Validators.User
 {
@@ -10,7 +11,7 @@ namespace media_vault_app.Application.Validators.User
         {
             var localValidationErrors = new List<ValidationError>();
 
-            if (loginDto.IsNull(errorContext, out ValidationError nullValueError))
+            if (loginDto.IsMediaVaultNull(errorContext, out ValidationError nullValueError))
             {
                 localValidationErrors.Add(nullValueError);
                 validationErrors = localValidationErrors;
@@ -23,7 +24,7 @@ namespace media_vault_app.Application.Validators.User
                 ("Password", loginDto.Password)
             };
 
-            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IReadOnlyList<ValidationError> nullOrEmptyErrors))
+            if (requiredFields.HasMissingRequiredFields(errorContext, out IReadOnlyList<ValidationError> nullOrEmptyErrors))
             {
                 localValidationErrors.AddRange(nullOrEmptyErrors);
             }
@@ -35,7 +36,7 @@ namespace media_vault_app.Application.Validators.User
         {
             var internalErrors = new List<ValidationError>();
 
-            if (createDto.IsNull(errorContext, out ValidationError nullValueError))
+            if (createDto.IsMediaVaultNull(errorContext, out ValidationError nullValueError))
             {
                 internalErrors.Add(nullValueError);
                 validationErrors = internalErrors;
@@ -51,14 +52,14 @@ namespace media_vault_app.Application.Validators.User
                 (nameof(createDto.ConfirmPassword), createDto.ConfirmPassword)
             };
 
-            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IReadOnlyList<ValidationError> nullOrEmptyErrors))
+            if (requiredFields.HasMissingRequiredFields(errorContext, out IReadOnlyList<ValidationError> nullOrEmptyErrors))
             {
                 internalErrors.AddRange(nullOrEmptyErrors);
             }
 
             if (!string.IsNullOrWhiteSpace(createDto.Email) && !string.IsNullOrWhiteSpace(createDto.ConfirmEmail))
             {
-                if (createDto.Email.DoesNotMatch(createDto.ConfirmEmail, nameof(createDto.Email), nameof(createDto.ConfirmEmail), errorContext, out ValidationError notMatchingEmailError))
+                if (createDto.Email.HasNonMatchingMediaVaultValues(createDto.ConfirmEmail, nameof(createDto.Email), nameof(createDto.ConfirmEmail), errorContext, out ValidationError notMatchingEmailError))
                 {
                     internalErrors.Add(notMatchingEmailError);
                 }
@@ -66,7 +67,7 @@ namespace media_vault_app.Application.Validators.User
 
             if (!string.IsNullOrWhiteSpace(createDto.Password) && !string.IsNullOrWhiteSpace(createDto.ConfirmPassword))
             {
-                if (createDto.Password.DoesNotMatch(createDto.ConfirmPassword, nameof(createDto.Password), nameof(createDto.ConfirmPassword), errorContext, out ValidationError notMatchingPasswordError))
+                if (createDto.Password.HasNonMatchingMediaVaultValues(createDto.ConfirmPassword, nameof(createDto.Password), nameof(createDto.ConfirmPassword), errorContext, out ValidationError notMatchingPasswordError))
                 {
                     internalErrors.Add(notMatchingPasswordError);
                 }
@@ -80,7 +81,7 @@ namespace media_vault_app.Application.Validators.User
         {
             var internalErrors = new List<ValidationError>();
 
-            if (updateDto.IsNull(errorContext, out ValidationError nullValueError))
+            if (updateDto.IsMediaVaultNull(errorContext, out ValidationError nullValueError))
             {
                 internalErrors.Add(nullValueError);
                 validationErrors = internalErrors;
@@ -93,7 +94,7 @@ namespace media_vault_app.Application.Validators.User
                 (nameof(updateDto.Email), updateDto.Email)
             };
 
-            if (requiredFields.RequiredFieldsAreNullOrWhiteSpace(errorContext, out IReadOnlyList<ValidationError> nullOrEmptyErrors))
+            if (requiredFields.HasMissingRequiredFields(errorContext, out IReadOnlyList<ValidationError> nullOrEmptyErrors))
             {
                 internalErrors.AddRange(nullOrEmptyErrors);
             }

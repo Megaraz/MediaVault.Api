@@ -4,7 +4,8 @@ using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Services.API;
 using media_vault_app.Domain.Enums;
 using media_vault_app.Tests.TestHelpers;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
 
 namespace media_vault_app.Tests.Services.API
 {
@@ -90,12 +91,9 @@ namespace media_vault_app.Tests.Services.API
         [Fact]
         public async Task GetGameByIdAsync_Should_Propagate_ClientFailure()
         {
-            var expectedError = Error.NotFound(new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: "RawgApiClient",
-                MethodName: "GetGameByIdAsync",
-                Operation: OperationType.Get,
-                EntityName: "Rawg Game"));
+            var expectedError = MediaVaultErrors.NotFound(new ErrorContext(
+                operation: OperationType.Get,
+                entityName: "Rawg Game"));
 
             var client = new FakeRawgApiClient(
                 getGameByIdResult: Result<RawgGameDetailedResponse>.Failure(expectedError, "RAWG game was not found."));
@@ -200,12 +198,9 @@ namespace media_vault_app.Tests.Services.API
         [Fact]
         public async Task SearchGamesAsync_Should_Propagate_ClientFailure()
         {
-            var expectedError = Error.Failure(new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: "RawgApiClient",
-                MethodName: "SearchGamesAsync",
-                Operation: OperationType.GetCollection,
-                EntityName: "Rawg Game"), "RAWG search failed.");
+            var expectedError = MediaVaultErrors.Failure(new ErrorContext(
+                operation: OperationType.GetCollection,
+                entityName: "Rawg Game"), "RAWG search failed.");
 
             var client = new FakeRawgApiClient(
                 searchGamesResult: Result<RawgSearchResponse>.Failure(expectedError, "RAWG search failed."));

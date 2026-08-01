@@ -1,7 +1,7 @@
 ﻿using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using Rasmus.SharedKernel.Interfaces.Services;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Services
 {

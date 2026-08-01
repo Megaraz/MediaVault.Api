@@ -5,7 +5,9 @@ using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Interfaces.Validators;
 using Microsoft.Extensions.Logging;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
+using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Services.Auth
 {
@@ -60,7 +62,7 @@ namespace media_vault_app.Application.Services.Auth
             if (!passwordIsValid)
             {
                 var invalidPasswordErrorContext = baseErrorContext with { FieldName = nameof(UserLoginDto.Password) };
-                var unauthorizedError = Error.Unauthorized(invalidPasswordErrorContext);
+                var unauthorizedError = MediaVaultErrors.Unauthorized(invalidPasswordErrorContext);
 
                 return Result<UserDetailedDto>.Failure(unauthorizedError, "Invalid username/email or password.");
             }
@@ -101,13 +103,13 @@ namespace media_vault_app.Application.Services.Auth
             if (!availabilityResult.Value.IsUserNameAvailable)
             {
                 var userNameErrorContext = baseErrorContext with { FieldName = nameof(UserRegisterDto.Username) };
-                registrationValidationErrors.Add(ValidationError.AlreadyExists(userNameErrorContext));
+                registrationValidationErrors.Add(MediaVaultValidationError.AlreadyExists(userNameErrorContext));
             }
 
             if (!availabilityResult.Value.IsEmailAvailable)
             {
                 var emailErrorContext = baseErrorContext with { FieldName = nameof(UserRegisterDto.Email) };
-                registrationValidationErrors.Add(ValidationError.AlreadyExists(emailErrorContext));
+                registrationValidationErrors.Add(MediaVaultValidationError.AlreadyExists(emailErrorContext));
             }
 
             if (registrationValidationErrors.Count > 0)
@@ -148,12 +150,9 @@ namespace media_vault_app.Application.Services.Auth
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: "User",
-                FieldName: fieldName);
+                operation: operation,
+                entityName: "User",
+                fieldName: fieldName);
         }
     }
 }

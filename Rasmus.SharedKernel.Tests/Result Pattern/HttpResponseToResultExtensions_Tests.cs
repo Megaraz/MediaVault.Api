@@ -1,7 +1,12 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Diagnostics;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
+using LegacyErrorLogger = Rasmus.SharedKernel.ResultPattern.ErrorLogger;
+using LegacyErrorLoggerConfiguration = Rasmus.SharedKernel.ResultPattern.ErrorLoggerConfiguration;
+using LegacyErrorLogPolicy = Rasmus.SharedKernel.ResultPattern.ErrorLogPolicy;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern
 {
@@ -10,7 +15,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
     // -------------------------------------------------------------------------
     public class HttpResponseToResultExtensions_Generic_Tests
     {
-        private static readonly ErrorContext ErrorContext = TestErrorContextFactory.Create();
+        private static readonly ErrorContext ErrorContext = PackageErrorContextFactory.Create();
 
         private record TestDto(string Name, int Value);
 
@@ -151,7 +156,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
     // -------------------------------------------------------------------------
     public class HttpResponseToResultExtensions_NonGeneric_Tests
     {
-        private static readonly ErrorContext ErrorContext = TestErrorContextFactory.Create();
+        private static readonly ErrorContext ErrorContext = PackageErrorContextFactory.Create();
 
         [Fact]
         public async Task NullResponse_Returns_Failure_With_TransportFailure()

@@ -1,6 +1,6 @@
 ﻿using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.Validators.User;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
 using Xunit.Abstractions;
 
 namespace media_vault_app.Tests.UserDtoValidator_Tests
@@ -309,12 +309,9 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
         private ErrorContext DefineErrorContext(string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: "AuthService",
-                MethodName: "RegisterUserAsync",
-                Operation: OperationType.Create,
-                EntityName: "User",
-                FieldName: fieldName);
+                operation: OperationType.Create,
+                entityName: "User",
+                fieldName: fieldName);
         }
     }
 }

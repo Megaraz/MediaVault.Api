@@ -1,5 +1,10 @@
 using System.Net;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Diagnostics;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
+using LegacyErrorLogger = Rasmus.SharedKernel.ResultPattern.ErrorLogger;
+using LegacyErrorLoggerConfiguration = Rasmus.SharedKernel.ResultPattern.ErrorLoggerConfiguration;
+using LegacyErrorLogPolicy = Rasmus.SharedKernel.ResultPattern.ErrorLogPolicy;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern
 {
@@ -13,12 +18,12 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [MemberData(nameof(AllFactoryInstances))]
         public void All_Factories_Should_Set_ErrorType_To_HttpError(HttpError error)
         {
-            Assert.Equal(ErrorType.HttpError, error.Type);
+            Assert.Equal(ErrorType.External, error.Type);
         }
 
         public static IEnumerable<object[]> AllFactoryInstances()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
 
             yield return [HttpError.BadRequest(ctx)];
             yield return [HttpError.UnauthorizedAccess(ctx)];
@@ -41,7 +46,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void TransportFailure_With_Exception_Should_Attach_Exception()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
             var exception = new HttpRequestException("Connection refused");
 
             var error = HttpError.TransportFailure(ctx, exception);
@@ -52,7 +57,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void TransportFailure_Without_Exception_Should_Have_Null_Exception()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
 
             var error = HttpError.TransportFailure(ctx);
 
@@ -62,7 +67,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void MalformedResponse_With_Exception_Should_Attach_Exception()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
             var exception = new InvalidOperationException("Unexpected JSON");
 
             var error = HttpError.MalformedResponse(ctx, exception);
@@ -73,7 +78,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void MalformedResponse_Without_Exception_Should_Have_Null_Exception()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
 
             var error = HttpError.MalformedResponse(ctx);
 
@@ -87,7 +92,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void UnexpectedStatusCode_Description_Should_Contain_Numeric_Status_Code()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
 
             var error = HttpError.UnexpectedStatusCode(ctx, HttpStatusCode.ServiceUnavailable);
 
@@ -97,7 +102,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void UnexpectedStatusCode_Description_Should_Contain_Status_Code_Name()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
 
             var error = HttpError.UnexpectedStatusCode(ctx, HttpStatusCode.ServiceUnavailable);
 
@@ -110,7 +115,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void Custom_UserMessage_Should_Equal_The_Provided_Suffix()
         {
-            var ctx = TestErrorContextFactory.Create();
+            var ctx = PackageErrorContextFactory.Create();
             const string customSuffix = "Rate limit exceeded for external API.";
 
             var error = HttpError.Custom(ctx, customSuffix);

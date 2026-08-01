@@ -3,7 +3,9 @@ using media_vault_app.Application.DTOs.External_API_Contracts.GoogleBooks;
 using media_vault_app.Application.Interfaces.Clients;
 using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.API.Clients
 {
@@ -57,7 +59,7 @@ namespace media_vault_app.Infrastructure.API.Clients
             }
             catch (OperationCanceledException)
             {
-                return Result<GoogleBooksVolumeResponse>.Failure(Error.Cancelled(errorContext));
+                return Result<GoogleBooksVolumeResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
             }
             catch (HttpRequestException exception)
             {
@@ -89,7 +91,7 @@ namespace media_vault_app.Infrastructure.API.Clients
             }
             catch (OperationCanceledException)
             {
-                return Result<GoogleBooksSearchResponse>.Failure(Error.Cancelled(errorContext));
+                return Result<GoogleBooksSearchResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
             }
             catch (HttpRequestException exception)
             {
@@ -109,12 +111,9 @@ namespace media_vault_app.Infrastructure.API.Clients
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: entityName ?? "Google Books Volume",
-                FieldName: fieldName);
+                operation: operation,
+                entityName: entityName ?? "Google Books Volume",
+                fieldName: fieldName);
         }
     }
 }

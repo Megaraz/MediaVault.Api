@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.API.Controllers
 {
@@ -14,6 +15,7 @@ namespace media_vault_app.API.Controllers
         /// or the appropriate error response on failure.
         /// </summary>
         public static ActionResult<TValue> ToActionResult<TValue>(this ControllerBase c, Result<TValue> result)
+            where TValue : notnull
         {
             var response = HttpResultMapper.ToHttpResponse(result);
             return c.ToActionResult<TValue>(response);
@@ -49,6 +51,7 @@ namespace media_vault_app.API.Controllers
             Result<TValue> result,
             string actionName,
             Func<TValue, object> routeValuesFactory)
+            where TValue : notnull
         {
             if (result.IsFailure)
             {
@@ -60,6 +63,7 @@ namespace media_vault_app.API.Controllers
         }
 
         private static ActionResult<TValue> ToActionResult<TValue>(this ControllerBase c, MappedHttpResponse response)
+            where TValue : notnull
         {
             return response.StatusCode switch
             {

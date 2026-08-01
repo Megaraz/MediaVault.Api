@@ -4,7 +4,9 @@ using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.Pagination;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Results;
+using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Services.Base_Classes
 {
@@ -34,10 +36,10 @@ namespace media_vault_app.Application.Services.Base_Classes
         {
             var baseErrorContext = DefineErrorContext(nameof(GetByIdAsync), OperationType.Get);
 
-            if (id.IsNotValidId(baseErrorContext, out var idNotValidError))
+            if (id.IsNotValidMediaVaultId(baseErrorContext, out var idNotValidError))
             {
                 _logger.LogDebug("GetByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idNotValidError]));
-                return Result<TDetailedDto>.ValidationFailure([idNotValidError]);
+                return Result<TDetailedDto>.ValidationFailure([idNotValidError], MediaVaultResultMessages.ValidationFailure);
             }
 
             var repoResult = await _repo.GetByIdAsync(id, ct);
@@ -92,12 +94,9 @@ namespace media_vault_app.Application.Services.Base_Classes
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: this.GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: typeof(TEntity).Name,
-                FieldName: fieldName);
+                operation: operation,
+                entityName: typeof(TEntity).Name,
+                fieldName: fieldName);
         }
     }
 }

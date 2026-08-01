@@ -1,4 +1,9 @@
-﻿using Rasmus.SharedKernel.ResultPattern;
+﻿using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Diagnostics;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
+using LegacyErrorLogger = Rasmus.SharedKernel.ResultPattern.ErrorLogger;
+using LegacyErrorLoggerConfiguration = Rasmus.SharedKernel.ResultPattern.ErrorLoggerConfiguration;
+using LegacyErrorLogPolicy = Rasmus.SharedKernel.ResultPattern.ErrorLogPolicy;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern
 {
@@ -6,7 +11,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
     {
 
         //private ErrorLogger _errorLogger = new(
-        //    new ErrorLoggerConfiguration());
+        //    new LegacyErrorLoggerConfiguration());
 
 
         [Fact]
@@ -15,13 +20,13 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             var tempDir = CreateTempDirectory();
             try
             {
-                var errorLogger = new ErrorLogger(new ErrorLoggerConfiguration { BasePath = tempDir });
+                var errorLogger = new LegacyErrorLogger(new LegacyErrorLoggerConfiguration { BasePath = tempDir });
                 var error = Error.Failure(
-                    TestErrorContextFactory.Create(),
+                    PackageErrorContextFactory.Create(),
                     "Test error description",
                     new Exception("Test exception"));
 
-                await errorLogger.LogErrorToFileAsync(error);
+                await errorLogger.LogErrorToFileAsync(error, CreateLogContext());
 
                 Assert.NotEmpty(await errorLogger.GetErrorLogsAsync());
             }
@@ -37,18 +42,18 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             var tempDir = CreateTempDirectory();
             try
             {
-                var configuration = new ErrorLoggerConfiguration
+                var configuration = new LegacyErrorLoggerConfiguration
                 {
                     BasePath = tempDir,
                     Filename = "schema.log.ndjson"
                 };
-                var errorLogger = new ErrorLogger(configuration);
+                var errorLogger = new LegacyErrorLogger(configuration);
                 var error = Error.Failure(
-                    TestErrorContextFactory.Create(),
+                    PackageErrorContextFactory.Create(),
                     "Technical description",
                     new InvalidOperationException("diagnostic exception"));
 
-                await errorLogger.LogErrorToFileAsync(error);
+                await errorLogger.LogErrorToFileAsync(error, CreateLogContext());
 
                 var lines = await File.ReadAllLinesAsync(configuration.FullPath);
                 var line = Assert.Single(lines);
@@ -56,11 +61,14 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
                 var root = document.RootElement;
 
                 Assert.Equal(
-                    ["writeDate", "code", "description", "errorType", "exceptionMessage", "stackTrace"],
+                    ["writeDate", "code", "description", "errorType", "layer", "service", "method", "exceptionMessage", "stackTrace"],
                     root.EnumerateObject().Select(x => x.Name));
                 Assert.Equal(error.Code, root.GetProperty("code").GetString());
                 Assert.Equal(error.Description, root.GetProperty("description").GetString());
                 Assert.Equal(error.Type.ToString(), root.GetProperty("errorType").GetString());
+                Assert.Equal("Infrastructure", root.GetProperty("layer").GetString());
+                Assert.Equal("ErrorLoggerTests", root.GetProperty("service").GetString());
+                Assert.Equal("TestMethod", root.GetProperty("method").GetString());
                 Assert.Equal("diagnostic exception", root.GetProperty("exceptionMessage").GetString());
                 Assert.Equal(System.Text.Json.JsonValueKind.Null, root.GetProperty("stackTrace").ValueKind);
             }
@@ -73,7 +81,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         [Fact]
         public void ErrorLoggerConfiguration_Defaults_ArePartOfTheOperationalContract()
         {
-            var configuration = new ErrorLoggerConfiguration();
+            var configuration = new LegacyErrorLoggerConfiguration();
 
             Assert.Equal(TimeSpan.FromDays(7), configuration.RetentionPeriod);
             Assert.Equal("errors.log.ndjson", configuration.Filename);
@@ -86,17 +94,17 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             var tempDir = CreateTempDirectory();
             try
             {
-                var config = new ErrorLoggerConfiguration
+                var config = new LegacyErrorLoggerConfiguration
                 {
                     BasePath = tempDir,
                     Filename = "test-errors.log.ndjson",
                     RetentionPeriod = TimeSpan.FromDays(7),
                 };
-                ErrorLogger errorLogger = new(config);
+                LegacyErrorLogger errorLogger = new(config);
 
                 // Write one valid entry and one corrupted entry directly
-                Error validError = Error.Failure(TestErrorContextFactory.Create(), "Valid entry");
-                await errorLogger.LogErrorToFileAsync(validError);
+                Error validError = Error.Failure(PackageErrorContextFactory.Create(), "Valid entry");
+                await errorLogger.LogErrorToFileAsync(validError, CreateLogContext());
                 await File.AppendAllTextAsync(config.FullPath, "{ this is not valid json }" + Environment.NewLine);
 
                 // Act — must not throw
@@ -120,16 +128,16 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             var tempDir = CreateTempDirectory();
             try
             {
-                var config = new ErrorLoggerConfiguration
+                var config = new LegacyErrorLoggerConfiguration
                 {
                     BasePath = tempDir,
                     Filename = "test-errors.log.ndjson",
                     RetentionPeriod = TimeSpan.FromDays(7),
                 };
-                ErrorLogger errorLogger = new(config);
+                LegacyErrorLogger errorLogger = new(config);
 
-                Error validError = Error.Failure(TestErrorContextFactory.Create(), "Valid entry");
-                await errorLogger.LogErrorToFileAsync(validError);
+                Error validError = Error.Failure(PackageErrorContextFactory.Create(), "Valid entry");
+                await errorLogger.LogErrorToFileAsync(validError, CreateLogContext());
                 await File.AppendAllTextAsync(config.FullPath, "{ this is not valid json }" + Environment.NewLine);
 
                 // Act — must not throw
@@ -152,19 +160,20 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             var tempDir = CreateTempDirectory();
             try
             {
-                var config = new ErrorLoggerConfiguration
+                var config = new LegacyErrorLoggerConfiguration
                 {
                     BasePath = tempDir,
                     Filename = "concurrent-test.log.ndjson",
                 };
-                var errorLogger = new ErrorLogger(config);
+                var errorLogger = new LegacyErrorLogger(config);
 
                 const int concurrentWriters = 20;
 
                 // Act — fire all writes simultaneously
                 var tasks = Enumerable.Range(0, concurrentWriters)
                     .Select(i => errorLogger.LogErrorToFileAsync(
-                        Error.Failure(TestErrorContextFactory.Create(), $"Concurrent entry {i}")))
+                        Error.Failure(PackageErrorContextFactory.Create(), $"Concurrent entry {i}"),
+                        CreateLogContext()))
                     .ToList();
 
                 await Task.WhenAll(tasks);
@@ -185,6 +194,9 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             Directory.CreateDirectory(path);
             return path;
         }
+
+        private static ErrorLogContext CreateLogContext() =>
+            new("Infrastructure", "ErrorLoggerTests", "TestMethod");
 
     }
 }

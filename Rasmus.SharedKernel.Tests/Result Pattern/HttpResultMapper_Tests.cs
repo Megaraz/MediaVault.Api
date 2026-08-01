@@ -1,6 +1,11 @@
 ﻿using System.Net;
 using System.Text.Json;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Diagnostics;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
+using LegacyErrorLogger = Rasmus.SharedKernel.ResultPattern.ErrorLogger;
+using LegacyErrorLoggerConfiguration = Rasmus.SharedKernel.ResultPattern.ErrorLoggerConfiguration;
+using LegacyErrorLogPolicy = Rasmus.SharedKernel.ResultPattern.ErrorLogPolicy;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern
 {
@@ -95,14 +100,14 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
             yield return [Error.Conflict(ctx), 409];
             yield return [Error.Unauthorized(ctx), 401];
 
-            yield return [new Error("Test.Forbidden.Code", "Forbidden description.", ErrorType.Forbidden, "Forbidden."), 403];
+            yield return [Error.Custom("Test.Forbidden.Code", "Forbidden description.", ErrorType.Forbidden, "Forbidden."), 403];
             yield return [Error.Failure(ctx), 500];
             yield return [Error.Cancelled(ctx), 503];
 
-            yield return [new Error("Test.Database.Code", "Database description.", ErrorType.Database, "Database failure."), 500];
+            yield return [DatabaseError.QueryFailure(ctx, new Exception("database")), 500];
 
-            // Fallback/default branch.
-            yield return [new Error("Test.Unknown.Code", "Unknown description.", (ErrorType)999, "Unknown failure."), 400];
+            // Non-HTTP external errors follow MediaVault's approved 500 policy.
+            yield return [Error.Custom("Test.External.Code", "External description.", ErrorType.External, "External failure."), 500];
         }
 
         // ── ErrorType.None is blocked before reaching the mapper ─────────────────
@@ -375,7 +380,7 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
 
         private static ErrorContext CreateErrorContext(string fieldName = "UserId")
         {
-            return TestErrorContextFactory.Create(fieldName: fieldName);
+            return PackageErrorContextFactory.Create(fieldName: fieldName);
         }
 
         private static JsonElement SerializeBody(MappedHttpResponse response)

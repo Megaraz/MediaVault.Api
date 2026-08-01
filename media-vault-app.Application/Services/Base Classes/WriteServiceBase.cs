@@ -5,7 +5,9 @@ using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Rasmus.SharedKernel.Interfaces.Validators;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Results;
+using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Services.Base_Classes
 {
@@ -42,7 +44,7 @@ namespace media_vault_app.Application.Services.Base_Classes
             if (!_dtoValidator.IsValidCreateDto(createDto, baseErrorContext, out var validationErrors))
             {
                 _logger.LogDebug("CreateAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(validationErrors));
-                return Result<TDetailedDto>.ValidationFailure(validationErrors);
+                return Result<TDetailedDto>.ValidationFailure(validationErrors, MediaVaultResultMessages.ValidationFailure);
             }
 
             var entity = _dtoToEntityMapper.ToEntity(createDto);
@@ -60,10 +62,10 @@ namespace media_vault_app.Application.Services.Base_Classes
         {
             var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
-            if (id.IsNotValidId(baseErrorContext, out var idNotValidError))
+            if (id.IsNotValidMediaVaultId(baseErrorContext, out var idNotValidError))
             {
                 _logger.LogDebug("DeleteAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idNotValidError]));
-                return Result.ValidationFailure([idNotValidError]);
+                return Result.ValidationFailure([idNotValidError], MediaVaultResultMessages.ValidationFailure);
             }
 
             var mappedRepoResult = await _repo.DeleteAsync(id, ct);
@@ -78,7 +80,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             List<ValidationError> validationErrors = new();
 
-            if (id.IsNotValidId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
+            if (id.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(id) }, out var idError))
                 validationErrors.Add(idError);
 
             if (!_dtoValidator.IsValidUpdateDto(updateDto, baseErrorContext, out var updateValidationErrors))
@@ -87,7 +89,7 @@ namespace media_vault_app.Application.Services.Base_Classes
             if (validationErrors.Count > 0)
             {
                 _logger.LogDebug("UpdateAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(validationErrors));
-                return Result.ValidationFailure(validationErrors);
+                return Result.ValidationFailure(validationErrors, MediaVaultResultMessages.ValidationFailure);
             }
 
             var entity = _dtoToEntityMapper.ToEntity(id, updateDto);
@@ -102,12 +104,9 @@ namespace media_vault_app.Application.Services.Base_Classes
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: typeof(TEntity).Name,
-                FieldName: fieldName);
+                operation: operation,
+                entityName: typeof(TEntity).Name,
+                fieldName: fieldName);
         }
     }
 }

@@ -3,7 +3,9 @@ using media_vault_app.Application.DTOs.External_API_Contracts.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
 using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.API.Clients
 {
@@ -53,7 +55,7 @@ namespace media_vault_app.Infrastructure.API.Clients
             }
             catch (OperationCanceledException)
             {
-                return Result<RawgGameDetailedResponse>.Failure(Error.Cancelled(errorContext));
+                return Result<RawgGameDetailedResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
             }
             catch (HttpRequestException exception)
             {
@@ -83,7 +85,7 @@ namespace media_vault_app.Infrastructure.API.Clients
             }
             catch (OperationCanceledException)
             {
-                return Result<RawgSearchResponse>.Failure(Error.Cancelled(errorContext));
+                return Result<RawgSearchResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
             }
             catch (HttpRequestException exception)
             {
@@ -103,12 +105,9 @@ namespace media_vault_app.Infrastructure.API.Clients
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: entityName ?? "Rawg Game",
-                FieldName: fieldName);
+                operation: operation,
+                entityName: entityName ?? "Rawg Game",
+                fieldName: fieldName);
         }
 
     }

@@ -1,6 +1,7 @@
 ﻿using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.Interfaces.Validators;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Validators.MediaEntry
 {
@@ -10,7 +11,7 @@ namespace media_vault_app.Application.Validators.MediaEntry
         {
             List<ValidationError> internalErrors = new();
 
-            if (ValidatorExtensions.IsNull(createDto, errorContext, out ValidationError nullValueError))
+            if (MediaVaultValidatorExtensions.IsMediaVaultNull(createDto, errorContext, out ValidationError nullValueError))
             {
                 internalErrors.Add(nullValueError);
                 validationErrors = internalErrors;
@@ -19,7 +20,7 @@ namespace media_vault_app.Application.Validators.MediaEntry
 
             var titleErrorContext = errorContext with { FieldName = nameof(createDto.Title) };
 
-            if (ValidatorExtensions.IsNullOrWhiteSpace(createDto.Title, titleErrorContext, out ValidationError nullOrEmptyError))
+            if (MediaVaultValidatorExtensions.IsMissingMediaVaultValue(createDto.Title, titleErrorContext, out ValidationError nullOrEmptyError))
             {
                 internalErrors.Add(nullOrEmptyError);
             }
@@ -33,7 +34,7 @@ namespace media_vault_app.Application.Validators.MediaEntry
         {
             List<ValidationError> internalErrors = new();
 
-            if (updateDto.IsNull(errorContext, out ValidationError nullValueError))
+            if (updateDto.IsMediaVaultNull(errorContext, out ValidationError nullValueError))
             {
                 internalErrors.Add(nullValueError);
                 validationErrors = internalErrors;
@@ -42,7 +43,7 @@ namespace media_vault_app.Application.Validators.MediaEntry
 
             var titleErrorContext = errorContext with { FieldName = nameof(updateDto.Title) };
 
-            if (updateDto.Title.IsNullOrWhiteSpace(titleErrorContext, out ValidationError nullOrEmptyError))
+            if (updateDto.Title.IsMissingMediaVaultValue(titleErrorContext, out ValidationError nullOrEmptyError))
             {
                 internalErrors.Add(nullOrEmptyError);
             }

@@ -3,7 +3,8 @@ using media_vault_app.Application.Mappers.MediaEntry;
 using media_vault_app.Application.Services.MediaEntry;
 using media_vault_app.Domain.Enums;
 using media_vault_app.Tests.TestHelpers;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
 using BookEntryEntity = media_vault_app.Domain.Entities.BookEntry;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using MovieEntryEntity = media_vault_app.Domain.Entities.MovieEntry;
@@ -69,7 +70,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
         [Fact]
         public async Task GetDetailedCollectionByOwnerIdAsync_Should_ReturnOwnerFailure_When_OwnerDoesNotExist()
         {
-            var expectedError = Error.NotFound(DefineErrorContext("GetDetailedCollectionByOwnerIdAsync", OperationType.GetCollection));
+            var expectedError = MediaVaultErrors.NotFound(DefineErrorContext("GetDetailedCollectionByOwnerIdAsync", OperationType.GetCollection));
             var ownerRepo = new FakeUserRepo
             {
                 ExistsResult = Result<bool>.Failure(expectedError, "Owner not found.")
@@ -171,11 +172,8 @@ namespace media_vault_app.Tests.Services.MediaEntry
         private static ErrorContext DefineErrorContext(string methodName, OperationType operation)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: nameof(MediaEntryReadService),
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: "MediaEntry");
+                operation: operation,
+                entityName: "MediaEntry");
         }
     }
 }

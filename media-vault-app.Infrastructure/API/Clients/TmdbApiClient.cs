@@ -6,7 +6,10 @@ using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
+using Rasmus.SharedKernel.Validation;
+using Rasmus.SharedKernel.ResultPatternCompatibility;
 
 namespace media_vault_app.Infrastructure.API.Clients
 {
@@ -57,7 +60,7 @@ namespace media_vault_app.Infrastructure.API.Clients
             }
             catch (OperationCanceledException)
             {
-                return Result<TmdbTvSeriesDetailedResult>.Failure(Error.Cancelled(errorContext));
+                return Result<TmdbTvSeriesDetailedResult>.Failure(MediaVaultErrors.Cancelled(errorContext));
             }
             catch (HttpRequestException exception)
             {
@@ -85,7 +88,7 @@ namespace media_vault_app.Infrastructure.API.Clients
             }
             catch (OperationCanceledException)
             {
-                return Result<TmdbMovieDetailedResponse>.Failure(Error.Cancelled(errorContext));
+                return Result<TmdbMovieDetailedResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
             }
             catch (HttpRequestException exception)
             {
@@ -111,7 +114,7 @@ namespace media_vault_app.Infrastructure.API.Clients
 
             if (endpoint is null)
             {
-                var invalidMediaTypeError = ValidationError.InvalidFormat(
+                var invalidMediaTypeError = MediaVaultValidationError.InvalidFormat(
                     errorContext with { FieldName = nameof(mediaType) },
                     $"Unsupported media type: {mediaType}");
 
@@ -132,7 +135,7 @@ namespace media_vault_app.Infrastructure.API.Clients
             }
             catch (OperationCanceledException)
             {
-                return Result<TmdbSearchResponse>.Failure(Error.Cancelled(errorContext));
+                return Result<TmdbSearchResponse>.Failure(MediaVaultErrors.Cancelled(errorContext));
             }
             catch (HttpRequestException exception)
             {
@@ -151,12 +154,9 @@ namespace media_vault_app.Infrastructure.API.Clients
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)
         {
             return new ErrorContext(
-                Layer: "Infrastructure",
-                ServiceName: GetType().Name,
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: entityName ?? "Tmdb",
-                FieldName: fieldName);
+                operation: operation,
+                entityName: entityName ?? "Tmdb",
+                fieldName: fieldName);
         }
 
     }

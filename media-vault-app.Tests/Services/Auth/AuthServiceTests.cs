@@ -3,7 +3,8 @@ using media_vault_app.Application.Mappers.User;
 using media_vault_app.Application.Services.Auth;
 using media_vault_app.Application.Validators.User;
 using media_vault_app.Tests.TestHelpers;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
+using Rasmus.SharedKernel.Errors;
 using UserEntity = media_vault_app.Domain.Entities.User;
 
 namespace media_vault_app.Tests.Services.Auth
@@ -29,7 +30,7 @@ namespace media_vault_app.Tests.Services.Auth
         [Fact]
         public async Task LoginAsync_Should_Propagate_RepoFailure_When_UserLookupFails()
         {
-            var expectedError = Error.NotFound(DefineErrorContext(nameof(AuthService.LoginAsync), OperationType.Get));
+            var expectedError = MediaVaultErrors.NotFound(DefineErrorContext(nameof(AuthService.LoginAsync), OperationType.Get));
             var userRepo = new FakeUserRepo
             {
                 GetByUsernameOrEmailResult = Result<UserEntity>.Failure(expectedError, "User not found.")
@@ -110,7 +111,7 @@ namespace media_vault_app.Tests.Services.Auth
         [Fact]
         public async Task RegisterUserAsync_Should_Propagate_NonValidationAvailabilityFailure()
         {
-            var expectedError = Error.Failure(DefineErrorContext(nameof(AuthService.RegisterUserAsync), OperationType.Create), "Availability check failed.");
+            var expectedError = MediaVaultErrors.Failure(DefineErrorContext(nameof(AuthService.RegisterUserAsync), OperationType.Create), "Availability check failed.");
             var userRepo = new FakeUserRepo
             {
                 AvailabilityResult = Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(expectedError, "Availability check failed.")
@@ -173,7 +174,7 @@ namespace media_vault_app.Tests.Services.Auth
         [Fact]
         public async Task RegisterUserAsync_Should_Propagate_RegisterFailure()
         {
-            var expectedError = Error.Conflict(DefineErrorContext(nameof(AuthService.RegisterUserAsync), OperationType.Create));
+            var expectedError = MediaVaultErrors.Conflict(DefineErrorContext(nameof(AuthService.RegisterUserAsync), OperationType.Create));
             var userRepo = new FakeUserRepo
             {
                 RegisterUserResult = Result.Failure(expectedError, "Could not create user.")
@@ -224,11 +225,8 @@ namespace media_vault_app.Tests.Services.Auth
         private static ErrorContext DefineErrorContext(string methodName, OperationType operation)
         {
             return new ErrorContext(
-                Layer: "Service",
-                ServiceName: nameof(AuthService),
-                MethodName: methodName,
-                Operation: operation,
-                EntityName: "User");
+                operation: operation,
+                entityName: "User");
         }
     }
 }

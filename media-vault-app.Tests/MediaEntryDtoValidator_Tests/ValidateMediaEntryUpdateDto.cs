@@ -1,7 +1,7 @@
 ﻿using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.Validators.MediaEntry;
 using media_vault_app.Domain.Enums;
-using Rasmus.SharedKernel.ResultPattern;
+using Megaraz.ResultPattern;
 using Xunit.Abstractions;
 
 namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
@@ -124,12 +124,9 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
         {
             return new ErrorContext
             (
-                Layer: "Application",
-                ServiceName: "MediaEntryWriteService",
-                MethodName: "UpdateMediaEntryAsync",
-                Operation: OperationType.Update,
-                EntityName: "MediaEntry",
-                FieldName: fieldName
+                operation: OperationType.Update,
+                entityName: "MediaEntry",
+                fieldName: fieldName
             );
 
         }

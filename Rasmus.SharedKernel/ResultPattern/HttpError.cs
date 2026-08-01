@@ -1,161 +1,108 @@
 ﻿using System.Net;
+using Megaraz.ResultPattern;
 
-namespace Rasmus.SharedKernel.ResultPattern
+namespace Rasmus.SharedKernel.ResultPatternCompatibility;
+
+/// <summary>
+/// Temporary adapter that keeps the legacy HTTP classification until issue #92 adopts
+/// Megaraz.ResultPattern.AspNetCore. It deliberately uses package core Error types.
+/// </summary>
+public enum HttpErrorType
 {
-
-    public enum HttpErrorType
-    {
-        Custom = 0,
-        BadRequest = 1,
-        Unauthorized = 2,
-        Forbidden = 3,
-        NotFound = 4,
-        Conflict = 5,
-        InternalServerError = 6,
-        UnprocessableContent = 7,
-
-        // new additions
-        TooManyRequests = 8,
-        TransportFailure = 9,
-        MalformedResponse = 10,
-        UnexpectedStatusCode = 11
-    }
-
-    public record HttpError : Error
-    {
-        public HttpErrorType HttpErrorType { get; }
-
-        // Private constructor to enforce the use of static factory methods for creating HttpError instances
-        // Sets the ErrorType of base-class to HttpError for all instances of HttpError
-        private HttpError(string code, string description, HttpErrorType type, string userMessage, Exception? exception = null)
-            : base(code, description, ErrorType.HttpError, userMessage, exception)
-        {
-            HttpErrorType = type;
-        }
-
-        public static HttpError Custom(ErrorContext errorContext, string customDescriptionSuffix)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.Custom);
-
-            string formattedErrorDescription = FormatDescription(errorContext, customDescriptionSuffix);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Custom, customDescriptionSuffix);
-        }
-
-        public static HttpError TransportFailure(ErrorContext errorContext, Exception? exception = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpTransportFailure);
-
-            string defaultDescriptionSuffix = $"Transport Failure";
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.TransportFailure, defaultDescriptionSuffix, exception);
-        }
-
-        public static HttpError TooManyRequests(ErrorContext errorContext, string? callerMessage = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpTooManyRequests);
-
-            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Too Many Requests" : callerMessage;
-            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.TooManyRequests, userMessage);
-        }
-
-        public static HttpError MalformedResponse(ErrorContext errorContext, Exception? exception = null, string? detail = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpMalformedResponse);
-
-            string userMessage = "The external service returned a malformed or unexpected response.";
-            string descriptionSuffix = string.IsNullOrWhiteSpace(detail) ? userMessage : detail;
-            string formattedErrorDescription = FormatDescription(errorContext, descriptionSuffix);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.MalformedResponse, userMessage, exception);
-        }
-
-        public static HttpError UnexpectedStatusCode(ErrorContext errorContext, HttpStatusCode statusCode)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpUnexpectedStatusCode);
-
-            string defaultDescriptionSuffix = $"The external service returned an unexpected HTTP status code {(int)statusCode} ({statusCode}).";
-            string formattedErrorDescription = FormatDescription(errorContext, defaultDescriptionSuffix);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.UnexpectedStatusCode, defaultDescriptionSuffix);
-        }
-
-        public static HttpError UnprocessableContent(ErrorContext errorContext, string? callerMessage = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpUnprocessableContent);
-
-            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Unprocessable Content" : callerMessage;
-            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.UnprocessableContent, userMessage);
-        }
-
-        public static HttpError BadRequest(ErrorContext errorContext, string? callerMessage = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpBadRequest);
-
-            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Bad Request" : callerMessage;
-            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.BadRequest, userMessage);
-        }
-
-        public static HttpError UnauthorizedAccess(ErrorContext errorContext, string? callerMessage = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpUnauthorized);
-
-            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Unauthorized" : callerMessage;
-            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Unauthorized, userMessage);
-        }
-
-
-        public static HttpError Forbidden(ErrorContext errorContext, string? callerMessage = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpForbidden);
-
-            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Forbidden" : callerMessage;
-            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Forbidden, userMessage);
-        }
-
-
-        public static new HttpError NotFound(ErrorContext errorContext, string? callerMessage = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpNotFound);
-
-            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Not Found" : callerMessage;
-            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.NotFound, userMessage);
-        }
-
-        public static new HttpError Conflict(ErrorContext errorContext, string? callerMessage = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpConflict);
-
-            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Conflict" : callerMessage;
-            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.Conflict, userMessage);
-        }
-
-        public static HttpError InternalServerError(ErrorContext errorContext, string? callerMessage = null)
-        {
-            var errorCode = ErrorCode.For(errorContext, ErrorReasonCode.HttpInternalServerError);
-
-            string userMessage = string.IsNullOrWhiteSpace(callerMessage) ? "Internal Server Error" : callerMessage;
-            string formattedErrorDescription = FormatDescription(errorContext, userMessage);
-
-            return new HttpError(errorCode.Code, formattedErrorDescription, HttpErrorType.InternalServerError, userMessage);
-        }
-
-    }
+    Custom = 0,
+    BadRequest = 1,
+    Unauthorized = 2,
+    Forbidden = 3,
+    NotFound = 4,
+    Conflict = 5,
+    InternalServerError = 6,
+    UnprocessableContent = 7,
+    TooManyRequests = 8,
+    TransportFailure = 9,
+    MalformedResponse = 10,
+    UnexpectedStatusCode = 11
 }
 
+public record HttpError : Megaraz.ResultPattern.Error
+{
+    public HttpErrorType HttpErrorType { get; }
 
+    private HttpError(
+        string code,
+        string description,
+        HttpErrorType type,
+        string userMessage,
+        Exception? exception = null)
+        : base(code, description, Megaraz.ResultPattern.ErrorType.External, userMessage, exception)
+    {
+        HttpErrorType = type;
+    }
+
+    public static HttpError Custom(ErrorContext context, string description) =>
+        Create(context, "Custom", HttpErrorType.Custom, description, description);
+
+    public static HttpError TransportFailure(ErrorContext context, Exception? exception = null) =>
+        Create(context, "TransportFailure", HttpErrorType.TransportFailure, "Transport Failure", "Transport Failure", exception);
+
+    public static HttpError TooManyRequests(ErrorContext context, string? callerMessage = null) =>
+        CreateWithCallerMessage(context, "TooManyRequests", HttpErrorType.TooManyRequests, callerMessage, "Too Many Requests");
+
+    public static HttpError MalformedResponse(ErrorContext context, Exception? exception = null, string? detail = null)
+    {
+        const string userMessage = "The external service returned a malformed or unexpected response.";
+        return Create(context, "MalformedResponse", HttpErrorType.MalformedResponse,
+            string.IsNullOrWhiteSpace(detail) ? userMessage : detail, userMessage, exception);
+    }
+
+    public static HttpError UnexpectedStatusCode(ErrorContext context, HttpStatusCode statusCode)
+    {
+        var message = $"The external service returned an unexpected HTTP status code {(int)statusCode} ({statusCode}).";
+        return Create(context, "UnexpectedStatusCode", HttpErrorType.UnexpectedStatusCode, message, message);
+    }
+
+    public static HttpError UnprocessableContent(ErrorContext context, string? callerMessage = null) =>
+        CreateWithCallerMessage(context, "UnprocessableContent", HttpErrorType.UnprocessableContent, callerMessage, "Unprocessable Content");
+
+    public static HttpError BadRequest(ErrorContext context, string? callerMessage = null) =>
+        CreateWithCallerMessage(context, "BadRequest", HttpErrorType.BadRequest, callerMessage, "Bad Request");
+
+    public static HttpError UnauthorizedAccess(ErrorContext context, string? callerMessage = null) =>
+        CreateWithCallerMessage(context, "Unauthorized", HttpErrorType.Unauthorized, callerMessage, "Unauthorized");
+
+    public static HttpError Forbidden(ErrorContext context, string? callerMessage = null) =>
+        CreateWithCallerMessage(context, "Forbidden", HttpErrorType.Forbidden, callerMessage, "Forbidden");
+
+    public static HttpError NotFound(ErrorContext context, string? callerMessage = null) =>
+        CreateWithCallerMessage(context, "NotFound", HttpErrorType.NotFound, callerMessage, "Not Found");
+
+    public static HttpError Conflict(ErrorContext context, string? callerMessage = null) =>
+        CreateWithCallerMessage(context, "Conflict", HttpErrorType.Conflict, callerMessage, "Conflict");
+
+    public static HttpError InternalServerError(ErrorContext context, string? callerMessage = null) =>
+        CreateWithCallerMessage(context, "InternalServerError", HttpErrorType.InternalServerError, callerMessage, "Internal Server Error");
+
+    private static HttpError CreateWithCallerMessage(
+        ErrorContext context,
+        string reason,
+        HttpErrorType type,
+        string? callerMessage,
+        string defaultMessage)
+    {
+        var message = string.IsNullOrWhiteSpace(callerMessage) ? defaultMessage : callerMessage;
+        return Create(context, reason, type, message, message);
+    }
+
+    private static HttpError Create(
+        ErrorContext context,
+        string reason,
+        HttpErrorType type,
+        string descriptionDetail,
+        string userMessage,
+        Exception? exception = null)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        var code = Megaraz.ResultPattern.ErrorCode.For(context, reason).Code;
+        var description = TemporaryResultPatternBridge.FormatDescription(context, descriptionDetail);
+        return new HttpError(code, description, type, userMessage, exception);
+    }
+}
