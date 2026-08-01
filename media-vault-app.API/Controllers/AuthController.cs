@@ -9,7 +9,7 @@ namespace media_vault_app.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController : MediaVaultControllerBase
     {
         private readonly IAuthService _authService;
         private readonly IUserReadService _userReadService;
@@ -29,12 +29,14 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("register")]
+        [ProducesResponseType(typeof(UserDetailedDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> RegisterUser(
             [FromBody] UserRegisterDto createDto,
             CancellationToken ct = default) =>
                 this.ToActionResult(await _authService.RegisterUserAsync(createDto, ct));
 
         [HttpPost("login")]
+        [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> LoginUser(
             [FromBody] UserLoginDto loginDto,
             CancellationToken ct = default)
@@ -53,6 +55,7 @@ namespace media_vault_app.API.Controllers
 
         [Authorize]
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateUser(
             [FromBody] UserUpdateDto updateDto,
             CancellationToken ct = default) =>
@@ -62,6 +65,7 @@ namespace media_vault_app.API.Controllers
 
         [Authorize]
         [HttpGet("me")]
+        [ProducesResponseType(typeof(UserDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<UserDetailedDto>> GetCurrentUser(CancellationToken ct = default)
         {
             if (!User.TryGetUserId(out var userId))

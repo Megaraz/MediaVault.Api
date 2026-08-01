@@ -6,7 +6,7 @@ namespace media_vault_app.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UsersController : ControllerBase
+    public class UsersController : MediaVaultControllerBase
     {
 
         private readonly IUserReadService _userReadService;
@@ -19,6 +19,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<UserDetailedDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<UserDetailedDto>>> GetUsers(CancellationToken ct)
         {
             var result = await _userReadService.GetDetailedCollectionAsync(ct: ct);
@@ -27,6 +28,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{id:Guid}")]
+        [ProducesResponseType(typeof(UserDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<UserDetailedDto>> GetUserById(Guid id, CancellationToken ct)
         {
 
@@ -36,6 +38,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpDelete("{id:Guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteUser(Guid id, CancellationToken ct)
         {
             var result = await _userWriteService.DeleteAsync(id, ct);

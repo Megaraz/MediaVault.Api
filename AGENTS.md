@@ -42,7 +42,7 @@ Revalidate this map before architectural work:
 - `media-vault-app.Infrastructure`: EF Core, SQLite persistence, repositories, migrations, and third-party HTTP clients.
 - `media-vault-app.API`: composition root, JWT bearer authentication, controllers, and HTTP response mapping.
 - `media-vault-app.client`: React, TypeScript, Vite, and Tailwind web client.
-- `Rasmus.SharedKernel`: shared contracts and the legacy in-repository ResultPattern implementation while migration is incomplete.
+- `Rasmus.SharedKernel`: shared entity/service contracts plus MediaVault-owned validation, pagination, result-message, diagnostic, and logging abstractions. It depends only on the published core ResultPattern package.
 - `media-vault-app.Tests` and `Rasmus.SharedKernel.Tests`: xUnit tests.
 - `docs/`: durable plans and architecture documentation.
 
@@ -74,13 +74,11 @@ Expected failures are values; unexpected failures are exceptions.
 - Keep HTTP mapping centralized. Services and repositories must not decide MVC response types.
 - Keep user-facing messages safe and stable; keep technical detail in structured diagnostics.
 
-While `docs/resultpattern-migration-plan.md` exists with an active migration status, it is the source of truth for replacing the local implementation with `Megaraz.ResultPattern`, `Megaraz.ResultPattern.AspNetCore`, and `Megaraz.ResultPattern.Infrastructure`.
+`docs/resultpattern-migration-plan.md` is the completed migration record and source of truth for the approved compatibility decisions governing `Megaraz.ResultPattern`, `Megaraz.ResultPattern.AspNetCore`, and `Megaraz.ResultPattern.Infrastructure`.
 
-- Follow its phases and decision register; do not silently resolve open compatibility decisions in code.
-- Do not mix the migration with unrelated cleanup or architecture changes.
-- Characterize externally observable behavior before replacing type identities.
+- Preserve its D1-D11 decisions unless a later task explicitly records a superseding owner decision.
 - Preserve MediaVault-owned behavior that packages do not provide, including application-specific validation helpers, logging, pagination policy, and `CreatedAtAction` behavior.
-- Do not keep duplicate local implementations after the migration phase authorizes their removal.
+- Do not reintroduce a duplicate local ResultPattern implementation or compatibility bridge.
 - Test application contracts and policies, not package internals already tested by the package projects.
 
 ## API, authentication, and security

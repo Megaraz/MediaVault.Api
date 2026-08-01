@@ -87,7 +87,7 @@ flowchart LR
     Infrastructure --> TMDB["TMDB"]
     Infrastructure --> RAWG["RAWG"]
     Infrastructure --> Books["Google Books"]
-    Domain --> SharedKernel["Rasmus.SharedKernel<br/>transitional ResultPattern contracts"]
+    Domain --> SharedKernel["Rasmus.SharedKernel<br/>shared contracts and MediaVault policies"]
     Application --> SharedKernel
     Infrastructure --> SharedKernel
 ```
@@ -106,7 +106,7 @@ boundary. The clients communicate with the system only through the API.
 | `media-vault-app.client` | React 19, TypeScript, Vite, and Tailwind web client |
 | `Rasmus.SharedKernel` | Shared entity contracts plus MediaVault-owned validation and pagination helpers |
 | `media-vault-app.Tests` | Application and API-focused xUnit tests |
-| `Rasmus.SharedKernel.Tests` | Tests for the transitional shared kernel |
+| `Rasmus.SharedKernel.Tests` | Tests for MediaVault-owned shared validation, pagination, and result policies |
 | `docs` | Architecture decisions, active plans, and repository documentation |
 
 The backend currently targets .NET 10. The web client uses React 19, TypeScript,
@@ -235,8 +235,8 @@ Current and planned work is tracked in
 [GitHub Project 2](https://github.com/users/Megaraz/projects/2). Key directions
 include:
 
-- migrating from the local ResultPattern implementation to the published
-  Megaraz packages;
+- maintaining the completed package-backed ResultPattern integration and its
+  MediaVault-owned compatibility policies;
 - a global boundary for unexpected API failures;
 - explicit cancellation, timeout, retry, and rate-limit policies;
 - React Query for web server state and a designed offline-sync model for
@@ -244,8 +244,9 @@ include:
 - production-minded telemetry and deployment; and
 - a narrow, privacy-conscious AI recommendation feature.
 
-These are roadmap items, not claims about the current implementation. See the
-[ResultPattern migration plan](docs/resultpattern-migration-plan.md) and
+Except for the completed ResultPattern integration, these are roadmap items,
+not claims about the current implementation. See the completed
+[ResultPattern migration record](docs/resultpattern-migration-plan.md) and
 [public repository readiness audit](docs/public-repository-readiness-audit.md)
 for the active decisions and known gaps.
 
@@ -258,9 +259,10 @@ NuGet packages:
 - [`Megaraz.ResultPattern.AspNetCore` 0.1.1](https://www.nuget.org/packages/Megaraz.ResultPattern.AspNetCore/0.1.1)
 - [`Megaraz.ResultPattern.Infrastructure` 0.1.0](https://www.nuget.org/packages/Megaraz.ResultPattern.Infrastructure/0.1.0)
 
-MediaVault still uses `Rasmus.SharedKernel` while the characterized migration is
-pending. The published packages are related portfolio work, not yet the
-application's active implementation.
+MediaVault uses these published packages in the active backend. `Rasmus.SharedKernel`
+now retains only shared entity contracts and explicitly MediaVault-owned
+validation, pagination, result-message, diagnostic, and logging abstractions;
+it no longer contains a duplicate ResultPattern implementation.
 
 ## Repository policies
 

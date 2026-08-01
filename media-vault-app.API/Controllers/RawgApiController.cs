@@ -10,7 +10,7 @@ namespace media_vault_app.API.Controllers
     [ApiController]
     [Authorize]
     [Route("[controller]")]
-    public class RawgApiController : ControllerBase
+    public class RawgApiController : MediaVaultControllerBase
     {
         private readonly IRawgApiService _rawgApiService;
 
@@ -20,6 +20,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
+        [ProducesResponseType(typeof(IReadOnlyList<MediaEntryExternalSearchResultDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchGames(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
@@ -34,6 +35,7 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [ProducesResponseType(typeof(RawgGameDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<RawgGameDetailedDto>> GetGameById(
             [FromRoute] int id,
             CancellationToken ct)
