@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.ExternalServices;
 using Rasmus.SharedKernel.Interfaces.ErrorLogger;
-using ErrorLog = Rasmus.SharedKernel.ResultPattern.ErrorLog;
+using ErrorLog = Rasmus.SharedKernel.Diagnostics.ErrorLog;
 using ErrorResponseBody = Rasmus.SharedKernel.ResultPatternCompatibility.ErrorResponseBody;
 
 namespace media_vault_app.Tests.Infrastructure.API.Clients;
