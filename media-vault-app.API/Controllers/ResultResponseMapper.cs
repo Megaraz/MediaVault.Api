@@ -1,23 +1,34 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.ResultPatternCompatibility;
-using PackageHttpError = Megaraz.ResultPattern.AspNetCore.HttpError;
-using PackageHttpMapper = Megaraz.ResultPattern.AspNetCore.HttpResultMapper;
+using PackageMvcMapper = Megaraz.ResultPattern.AspNetCore.AspNetCoreResultExtensions;
 using PackageHttpPolicy = Megaraz.ResultPattern.AspNetCore.HttpResultMappingPolicy;
 
 namespace media_vault_app.API.Controllers
 {
     /// <summary>
-    /// Thin ASP.NET adapter that converts domain <see cref="Result"/> instances into ASP.NET
-    /// <see cref="ActionResult"/> types, using <see cref="HttpResultMapper"/> for framework-agnostic HTTP mapping.
+    /// Thin ASP.NET adapter that converts domain <see cref="Result"/> instances through the package mapper,
+    /// while retaining MediaVault's route-aware created-response behavior.
     /// </summary>
     public static class ResultResponseMapper
     {
-        private static readonly PackageHttpPolicy PackageHttpErrorPolicy =
+        private static readonly PackageHttpPolicy MediaVaultHttpResultMappingPolicy =
             PackageHttpPolicy.Default with
             {
-                FailureBodyFactory = result =>
-                    new ErrorResponseBody(result.Message, result.PrimaryError.Code)
+                ErrorTypeStatusCode = errorType =>
+                    errorType switch
+                    {
+                        ErrorType.Validation => 422,
+                        ErrorType.NotFound => 404,
+                        ErrorType.Conflict => 409,
+                        ErrorType.Unauthorized => 401,
+                        ErrorType.Forbidden => 403,
+                        ErrorType.Failure => 500,
+                        ErrorType.Cancelled => 503,
+                        ErrorType.External => 500,
+                        _ => 400
+                    },
+                FailureBodyFactory = CreateFailureBody
             };
 
         /// <summary>
@@ -25,36 +36,26 @@ namespace media_vault_app.API.Controllers
         /// or the appropriate error response on failure.
         /// </summary>
         public static ActionResult<TValue> ToActionResult<TValue>(this ControllerBase c, Result<TValue> result)
-            where TValue : notnull
-        {
-            var response = MapToHttpResponse(result);
-            return c.ToActionResult<TValue>(response);
-        }
+            where TValue : notnull =>
+            PackageMvcMapper.ToActionResult(c, result, MediaVaultHttpResultMappingPolicy);
 
         /// <summary>
         /// Maps a <see cref="Result"/> to a 200 OK <see cref="IActionResult"/> on success,
         /// or the appropriate error response on failure.
         /// </summary>
-        public static IActionResult ToActionResult(this ControllerBase c, Result result)
-        {
-            var response = MapToHttpResponse(result);
-            return c.ToActionResult(response);
-        }
+        public static IActionResult ToActionResult(this ControllerBase c, Result result) =>
+            PackageMvcMapper.ToActionResult(c, result, MediaVaultHttpResultMappingPolicy);
 
         /// <summary>
         /// Maps a <see cref="Result"/> to a 204 No Content <see cref="IActionResult"/> on success,
         /// or the appropriate error response on failure.
         /// </summary>
-        public static IActionResult ToNoContentResult(this ControllerBase c, Result result)
-        {
-            var response = HttpResultMapper.ToNoContentResponse(result);
-            return c.ToActionResult(response);
-        }
+        public static IActionResult ToNoContentResult(this ControllerBase c, Result result) =>
+            PackageMvcMapper.ToNoContentResult(c, result, MediaVaultHttpResultMappingPolicy);
 
         /// <summary>
-        /// Maps a <see cref="Result{TValue}"/> to a 201 Created <see cref="ActionResult{TValue}"/> on success
-        /// using ASP.NET's <see cref="ControllerBase.CreatedAtAction"/>,
-        /// or the appropriate error response on failure.
+        /// Maps a <see cref="Result{TValue}"/> to a 201 Created response on success using ASP.NET's
+        /// <see cref="ControllerBase.CreatedAtAction"/>, or the appropriate error response on failure.
         /// </summary>
         public static ActionResult<TValue> ToCreatedResult<TValue>(
             this ControllerBase c,
@@ -64,58 +65,22 @@ namespace media_vault_app.API.Controllers
             where TValue : notnull
         {
             if (result.IsFailure)
-            {
-                var failureResponse = MapToHttpResponse(result);
-                return c.ToActionResult<TValue>(failureResponse);
-            }
+                return PackageMvcMapper.ToActionResult(c, result, MediaVaultHttpResultMappingPolicy);
 
             return c.CreatedAtAction(actionName, routeValuesFactory(result.Value), result.Value);
         }
 
-        private static MappedHttpResponse MapToHttpResponse<TValue>(Result<TValue> result)
-            where TValue : notnull
+        private static object CreateFailureBody(Result result)
         {
-            if (result.IsFailure && result.PrimaryError is PackageHttpError)
+            if (result.PrimaryError.Type == ErrorType.Validation)
             {
-                var response = PackageHttpMapper.ToHttpResponse(result, PackageHttpErrorPolicy);
-                return new MappedHttpResponse(response.StatusCode, response.Body, response.Location);
+                var validationErrors = result.ValidationErrors
+                    .Select(error => new ValidationErrorItem(error.FieldName, error.UserMessage))
+                    .ToArray();
+                return new ValidationErrorResponseBody(result.Message, validationErrors);
             }
 
-            return HttpResultMapper.ToHttpResponse(result);
-        }
-
-        private static MappedHttpResponse MapToHttpResponse(Result result)
-        {
-            if (result.IsFailure && result.PrimaryError is PackageHttpError)
-            {
-                var response = PackageHttpMapper.ToHttpResponse(result, PackageHttpErrorPolicy);
-                return new MappedHttpResponse(response.StatusCode, response.Body, response.Location);
-            }
-
-            return HttpResultMapper.ToHttpResponse(result);
-        }
-
-        private static ActionResult<TValue> ToActionResult<TValue>(this ControllerBase c, MappedHttpResponse response)
-            where TValue : notnull
-        {
-            return response.StatusCode switch
-            {
-                200 => c.Ok(response.Body),
-                201 when response.Location is not null => new ActionResult<TValue>(c.Created(response.Location, response.Body)),
-                _ => new ActionResult<TValue>(c.StatusCode(response.StatusCode, response.Body))
-            };
-        }
-
-        private static IActionResult ToActionResult(this ControllerBase c, MappedHttpResponse response)
-        {
-            return response.StatusCode switch
-            {
-                200 when response.Body is not null => c.Ok(response.Body),
-                200 => c.Ok(),
-                201 when response.Location is not null => c.Created(response.Location, response.Body),
-                204 => c.NoContent(),
-                _ => c.StatusCode(response.StatusCode, response.Body)
-            };
+            return new ErrorResponseBody(result.Message, result.PrimaryError.Code);
         }
     }
 }
