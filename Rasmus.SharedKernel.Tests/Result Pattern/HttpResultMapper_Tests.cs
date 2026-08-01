@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace Rasmus.SharedKernel.Tests.Result_Pattern
@@ -178,6 +179,19 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         }
 
         [Fact]
+        public void Failure_Should_Serialize_OrdinaryBody_With_Only_Message_And_Code()
+        {
+            var error = Error.NotFound(CreateErrorContext());
+            var response = HttpResultMapper.ToHttpResponse(Result.Failure(error, "User was not found."));
+
+            var root = SerializeBody(response);
+
+            Assert.Equal(["message", "code"], root.EnumerateObject().Select(x => x.Name));
+            Assert.Equal("User was not found.", root.GetProperty("message").GetString());
+            Assert.Equal(error.Code, root.GetProperty("code").GetString());
+        }
+
+        [Fact]
         public void ValidationFailure_Should_Return_422_With_ValidationErrorResponseBody()
         {
             var ctx = CreateErrorContext(fieldName: "Email");
@@ -196,6 +210,24 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
                 response,
                 "Validation failed.",
                 new ValidationErrorItem(validationError.FieldName, validationError.UserMessage));
+        }
+
+        [Fact]
+        public void ValidationFailure_Should_Serialize_Without_Any_Error_Code()
+        {
+            var validationError = ValidationError.Required(CreateErrorContext(fieldName: "Email"));
+            var response = HttpResultMapper.ToHttpResponse(
+                Result.ValidationFailure([validationError], "Validation failed."));
+
+            var root = SerializeBody(response);
+
+            Assert.Equal(["message", "validationErrors"], root.EnumerateObject().Select(x => x.Name));
+            Assert.False(root.TryGetProperty("code", out _));
+            var item = Assert.Single(root.GetProperty("validationErrors").EnumerateArray());
+            Assert.Equal(["field", "message"], item.EnumerateObject().Select(x => x.Name));
+            Assert.False(item.TryGetProperty("code", out _));
+            Assert.Equal("Email", item.GetProperty("field").GetString());
+            Assert.Equal(validationError.UserMessage, item.GetProperty("message").GetString());
         }
 
         [Fact]
@@ -344,6 +376,16 @@ namespace Rasmus.SharedKernel.Tests.Result_Pattern
         private static ErrorContext CreateErrorContext(string fieldName = "UserId")
         {
             return TestErrorContextFactory.Create(fieldName: fieldName);
+        }
+
+        private static JsonElement SerializeBody(MappedHttpResponse response)
+        {
+            Assert.NotNull(response.Body);
+            var json = JsonSerializer.Serialize(
+                response.Body,
+                response.Body.GetType(),
+                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            return JsonSerializer.Deserialize<JsonElement>(json);
         }
     }
 }

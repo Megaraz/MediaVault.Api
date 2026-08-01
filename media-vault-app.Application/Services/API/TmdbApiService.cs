@@ -7,6 +7,7 @@ using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Logging;
+using Rasmus.SharedKernel.Pagination;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.API

@@ -1,4 +1,4 @@
-using Rasmus.SharedKernel.ResultPattern;
+using Rasmus.SharedKernel.Pagination;
 
 namespace Rasmus.SharedKernel.Tests
 {

@@ -5,6 +5,7 @@ using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Services.Base_Classes;
 using Microsoft.Extensions.Logging;
+using Rasmus.SharedKernel.Pagination;
 using Rasmus.SharedKernel.ResultPattern;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 using UserEntity = media_vault_app.Domain.Entities.User;

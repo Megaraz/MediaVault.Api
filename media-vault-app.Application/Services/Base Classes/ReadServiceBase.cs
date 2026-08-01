@@ -3,6 +3,7 @@ using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
+using Rasmus.SharedKernel.Pagination;
 using Rasmus.SharedKernel.ResultPattern;
 
 namespace media_vault_app.Application.Services.Base_Classes

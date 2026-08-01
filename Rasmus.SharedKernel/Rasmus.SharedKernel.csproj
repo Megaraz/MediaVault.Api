@@ -12,4 +12,8 @@
     <None Remove="Base Classes\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Megaraz.ResultPattern" Version="0.2.2" />
+  </ItemGroup>
+
 </Project>
