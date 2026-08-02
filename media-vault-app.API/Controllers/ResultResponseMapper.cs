@@ -6,8 +6,7 @@ using PackageHttpPolicy = Megaraz.ResultPattern.AspNetCore.HttpResultMappingPoli
 namespace media_vault_app.API.Controllers
 {
     /// <summary>
-    /// Thin ASP.NET adapter that converts domain <see cref="Result"/> instances through the package mapper,
-    /// while retaining MediaVault's route-aware created-response behavior.
+    /// Thin ASP.NET adapter that converts domain <see cref="Result"/> instances through the package mapper.
     /// </summary>
     public static class ResultResponseMapper
     {
@@ -62,12 +61,12 @@ namespace media_vault_app.API.Controllers
             string actionName,
             Func<TValue, object> routeValuesFactory)
             where TValue : notnull
-        {
-            if (result.IsFailure)
-                return PackageMvcMapper.ToActionResult(c, result, MediaVaultHttpResultMappingPolicy);
-
-            return c.CreatedAtAction(actionName, routeValuesFactory(result.Value), result.Value);
-        }
+            => PackageMvcMapper.ToCreatedResult(
+                c,
+                result,
+                actionName,
+                routeValuesFactory,
+                MediaVaultHttpResultMappingPolicy);
 
         private static object CreateFailureBody(Result result)
         {
