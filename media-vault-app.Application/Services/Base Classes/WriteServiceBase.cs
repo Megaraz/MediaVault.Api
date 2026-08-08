@@ -43,7 +43,8 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (!_dtoValidator.IsValidCreateDto(createDto, baseErrorContext, out var validationErrors))
             {
-                _logger.LogDebug("CreateAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(validationErrors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, validationErrors, GetType().Name, nameof(CreateAsync), baseErrorContext);
                 return Result<TDetailedDto>.ValidationFailure(validationErrors, MediaVaultResultMessages.ValidationFailure);
             }
 
@@ -51,10 +52,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var repoResult = await _repo.CreateAsync(entity, ct);
 
-            var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToDetailedDto);
-            if (mappedRepoResult.IsFailure)
-                _logger.LogDebug("CreateAsync failed: {Code} — {Description}", mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            return mappedRepoResult;
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDto);
 
         }
 
@@ -64,14 +62,12 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (id.IsNotValidMediaVaultId(baseErrorContext, out var idNotValidError))
             {
-                _logger.LogDebug("DeleteAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idNotValidError]));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, [idNotValidError], GetType().Name, nameof(DeleteAsync), baseErrorContext);
                 return Result.ValidationFailure([idNotValidError], MediaVaultResultMessages.ValidationFailure);
             }
 
-            var mappedRepoResult = await _repo.DeleteAsync(id, ct);
-            if (mappedRepoResult.IsFailure)
-                _logger.LogDebug("DeleteAsync failed: {Code} — {Description}", mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            return mappedRepoResult;
+            return await _repo.DeleteAsync(id, ct);
         }
 
         public async Task<Result> UpdateAsync(TKey id, TUpdateDto updateDto, CancellationToken ct)
@@ -88,16 +84,14 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (validationErrors.Count > 0)
             {
-                _logger.LogDebug("UpdateAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(validationErrors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, validationErrors, GetType().Name, nameof(UpdateAsync), baseErrorContext);
                 return Result.ValidationFailure(validationErrors, MediaVaultResultMessages.ValidationFailure);
             }
 
             var entity = _dtoToEntityMapper.ToEntity(id, updateDto);
 
-            var mappedRepoResult = await _repo.UpdateAsync(entity, ct);
-            if (mappedRepoResult.IsFailure)
-                _logger.LogDebug("UpdateAsync failed: {Code} — {Description}", mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            return mappedRepoResult;
+            return await _repo.UpdateAsync(entity, ct);
 
         }
 

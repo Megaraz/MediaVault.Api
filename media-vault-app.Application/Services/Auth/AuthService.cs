@@ -43,7 +43,8 @@ namespace media_vault_app.Application.Services.Auth
 
             if (!_dtoValidator.IsValidLoginDto(loginDto, baseErrorContext, out var validationErrors))
             {
-                _logger.LogDebug("LoginAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(validationErrors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, validationErrors, nameof(AuthService), nameof(LoginAsync), baseErrorContext);
                 return Result<UserDetailedDto>.ValidationFailure(validationErrors, "Invalid username/email or password.");
             }
 
@@ -51,9 +52,6 @@ namespace media_vault_app.Application.Services.Auth
 
             if (repoResult.IsFailure)
             {
-                _logger.LogDebug("LoginAsync GetUser failed: {Code} — {Description}",
-                repoResult.PrimaryError.Code, repoResult.PrimaryError.Description);
-
                 return Result<UserDetailedDto>.Failure(repoResult.PrimaryError, repoResult.Message);
             }
 
@@ -67,10 +65,7 @@ namespace media_vault_app.Application.Services.Auth
                 return Result<UserDetailedDto>.Failure(unauthorizedError, "Invalid username/email or password.");
             }
 
-            var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToDetailedDto);
-            if (mappedRepoResult.IsFailure)
-                _logger.LogDebug("LoginAsync mapping failed: {Code} — {Description}", mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            return mappedRepoResult;
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDto);
         }
 
         public async Task<Result> RegisterUserAsync(UserRegisterDto registerDto, CancellationToken ct = default)
@@ -79,7 +74,8 @@ namespace media_vault_app.Application.Services.Auth
 
             if (!_dtoValidator.IsValidCreateDto(registerDto, baseErrorContext, out var dtoValidationErrors))
             {
-                _logger.LogDebug("RegisterUserAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(dtoValidationErrors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, dtoValidationErrors, nameof(AuthService), nameof(RegisterUserAsync), baseErrorContext);
                 return Result.ValidationFailure(dtoValidationErrors, "User register validation failed.");
             }
 
@@ -88,13 +84,15 @@ namespace media_vault_app.Application.Services.Auth
             if (availabilityResult.IsFailure)
             {
 
-                _logger.LogDebug("RegisterUser failed: {Code} — {Description}",
-                availabilityResult.PrimaryError.Code, availabilityResult.PrimaryError.Description);
-
                 if (availabilityResult.PrimaryError.Type != ErrorType.Validation)
                     return availabilityResult;
 
-                _logger.LogDebug("RegisterUserAsync availability validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(availabilityResult.ValidationErrors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger,
+                    availabilityResult.ValidationErrors,
+                    nameof(AuthService),
+                    nameof(RegisterUserAsync),
+                    baseErrorContext);
                 return Result.ValidationFailure(availabilityResult.ValidationErrors, "User register validation failed.");
             }
 
@@ -114,8 +112,12 @@ namespace media_vault_app.Application.Services.Auth
 
             if (registrationValidationErrors.Count > 0)
             {
-                _logger.LogDebug("RegisterUserAsync registration validation failed: {ValidationErrors}",
-                    ServiceValidationLogging.FormatValidationErrors(registrationValidationErrors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger,
+                    registrationValidationErrors,
+                    nameof(AuthService),
+                    nameof(RegisterUserAsync),
+                    baseErrorContext);
 
                 return Result.ValidationFailure(registrationValidationErrors, "User register validation failed.");
             }
@@ -130,15 +132,7 @@ namespace media_vault_app.Application.Services.Auth
 
             var userEntity = _dtoToEntityMapper.ToEntity(hashedCreateDto);
 
-            var mappedRepoResult = await _userRepo.RegisterUserAsync(userEntity, ct);
-
-            if (mappedRepoResult.IsFailure)
-            {
-                _logger.LogDebug("RegisterUserAsync failed: {Code} — {Description}",
-                    mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            }
-
-            return mappedRepoResult;
+            return await _userRepo.RegisterUserAsync(userEntity, ct);
         }
 
         // TODO: Implement UpdatePasswordAsync method, which should validate the new password, hash it, and update the user's password in the repository.

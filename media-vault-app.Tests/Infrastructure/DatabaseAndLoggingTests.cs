@@ -2,7 +2,9 @@ using System.Text.Json;
 using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.Diagnostics;
 using media_vault_app.Infrastructure.Repos;
+using media_vault_app.Tests.TestHelpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Megaraz.ResultPattern;
 using Megaraz.ResultPattern.AspNetCore;
 using Megaraz.ResultPattern.Infrastructure;
@@ -77,31 +79,45 @@ public sealed class DatabaseAndLoggingTests
     }
 
     [Fact]
-    public async Task RepositoryLoggingFailure_DoesNotHideTheDatabaseResult()
+    public void RepositoryFailure_EmitsOneStructuredEventWithoutChangingTheResult()
     {
-        await using var dbContext = new AppDbContext(
+        using var provider = new RecordingLoggerProvider();
+        using var factory = LoggerFactory.Create(builder => builder
+            .SetMinimumLevel(LogLevel.Trace)
+            .AddProvider(provider));
+        using var dbContext = new AppDbContext(
             new DbContextOptionsBuilder<AppDbContext>().UseSqlite("Data Source=:memory:").Options);
-        var repository = new TestRepository(dbContext, new ThrowingErrorLogger());
+        var errorContext = new ErrorContext(OperationType.Get, "User");
+        var repository = new TestRepository(
+            dbContext,
+            new ErrorEventLogger<RepoBase<User, Guid>>(
+                factory.CreateLogger<RepoBase<User, Guid>>(),
+                new ErrorEventPolicy(),
+                new ErrorDiagnosticsOptions(false)));
         var error = DatabaseFailurePolicy.QueryFailure(
-            new ErrorContext(OperationType.Get, "User"),
+            errorContext,
             new InvalidOperationException("private diagnostic"));
 
-        var result = await repository.ReturnFailureAfterLoggingAsync(error);
+        var result = repository.ReturnFailureAfterLogging(error, errorContext);
 
         Assert.True(result.IsFailure);
         Assert.Same(error, result.PrimaryError);
+        var entry = Assert.Single(provider.Entries);
+        Assert.Equal(2001, entry.EventId.Id);
+        Assert.Equal("DatabaseOperationFailed", entry.EventId.Name);
+        Assert.Equal("Infrastructure", entry.Properties["Layer"]);
+        Assert.Equal(nameof(TestRepository), entry.Properties["Service"]);
+        Assert.Equal(nameof(TestRepository.ReturnFailureAfterLogging), entry.Properties["Method"]);
+        Assert.Null(entry.Exception);
+        Assert.DoesNotContain("private diagnostic", entry.Message, StringComparison.Ordinal);
     }
 
-    private sealed class TestRepository(AppDbContext dbContext, IErrorLogger logger)
+    private sealed class TestRepository(
+        AppDbContext dbContext,
+        ErrorEventLogger<RepoBase<User, Guid>> logger)
         : RepoBase<User, Guid>(dbContext, logger)
     {
-        public Task<Result> ReturnFailureAfterLoggingAsync(Error error) => LogAndFailAsync(error);
-    }
-
-    private sealed class ThrowingErrorLogger : IErrorLogger
-    {
-        public Task CleanOldLogsAsync(CancellationToken ct = default) => Task.CompletedTask;
-        public Task<IReadOnlyList<ErrorLog>> GetErrorLogsAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<ErrorLog>>(Array.Empty<ErrorLog>());
-        public Task LogErrorToFileAsync(Error error, ErrorLogContext context, CancellationToken ct = default) => throw new IOException("logger unavailable");
+        public Result ReturnFailureAfterLogging(Error error, ErrorContext errorContext) =>
+            LogAndFail(error, errorContext);
     }
 }

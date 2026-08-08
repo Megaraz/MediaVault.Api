@@ -8,6 +8,9 @@ internal sealed class RecordingLoggerProvider : ILoggerProvider
 
     public ILogger CreateLogger(string categoryName) => new RecordingLogger(categoryName, Entries);
 
+    public ILogger<TCategory> CreateLogger<TCategory>() =>
+        new TypedLogger<TCategory>(CreateLogger(GetCategoryName<TCategory>()));
+
     public void Dispose()
     {
     }
@@ -38,6 +41,25 @@ internal sealed class RecordingLoggerProvider : ILoggerProvider
                 formatter(state, exception)));
         }
     }
+
+    private sealed class TypedLogger<TCategory>(ILogger logger) : ILogger<TCategory>
+    {
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull =>
+            logger.BeginScope(state);
+
+        public bool IsEnabled(LogLevel logLevel) => logger.IsEnabled(logLevel);
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter) =>
+            logger.Log(logLevel, eventId, state, exception, formatter);
+    }
+
+    private static string GetCategoryName<TCategory>() =>
+        typeof(TCategory).FullName?.Replace('+', '.') ?? typeof(TCategory).Name;
 
     private sealed class NoopScope : IDisposable
     {

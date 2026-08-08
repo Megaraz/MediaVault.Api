@@ -57,7 +57,8 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (validationErrors.Count > 0)
             {
-                _logger.LogDebug("GetMinimalByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(validationErrors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, validationErrors, GetType().Name, nameof(GetMinimalByIdAsync), baseErrorContext);
 
                 return Result<TMinimalDto>.ValidationFailure(validationErrors, "Validation errors occurred, see validationErrors for details.");
             }
@@ -66,21 +67,12 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("GetMinimalByIdAsync owner check failed: {Code} — {Description}",
-                    ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
-
                 return ownerExistsResult.ToResult<TMinimalDto>();
             }
 
             var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct: ct);
 
             var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToMinimalDto);
-
-            if (mappedRepoResult.IsFailure)
-            {
-                _logger.LogDebug("GetMinimalByIdAsync failed: {Code} — {Description}",
-                    mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            }
 
             return mappedRepoResult;
 
@@ -100,7 +92,8 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (validationErrors.Count > 0)
             {
-                _logger.LogDebug("GetDetailedByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(validationErrors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, validationErrors, GetType().Name, nameof(GetDetailedByIdAsync), baseErrorContext);
                 return Result<TDetailedDto>.ValidationFailure(validationErrors, "Validation errors occurred, see validationErrors for details.");
             }
 
@@ -108,21 +101,12 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("GetDetailedByIdAsync owner check failed: {Code} — {Description}",
-                    ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
-
                 return ownerExistsResult.ToResult<TDetailedDto>();
             }
 
             var repoResult = await _dependentEntityRepo.GetByIdAsync(ownerId, id, ct: ct);
 
             var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToDetailedDto);
-
-            if (mappedRepoResult.IsFailure)
-            {
-                _logger.LogDebug("GetDetailedByIdAsync failed: {Code} — {Description}",
-                    mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            }
 
             return mappedRepoResult;
 
@@ -135,7 +119,12 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
             {
-                _logger.LogDebug("GetDetailedCollectionByOwnerIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([ownerIdError]));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger,
+                    [ownerIdError],
+                    GetType().Name,
+                    nameof(GetDetailedCollectionByOwnerIdAsync),
+                    baseErrorContext);
                 return Result<IReadOnlyList<TDetailedDto>>.ValidationFailure(
                     [ownerIdError],
                     "Validation errors occurred, see validationErrors for details.");
@@ -145,7 +134,6 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("GetDetailedCollectionByOwnerIdAsync owner check failed: {Code} — {Description}", ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
                 return ownerExistsResult.ToResult<IReadOnlyList<TDetailedDto>>();
             }
 
@@ -154,12 +142,6 @@ namespace media_vault_app.Application.Services.Base_Classes
             var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pagination.PageNumber, pagination.PageSize, ct);
 
             var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToDetailedDtoCollection);
-
-            if (mappedRepoResult.IsFailure)
-            {
-                _logger.LogDebug("GetDetailedCollectionByOwnerIdAsync failed: {Code} — {Description}",
-                    mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            }
 
             return mappedRepoResult;
 
@@ -171,7 +153,12 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
             {
-                _logger.LogDebug("GetMinimalCollectionByOwnerIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([ownerIdError]));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger,
+                    [ownerIdError],
+                    GetType().Name,
+                    nameof(GetMinimalCollectionByOwnerIdAsync),
+                    baseErrorContext);
                 return Result<IReadOnlyList<TMinimalDto>>.ValidationFailure(
                     [ownerIdError],
                     "Validation errors occurred, see validationErrors for details.");
@@ -181,9 +168,6 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("GetMinimalCollectionByOwnerIdAsync owner check failed: {Code} — {Description}",
-                    ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
-
                 return ownerExistsResult.ToResult<IReadOnlyList<TMinimalDto>>();
             }
 
@@ -192,12 +176,6 @@ namespace media_vault_app.Application.Services.Base_Classes
             var repoResult = await _dependentEntityRepo.GetCollectionByOwnerIdAsync(ownerId, pagination.PageNumber, pagination.PageSize, ct);
 
             var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
-
-            if (mappedRepoResult.IsFailure)
-            {
-                _logger.LogDebug("GetMinimalCollectionByOwnerIdAsync failed: {Code} — {Description}",
-                    mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            }
 
             return mappedRepoResult;
         }

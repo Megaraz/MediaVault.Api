@@ -145,10 +145,8 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IGoogleBooksApiService, GoogleBooksApiService>();
             #endregion
 
-            builder.Services.AddSingleton<IErrorLogPolicy, ErrorLogPolicy>();
-
-            // Temporary coexistence for #107: production producers remain on IErrorLogger until
-            // #108 switches each callsite once, preventing duplicate operational events.
+            // Production failure events use standard logging. The legacy sink remains registered
+            // only for ErrorLogCleanupService until the file-specific surface is removed in #110.
             builder.Services.AddSingleton<ErrorEventPolicy>();
             builder.Services.AddSingleton(
                 new ErrorDiagnosticsOptions(builder.Environment.IsDevelopment()));

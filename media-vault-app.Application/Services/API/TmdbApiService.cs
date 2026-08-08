@@ -31,21 +31,14 @@ namespace media_vault_app.Application.Services.API
 
             if (id.IsNotValidMediaVaultId(idValidationErrorContext, out var idError))
             {
-                _logger.LogDebug("GetTvSeriesByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idError]));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, [idError], nameof(TmdbApiService), nameof(GetTvSeriesByIdAsync), idValidationErrorContext);
                 return Result<TmdbTvSeriesDetailedDto>.ValidationFailure([idError], MediaVaultResultMessages.ValidationFailure);
             }
 
             var clientResult = await _client.GetTvSeriesByIdAsync(id, cancellationToken);
 
-            var mappedClientResult = clientResult.Map(ToDetailedDto);
-
-            if (mappedClientResult.IsFailure)
-            {
-                _logger.LogDebug("GetTvSeriesByIdAsync failed: {Code} - {Description}",
-                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
-            }
-
-            return mappedClientResult;
+            return clientResult.Map(ToDetailedDto);
         }
         public async Task<Result<TmdbMovieDetailedDto>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default)
         {
@@ -53,21 +46,14 @@ namespace media_vault_app.Application.Services.API
 
             if (id.IsNotValidMediaVaultId(idValidationErrorContext, out var idError))
             {
-                _logger.LogDebug("GetMovieByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idError]));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, [idError], nameof(TmdbApiService), nameof(GetMovieByIdAsync), idValidationErrorContext);
                 return Result<TmdbMovieDetailedDto>.ValidationFailure([idError], MediaVaultResultMessages.ValidationFailure);
             }
 
             var clientResult = await _client.GetMovieByIdAsync(id, cancellationToken);
 
-            var mappedClientResult = clientResult.Map(ToDetailedDto);
-
-            if (mappedClientResult.IsFailure)
-            {
-                _logger.LogDebug("GetMovieByIdAsync failed: {Code} - {Description}",
-                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
-            }
-
-            return mappedClientResult;
+            return clientResult.Map(ToDetailedDto);
         }
 
         public async Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchAsync(
@@ -93,7 +79,8 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                _logger.LogDebug("SearchAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(errors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, errors, nameof(TmdbApiService), nameof(SearchAsync), baseErrorContext);
                 return Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>.ValidationFailure(errors, "TMDB search validation failed.");
             }
 
@@ -105,15 +92,7 @@ namespace media_vault_app.Application.Services.API
 
             var clientResult = await _client.SearchAsync(queryParameters, mediaType, cancellationToken);
 
-            var mappedClientResult = clientResult.Map(searchResponse => MapToSearchResults(searchResponse.Results, mediaType));
-
-            if (mappedClientResult.IsFailure)
-            {
-                _logger.LogDebug("SearchAsync failed: {Code} - {Description}",
-                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
-            }
-
-            return mappedClientResult;
+            return clientResult.Map(searchResponse => MapToSearchResults(searchResponse.Results, mediaType));
         }
 
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)

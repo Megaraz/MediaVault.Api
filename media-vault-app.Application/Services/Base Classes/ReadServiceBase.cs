@@ -38,21 +38,14 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (id.IsNotValidMediaVaultId(baseErrorContext, out var idNotValidError))
             {
-                _logger.LogDebug("GetByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idNotValidError]));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, [idNotValidError], GetType().Name, nameof(GetByIdAsync), baseErrorContext);
                 return Result<TDetailedDto>.ValidationFailure([idNotValidError], MediaVaultResultMessages.ValidationFailure);
             }
 
             var repoResult = await _repo.GetByIdAsync(id, ct);
 
-            var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToDetailedDto);
-
-            if (mappedRepoResult.IsFailure)
-            {
-                _logger.LogDebug("GetByIdAsync failed: {Code} — {Description}",
-                    mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            }
-
-            return mappedRepoResult;
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDto);
 
         }
 
@@ -62,15 +55,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var repoResult = await _repo.GetCollectionAsync(pagination.PageNumber, pagination.PageSize, ct);
 
-            var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToDetailedDtoCollection);
-
-            if (mappedRepoResult.IsFailure)
-            {
-                _logger.LogDebug("GetDetailedCollectionAsync failed: {Code} — {Description}",
-                    mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            }
-
-            return mappedRepoResult;
+            return repoResult.Map(_entityToDtoMapper.ToDetailedDtoCollection);
 
         }
 
@@ -80,15 +65,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             var repoResult = await _repo.GetCollectionAsync(pagination.PageNumber, pagination.PageSize, ct);
 
-            var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
-
-            if (mappedRepoResult.IsFailure)
-            {
-                _logger.LogDebug("GetMinimalCollectionAsync failed: {Code} — {Description}",
-                    mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            }
-
-            return mappedRepoResult;
+            return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
         }
 
         protected virtual ErrorContext DefineErrorContext(string methodName, OperationType operation, string? fieldName = null)

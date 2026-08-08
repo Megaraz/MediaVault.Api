@@ -30,21 +30,14 @@ namespace media_vault_app.Application.Services.API
 
             if (id.IsNotValidMediaVaultId(idValidationErrorContext, out var idError))
             {
-                _logger.LogDebug("GetGameByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([idError]));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, [idError], nameof(RawgApiService), nameof(GetGameByIdAsync), idValidationErrorContext);
                 return Result<RawgGameDetailedDto>.ValidationFailure([idError], MediaVaultResultMessages.ValidationFailure);
             }
 
             var clientResult = await _client.GetGameByIdAsync(id, cancellationToken);
 
-            var mappedClientResult = clientResult.Map(ToDetailedDto);
-
-            if (mappedClientResult.IsFailure)
-            {
-                _logger.LogDebug("GetGameByIdAsync failed: {Code} - {Description}",
-                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
-            }
-
-            return mappedClientResult;
+            return clientResult.Map(ToDetailedDto);
 
         }
         public async Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchGamesAsync(
@@ -70,7 +63,8 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Any())
             {
-                _logger.LogDebug("SearchGamesAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(errors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, errors, nameof(RawgApiService), nameof(SearchGamesAsync), errorContext);
                 return Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>.ValidationFailure(errors, "RAWG game search validation failed.");
             }
 
@@ -98,15 +92,7 @@ namespace media_vault_app.Application.Services.API
 
             var clientResult = await _client.SearchGamesAsync(queryParameters, cancellationToken);
 
-            var mappedClientResult = clientResult.Map(searchResponse => MapToGameSearchResult(searchResponse.Results));
-
-            if (mappedClientResult.IsFailure)
-            {
-                _logger.LogDebug("SearchGamesAsync failed: {Code} - {Description}",
-                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
-            }
-
-            return mappedClientResult;
+            return clientResult.Map(searchResponse => MapToGameSearchResult(searchResponse.Results));
 
         }
 

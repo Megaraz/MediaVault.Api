@@ -1,14 +1,14 @@
 using System.Runtime.CompilerServices;
+using media_vault_app.Infrastructure.Diagnostics;
 using Megaraz.ResultPattern;
 using Megaraz.ResultPattern.AspNetCore;
-using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.ExternalServices;
-using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using PackageHttpExtensions = Megaraz.ResultPattern.AspNetCore.HttpResponseToResultExtensions;
 
 namespace media_vault_app.Infrastructure.API.Clients
 {
-    public abstract class ApiClientBase
+    public abstract class ApiClientBase<TCategory>
+        where TCategory : class
     {
         // Package defaults preserve web JSON and missing-content-type compatibility while extracting
         // bounded technical diagnostics. Public messages are replaced after mapping because the
@@ -18,13 +18,15 @@ namespace media_vault_app.Infrastructure.API.Clients
             MaxResponseBodyBytes = ExternalServiceResponsePolicy.MaxInspectedBodyBytes
         };
 
-        private readonly IErrorLogger _errorLogger;
-        private readonly IErrorLogPolicy _errorLogPolicy;
+        private readonly ErrorEventLogger<TCategory> _errorEventLogger;
+        private readonly string _provider;
 
-        protected ApiClientBase(IErrorLogger errorLogger, IErrorLogPolicy errorLogPolicy)
+        protected ApiClientBase(
+            ErrorEventLogger<TCategory> errorEventLogger,
+            string provider)
         {
-            _errorLogger = errorLogger;
-            _errorLogPolicy = errorLogPolicy;
+            _errorEventLogger = errorEventLogger;
+            _provider = provider;
         }
 
         protected async Task<Result<TValue>> SendAndMapAsync<TValue>(
@@ -50,7 +52,7 @@ namespace media_vault_app.Infrastructure.API.Clients
                         ExternalServiceResponsePolicy.GetSafeUserMessage(response.StatusCode));
                 }
 
-                await LogIfNeededAsync(result.PrimaryError, methodName);
+                LogIfNeeded(result.PrimaryError, errorContext, methodName, (int)response.StatusCode);
                 return result;
             }
             catch (Exception exception) when (
@@ -64,42 +66,32 @@ namespace media_vault_app.Infrastructure.API.Clients
                     mappedResult.PrimaryError,
                     ExternalServiceResponsePolicy.TransportFailureMessage);
 
-                await LogIfNeededAsync(result.PrimaryError, methodName);
+                LogIfNeeded(result.PrimaryError, errorContext, methodName);
                 return result;
             }
         }
 
-        protected async Task LogIfNeededAsync(
+        private void LogIfNeeded(
             Error? error,
-            string methodName)
+            ErrorContext errorContext,
+            string methodName,
+            int? statusCode = null)
         {
-            if (error is null || error.Type == ErrorType.None || !ShouldLog(error))
+            if (error is null || error.Type == ErrorType.None)
                 return;
 
-            try
-            {
-                var context = new ErrorLogContext("Infrastructure", GetType().Name, methodName);
-                await _errorLogger.LogErrorToFileAsync(error, context, CancellationToken.None);
-            }
-            catch
-            {
-                // Logging must not break the API client result flow.
-            }
-        }
-
-        private bool ShouldLog(Error error)
-        {
-            if (error is not HttpError httpError)
-                return _errorLogPolicy.ShouldLog(error);
-
-            return httpError.HttpErrorType switch
-            {
-                HttpErrorType.BadRequest => false,
-                HttpErrorType.NotFound => false,
-                HttpErrorType.Conflict => false,
-                HttpErrorType.UnprocessableContent => false,
-                _ => true
-            };
+            var failureKind = error is HttpError httpError
+                ? httpError.HttpErrorType.ToString()
+                : error.Type.ToString();
+            var context = new ErrorEventContext(
+                "Infrastructure",
+                GetType().Name,
+                methodName,
+                errorContext,
+                _provider,
+                failureKind,
+                statusCode);
+            _errorEventLogger.Log(error, context);
         }
     }
 }

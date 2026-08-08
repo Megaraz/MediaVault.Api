@@ -5,6 +5,7 @@ using media_vault_app.Application.Services.API;
 using media_vault_app.Domain.Enums;
 using media_vault_app.Tests.TestHelpers;
 using Megaraz.ResultPattern;
+using Microsoft.Extensions.Logging;
 using Rasmus.SharedKernel.Errors;
 
 namespace media_vault_app.Tests.Services.API
@@ -14,8 +15,12 @@ namespace media_vault_app.Tests.Services.API
         [Fact]
         public async Task GetBookByIdAsync_Should_ReturnValidationFailure_When_VolumeIdIsBlank()
         {
+            using var provider = new RecordingLoggerProvider();
+            using var factory = LoggerFactory.Create(builder => builder
+                .SetMinimumLevel(LogLevel.Trace)
+                .AddProvider(provider));
             var client = new FakeGoogleBooksApiClient();
-            var service = new GoogleBooksApiService(client, ServiceTestLogger.Create<GoogleBooksApiService>());
+            var service = new GoogleBooksApiService(client, factory.CreateLogger<GoogleBooksApiService>());
 
             var result = await service.GetBookByIdAsync(" ");
 
@@ -23,6 +28,15 @@ namespace media_vault_app.Tests.Services.API
             Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
             Assert.Single(result.ValidationErrors);
             Assert.Equal(0, client.GetBookByIdCallCount);
+            var entry = Assert.Single(provider.Entries);
+            Assert.Equal(1000, entry.EventId.Id);
+            Assert.Equal("ApplicationValidationFailed", entry.EventId.Name);
+            Assert.Equal(LogLevel.Debug, entry.Level);
+            Assert.Equal("Application", entry.Properties["Layer"]);
+            Assert.Equal(nameof(GoogleBooksApiService), entry.Properties["Service"]);
+            Assert.Equal(nameof(GoogleBooksApiService.GetBookByIdAsync), entry.Properties["Method"]);
+            Assert.Equal(result.PrimaryError.Code, entry.Properties["ErrorCodes"]);
+            Assert.DoesNotContain(result.PrimaryError.Description, entry.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -59,6 +73,10 @@ namespace media_vault_app.Tests.Services.API
         [Fact]
         public async Task GetBookByIdAsync_Should_Propagate_ClientFailure()
         {
+            using var provider = new RecordingLoggerProvider();
+            using var factory = LoggerFactory.Create(builder => builder
+                .SetMinimumLevel(LogLevel.Trace)
+                .AddProvider(provider));
             var expectedError = MediaVaultErrors.NotFound(new ErrorContext(
                 operation: OperationType.Get,
                 entityName: "Google Books Volume"));
@@ -66,13 +84,14 @@ namespace media_vault_app.Tests.Services.API
             var client = new FakeGoogleBooksApiClient(
                 getBookByIdResult: Result<GoogleBooksVolumeResponse>.Failure(expectedError, "Book not found."));
 
-            var service = new GoogleBooksApiService(client, ServiceTestLogger.Create<GoogleBooksApiService>());
+            var service = new GoogleBooksApiService(client, factory.CreateLogger<GoogleBooksApiService>());
 
             var result = await service.GetBookByIdAsync("missing-volume");
 
             Assert.True(result.IsFailure);
             Assert.Equal(expectedError, result.PrimaryError);
             Assert.Equal("Book not found.", result.Message);
+            Assert.Empty(provider.Entries);
         }
 
         [Fact]
