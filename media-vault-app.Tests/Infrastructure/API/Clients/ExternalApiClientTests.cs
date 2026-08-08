@@ -3,14 +3,15 @@ using System.Text;
 using media_vault_app.API.Controllers;
 using media_vault_app.Domain.Enums;
 using media_vault_app.Infrastructure.API.Clients;
+using media_vault_app.Infrastructure.Diagnostics;
+using media_vault_app.Tests.TestHelpers;
 using Megaraz.ResultPattern;
 using Megaraz.ResultPattern.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Rasmus.SharedKernel.Diagnostics;
 using Rasmus.SharedKernel.ExternalServices;
-using Rasmus.SharedKernel.Interfaces.ErrorLogger;
-using ErrorLog = Rasmus.SharedKernel.Diagnostics.ErrorLog;
 using ApiErrorResponseBody = media_vault_app.API.Controllers.ErrorResponseBody;
 
 namespace media_vault_app.Tests.Infrastructure.API.Clients;
@@ -23,32 +24,28 @@ public class ExternalApiClientTests
     [Fact]
     public async Task ProviderClients_DeserializeRepresentativeResponsesThroughSharedMapping()
     {
-        var logger = new RecordingErrorLogger();
-        var policy = new AlwaysLogPolicy();
+        using var logger = new RecordingLoggerProvider();
 
         using var googleHttpClient = CreateHttpClient(
             JsonResponse(HttpStatusCode.OK, """{"id":"book-1","volumeInfo":{"title":"Book"}}"""));
         var googleClient = new GoogleBooksApiClient(
             googleHttpClient,
             Options.Create(new GoogleBooksApiOptions { BaseUrl = "https://books.test/", ApiKey = "secret" }),
-            logger,
-            policy);
+            CreateErrorEventLogger<GoogleBooksApiClient>(logger));
 
         using var rawgHttpClient = CreateHttpClient(
             JsonResponse(HttpStatusCode.OK, """{"results":[]}"""));
         var rawgClient = new RawgApiClient(
             rawgHttpClient,
             Options.Create(new RawgApiOptions { BaseUrl = "https://rawg.test/", ApiKey = "secret" }),
-            logger,
-            policy);
+            CreateErrorEventLogger<RawgApiClient>(logger));
 
         using var tmdbHttpClient = CreateHttpClient(
             JsonResponse(HttpStatusCode.OK, """{"page":1,"total_pages":1,"total_results":0,"results":[]}"""));
         var tmdbClient = new TmdbApiClient(
             tmdbHttpClient,
             Options.Create(new TmdbApiOptions { BaseUrl = "https://tmdb.test/", ApiAccessToken = "secret" }),
-            logger,
-            policy);
+            CreateErrorEventLogger<TmdbApiClient>(logger));
 
         var googleResult = await googleClient.GetBookByIdAsync("book-1");
         var rawgResult = await rawgClient.SearchGamesAsync(["search=game"]);
@@ -95,7 +92,7 @@ public class ExternalApiClientTests
     public async Task SharedMapping_ReturnsSafeMalformedResponseForInvalidSuccessBodies(string? body)
     {
         using var response = JsonResponse(HttpStatusCode.OK, body);
-        var logger = new RecordingErrorLogger();
+        using var logger = new RecordingLoggerProvider();
         var client = CreateTestClient(response, logger);
 
         var result = await client.GetAsync();
@@ -103,7 +100,9 @@ public class ExternalApiClientTests
         var error = Assert.IsType<HttpError>(result.PrimaryError);
         Assert.Equal(HttpErrorType.MalformedResponse, error.HttpErrorType);
         Assert.Equal(ExternalServiceResponsePolicy.GetSafeUserMessage(HttpStatusCode.OK), result.Message);
-        Assert.Single(logger.Entries);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(2102, entry.EventId.Id);
+        Assert.Equal("ExternalDependencyInvalidResponse", entry.EventId.Name);
     }
 
     [Theory]
@@ -139,6 +138,39 @@ public class ExternalApiClientTests
         var body = Assert.IsType<ApiErrorResponseBody>(objectResult.Value);
         Assert.Equal(result.Message, body.Message);
         Assert.DoesNotContain(upstreamText, body.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest, null)]
+    [InlineData(HttpStatusCode.NotFound, null)]
+    [InlineData(HttpStatusCode.Unauthorized, 2101)]
+    [InlineData(HttpStatusCode.Forbidden, 2101)]
+    [InlineData(HttpStatusCode.TooManyRequests, 2100)]
+    [InlineData(HttpStatusCode.InternalServerError, 2100)]
+    [InlineData((HttpStatusCode)418, 2102)]
+    public async Task SharedMapping_EmitsAtMostOnePolicyEventForUpstreamHttpFailure(
+        HttpStatusCode statusCode,
+        int? expectedEventId)
+    {
+        const string upstreamText = "private-upstream-body";
+        using var provider = new RecordingLoggerProvider();
+        using var response = JsonResponse(statusCode, $$"""{"message":"{{upstreamText}}"}""");
+        var client = CreateTestClient(response, provider);
+
+        var result = await client.GetAsync();
+
+        Assert.True(result.IsFailure);
+        if (expectedEventId is null)
+        {
+            Assert.Empty(provider.Entries);
+            return;
+        }
+
+        var entry = Assert.Single(provider.Entries);
+        Assert.Equal(expectedEventId, entry.EventId.Id);
+        Assert.Equal((int)statusCode, entry.Properties["StatusCode"]);
+        Assert.DoesNotContain(upstreamText, entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(upstreamText, entry.Properties.Values.OfType<string>());
     }
 
     [Fact]
@@ -191,11 +223,10 @@ public class ExternalApiClientTests
     [Fact]
     public async Task SharedMapping_PropagatesCallerCancellationWithoutLogging()
     {
-        var logger = new RecordingErrorLogger();
+        using var logger = new RecordingLoggerProvider();
         var client = new TestApiClient(
             _ => throw new TaskCanceledException("caller cancelled"),
-            logger,
-            new AlwaysLogPolicy());
+            CreateErrorEventLogger<TestApiClient>(logger));
         using var source = new CancellationTokenSource();
         source.Cancel();
 
@@ -210,11 +241,10 @@ public class ExternalApiClientTests
     [MemberData(nameof(TransportExceptions))]
     public async Task SharedMapping_MapsAndLogsNonCallerTransportFailuresOnce(Exception exception)
     {
-        var logger = new RecordingErrorLogger();
+        using var logger = new RecordingLoggerProvider();
         var client = new TestApiClient(
             _ => throw exception,
-            logger,
-            new AlwaysLogPolicy());
+            CreateErrorEventLogger<TestApiClient>(logger));
 
         var result = await client.GetAsync();
 
@@ -224,10 +254,17 @@ public class ExternalApiClientTests
         Assert.Equal(ExternalServiceResponsePolicy.TransportFailureMessage, result.Message);
         Assert.DoesNotContain(exception.Message, result.Message, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
-        Assert.Same(error, entry.Error);
-        Assert.Equal("Infrastructure", entry.Context.Layer);
-        Assert.Equal(nameof(TestApiClient), entry.Context.Service);
-        Assert.Equal(nameof(TestApiClient.GetAsync), entry.Context.Method);
+        Assert.Equal(2100, entry.EventId.Id);
+        Assert.Equal("ExternalDependencyTransientFailure", entry.EventId.Name);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Equal("Infrastructure", entry.Properties["Layer"]);
+        Assert.Equal(nameof(TestApiClient), entry.Properties["Service"]);
+        Assert.Equal(nameof(TestApiClient.GetAsync), entry.Properties["Method"]);
+        Assert.Equal("TestProvider", entry.Properties["Provider"]);
+        Assert.Equal(HttpErrorType.TransportFailure.ToString(), entry.Properties["FailureKind"]);
+        Assert.Equal(error.Code, entry.Properties["ErrorCode"]);
+        Assert.Null(entry.Exception);
+        Assert.DoesNotContain(exception.Message, entry.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -258,8 +295,18 @@ public class ExternalApiClientTests
 
     private static TestApiClient CreateTestClient(
         HttpResponseMessage response,
-        RecordingErrorLogger? logger = null) =>
-        new(_ => Task.FromResult(response), logger ?? new RecordingErrorLogger(), new AlwaysLogPolicy());
+        RecordingLoggerProvider? logger = null) =>
+        new(_ => Task.FromResult(response), CreateErrorEventLogger<TestApiClient>(logger));
+
+    private static ErrorEventLogger<TCategory> CreateErrorEventLogger<TCategory>(
+        RecordingLoggerProvider? provider = null)
+        where TCategory : class
+    {
+        return new ErrorEventLogger<TCategory>(
+            provider?.CreateLogger<TCategory>() ?? NullLogger<TCategory>.Instance,
+            new ErrorEventPolicy(),
+            new ErrorDiagnosticsOptions(false));
+    }
 
     private static HttpClient CreateHttpClient(HttpResponseMessage response) =>
         new(new StubHttpMessageHandler((_, _) => Task.FromResult(response)))
@@ -292,15 +339,14 @@ public class ExternalApiClientTests
 
     private sealed record TestPayload(string DisplayName = "", string Value = "");
 
-    private sealed class TestApiClient : ApiClientBase
+    private sealed class TestApiClient : ApiClientBase<TestApiClient>
     {
         private readonly Func<CancellationToken, Task<HttpResponseMessage>> _sendAsync;
 
         public TestApiClient(
             Func<CancellationToken, Task<HttpResponseMessage>> sendAsync,
-            IErrorLogger errorLogger,
-            IErrorLogPolicy errorLogPolicy)
-            : base(errorLogger, errorLogPolicy)
+            ErrorEventLogger<TestApiClient> errorEventLogger)
+            : base(errorEventLogger, "TestProvider")
         {
             _sendAsync = sendAsync;
         }
@@ -320,27 +366,4 @@ public class ExternalApiClientTests
 
     private sealed class TestController : ControllerBase;
 
-    private sealed class AlwaysLogPolicy : IErrorLogPolicy
-    {
-        public bool ShouldLog(Error error) => true;
-    }
-
-    private sealed class RecordingErrorLogger : IErrorLogger
-    {
-        public List<(Error Error, ErrorLogContext Context)> Entries { get; } = [];
-
-        public Task CleanOldLogsAsync(CancellationToken ct = default) => Task.CompletedTask;
-
-        public Task<IReadOnlyList<ErrorLog>> GetErrorLogsAsync(CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<ErrorLog>>([]);
-
-        public Task LogErrorToFileAsync(
-            Error error,
-            ErrorLogContext context,
-            CancellationToken ct = default)
-        {
-            Entries.Add((error, context));
-            return Task.CompletedTask;
-        }
-    }
 }

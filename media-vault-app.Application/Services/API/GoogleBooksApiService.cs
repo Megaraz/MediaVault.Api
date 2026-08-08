@@ -29,21 +29,14 @@ namespace media_vault_app.Application.Services.API
             if (string.IsNullOrWhiteSpace(volumeId))
             {
                 var error = MediaVaultValidationError.Required(errorContext with { FieldName = nameof(volumeId) });
-                _logger.LogDebug("GetBookByIdAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors([error]));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, [error], nameof(GoogleBooksApiService), nameof(GetBookByIdAsync), errorContext);
                 return Result<GoogleBooksDetailedDto>.ValidationFailure([error], error.UserMessage);
             }
 
             var clientResult = await _client.GetBookByIdAsync(volumeId, cancellationToken);
 
-            var mappedClientResult = clientResult.Map(ToDetailedDto);
-
-            if (mappedClientResult.IsFailure)
-            {
-                _logger.LogDebug("GetBookByIdAsync failed: {Code} - {Description}",
-                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
-            }
-
-            return mappedClientResult;
+            return clientResult.Map(ToDetailedDto);
         }
 
         public async Task<Result<IReadOnlyList<GoogleBooksDetailedDto>>> SearchBooksAsync(
@@ -66,7 +59,8 @@ namespace media_vault_app.Application.Services.API
 
             if (errors.Count > 0)
             {
-                _logger.LogDebug("SearchBooksAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(errors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger, errors, nameof(GoogleBooksApiService), nameof(SearchBooksAsync), errorContext);
                 return Result<IReadOnlyList<GoogleBooksDetailedDto>>.ValidationFailure(errors, "Google Books search validation failed.");
             }
 
@@ -81,15 +75,7 @@ namespace media_vault_app.Application.Services.API
 
             var clientResult = await _client.SearchBooksAsync(queryParameters, cancellationToken);
 
-            var mappedClientResult = clientResult.Map(searchResponse => ToDetailedDtoCollection(searchResponse.Items));
-
-            if (mappedClientResult.IsFailure)
-            {
-                _logger.LogDebug("SearchBooksAsync failed: {Code} - {Description}",
-                    mappedClientResult.PrimaryError.Code, mappedClientResult.PrimaryError.Description);
-            }
-
-            return mappedClientResult;
+            return clientResult.Map(searchResponse => ToDetailedDtoCollection(searchResponse.Items));
         }
 
         private ErrorContext DefineErrorContext(string methodName, OperationType operation, string? entityName = null, string? fieldName = null)

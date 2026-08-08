@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using media_vault_app.Application.DTOs.External_API_Contracts.Rawg;
 using media_vault_app.Application.Interfaces.Clients;
+using media_vault_app.Infrastructure.Diagnostics;
 using Microsoft.Extensions.Options;
-using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Megaraz.ResultPattern;
 
 namespace media_vault_app.Infrastructure.API.Clients
@@ -19,7 +19,7 @@ namespace media_vault_app.Infrastructure.API.Clients
     }
 
 
-    public sealed class RawgApiClient : ApiClientBase, IRawgApiClient
+    public sealed class RawgApiClient : ApiClientBase<RawgApiClient>, IRawgApiClient
     {
         private readonly HttpClient _httpClient;
         private readonly RawgApiOptions _options;
@@ -27,9 +27,8 @@ namespace media_vault_app.Infrastructure.API.Clients
         public RawgApiClient(
             HttpClient httpClient,
             IOptions<RawgApiOptions> options,
-            IErrorLogger errorLogger,
-            IErrorLogPolicy errorLogPolicy)
-            : base(errorLogger, errorLogPolicy)
+            ErrorEventLogger<RawgApiClient> errorEventLogger)
+            : base(errorEventLogger, "RAWG")
         {
             _httpClient = httpClient;
             _options = options.Value;

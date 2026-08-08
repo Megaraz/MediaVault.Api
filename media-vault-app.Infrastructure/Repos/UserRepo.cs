@@ -2,7 +2,6 @@
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
 using media_vault_app.Infrastructure.Diagnostics;
@@ -11,7 +10,10 @@ namespace media_vault_app.Infrastructure.Repos
 {
     public class UserRepo : RepoBase<User, Guid>, IUserRepo
     {
-        public UserRepo(AppDbContext appDbContext, IErrorLogger errorLogger) : base(appDbContext, errorLogger)
+        public UserRepo(
+            AppDbContext appDbContext,
+            ErrorEventLogger<RepoBase<User, Guid>> errorEventLogger)
+            : base(appDbContext, errorEventLogger)
         {
         }
 
@@ -33,7 +35,9 @@ namespace media_vault_app.Infrastructure.Repos
                     return Result.Failure(MediaVaultErrors.Conflict(baseErrorContext));
                 }
 
-                return Result.Failure(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, dbEx));
+                return LogAndFail(
+                    DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, dbEx),
+                    baseErrorContext);
             }
             catch (OperationCanceledException)
             {
@@ -43,7 +47,9 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
-                return Result.Failure(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex));
+                return LogAndFail(
+                    DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex),
+                    baseErrorContext);
             }
 
         }
@@ -75,7 +81,9 @@ namespace media_vault_app.Infrastructure.Repos
             catch (Exception ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
-                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex));
+                return LogAndFail<(bool IsUserNameAvailable, bool IsEmailAvailable)>(
+                    DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex),
+                    baseErrorContext);
             }
         }
 
@@ -108,7 +116,9 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return Result<User>.Failure(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex));
+                return LogAndFail<User>(
+                    DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex),
+                    baseErrorContext);
             }
         }
     }

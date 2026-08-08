@@ -4,8 +4,8 @@ using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Domain.Enums;
+using media_vault_app.Infrastructure.Diagnostics;
 using Microsoft.Extensions.Options;
-using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Validation;
 
@@ -23,7 +23,7 @@ namespace media_vault_app.Infrastructure.API.Clients
         public string ApiAccessToken { get; set; } = string.Empty;
     }
 
-    public class TmdbApiClient : ApiClientBase, ITmdbApiClient
+    public class TmdbApiClient : ApiClientBase<TmdbApiClient>, ITmdbApiClient
     {
 
         private readonly HttpClient _httpClient;
@@ -32,9 +32,8 @@ namespace media_vault_app.Infrastructure.API.Clients
         public TmdbApiClient(
             HttpClient httpClient,
             IOptions<TmdbApiOptions> options,
-            IErrorLogger errorLogger,
-            IErrorLogPolicy errorLogPolicy)
-            : base(errorLogger, errorLogPolicy)
+            ErrorEventLogger<TmdbApiClient> errorEventLogger)
+            : base(errorEventLogger, "TMDB")
         {
             _httpClient = httpClient;
             _options = options.Value;

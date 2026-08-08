@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using media_vault_app.Application.DTOs.External_API_Contracts.GoogleBooks;
 using media_vault_app.Application.Interfaces.Clients;
+using media_vault_app.Infrastructure.Diagnostics;
 using Microsoft.Extensions.Options;
-using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Megaraz.ResultPattern;
 
 namespace media_vault_app.Infrastructure.API.Clients
@@ -19,7 +19,7 @@ namespace media_vault_app.Infrastructure.API.Clients
         public string ApiKey { get; set; } = string.Empty;
     }
 
-    public sealed class GoogleBooksApiClient : ApiClientBase, IGoogleBooksApiClient
+    public sealed class GoogleBooksApiClient : ApiClientBase<GoogleBooksApiClient>, IGoogleBooksApiClient
     {
         private readonly HttpClient _httpClient;
         private readonly GoogleBooksApiOptions _options;
@@ -27,9 +27,8 @@ namespace media_vault_app.Infrastructure.API.Clients
         public GoogleBooksApiClient(
             HttpClient httpClient,
             IOptions<GoogleBooksApiOptions> options,
-            IErrorLogger errorLogger,
-            IErrorLogPolicy errorLogPolicy)
-            : base(errorLogger, errorLogPolicy)
+            ErrorEventLogger<GoogleBooksApiClient> errorEventLogger)
+            : base(errorEventLogger, "GoogleBooks")
         {
             _httpClient = httpClient;
             _options = options.Value;

@@ -260,7 +260,7 @@ The IDs, names, levels, owners, and semantic fields below are approved. Exact fi
 
 The implementation should use `[LoggerMessage]` source generation unless the child records a concrete .NET constraint that makes it unsuitable. Event 1000 carries codes rather than rejected values or complete multiline descriptions. Propagated repository/client failures receive no second Application event.
 
-### 5.4 Implemented standard-logging seam (#107)
+### 5.4 Implemented standard-logging seam and producers (#107-#108)
 
 Issue #107 adds `ErrorEventPolicy`, `ErrorEventLogger<TCategory>`, `ErrorEventContext`, and source-generated `ErrorLogEvents` in Infrastructure. The policy currently selects events 2000-2102 from package-native database and HTTP errors. It suppresses validation, caller cancellation, and the approved routine HTTP 400/404/409/422 outcomes. `ErrorEventLogger<TCategory>` emits the selected event through `ILogger<TCategory>` and accepts the operation/entity plus D6 layer/service/method context explicitly; it never reads or writes the NDJSON sink.
 
@@ -268,7 +268,11 @@ Issue #107 adds `ErrorEventPolicy`, `ErrorEventLogger<TCategory>`, `ErrorEventCo
 
 The emitter delegates directly to the standard `ILogger` provider pipeline. It does not wrap each call in a catch-and-ignore block or recursively log provider failures; provider configuration and provider self-diagnostics own that isolation.
 
-The new policy, options, and open-generic emitter are registered beside the legacy `IErrorLogger`, `IErrorLogPolicy`, and cleanup service. This coexistence is temporary. Production producers remain solely on the legacy path in #107, so no live flow emits both events. #108 must switch each producer once and must not call both paths for the same failure. Event 1000 remains owned by Application and is completed when Application validation callsites are migrated in #108; event 3000 remains owned by the API exception boundary in #109.
+Issue #108 switches `RepoBase`, `DependentEntityRepoBase`, their concrete repository paths, and `ApiClientBase<TCategory>` to `ErrorEventLogger<TCategory>`. Repository and provider failures now emit only the standard events; none of those producers calls `IErrorLogger` or writes NDJSON. Concrete repository methods that previously bypassed the base helpers now use the same one-event path. Provider events include the concrete client, provider name, failure kind, optional upstream status, operation/entity context, and the safe error classification.
+
+Application validation callsites emit source-generated event 1000 through `ServiceValidationLogging.LogValidationFailure`, with at most ten error codes and no submitted values or descriptions. Application services no longer repeat propagated repository or provider failures at Debug level. The legacy `IErrorLogger` registration remains temporarily only because `ErrorLogCleanupService` still maintains the file sink; #110 removes that isolated surface. `IErrorLogPolicy` and `ErrorLogPolicy` are no longer production registrations or producer dependencies.
+
+Broad repository catch-all classification remains temporarily unchanged in #108 because the safe global exception boundary is delivered by the immediately following #109. This preserves the existing safe HTTP behavior while the issues land in dependency order; #109 owns narrowing unknown exceptions to event 3000. Event 3000 remains owned by the API exception boundary and is not emitted by #108.
 
 The global handler's final type and method are recorded by #109. Its `IExceptionHandler.TryHandleAsync(HttpContext, Exception, CancellationToken)` implementation must:
 

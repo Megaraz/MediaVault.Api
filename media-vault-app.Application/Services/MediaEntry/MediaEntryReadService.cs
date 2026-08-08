@@ -33,31 +33,31 @@ namespace media_vault_app.Application.Services.MediaEntry
             Guid ownerId,
             Guid id,
             CancellationToken ct = default) =>
-            await GetTypedByIdAsync<MovieEntryDetailedDto>(ownerId, id, nameof(GetMovieByIdAsync), "movie", ct);
+            await GetTypedByIdAsync<MovieEntryDetailedDto>(ownerId, id, nameof(GetMovieByIdAsync), ct);
 
         public async Task<Result<TvSeriesEntryDetailedDto>> GetTvSeriesByIdAsync(
             Guid ownerId,
             Guid id,
             CancellationToken ct = default) =>
-            await GetTypedByIdAsync<TvSeriesEntryDetailedDto>(ownerId, id, nameof(GetTvSeriesByIdAsync), "TV series", ct);
+            await GetTypedByIdAsync<TvSeriesEntryDetailedDto>(ownerId, id, nameof(GetTvSeriesByIdAsync), ct);
 
         public async Task<Result<GameEntryDetailedDto>> GetGameByIdAsync(
             Guid ownerId,
             Guid id,
             CancellationToken ct = default) =>
-            await GetTypedByIdAsync<GameEntryDetailedDto>(ownerId, id, nameof(GetGameByIdAsync), "game", ct);
+            await GetTypedByIdAsync<GameEntryDetailedDto>(ownerId, id, nameof(GetGameByIdAsync), ct);
 
         public async Task<Result<BookEntryDetailedDto>> GetBookByIdAsync(
             Guid ownerId,
             Guid id,
             CancellationToken ct = default) =>
-            await GetTypedByIdAsync<BookEntryDetailedDto>(ownerId, id, nameof(GetBookByIdAsync), "book", ct);
+            await GetTypedByIdAsync<BookEntryDetailedDto>(ownerId, id, nameof(GetBookByIdAsync), ct);
 
         public async Task<Result<MangaEntryDetailedDto>> GetMangaByIdAsync(
             Guid ownerId,
             Guid id,
             CancellationToken ct = default) =>
-            await GetTypedByIdAsync<MangaEntryDetailedDto>(ownerId, id, nameof(GetMangaByIdAsync), "manga", ct);
+            await GetTypedByIdAsync<MangaEntryDetailedDto>(ownerId, id, nameof(GetMangaByIdAsync), ct);
 
         public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
             Guid ownerId,
@@ -86,7 +86,12 @@ namespace media_vault_app.Application.Services.MediaEntry
             // If there are any validation errors, return them in a single Result response
             if (validationErrors.Any())
             {
-                _logger.LogDebug("SearchMediaEntriesAsync validation failed: {ValidationErrors}", ServiceValidationLogging.FormatValidationErrors(validationErrors));
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger,
+                    validationErrors,
+                    nameof(MediaEntryReadService),
+                    nameof(SearchMediaEntriesAsync),
+                    baseErrorContext);
                 return Result<IReadOnlyList<MediaEntryMinimalDto>>.ValidationFailure(validationErrors, "Validation errors occurred.");
             }
 
@@ -94,9 +99,6 @@ namespace media_vault_app.Application.Services.MediaEntry
             var ownerExistsResult = await EnsureOwnerExistsAsync(ownerId, ct);
             if (ownerExistsResult.IsFailure)
             {
-                _logger.LogDebug("SearchMediaEntriesAsync owner check failed: {Code} — {Description}",
-                    ownerExistsResult.PrimaryError.Code, ownerExistsResult.PrimaryError.Description);
-
                 return ownerExistsResult.ToResult<IReadOnlyList<MediaEntryMinimalDto>>();
             }
 
@@ -107,10 +109,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             var repoResult = await MediaEntryRepo.SearchMediaEntriesAsync(ownerId, request.Query, pageNumber, pageSize, ct);
 
             // Maps the result internally  
-            var mappedRepoResult = repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
-            if (mappedRepoResult.IsFailure)
-                _logger.LogDebug("SearchMediaEntriesAsync failed: {Code} — {Description}", mappedRepoResult.PrimaryError.Code, mappedRepoResult.PrimaryError.Description);
-            return mappedRepoResult;
+            return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
 
         }
 
@@ -118,7 +117,6 @@ namespace media_vault_app.Application.Services.MediaEntry
             Guid ownerId,
             Guid id,
             string methodName,
-            string subtypeDisplayName,
             CancellationToken ct = default)
             where TDetailedSubtype : MediaEntryDetailedDto
         {
@@ -126,9 +124,6 @@ namespace media_vault_app.Application.Services.MediaEntry
 
             if (baseResult.IsFailure)
             {
-                _logger.LogDebug("GetTypedByIdAsync ({Subtype}) failed: {Code} — {Description}",
-                    subtypeDisplayName, baseResult.PrimaryError.Code, baseResult.PrimaryError.Description);
-
                 return baseResult.ToResult<TDetailedSubtype>();
             }
 

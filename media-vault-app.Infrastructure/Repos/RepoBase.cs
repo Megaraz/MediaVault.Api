@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
-using Rasmus.SharedKernel.Diagnostics;
-using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Megaraz.ResultPattern;
@@ -23,13 +21,15 @@ namespace media_vault_app.Infrastructure.Repos
     {
         protected readonly AppDbContext _appDbContext;
         protected readonly DbSet<TEntity> _dbSet;
-        protected readonly IErrorLogger _errorLogger;
+        protected readonly ErrorEventLogger<RepoBase<TEntity, TKey>> _errorEventLogger;
 
-        public RepoBase(AppDbContext appDbContext, IErrorLogger errorLogger)
+        public RepoBase(
+            AppDbContext appDbContext,
+            ErrorEventLogger<RepoBase<TEntity, TKey>> errorEventLogger)
         {
             _appDbContext = appDbContext;
             _dbSet = _appDbContext.Set<TEntity>();
-            _errorLogger = errorLogger;
+            _errorEventLogger = errorEventLogger;
         }
 
         public virtual async Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default)
@@ -48,15 +48,15 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                return await LogAndFailAsync<TEntity>(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail<TEntity>(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), baseErrorContext);
             }
             catch (DbUpdateException ex)
             {
-                return await LogAndFailAsync<TEntity>(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail<TEntity>(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), baseErrorContext);
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync<TEntity>(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail<TEntity>(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), baseErrorContext);
             }
         }
 
@@ -80,7 +80,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync<TEntity>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail<TEntity>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), baseErrorContext);
             }
         }
 
@@ -104,7 +104,7 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync<IReadOnlyList<TEntity>>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail<IReadOnlyList<TEntity>>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), baseErrorContext);
             }
         }
 
@@ -132,15 +132,15 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                return await LogAndFailAsync(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), baseErrorContext);
             }
             catch (DbUpdateException ex)
             {
-                return await LogAndFailAsync(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), baseErrorContext);
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), baseErrorContext);
             }
         }
 
@@ -173,15 +173,15 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                return await LogAndFailAsync(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), baseErrorContext);
             }
             catch (DbUpdateException ex)
             {
-                return await LogAndFailAsync(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), baseErrorContext);
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), baseErrorContext);
             }
         }
 
@@ -207,41 +207,31 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (Exception ex)
             {
-                return await LogAndFailAsync<bool>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), CancellationToken.None);
+                return LogAndFail<bool>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), baseErrorContext);
             }
         }
 
-        protected async Task<Result> LogAndFailAsync(
+        protected Result LogAndFail(
             Error error,
-            CancellationToken ct = default,
+            ErrorContext errorContext,
             [CallerMemberName] string methodName = "")
         {
-            try
-            {
-                var context = new ErrorLogContext("Infrastructure", GetType().Name, methodName);
-                await _errorLogger.LogErrorToFileAsync(error, context, ct);
-            }
-            catch
-            {
-            }
+            var context = new ErrorEventContext(
+                "Infrastructure", GetType().Name, methodName, errorContext);
+            _errorEventLogger.Log(error, context);
 
             return Result.Failure(error);
         }
 
-        protected async Task<Result<T>> LogAndFailAsync<T>(
+        protected Result<T> LogAndFail<T>(
             Error error,
-            CancellationToken ct = default,
+            ErrorContext errorContext,
             [CallerMemberName] string methodName = "")
             where T : notnull
         {
-            try
-            {
-                var context = new ErrorLogContext("Infrastructure", GetType().Name, methodName);
-                await _errorLogger.LogErrorToFileAsync(error, context, ct);
-            }
-            catch
-            {
-            }
+            var context = new ErrorEventContext(
+                "Infrastructure", GetType().Name, methodName, errorContext);
+            _errorEventLogger.Log(error, context);
 
             return Result<T>.Failure(error);
         }
