@@ -147,6 +147,13 @@ namespace media_vault_app.API
 
             builder.Services.AddSingleton<IErrorLogPolicy, ErrorLogPolicy>();
 
+            // Temporary coexistence for #107: production producers remain on IErrorLogger until
+            // #108 switches each callsite once, preventing duplicate operational events.
+            builder.Services.AddSingleton<ErrorEventPolicy>();
+            builder.Services.AddSingleton(
+                new ErrorDiagnosticsOptions(builder.Environment.IsDevelopment()));
+            builder.Services.AddSingleton(typeof(ErrorEventLogger<>), typeof(ErrorEventLogger<>));
+
             builder.Services.AddSingleton<IErrorLogger, ErrorLogger>(sp =>
             {
                 var configuration = new ErrorLoggerConfiguration
