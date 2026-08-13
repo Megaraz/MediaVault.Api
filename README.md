@@ -1,5 +1,10 @@
 # MediaVault API
 
+> Part of the **[MediaVault project](https://github.com/Megaraz/MediaVault)**.
+> For the product overview, screenshots, architecture map, roadmap, and
+> one-command workspace setup, start in the main repository. Client code lives
+> in **[MediaVault.Clients](https://github.com/Megaraz/MediaVault.Clients)**.
+
 MediaVault is a personal library for movies, TV series, games, books, and
 manga. This repository contains the ASP.NET Core backend that owns
 authentication, library data, persistence, and external metadata integrations.
