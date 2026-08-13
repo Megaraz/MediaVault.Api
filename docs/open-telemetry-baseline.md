@@ -46,7 +46,7 @@ OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 OTEL_EXPORTER_OTLP_TIMEOUT=10000
 ```
 
-Signal-specific endpoint/protocol/header variables are also supported. Authentication headers are secrets and belong in environment/secret storage, never committed configuration. Issue #112 owns exact standalone Aspire Dashboard instructions.
+Signal-specific endpoint/protocol/header variables are also supported. Authentication headers are secrets and belong in environment/secret storage, never committed configuration. The exact local workflow is documented in [Standalone Aspire Dashboard](standalone-aspire-dashboard.md).
 
 ## Volume, filtering, and cardinality
 
@@ -82,6 +82,12 @@ Telemetry failure is operationally relevant but is not a reason to retry applica
 - absence of custom user/media metric dimensions;
 - service name/version/environment resource attributes;
 - OTLP receiver-outage isolation.
+
+For hands-on verification, setting `MEDIAVAULT_TEST_OTLP_EXPORT=true` adds the
+configured OTLP exporter to the same deterministic success, expected-failure,
+outbound-failure, and unexpected-exception scenarios. It does not add test
+routes to the production API. See the standalone dashboard guide for the exact
+command and safe environment cleanup.
 
 Repository verification remains:
 

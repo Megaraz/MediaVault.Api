@@ -519,7 +519,7 @@ Before deletion, repository searches must prove no callsite remains. No runtime 
 - #111 is implemented. `docs/open-telemetry-baseline.md` records the operational questions, stable package rationale, resource identity, logs, ASP.NET Core and `HttpClient` traces/metrics, runtime/process metrics, sampling, filtering, redaction, environment separation, and tests.
 - OTLP selection, endpoint, protocol, and authentication remain outside business code through typed configuration and standard exporter environment variables.
 - Deterministic in-memory and unreachable-receiver tests verify correlation, redaction, bounded dimensions, signal shape, and exporter-failure isolation.
-- Document and verify the standalone Aspire Dashboard as a local, short-lived viewer.
+- #112 is implemented. `docs/standalone-aspire-dashboard.md` pins the primary Aspire CLI workflow, configures the opt-in local OTLP launch profile, documents authentication and failure isolation, and provides a deterministic dashboard verification path for the representative signal shapes.
 
 ### Gate F — integrated verification (#113)
 

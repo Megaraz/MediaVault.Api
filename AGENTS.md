@@ -48,7 +48,7 @@ Revalidate this map before architectural work:
 
 The backend currently targets .NET 10 and EF Core with SQLite. The web client currently uses React 19 and stores its JWT through the centralized auth client. External metadata comes through backend integrations for RAWG, TMDB, and Google Books. Exact versions and behavior must still be verified from code.
 
-The following are directions, not claims about current implementation: global exception handling, explicit timeout/retry/rate-limit policies, React Query, offline mobile synchronization, OpenTelemetry/Sentry/Aspire integration, production deployment, and AI recommendations.
+The following are directions, not claims about current implementation: explicit timeout/retry/rate-limit policies, React Query, offline mobile synchronization, Sentry or another production telemetry backend, Aspire orchestration, production deployment, and AI recommendations. The global exception boundary, vendor-neutral OpenTelemetry baseline, and optional standalone Aspire Dashboard workflow are implemented.
 
 ## Architecture rules
 
