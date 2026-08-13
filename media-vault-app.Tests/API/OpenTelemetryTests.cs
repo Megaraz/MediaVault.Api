@@ -18,6 +18,8 @@ namespace media_vault_app.Tests.API;
 [Collection(OpenTelemetryIntegrationCollection.Name)]
 public sealed class OpenTelemetryTests
 {
+    private const string DashboardExportEnvironmentVariable =
+        "MEDIAVAULT_TEST_OTLP_EXPORT";
     private const string SecretQueryValue = "private-provider-key";
 
     [Fact]
@@ -187,6 +189,13 @@ public sealed class OpenTelemetryTests
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            var exportToConfiguredOtlp =
+                !enableOtlp &&
+                string.Equals(
+                    Environment.GetEnvironmentVariable(DashboardExportEnvironmentVariable),
+                    "true",
+                    StringComparison.OrdinalIgnoreCase);
+
             builder.UseEnvironment("TelemetryTests");
             builder.UseSetting("ConnectionStrings:Default", "Data Source=:memory:");
             builder.UseSetting("ExternalApis:Rawg:BaseUrl", "https://rawg.test/");
@@ -199,7 +208,9 @@ public sealed class OpenTelemetryTests
             builder.UseSetting("Jwt:Issuer", "MediaVault.Tests");
             builder.UseSetting("Jwt:Audience", "MediaVault.Tests");
             builder.UseSetting("OpenTelemetry:Enabled", "true");
-            builder.UseSetting("OpenTelemetry:OtlpExporterEnabled", enableOtlp.ToString());
+            builder.UseSetting(
+                "OpenTelemetry:OtlpExporterEnabled",
+                (enableOtlp || exportToConfiguredOtlp).ToString());
             builder.UseSetting("OpenTelemetry:ServiceName", "MediaVault.TelemetryTests");
             builder.UseSetting("OpenTelemetry:ServiceVersion", "9.8.7");
             builder.UseSetting("OpenTelemetry:Environment", "TelemetryTests");

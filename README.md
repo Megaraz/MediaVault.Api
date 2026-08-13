@@ -50,6 +50,7 @@ entry automatically.
 - Provider-backed title search and metadata autofill
 - SQLite persistence through Entity Framework Core migrations
 - Development OpenAPI document at `/openapi/v1.json`
+- Optional local OpenTelemetry export to the standalone Aspire Dashboard
 - Shared API contracts consumed by the web client and the separately maintained
   Android client
 
@@ -176,6 +177,11 @@ The SQLite file is local runtime state and is ignored by Git. EF Core migrations
 are the schema history; do not share the backend database file with a client or
 commit it to the repository.
 
+To inspect local logs, traces, and metrics, follow the
+[standalone Aspire Dashboard guide](docs/standalone-aspire-dashboard.md). This
+workflow is optional and does not add an Aspire AppHost or make the dashboard a
+production monitoring system.
+
 ### 3. Start the web client
 
 In a second terminal:
@@ -237,15 +243,17 @@ include:
 
 - maintaining the completed package-backed ResultPattern integration and its
   MediaVault-owned compatibility policies;
-- a global boundary for unexpected API failures;
+- maintaining the global boundary for unexpected API failures and the local
+  OpenTelemetry/Aspire diagnostic workflow;
 - explicit cancellation, timeout, retry, and rate-limit policies;
 - React Query for web server state and a designed offline-sync model for
   Android;
 - production-minded telemetry and deployment; and
 - a narrow, privacy-conscious AI recommendation feature.
 
-Except for the completed ResultPattern integration, these are roadmap items,
-not claims about the current implementation. See the completed
+Except for the completed ResultPattern integration and error-observability
+foundation identified above, these are roadmap items, not claims about the
+current implementation. See the completed
 [ResultPattern migration record](docs/resultpattern-migration-plan.md) and
 [public repository readiness audit](docs/public-repository-readiness-audit.md)
 for the active decisions and known gaps.
