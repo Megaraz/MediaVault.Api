@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text;
+using media_vault_app.API.Diagnostics;
 using media_vault_app.API.Security;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Mappers;
@@ -167,6 +168,10 @@ namespace media_vault_app.API
 
             builder.Services.AddControllers();
 
+            builder.Services.AddSingleton<IProblemDetailsWriter, MediaVaultProblemDetailsWriter>();
+            builder.Services.AddProblemDetails();
+            builder.Services.AddExceptionHandler<MediaVaultExceptionHandler>();
+
             builder.Services.AddOpenApi();
 
             builder.Services.AddCors(options =>
@@ -243,6 +248,13 @@ namespace media_vault_app.API
             {
                 app.UseHttpsRedirection();
             }
+
+            app.UseExceptionHandler(new ExceptionHandlerOptions
+            {
+                // MediaVault's handler owns event 3000. Keep the .NET 10 framework
+                // diagnostics suppressed for handled exceptions to avoid duplicates.
+                SuppressDiagnosticsCallback = _ => true
+            });
 
             app.UseCors("AllowAll");
 

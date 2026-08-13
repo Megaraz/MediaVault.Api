@@ -4,6 +4,9 @@ using media_vault_app.Infrastructure.Diagnostics;
 using media_vault_app.Infrastructure.Repos;
 using media_vault_app.Tests.TestHelpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Data.Sqlite;
+using System.Data.Common;
 using Microsoft.Extensions.Logging;
 using Megaraz.ResultPattern;
 using Megaraz.ResultPattern.AspNetCore;
@@ -112,6 +115,39 @@ public sealed class DatabaseAndLoggingTests
         Assert.DoesNotContain("private diagnostic", entry.Message, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task UnknownRepositoryException_IsNotHiddenAsADatabaseResult()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+
+        var setupOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        await using (var setupContext = new AppDbContext(setupOptions))
+            await setupContext.Database.EnsureCreatedAsync();
+
+        var queryOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .AddInterceptors(new ProgrammingFailureInterceptor())
+            .Options;
+        await using var queryContext = new AppDbContext(queryOptions);
+        using var provider = new RecordingLoggerProvider();
+        using var factory = LoggerFactory.Create(builder => builder.AddProvider(provider));
+        var repository = new RepoBase<User, Guid>(
+            queryContext,
+            new ErrorEventLogger<RepoBase<User, Guid>>(
+                factory.CreateLogger<RepoBase<User, Guid>>(),
+                new ErrorEventPolicy(),
+                new ErrorDiagnosticsOptions(false)));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            repository.ExistsAsync(Guid.NewGuid()));
+
+        Assert.Equal("controlled programming failure", exception.Message);
+        Assert.DoesNotContain(provider.Entries, entry => entry.EventId.Id == 2001);
+    }
+
     private sealed class TestRepository(
         AppDbContext dbContext,
         ErrorEventLogger<RepoBase<User, Guid>> logger)
@@ -119,5 +155,16 @@ public sealed class DatabaseAndLoggingTests
     {
         public Result ReturnFailureAfterLogging(Error error, ErrorContext errorContext) =>
             LogAndFail(error, errorContext);
+    }
+
+    private sealed class ProgrammingFailureInterceptor : DbCommandInterceptor
+    {
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
+            DbCommand command,
+            CommandEventData eventData,
+            InterceptionResult<DbDataReader> result,
+            CancellationToken cancellationToken = default) =>
+            ValueTask.FromException<InterceptionResult<DbDataReader>>(
+                new InvalidOperationException("controlled programming failure"));
     }
 }

@@ -54,10 +54,6 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return LogAndFail<TEntity>(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), baseErrorContext);
             }
-            catch (Exception ex)
-            {
-                return LogAndFail<TEntity>(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), baseErrorContext);
-            }
         }
 
         public virtual async Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken ct = default)
@@ -78,7 +74,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result<TEntity>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
-            catch (Exception ex)
+            catch (System.Data.Common.DbException ex)
             {
                 return LogAndFail<TEntity>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), baseErrorContext);
             }
@@ -102,7 +98,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result<IReadOnlyList<TEntity>>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
-            catch (Exception ex)
+            catch (System.Data.Common.DbException ex)
             {
                 return LogAndFail<IReadOnlyList<TEntity>>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), baseErrorContext);
             }
@@ -138,9 +134,9 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return LogAndFail(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), baseErrorContext);
             }
-            catch (Exception ex)
+            catch (System.Data.Common.DbException ex)
             {
-                return LogAndFail(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), baseErrorContext);
+                return LogAndFail(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), baseErrorContext);
             }
         }
 
@@ -179,9 +175,9 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return LogAndFail(DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex), baseErrorContext);
             }
-            catch (Exception ex)
+            catch (System.Data.Common.DbException ex)
             {
-                return LogAndFail(DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex), baseErrorContext);
+                return LogAndFail(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), baseErrorContext);
             }
         }
 
@@ -205,7 +201,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result<bool>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
-            catch (Exception ex)
+            catch (System.Data.Common.DbException ex)
             {
                 return LogAndFail<bool>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), baseErrorContext);
             }

@@ -59,12 +59,6 @@ namespace media_vault_app.Infrastructure.Repos
                 return LogAndFail<TEntityDependent>(createError, baseErrorContext);
 
             }
-            catch (Exception ex)
-            {
-                var error = DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex);
-
-                return LogAndFail<TEntityDependent>(error, baseErrorContext);
-            }
 
         }
 
@@ -92,7 +86,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result<IReadOnlyList<TEntityDependent>>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
-            catch (Exception ex)
+            catch (System.Data.Common.DbException ex)
             {
                 var error = DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex);
 
@@ -136,7 +130,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result<TEntityDependent>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
-            catch (Exception ex)
+            catch (System.Data.Common.DbException ex)
             {
                 var error = DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex);
 
@@ -193,9 +187,9 @@ namespace media_vault_app.Infrastructure.Repos
                 var error = DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex);
                 return LogAndFail(error, baseErrorContext);
             }
-            catch (Exception ex)
+            catch (System.Data.Common.DbException ex)
             {
-                var error = DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex);
                 return LogAndFail(error, baseErrorContext);
             }
         }
@@ -237,9 +231,9 @@ namespace media_vault_app.Infrastructure.Repos
                 var error = DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex);
                 return LogAndFail(error, baseErrorContext);
             }
-            catch (Exception ex)
+            catch (System.Data.Common.DbException ex)
             {
-                var error = DatabaseFailurePolicy.UnexpectedFailure(baseErrorContext, ex);
+                var error = DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex);
                 return LogAndFail(error, baseErrorContext);
             }
         }
