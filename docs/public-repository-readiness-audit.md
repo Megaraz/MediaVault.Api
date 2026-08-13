@@ -76,12 +76,6 @@ Run the following from a new clone. These commands use only checked-in projects,
 ```powershell
 dotnet restore media-vault-app.slnx
 dotnet test media-vault-app.slnx
-
-Push-Location media-vault-app.client
-npm ci
-npm run lint
-npm run build
-Pop-Location
 ```
 
 Then confirm the repository contains no tracked runtime database, local environment, or key files:

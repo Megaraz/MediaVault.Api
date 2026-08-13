@@ -1,6 +1,6 @@
 # Public-readiness final review — 2026-07-28
 
-This is the final evidence record for [issue #61](https://github.com/Megaraz/media-vault-app/issues/61), the last child of the [Build in Public parent issue](https://github.com/Megaraz/media-vault-app/issues/55).
+This is the final evidence record for [issue #61](https://github.com/Megaraz/MediaVault.Api/issues/61), the last child of the [Build in Public parent issue](https://github.com/Megaraz/MediaVault.Api/issues/55).
 
 ## Verdict
 
@@ -12,8 +12,8 @@ Both repositories and GitHub Project 2 were already public when this review was 
 
 All required implementation children are closed and their Project items are marked **Done**:
 
-- [#71](https://github.com/Megaraz/media-vault-app/issues/71), [#56](https://github.com/Megaraz/media-vault-app/issues/56), [#58](https://github.com/Megaraz/media-vault-app/issues/58), [#59](https://github.com/Megaraz/media-vault-app/issues/59), [#57](https://github.com/Megaraz/media-vault-app/issues/57), and [#60](https://github.com/Megaraz/media-vault-app/issues/60)
-- [Android #1](https://github.com/Megaraz/media-vault-android/issues/1), [Android #2](https://github.com/Megaraz/media-vault-android/issues/2), and [Android #3](https://github.com/Megaraz/media-vault-android/issues/3)
+- [#71](https://github.com/Megaraz/MediaVault.Api/issues/71), [#56](https://github.com/Megaraz/MediaVault.Api/issues/56), [#58](https://github.com/Megaraz/MediaVault.Api/issues/58), [#59](https://github.com/Megaraz/MediaVault.Api/issues/59), [#57](https://github.com/Megaraz/MediaVault.Api/issues/57), and [#60](https://github.com/Megaraz/MediaVault.Api/issues/60)
+- [Android #1](https://github.com/Megaraz/MediaVault.Clients/issues/1), [Android #2](https://github.com/Megaraz/MediaVault.Clients/issues/2), and [Android #3](https://github.com/Megaraz/MediaVault.Clients/issues/3)
 
 The public-readiness changes reviewed here are documentation, ignore rules, CI, and client correctness work. They did not intentionally change API routes, authentication, JSON shapes, persistence schema, or the shared API contract. The API/web and Android READMEs consistently describe JWT bearer authentication, backend-owned metadata credentials, pre-release status, and the lack of a production deployment or general offline synchronization.
 
@@ -49,6 +49,6 @@ These items mean the publication should be treated as active work in progress ra
 
 ## Launch-update draft (not published)
 
-> MediaVault is now being built in public. It is a personal media library for movies, TV series, games, books, and manga, with an ASP.NET Core/React web app and a separate Expo Android client. The repositories now include reproducible clean-clone checks, public CI, documentation, and a shared roadmap: [API/web](https://github.com/Megaraz/media-vault-app), [Android](https://github.com/Megaraz/media-vault-android), and [Project](https://github.com/users/Megaraz/projects/2). One lesson from this milestone: making a repository public is a security and reproducibility review, not just a visibility toggle. Next, I will work on migrating MediaVault to the published ResultPattern packages. The app remains pre-release and is not yet deployed.
+> MediaVault is now being built in public. It is a personal media library for movies, TV series, games, books, and manga, with an ASP.NET Core/React web app and a separate Expo Android client. The repositories now include reproducible clean-clone checks, public CI, documentation, and a shared roadmap: [API/web](https://github.com/Megaraz/MediaVault.Api), [Android](https://github.com/Megaraz/MediaVault.Clients), and [Project](https://github.com/users/Megaraz/projects/2). One lesson from this milestone: making a repository public is a security and reproducibility review, not just a visibility toggle. Next, I will work on migrating MediaVault to the published ResultPattern packages. The app remains pre-release and is not yet deployed.
 
-This draft is evidence for issue #61 only. It must be owner-reviewed and manually posted, if desired, through [issue #70](https://github.com/Megaraz/media-vault-app/issues/70).
+This draft is evidence for issue #61 only. It must be owner-reviewed and manually posted, if desired, through [issue #70](https://github.com/Megaraz/MediaVault.Api/issues/70).

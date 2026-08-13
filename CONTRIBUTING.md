@@ -26,7 +26,7 @@ issue workflow. Participation is governed by the
   narrowest boundary that can enforce it consistently.
 - Treat API routes, authentication, status codes, JSON and error shapes,
   persistence identifiers, pagination, and synchronization metadata as
-  contracts shared by the web and Android clients.
+  contracts shared by the web and mobile clients.
 - Update every in-scope consumer when a shared contract intentionally changes.
   Otherwise, preserve the contract and document any out-of-scope compatibility
   gap.
@@ -42,13 +42,6 @@ before requesting review:
 
 ```powershell
 dotnet test media-vault-app.slnx
-
-Push-Location media-vault-app.client
-npm ci
-npm run lint
-npm run build
-Pop-Location
-
 git diff --check
 ```
 
