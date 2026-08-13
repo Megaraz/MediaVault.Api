@@ -2,12 +2,12 @@
 
 ## Scope and precedence
 
-This is the root instruction file for AI-assisted work in this repository. It applies to the ASP.NET Core API, backend projects, tests, and React web client.
+This is the root instruction file for AI-assisted work in this repository. It applies to the ASP.NET Core API, backend projects, tests, and backend documentation.
 
 - Treat the checked-out code, project manifests, lock files, migrations, tests, and active task as the source of truth.
 - Read the nearest nested `AGENTS.md` if one is added later; more specific instructions override this file for that subtree.
 - Distinguish clearly between **current behavior**, **approved work in progress**, and **future direction**. Never describe roadmap items as implemented.
-- Revalidate version-sensitive claims from `.csproj`, `package.json`, `package-lock.json`, and official versioned documentation.
+- Revalidate version-sensitive claims from `.csproj` files and official versioned documentation.
 - Keep this file limited to durable repository-wide guidance. Put temporary status, phase plans, and detailed design decisions in `docs/`.
 - Update this file when a repository-wide invariant changes. Do not preserve guidance that the code has made false.
 
@@ -25,7 +25,7 @@ Optimize for correctness, security, data integrity, maintainability, and user va
 
 ## Repository and ecosystem boundaries
 
-This repository owns the backend API and React web client. The Android Expo/React Native app is a separate sibling repository. The Megaraz ResultPattern libraries are separate published NuGet packages with their own repositories.
+This repository owns the backend API. The React web app and Expo/React Native mobile app live in the separate `Megaraz/MediaVault.Clients` repository. The Megaraz ResultPattern libraries are separate published NuGet packages with their own repositories.
 
 - Do not modify sibling repositories or published packages unless the user explicitly puts them in scope.
 - Treat API routes, authentication, HTTP statuses, JSON shapes, error codes, pagination, and sync metadata as contracts shared by multiple clients.
@@ -41,12 +41,11 @@ Revalidate this map before architectural work:
 - `media-vault-app.Application`: use cases, service contracts and implementations, DTOs, validation, and mapping.
 - `media-vault-app.Infrastructure`: EF Core, SQLite persistence, repositories, migrations, and third-party HTTP clients.
 - `media-vault-app.API`: composition root, JWT bearer authentication, controllers, and HTTP response mapping.
-- `media-vault-app.client`: React, TypeScript, Vite, and Tailwind web client.
 - `Rasmus.SharedKernel`: shared entity/service contracts plus MediaVault-owned validation, pagination, result-message, diagnostic, and logging abstractions. It depends only on the published core ResultPattern package.
 - `media-vault-app.Tests` and `Rasmus.SharedKernel.Tests`: xUnit tests.
 - `docs/`: durable plans and architecture documentation.
 
-The backend currently targets .NET 10 and EF Core with SQLite. The web client currently uses React 19 and stores its JWT through the centralized auth client. External metadata comes through backend integrations for RAWG, TMDB, and Google Books. Exact versions and behavior must still be verified from code.
+The backend currently targets .NET 10 and EF Core with SQLite. External metadata comes through backend integrations for RAWG, TMDB, and Google Books. Exact versions and behavior must still be verified from code.
 
 The following are directions, not claims about current implementation: explicit timeout/retry/rate-limit policies, React Query, offline mobile synchronization, Sentry or another production telemetry backend, Aspire orchestration, production deployment, and AI recommendations. The global exception boundary, vendor-neutral OpenTelemetry baseline, and optional standalone Aspire Dashboard workflow are implemented.
 
@@ -57,7 +56,6 @@ The following are directions, not claims about current implementation: explicit 
 - Application owns business workflows, validation, DTO mapping, and ports. It must not acquire database or ASP.NET Core dependencies merely for convenience.
 - Infrastructure owns persistence, external HTTP implementation details, and application-facing operational adapters.
 - API is the composition and transport boundary. Keep controllers thin: obtain the authenticated user, validate transport concerns, call Application, and map the result.
-- The web client's UI must call the API through the client/transport layer rather than scattering `fetch` calls through components.
 - Put business rules in the narrowest layer that can enforce them consistently.
 - Reuse an existing abstraction when it genuinely fits. Do not force special behavior through a generic base class or introduce a new abstraction until concrete duplication or a real boundary justifies it.
 - Prefer explicit code over clever generic constraints, reflection, service locators, or hidden side effects.
@@ -87,7 +85,6 @@ Expected failures are values; unexpected failures are exceptions.
 - Obtain the current user identifier from validated claims for user-owned operations. Never trust a client-supplied owner ID as authorization.
 - Preserve authorization on protected controllers and endpoints. New public endpoints require an explicit reason.
 - Keep token creation and attachment centralized. Do not hand-build authorization headers throughout the UI.
-- Treat the current web token storage choice as a security decision that may be revisited, not a pattern to spread to other clients. The Android client should use platform-secure storage.
 - Never log or commit passwords, password hashes, JWTs, signing keys, API keys, connection secrets, or sensitive personal data.
 - Store local secrets in user secrets or environment variables. Bind configuration through typed options and fail fast on invalid required configuration.
 - Keep CORS origins environment-specific and minimal. Do not broaden credentialed CORS to arbitrary origins.
@@ -130,17 +127,6 @@ The current NDJSON file logger is a learning implementation, not permission to c
 - Aspire orchestration/dashboard and a hosted error-monitoring service solve different problems. Do not treat them as interchangeable; document development and production responsibilities plus hosting cost before adoption.
 - Observability failures must not break normal application behavior.
 
-## Frontend rules
-
-- Use functional React and strict TypeScript. Avoid `any`, duplicated DTO shapes, and unsafe casts when a real type can express the contract.
-- Keep HTTP behavior in `src/Clients` and the shared transport/auth helper.
-- Do not hardcode development API base URLs in components. Preserve the environment/proxy strategy or replace it with an explicit environment configuration.
-- Separate server state, form state, authentication state, and presentation state.
-- React Context and local state are the current baseline. React Query is planned, not installed. If adopted, use it for server-state fetching, deduplication, invalidation, and mutations; do not move every piece of UI state into it.
-- Define stable query keys and invalidation behavior. Authentication changes must clear or partition user-specific cached data.
-- Preserve accessible labels, keyboard behavior, focus handling, loading states, empty states, and actionable error messages when changing UI.
-- Do not display raw backend, upstream-provider, or exception text directly to users.
-
 ## External APIs and future AI features
 
 - Keep third-party credentials and model API keys on the backend.
@@ -179,18 +165,8 @@ Use exact versions and scripts from the checked-out manifests. Common commands f
 dotnet test media-vault-app.slnx
 ```
 
-For frontend work:
-
-```powershell
-cd media-vault-app.client
-npm run lint
-npm run build
-```
-
 - Prefer a focused test project or test filter while iterating, then run the broader command when the risk warrants it.
-- Use the lock file for reproducible frontend installs. Do not switch package managers casually.
 - A command that fails before the change is baseline evidence, not permission to ignore it. Keep new work from adding failures and report unrelated existing failures precisely.
-- There is no established frontend test suite merely because lint and build scripts exist. Do not claim frontend test coverage that the repository does not contain.
 - For database changes, inspect the generated migration and test upgrade behavior against representative data.
 - For API changes, add contract-focused tests for authorization, status, headers, error bodies, cancellation, and cross-user isolation as applicable.
 

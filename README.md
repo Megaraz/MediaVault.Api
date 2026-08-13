@@ -1,43 +1,15 @@
-# MediaVault
+# MediaVault API
 
-MediaVault is a personal library for movies, TV series, games, books, and manga.
-Users can build a library, track progress and ratings, write reviews, and fill an
-entry from external metadata providers.
+MediaVault is a personal library for movies, TV series, games, books, and
+manga. This repository contains the ASP.NET Core backend that owns
+authentication, library data, persistence, and external metadata integrations.
+The React web and Expo/React Native mobile applications live in
+[MediaVault.Clients](https://github.com/Megaraz/MediaVault.Clients).
 
-This repository contains the ASP.NET Core API and React web client. A separate
-[Expo/React Native Android client](https://github.com/Megaraz/media-vault-android)
-uses the same API.
-
-> **Status:** active pre-release development. The core API and web workflows are
+> **Status:** active pre-release development. The core API workflows are
 > functional, but no public production deployment is available yet.
 
-[![CI](https://github.com/Megaraz/media-vault-app/actions/workflows/ci.yml/badge.svg)](https://github.com/Megaraz/media-vault-app/actions/workflows/ci.yml)
-
-## Product tour
-
-The screenshots use a synthetic demo account and fictional library data. No
-real account details, tokens, or API credentials are shown.
-
-### Organize a personal library
-
-The authenticated dashboard groups entries by status and supports media-type
-filtering, library search, sorting, and create/edit flows.
-
-![MediaVault dashboard showing a synthetic media library grouped by status](docs/images/dashboard-demo.jpg)
-
-### Search an external catalog
-
-Typing at least three title characters searches the provider for the selected
-media type. Movies and TV series use TMDB, as shown here.
-
-![MediaVault new-entry form showing TMDB search results for Dune](docs/images/metadata-search-demo.jpg)
-
-### Review and edit imported metadata
-
-Selecting a result fills the editable metadata fields; it does not save the
-entry automatically.
-
-![MediaVault new-entry form populated with metadata for Dune Part Two](docs/images/metadata-autofill-demo.jpg)
+[![CI](https://github.com/Megaraz/MediaVault.Api/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Megaraz/MediaVault.Api/actions/workflows/ci.yml)
 
 ## What works today
 
@@ -46,18 +18,17 @@ entry automatically.
 - Type-specific create, read, update, and delete workflows for movies, TV
   series, games, books, and manga
 - Status, rating, review, genre, release, image, and type-specific metadata
-- Dashboard grouping, media-type filters, title search, and sorting
-- Provider-backed title search and metadata autofill
 - SQLite persistence through Entity Framework Core migrations
+- Backend-owned integrations with TMDB, RAWG, and Google Books
 - Development OpenAPI document at `/openapi/v1.json`
-- Optional local OpenTelemetry export to the standalone Aspire Dashboard
-- Shared API contracts consumed by the web client and the separately maintained
-  Android client
+- A global unexpected-failure boundary with safe client responses
+- Vendor-neutral OpenTelemetry instrumentation and an optional standalone
+  Aspire Dashboard workflow for local diagnostics
 
 ## External metadata providers
 
-Provider calls are made by the backend so credentials do not need to be shipped
-to either client.
+Provider calls are made by the backend, so credentials are never shipped to a
+client.
 
 | Provider | Media types | Use in MediaVault |
 | --- | --- | --- |
@@ -65,21 +36,19 @@ to either client.
 | [RAWG](https://rawg.io/apidocs) | Games | Title search, artwork, genres, release information, platforms, and developer metadata |
 | [Google Books](https://developers.google.com/books) | Books and manga | Title search, covers, descriptions, categories, publication details, authors, and page counts |
 
-The provider responses are treated as untrusted external data and mapped to
+Provider payloads are treated as untrusted external data and mapped to
 MediaVault-owned DTOs before reaching clients. Provider keys belong in local
 user secrets or deployment environment variables, never in source control.
-Visible provider attribution in the product UI is a deployment-readiness
-follow-up.
 
 TMDB attribution notice: *This product uses the TMDB API but is not endorsed or
-certified by TMDB.* See [TMDB's attribution requirements](https://developer.themoviedb.org/docs/faq).
+certified by TMDB.* See
+[TMDB's attribution requirements](https://developer.themoviedb.org/docs/faq).
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    Web["React + TypeScript web client"] --> API["ASP.NET Core API<br/>JWT authentication and HTTP mapping"]
-    Android["Expo / React Native client<br/>(separate repository)"] --> API
+    Clients["MediaVault web and mobile clients"] --> API["ASP.NET Core API<br/>JWT authentication and HTTP mapping"]
     API --> Application["Application<br/>workflows, DTOs, validation, ports"]
     Application --> Domain["Domain<br/>entities, value objects, enums"]
     API --> Infrastructure["Infrastructure<br/>persistence and provider clients"]
@@ -96,7 +65,7 @@ flowchart LR
 The repository follows a layered dependency direction: Domain contains the core
 model, Application owns use cases and ports, Infrastructure implements
 persistence and external integrations, and API is the composition and transport
-boundary. The clients communicate with the system only through the API.
+boundary. Clients communicate with the system only through the HTTP API.
 
 | Path | Responsibility |
 | --- | --- |
@@ -104,39 +73,30 @@ boundary. The clients communicate with the system only through the API.
 | `media-vault-app.Application` | Use cases, service contracts, DTOs, validation, and mapping |
 | `media-vault-app.Infrastructure` | EF Core, SQLite, repositories, migrations, and external HTTP clients |
 | `media-vault-app.API` | Composition root, JWT bearer authentication, controllers, and HTTP response mapping |
-| `media-vault-app.client` | React 19, TypeScript, Vite, and Tailwind web client |
 | `Rasmus.SharedKernel` | Shared entity contracts plus MediaVault-owned validation and pagination helpers |
 | `media-vault-app.Tests` | Application and API-focused xUnit tests |
 | `Rasmus.SharedKernel.Tests` | Tests for MediaVault-owned shared validation, pagination, and result policies |
-| `docs` | Architecture decisions, active plans, and repository documentation |
+| `docs` | Architecture decisions, completed plans, and operational documentation |
 
-The backend currently targets .NET 10. The web client uses React 19, TypeScript,
-Vite, and Tailwind. Exact dependency versions are pinned in the project
-manifests and lock file.
+The backend targets .NET 10 and uses EF Core with SQLite. Exact dependency
+versions are defined by the checked-in project files and resolved lock state.
 
 ## Run locally
 
 ### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Node.js 24](https://nodejs.org/) and npm
 - EF Core CLI 10.0.9, if it is not already installed:
 
   ```powershell
   dotnet tool install --global dotnet-ef --version 10.0.9
   ```
 
-The HTTPS Vite development server uses the local ASP.NET Core development
-certificate. Trust it once if necessary:
+### Configure the API
 
-```powershell
-dotnet dev-certs https --trust
-```
-
-### 1. Configure the API
-
-The checked-in [`appsettings.example.json`](media-vault-app.API/appsettings.example.json)
-documents the required shape. For local development, store the values with
+The checked-in
+[`appsettings.example.json`](media-vault-app.API/appsettings.example.json)
+documents the required shape. Store local values with
 [ASP.NET Core user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-10.0):
 
 ```powershell
@@ -155,13 +115,11 @@ dotnet user-secrets set "ExternalApis:GoogleBooks:BaseUrl" "https://www.googleap
 dotnet user-secrets set "ExternalApis:GoogleBooks:ApiKey" "<google-books-api-key>" --project media-vault-app.API
 ```
 
-All three provider configurations are currently validated when the API starts.
-Use your own development credentials and review each provider's current terms,
-attribution rules, and quotas.
+All provider configurations are validated when the API starts. Use your own
+development credentials and review each provider's terms, attribution rules,
+and quotas.
 
-### 2. Restore, migrate, and start the API
-
-From the repository root:
+### Restore, migrate, and start
 
 ```powershell
 dotnet restore
@@ -170,107 +128,69 @@ dotnet run --project media-vault-app.API --launch-profile http
 ```
 
 The HTTP launch profile serves the API at `http://localhost:5210`. In the
-Development environment, its OpenAPI JSON is available at
+Development environment, OpenAPI JSON is available at
 `http://localhost:5210/openapi/v1.json`.
 
-The SQLite file is local runtime state and is ignored by Git. EF Core migrations
-are the schema history; do not share the backend database file with a client or
-commit it to the repository.
+The SQLite file is ignored runtime state. EF Core migrations are the schema
+history; never share the backend database file with a client or commit it.
 
-To inspect local logs, traces, and metrics, follow the
+## Authentication and security
+
+The API uses JWT bearer authentication. User-owned operations obtain the user
+identifier from validated claims rather than trusting a client-supplied owner
+identifier. Signing keys, provider credentials, connection secrets, tokens,
+passwords, and local database contents must not be committed or logged.
+
+API routes, status codes, JSON and error shapes, pagination, and synchronization
+metadata are contracts consumed by both clients. Intentional contract changes
+must be coordinated with
+[MediaVault.Clients](https://github.com/Megaraz/MediaVault.Clients).
+
+## Observability
+
+For local logs, traces, and metrics, follow the
 [standalone Aspire Dashboard guide](docs/standalone-aspire-dashboard.md). This
-workflow is optional and does not add an Aspire AppHost or make the dashboard a
-production monitoring system.
-
-### 3. Start the web client
-
-In a second terminal:
-
-```powershell
-cd media-vault-app.client
-npm ci
-npm run dev
-```
-
-Open `https://localhost:61366`, create an account, and sign in to reach the
-dashboard. The Vite development server proxies the API routes to
-`http://localhost:5210` by default. `ASPNETCORE_HTTPS_PORT` or
-`ASPNETCORE_URLS` can override that target when needed.
-
-## Authentication notes
-
-The API currently uses JWT bearer authentication. The web client obtains a token
-at login and attaches it through its centralized transport helper. Its current
-browser storage choice is a pre-release implementation decision, not a
-recommendation for mobile or production credential storage. The Android client
-has its own secure-storage requirements.
+optional workflow does not add an Aspire AppHost and is not a production
+monitoring system.
 
 ## Verification
 
-Run backend verification from the repository root:
+Run from the repository root:
 
 ```powershell
 dotnet test media-vault-app.slnx
+git diff --check
 ```
 
-Run frontend verification from `media-vault-app.client`:
-
-```powershell
-npm ci
-npm run lint
-npm run build
-```
-
-Pull requests and pushes to `main` run independent .NET 10 backend tests and
-Node 24 frontend lint/build checks. See
-[continuous integration](docs/continuous-integration.md) for the exact
-commands, permissions, and test-configuration expectations. The frontend does
-not yet have an established automated test suite; lint and production build are
-its current automated checks.
+Pull requests and pushes to `main` run the .NET 10 backend tests. See
+[continuous integration](docs/continuous-integration.md) for exact commands and
+repository policy.
 
 ## Current direction
 
-MediaVault began as a final-year backend-development exam project and continues
-as:
+MediaVault remains a public portfolio project, a live personal product, and a
+deliberate learning environment. Current directions include explicit
+cancellation, timeout, retry, and rate-limit policies; production-minded
+telemetry and deployment; a designed offline-sync contract; and a narrow,
+privacy-conscious recommendation feature. These remain roadmap work unless the
+checked-in code proves otherwise.
 
-1. a public, technically honest portfolio project;
-2. a live web and Android product the developer can genuinely use; and
-3. a deliberate environment for learning and improving engineering judgment.
+Work is tracked in the
+[MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2). The
+completed [ResultPattern migration record](docs/resultpattern-migration-plan.md)
+and [public repository readiness audit](docs/public-repository-readiness-audit.md)
+record important compatibility and publication decisions.
 
-Current and planned work is tracked in
-[GitHub Project 2](https://github.com/users/Megaraz/projects/2). Key directions
-include:
-
-- maintaining the completed package-backed ResultPattern integration and its
-  MediaVault-owned compatibility policies;
-- maintaining the global boundary for unexpected API failures and the local
-  OpenTelemetry/Aspire diagnostic workflow;
-- explicit cancellation, timeout, retry, and rate-limit policies;
-- React Query for web server state and a designed offline-sync model for
-  Android;
-- production-minded telemetry and deployment; and
-- a narrow, privacy-conscious AI recommendation feature.
-
-Except for the completed ResultPattern integration and error-observability
-foundation identified above, these are roadmap items, not claims about the
-current implementation. See the completed
-[ResultPattern migration record](docs/resultpattern-migration-plan.md) and
-[public repository readiness audit](docs/public-repository-readiness-audit.md)
-for the active decisions and known gaps.
-
-### Related ResultPattern packages
-
-The reusable ResultPattern work has been extracted and published as independent
-NuGet packages:
+## Related ResultPattern packages
 
 - [`Megaraz.ResultPattern` 0.2.2](https://www.nuget.org/packages/Megaraz.ResultPattern/0.2.2)
 - [`Megaraz.ResultPattern.AspNetCore` 0.1.1](https://www.nuget.org/packages/Megaraz.ResultPattern.AspNetCore/0.1.1)
 - [`Megaraz.ResultPattern.Infrastructure` 0.1.0](https://www.nuget.org/packages/Megaraz.ResultPattern.Infrastructure/0.1.0)
 
-MediaVault uses these published packages in the active backend. `Rasmus.SharedKernel`
-now retains only shared entity contracts and explicitly MediaVault-owned
-validation, pagination, result-message, diagnostic, and logging abstractions;
-it no longer contains a duplicate ResultPattern implementation.
+`Rasmus.SharedKernel` retains only shared entity contracts and explicitly
+MediaVault-owned validation, pagination, result-message, diagnostic, and
+logging abstractions; it does not contain a duplicate ResultPattern
+implementation.
 
 ## Repository policies
 

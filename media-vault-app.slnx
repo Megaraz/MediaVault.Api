@@ -18,11 +18,5 @@
     <Project Path="media-vault-app.Tests/media-vault-app.Tests.csproj" Id="8c45268a-b6ad-4df9-9026-9e5ae2416aa0" />
     <Project Path="Rasmus.SharedKernel.Tests/Rasmus.SharedKernel.Tests.csproj" Id="44ead15d-4928-469f-bbdc-9359e4e8561a" />
   </Folder>
-  <Folder Name="/Frontend/">
-    <Project Path="media-vault-app.client/media-vault-app.client.esproj">
-      <Build />
-      <Deploy />
-    </Project>
-  </Folder>
   <Folder Name="/Solution Instructions/" />
 </Solution>

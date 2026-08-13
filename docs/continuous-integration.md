@@ -1,25 +1,22 @@
 # Continuous integration and default-branch gates
 
-The `CI` GitHub Actions workflow validates the supported backend and web client
-on every pull request and on pushes to `main`.
+The `CI` GitHub Actions workflow validates the backend on every pull request
+and on pushes to `main`. Client CI lives in `Megaraz/MediaVault.Clients`.
 
 ## Checks
 
 - **Backend (.NET 10)** uses the repository's `net10.0` target and runs
   `dotnet test media-vault-app.slnx`.
-- **Frontend (Node 24)** follows the checked-in Node 24 type/runtime line and
-  runs `npm ci`, `npm run lint`, and `npm run build` from
-  `media-vault-app.client`.
 - **Dependency review** runs on pull requests and rejects newly introduced
   runtime vulnerabilities of moderate severity or higher. It keeps the
   official action's license inspection enabled without defining a separate
   repository allowlist or denylist.
-- **CodeQL** uses GitHub's default setup and default query suite to analyze C#,
-  JavaScript/TypeScript, and GitHub Actions code on pull requests, default-branch
+- **CodeQL** uses GitHub's default setup and default query suite to analyze C#
+  and GitHub Actions code on pull requests, default-branch
   updates, and GitHub's scheduled cadence.
 
-The workflow uses the checked-in npm lock file. It does not upload build
-artifacts, test output, databases, or logs. Each job has a 15-minute timeout,
+The workflow does not upload build artifacts, test output, databases, or logs.
+Each job has a 15-minute timeout,
 and a newer run for the same pull request or branch cancels an older run.
 
 ## Permissions and configuration
@@ -40,8 +37,8 @@ The active repository ruleset named **Protect main quality and security gates**
 targets only the default branch. It:
 
 - requires changes to reach `main` through a pull request;
-- requires the `Backend (.NET 10)`, `Frontend (Node 24)`, and
-  `Dependency review` status checks against the latest `main` state;
+- requires the `Backend (.NET 10)` and `Dependency review` status checks
+  against the latest `main` state;
 - requires CodeQL code-scanning results and blocks error-level quality alerts or
   high-or-higher security alerts;
 - blocks force pushes and deletion of `main`; and
@@ -83,9 +80,9 @@ below. Do not use this path for routine merges or to ignore a failing check.
 After any ruleset or workflow change, verify the live policy:
 
 ```powershell
-gh api repos/Megaraz/media-vault-app/code-scanning/default-setup
-gh api repos/Megaraz/media-vault-app/rulesets
-gh api repos/Megaraz/media-vault-app/rules/branches/main
+gh api repos/Megaraz/MediaVault.Api/code-scanning/default-setup
+gh api repos/Megaraz/MediaVault.Api/rulesets
+gh api repos/Megaraz/MediaVault.Api/rules/branches/main
 ```
 
 ## Run the same checks locally
@@ -94,16 +91,7 @@ From the repository root:
 
 ```powershell
 dotnet test media-vault-app.slnx
-
-Push-Location media-vault-app.client
-npm ci
-npm run lint
-npm run build
-Pop-Location
 ```
 
-Generated .NET output, `node_modules`, `dist`, API SQLite files, and log
-directories are ignored and must not be committed.
-
-The README status badge is intentionally deferred until this workflow has a
-stable successful result on the default branch.
+Generated .NET output, API SQLite files, and log directories are ignored and
+must not be committed.

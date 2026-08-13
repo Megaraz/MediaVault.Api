@@ -2,9 +2,9 @@
 
 **Status:** Approved on 2026-08-08 for implementation by issues #107-#113
 
-**Decision issue:** [#106](https://github.com/Megaraz/media-vault-app/issues/106)
+**Decision issue:** [#106](https://github.com/Megaraz/MediaVault.Api/issues/106)
 
-**Roadmap parent:** [#105](https://github.com/Megaraz/media-vault-app/issues/105)
+**Roadmap parent:** [#105](https://github.com/Megaraz/MediaVault.Api/issues/105)
 
 **Compatibility baseline:** [`resultpattern-migration-plan.md`](resultpattern-migration-plan.md), especially D6, D9, and D10
 
