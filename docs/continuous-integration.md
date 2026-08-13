@@ -11,9 +11,10 @@ and on pushes to `main`. Client CI lives in `Megaraz/MediaVault.Clients`.
   runtime vulnerabilities of moderate severity or higher. It keeps the
   official action's license inspection enabled without defining a separate
   repository allowlist or denylist.
-- **CodeQL** uses GitHub's default setup and default query suite to analyze C#
-  and GitHub Actions code on pull requests, default-branch
-  updates, and GitHub's scheduled cadence.
+- **CodeQL** uses GitHub's default setup and default query suite to analyze only
+  C# and GitHub Actions code on pull requests, default-branch updates, and
+  GitHub's scheduled cadence. JavaScript/TypeScript analysis belongs to
+  `Megaraz/MediaVault.Clients` now that this repository is backend-only.
 
 The workflow does not upload build artifacts, test output, databases, or logs.
 Each job has a 15-minute timeout,
@@ -63,9 +64,12 @@ check contexts. Before intentionally renaming a required job:
    blocked while any one is pending; then
 5. remove the obsolete context from the ruleset and workflow.
 
-For CodeQL default setup, keep the ruleset's required tool name `CodeQL` aligned
-with the tool reported by GitHub code scanning. Re-verify the ruleset after any
-switch between default and advanced setup.
+For CodeQL default setup, keep the configured languages limited to `actions`
+and `csharp`, and keep the ruleset's required tool name `CodeQL` aligned with
+the tool reported by GitHub code scanning. Do not add an advanced
+`.github/workflows/codeql.yml` while default setup is enabled: GitHub rejects
+advanced CodeQL uploads when default setup owns analysis. Re-verify the
+ruleset after any intentional switch between default and advanced setup.
 
 ### Emergency recovery
 
