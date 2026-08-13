@@ -16,6 +16,8 @@ It deliberately separates three states:
 - **Target** describes approved behavior that later child issues must implement.
 - **Future** describes production-monitoring choices that remain intentionally unresolved.
 
+Issue #110 completed the custom-sink removal on 2026-08-13. Production code now uses standard .NET logging only: the NDJSON writer, readback/retention surface, cleanup hosted service, neutral file-logger contracts/models, and their registrations are absent. Sections 2 and Appendix A remain a historical inventory of the #106 baseline.
+
 No runtime behavior changes in #106. API routes, authentication, authorization, owner isolation, status codes, JSON bodies, persistence, web behavior, and Android behavior remain unchanged.
 
 ### Living-document rule
@@ -270,7 +272,7 @@ The emitter delegates directly to the standard `ILogger` provider pipeline. It d
 
 Issue #108 switches `RepoBase`, `DependentEntityRepoBase`, their concrete repository paths, and `ApiClientBase<TCategory>` to `ErrorEventLogger<TCategory>`. Repository and provider failures now emit only the standard events; none of those producers calls `IErrorLogger` or writes NDJSON. Concrete repository methods that previously bypassed the base helpers now use the same one-event path. Provider events include the concrete client, provider name, failure kind, optional upstream status, operation/entity context, and the safe error classification.
 
-Application validation callsites emit source-generated event 1000 through `ServiceValidationLogging.LogValidationFailure`, with at most ten error codes and no submitted values or descriptions. Application services no longer repeat propagated repository or provider failures at Debug level. The legacy `IErrorLogger` registration remains temporarily only because `ErrorLogCleanupService` still maintains the file sink; #110 removes that isolated surface. `IErrorLogPolicy` and `ErrorLogPolicy` are no longer production registrations or producer dependencies.
+Application validation callsites emit source-generated event 1000 through `ServiceValidationLogging.LogValidationFailure`, with at most ten error codes and no submitted values or descriptions. Application services no longer repeat propagated repository or provider failures at Debug level. At the end of #108, the legacy `IErrorLogger` registration remained temporarily only because `ErrorLogCleanupService` still maintained the file sink. Issue #110 has now removed that isolated surface along with `IErrorLogPolicy` and `ErrorLogPolicy`.
 
 Issue #109 adds `MediaVaultExceptionHandler` and `MediaVaultProblemDetailsWriter` in the API. The handler owns source-generated event 3000, and `Program.cs` registers `AddProblemDetails`, the singleton handler/writer, and exception middleware before CORS, authentication, authorization, and controller execution. `SuppressDiagnosticsCallback` always returns `true` for handled exceptions so the .NET 10 middleware does not duplicate the MediaVault-owned event.
 
@@ -500,7 +502,9 @@ flowchart LR
 
 ### Gate D — custom sink removal (#110)
 
-Delete the following only after Gates A-C cover all approved producers:
+**Status: Complete (2026-08-13).** Gates A-C were satisfied before the following file-only surface was removed. Standard event coverage remains in the Application validation, Infrastructure database/provider, and API exception-boundary tests.
+
+The completed removal deleted:
 
 - `IErrorLogger` and `IErrorLogPolicy`;
 - `ErrorLog`, `ErrorLogContext`, `ErrorLoggerConfiguration`, `ErrorLogger`, and `ErrorLogPolicy`;
@@ -535,7 +539,7 @@ Caller cancellation remains unlogged. Non-caller cancellation, timeout, and tran
 
 ### D10 — intentionally superseded
 
-D10 approved retaining and relocating the file logger for the ResultPattern migration, with observability replacement explicitly deferred. This policy now authorizes that deferred replacement. D10 remains historical evidence for the migration baseline, but its retained-NDJSON target is superseded after the gates above are satisfied.
+D10 approved retaining and relocating the file logger for the ResultPattern migration, with observability replacement explicitly deferred. Gates A-C were later satisfied and #110 removed the sink on 2026-08-13. D10 remains historical evidence for the migration baseline, but its retained-NDJSON target is now superseded.
 
 ## 13. Local versus future production telemetry
 
@@ -595,9 +599,9 @@ git diff --check
 - [High-performance source-generated logging](https://learn.microsoft.com/dotnet/core/extensions/high-performance-logging)
 - [Standalone Aspire Dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone)
 
-## Appendix A. Exhaustive current file manifest
+## Appendix A. Historical #106 file manifest
 
-This manifest is the deletion/migration checklist captured by #106. A later repository search remains authoritative if files move.
+This manifest is the deletion/migration checklist captured by #106. It intentionally names files that #110 later removed; repository search is authoritative for the implemented state.
 
 ### SharedKernel contracts and records
 
