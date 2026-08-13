@@ -272,16 +272,32 @@ Issue #108 switches `RepoBase`, `DependentEntityRepoBase`, their concrete reposi
 
 Application validation callsites emit source-generated event 1000 through `ServiceValidationLogging.LogValidationFailure`, with at most ten error codes and no submitted values or descriptions. Application services no longer repeat propagated repository or provider failures at Debug level. The legacy `IErrorLogger` registration remains temporarily only because `ErrorLogCleanupService` still maintains the file sink; #110 removes that isolated surface. `IErrorLogPolicy` and `ErrorLogPolicy` are no longer production registrations or producer dependencies.
 
-Broad repository catch-all classification remains temporarily unchanged in #108 because the safe global exception boundary is delivered by the immediately following #109. This preserves the existing safe HTTP behavior while the issues land in dependency order; #109 owns narrowing unknown exceptions to event 3000. Event 3000 remains owned by the API exception boundary and is not emitted by #108.
+Issue #109 adds `MediaVaultExceptionHandler` and `MediaVaultProblemDetailsWriter` in the API. The handler owns source-generated event 3000, and `Program.cs` registers `AddProblemDetails`, the singleton handler/writer, and exception middleware before CORS, authentication, authorization, and controller execution. `SuppressDiagnosticsCallback` always returns `true` for handled exceptions so the .NET 10 middleware does not duplicate the MediaVault-owned event.
 
-The global handler's final type and method are recorded by #109. Its `IExceptionHandler.TryHandleAsync(HttpContext, Exception, CancellationToken)` implementation must:
+The handler's `IExceptionHandler.TryHandleAsync(HttpContext, Exception, CancellationToken)` implementation:
 
 1. preserves caller-cancellation behavior rather than converting it to a generic 500;
-2. obtains the W3C trace ID or request-identifier fallback;
-3. emits event 3000 once;
-4. writes safe `ProblemDetails` with stable generic title/detail and `traceId`;
-5. never includes exception type, message, stack, SQL, or path in the response;
-6. returns `true` only after it has written the response.
+2. obtains `Activity.Current.TraceId` or the request-identifier fallback;
+3. emits `UnhandledRequestException` (3000) once with API/handler/method, safe exception type, and the same trace ID;
+4. writes the exact safe contract below through `IProblemDetailsService` and the MediaVault writer;
+5. never includes exception type, message, stack, SQL, path, secrets, or upstream detail in the response;
+6. returns `true` only after the response has been written.
+
+The public unexpected-failure response is `application/problem+json`, status 500, with exactly these fields:
+
+```json
+{
+  "type": "https://www.rfc-editor.org/rfc/rfc9110.html#name-500-internal-server-error",
+  "title": "An unexpected error occurred.",
+  "status": 500,
+  "detail": "The server could not complete the request.",
+  "traceId": "<W3C trace ID or request identifier>"
+}
+```
+
+Development changes only whether the exception object is attached to local event 3000. It never changes this response. The existing expected-Result error bodies and controller OpenAPI metadata remain unchanged; this transport-level ProblemDetails variant is not added as a replacement for the existing documented 500 Result body.
+
+Repository catch-all blocks are narrowed in the same change: `DbUpdateConcurrencyException`, `DbUpdateException`, and query-time `DbException` retain their existing safe Results and event ownership, while unknown programming/runtime exceptions propagate to this boundary instead of being mislabeled as database failures.
 
 .NET 10 suppresses framework exception diagnostics by default when an `IExceptionHandler` returns `true`. MediaVault deliberately keeps that suppression and owns event 3000 itself. Setting `SuppressDiagnosticsCallback` to re-enable the framework event would create a duplicate and is not approved.
 

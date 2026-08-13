@@ -44,13 +44,6 @@ namespace media_vault_app.Infrastructure.Repos
                 var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
                 return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
-            catch (Exception ex)
-            {
-                var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
-                return LogAndFail(
-                    DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex),
-                    baseErrorContext);
-            }
 
         }
 
@@ -78,7 +71,7 @@ namespace media_vault_app.Infrastructure.Repos
                 var baseErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
                 return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
-            catch (Exception ex)
+            catch (DbException ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
                 return LogAndFail<(bool IsUserNameAvailable, bool IsEmailAvailable)>(
@@ -114,7 +107,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 return Result<User>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
-            catch (Exception ex)
+            catch (DbException ex)
             {
                 return LogAndFail<User>(
                     DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex),
