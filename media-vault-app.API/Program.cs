@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using media_vault_app.API.Diagnostics;
+using media_vault_app.API.Observability;
 using media_vault_app.API.Security;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Mappers;
@@ -34,6 +35,8 @@ namespace media_vault_app.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.AddMediaVaultOpenTelemetry();
 
             // Add services to the container.
 
