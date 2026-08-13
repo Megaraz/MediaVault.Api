@@ -25,7 +25,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Rasmus.SharedKernel.Interfaces.ErrorLogger;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 
 namespace media_vault_app.API
@@ -146,25 +145,11 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IGoogleBooksApiService, GoogleBooksApiService>();
             #endregion
 
-            // Production failure events use standard logging. The legacy sink remains registered
-            // only for ErrorLogCleanupService until the file-specific surface is removed in #110.
+            // Production failure events use standard logging.
             builder.Services.AddSingleton<ErrorEventPolicy>();
             builder.Services.AddSingleton(
                 new ErrorDiagnosticsOptions(builder.Environment.IsDevelopment()));
             builder.Services.AddSingleton(typeof(ErrorEventLogger<>), typeof(ErrorEventLogger<>));
-
-            builder.Services.AddSingleton<IErrorLogger, ErrorLogger>(sp =>
-            {
-                var configuration = new ErrorLoggerConfiguration
-                {
-                    BasePath = Path.Combine(AppContext.BaseDirectory, "Logs"),
-                    Filename = "errors.log.ndjson"
-                };
-
-                return new ErrorLogger(configuration);
-            });
-
-            builder.Services.AddHostedService<ErrorLogCleanupService>();
 
             builder.Services.AddControllers();
 
