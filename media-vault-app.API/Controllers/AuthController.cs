@@ -3,6 +3,7 @@ using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
 using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace media_vault_app.API.Controllers
@@ -29,17 +30,21 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("register")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.Authentication)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(UserDetailedDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> RegisterUser(
             [FromBody] UserRegisterDto createDto,
-            CancellationToken ct = default) =>
+            CancellationToken ct) =>
                 this.ToActionResult(await _authService.RegisterUserAsync(createDto, ct));
 
         [HttpPost("login")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.Authentication)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> LoginUser(
             [FromBody] UserLoginDto loginDto,
-            CancellationToken ct = default)
+            CancellationToken ct)
         {
             var result = await _authService.LoginAsync(loginDto, ct);
 

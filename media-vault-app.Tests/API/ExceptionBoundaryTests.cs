@@ -1,12 +1,14 @@
 using System.Net;
 using System.Text.Json;
 using media_vault_app.API.Controllers;
+using media_vault_app.API.Diagnostics;
 using media_vault_app.Tests.TestHelpers;
 using Megaraz.ResultPattern;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -104,7 +106,25 @@ public sealed class ExceptionBoundaryTests
             client.GetAsync("/_test/exception-boundary/cancel", cancellation.Token));
 
         Assert.DoesNotContain(factory.Logs.Entries, entry => entry.EventId.Id == 3000);
+        Assert.DoesNotContain(factory.Logs.Entries, entry => entry.EventId.Id == 3001);
         Assert.DoesNotContain(factory.Logs.Entries, entry => entry.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public async Task ServerBudgetExpiry_CancelsWorkAndWritesOneSafeTimeoutResponse()
+    {
+        await using var factory = new ExceptionBoundaryFactory(Environments.Staging);
+        using var client = factory.CreateClient();
+
+        using var response = await client.GetAsync("/_test/exception-boundary/request-timeout");
+
+        Assert.Equal(HttpStatusCode.GatewayTimeout, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("The request timed out. Please try again.", json.RootElement.GetProperty("message").GetString());
+        Assert.Equal("Request.Timeout", json.RootElement.GetProperty("code").GetString());
+        Assert.Single(factory.Logs.Entries, entry => entry.EventId.Id == 3001);
+        Assert.DoesNotContain(factory.Logs.Entries, entry => entry.EventId.Id == 3000);
     }
 
     private sealed class ExceptionBoundaryFactory(string environment)
@@ -125,6 +145,7 @@ public sealed class ExceptionBoundaryTests
             builder.UseSetting("Jwt:SecretKey", "integration-test-signing-key-at-least-32-bytes");
             builder.UseSetting("Jwt:Issuer", "MediaVault.Tests");
             builder.UseSetting("Jwt:Audience", "MediaVault.Tests");
+            builder.UseSetting("RequestTimeouts:AuthenticationMilliseconds", "50");
             builder.ConfigureLogging(logging =>
             {
                 logging.ClearProviders();
@@ -161,6 +182,14 @@ public sealed class ExceptionBoundaryTestController : ControllerBase
 
     [HttpGet("cancel")]
     public async Task<IActionResult> Cancel(CancellationToken cancellationToken)
+    {
+        await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+        return Ok();
+    }
+
+    [HttpGet("request-timeout")]
+    [RequestTimeout(MediaVaultRequestTimeoutPolicies.Authentication)]
+    public async Task<IActionResult> RequestTimeout(CancellationToken cancellationToken)
     {
         await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
         return Ok();

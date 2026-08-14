@@ -23,6 +23,7 @@ using media_vault_app.Infrastructure.API.Clients;
 using media_vault_app.Infrastructure.Diagnostics;
 using media_vault_app.Infrastructure.Repos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -170,6 +171,35 @@ namespace media_vault_app.API
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<MediaVaultExceptionHandler>();
 
+            builder.Services
+                .AddOptions<RequestBudgetOptions>()
+                .BindConfiguration(RequestBudgetOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            builder.Services.AddRequestTimeouts(options =>
+            {
+                var requestTimeouts = builder.Configuration
+                    .GetSection(RequestBudgetOptions.SectionName)
+                    .Get<RequestBudgetOptions>() ?? new RequestBudgetOptions();
+                options.AddPolicy(
+                    MediaVaultRequestTimeoutPolicies.Authentication,
+                    new RequestTimeoutPolicy
+                    {
+                        Timeout = TimeSpan.FromMilliseconds(requestTimeouts.AuthenticationMilliseconds),
+                        TimeoutStatusCode = StatusCodes.Status504GatewayTimeout,
+                        WriteTimeoutResponse = MediaVaultRequestTimeoutResponse.WriteAsync
+                    });
+                options.AddPolicy(
+                    MediaVaultRequestTimeoutPolicies.ExternalMetadata,
+                    new RequestTimeoutPolicy
+                    {
+                        Timeout = TimeSpan.FromMilliseconds(requestTimeouts.ExternalMetadataMilliseconds),
+                        TimeoutStatusCode = StatusCodes.Status504GatewayTimeout,
+                        WriteTimeoutResponse = MediaVaultRequestTimeoutResponse.WriteAsync
+                    });
+            });
+
             builder.Services.AddOpenApi();
 
             builder.Services.AddCors(options =>
@@ -256,7 +286,9 @@ namespace media_vault_app.API
 
             app.UseCors("AllowAll");
 
+            app.UseRouting();
             app.UseAuthentication();
+            app.UseRequestTimeouts();
             app.UseAuthorization();
 
             app.MapControllers();

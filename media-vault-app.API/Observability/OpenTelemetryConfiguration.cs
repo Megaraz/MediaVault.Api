@@ -60,7 +60,8 @@ public static class OpenTelemetryConfiguration
                 metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    .AddMeter("MediaVault.Api.RequestTimeouts");
 
                 if (options.OtlpExporterEnabled)
                     metrics.AddOtlpExporter();

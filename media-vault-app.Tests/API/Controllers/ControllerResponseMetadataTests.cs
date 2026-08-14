@@ -1,7 +1,9 @@
 using System.Reflection;
 using media_vault_app.API.Controllers;
+using media_vault_app.API.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.Timeouts;
 
 namespace media_vault_app.Tests.API.Controllers;
 
@@ -79,5 +81,43 @@ public sealed class ControllerResponseMetadataTests
                 Assert.Equal(expectedStatus, response.StatusCode);
             }
         }
+    }
+
+    [Fact]
+    public void OnlyApprovedEndpointsHaveNamedRequestBudgetsAndDeclareTheSafeTimeoutContract()
+    {
+        var authentication = new[]
+        {
+            typeof(AuthController).GetMethod(nameof(AuthController.RegisterUser))!,
+            typeof(AuthController).GetMethod(nameof(AuthController.LoginUser))!
+        };
+        var externalMetadata = new[]
+        {
+            typeof(RawgApiController).GetMethod(nameof(RawgApiController.SearchGames))!,
+            typeof(RawgApiController).GetMethod(nameof(RawgApiController.GetGameById))!,
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.SearchMovies))!,
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.GetMovieById))!,
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.SearchTvSeries))!,
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.GetTvSeriesById))!,
+            typeof(GoogleBooksApiController).GetMethod(nameof(GoogleBooksApiController.SearchBooks))!,
+            typeof(GoogleBooksApiController).GetMethod(nameof(GoogleBooksApiController.GetBookById))!
+        };
+
+        Assert.All(authentication, action => Assert.Equal(
+            MediaVaultRequestTimeoutPolicies.Authentication,
+            action.GetCustomAttribute<RequestTimeoutAttribute>()?.PolicyName));
+        Assert.All(externalMetadata, action => Assert.Equal(
+            MediaVaultRequestTimeoutPolicies.ExternalMetadata,
+            action.GetCustomAttribute<RequestTimeoutAttribute>()?.PolicyName));
+
+        var budgetedActions = authentication.Concat(externalMetadata).ToHashSet();
+        var allActions = ControllerTypes.SelectMany(type => type.GetMethods(
+            BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+        Assert.All(allActions.Where(action => !budgetedActions.Contains(action)), action =>
+            Assert.Null(action.GetCustomAttribute<RequestTimeoutAttribute>()));
+        Assert.All(budgetedActions, action => Assert.Contains(
+            action.GetCustomAttributes<ProducesResponseTypeAttribute>(),
+            attribute => attribute.StatusCode == StatusCodes.Status504GatewayTimeout &&
+                         attribute.Type == typeof(ErrorResponseBody)));
     }
 }

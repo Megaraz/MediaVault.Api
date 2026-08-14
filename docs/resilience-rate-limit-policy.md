@@ -118,6 +118,12 @@ The timeout and local-429 values above are approved **target** contracts. #127/#
 
 The framework request-timeout middleware must be endpoint-specific. It must use its timeout token plus `RequestAborted` ownership/state to detect a server budget. When it expires, it cancels downstream work, writes the approved 504 only if a response can still be written, and avoids a second exception-boundary response/event.
 
+### 4.2 Implemented request-timeout configuration
+
+Issue #127 configures the two named policies through the `RequestTimeouts` section. The production defaults are `AuthenticationMilliseconds: 15000` and `ExternalMetadataMilliseconds: 20000`; values must be positive and no greater than ten minutes, and invalid startup configuration fails validation. Tests may override these values through test configuration and hold downstream work behind a cancellation-aware task, rather than using provider outages or long wall-clock waits.
+
+The timeout response writer is the sole owner of event `3001` and the `mediavault.request_timeouts` counter. The framework invokes it only for an expired request-timeout policy; it writes the approved JSON 504 only while the response remains writable. The exception boundary continues to preserve caller cancellation and therefore does not own a duplicate timeout event.
+
 Middleware ordering for the later implementation is: exception handler, CORS, routing, authentication, named rate limiter, named request timeout middleware, authorization, then controller endpoints. This gives endpoint-aware middleware routing metadata, gives authenticated provider policies a validated principal, and prevents authorization from executing after a rejected request. #127/#129 must verify the final framework-compatible order with integration tests.
 
 ## 5. Outbound provider timeout and retry policy
