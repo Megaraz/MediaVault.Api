@@ -241,7 +241,7 @@ The retry callback must not emit Warning/Error for every attempt. It emits bound
 ## 9. Compatibility and security posture
 
 - The existing provider-safe Result messages and mapping remain the owner of upstream errors. An upstream 429 is not rewritten to MediaVault's local 429 contract.
-- Local 429 and server-timeout bodies are new approved targets for later implementation and must be included in generated OpenAPI and client compatibility review. #126 itself changes neither contract.
+- Local 429 and server-timeout bodies are implemented MediaVault contracts and are included in generated OpenAPI coverage. The local 429 remains distinct from an upstream provider 429.
 - Rate limiting does not authenticate, authorize, prevent all DDoS, correct the `UsersController` authorization concern, or persist a monthly quota. A rejected request is not evidence a caller would otherwise be authorized.
 - No secret, JWT, provider key, raw query, raw upstream body, email, or stable user identifier may enter the new policy's logs/traces/metric labels. RAWG/Google API keys remain backend-only even though current request construction uses query parameters.
 - Process-local limiter state resets on restart and is independent in each API instance. A malicious source can create partitions by using many IPs; this is why the v1 policy is a targeted admission control rather than a DDoS claim.
@@ -263,7 +263,7 @@ The policy must be revised before any of these conditions are introduced:
 
 1. #127 audits and completes token propagation, adds only the two named request budgets, proves caller/server distinction, and implements/tests the approved 504 contract.
 2. #128 adds the minimum provider-specific outbound resilience handler and typed validated options, preserving `ApiClientBase` final classification/contract ownership.
-3. #129 adds the five targeted named ASP.NET Core policies, response callback, local 429 OpenAPI/test coverage, and ordering verification. It may proceed in parallel with #127/#128 after #126, but must consume this document unchanged unless a material decision is escalated.
+3. #129 implemented the five targeted named ASP.NET Core policies, response callback, local 429 OpenAPI/test coverage, and ordering verification. It proceeded independently after #126 while preserving this document's approved boundaries.
 4. #130 performs the integrated policy/contract/telemetry/configuration audit and documents only verified behavior.
 
 ## 12. Required deterministic tests for later children

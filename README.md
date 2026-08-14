@@ -131,6 +131,16 @@ approved transient statuses or transport/attempt-timeout failures. The sample
 configuration documents every delay and `Retry-After` cap. Invalid budgets fail
 startup; changing them requires a process restart.
 
+`RateLimiting` configures only five named, process-local endpoint policies: login
+and registration use the direct connection IP, while RAWG, TMDB, and Google
+Books endpoints use the validated authenticated user. Rejections return the
+stable JSON `{ "message", "code" }` 429 contract and may include `Retry-After`.
+Queues are disabled, ordinary CRUD endpoints are not limited, and forwarded IP
+headers remain untrusted until a deployment-specific trusted-proxy setup is
+approved. Limiter state resets on process restart and is independent in each API
+instance; multi-instance hosting requires a separately designed distributed
+limiter.
+
 ### Restore, migrate, and start
 
 ```powershell

@@ -63,6 +63,7 @@ public static class OpenTelemetryConfiguration
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddMeter("MediaVault.Api.RequestTimeouts")
+                    .AddMeter("MediaVault.Api.RateLimiting")
                     .AddMeter(ProviderResilienceTelemetry.MeterName);
 
                 if (options.OtlpExporterEnabled)
