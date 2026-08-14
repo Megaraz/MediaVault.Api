@@ -27,6 +27,8 @@ The React web and Expo/React Native mobile applications live in
 - Backend-owned integrations with TMDB, RAWG, and Google Books
 - Development OpenAPI document at `/openapi/v1.json`
 - A global unexpected-failure boundary with safe client responses
+- Named request budgets, bounded outbound provider retries, and targeted
+  process-local rate limits with stable timeout/429 contracts
 - Vendor-neutral OpenTelemetry instrumentation and an optional standalone
   Aspire Dashboard workflow for local diagnostics
 
@@ -194,8 +196,7 @@ repository policy.
 ## Current direction
 
 MediaVault remains a public portfolio project, a live personal product, and a
-deliberate learning environment. Current directions include explicit
-cancellation, timeout, retry, and rate-limit policies; production-minded
+deliberate learning environment. Current directions include production-minded
 telemetry and deployment; a designed offline-sync contract; and a narrow,
 privacy-conscious recommendation feature. These remain roadmap work unless the
 checked-in code proves otherwise.
@@ -206,7 +207,10 @@ completed [ResultPattern migration record](docs/resultpattern-migration-plan.md)
 and [public repository readiness audit](docs/public-repository-readiness-audit.md)
 record important compatibility and publication decisions. The
 [error/observability verification](docs/error-observability-verification.md)
-records the current diagnostics foundation and its remaining boundaries.
+records the current diagnostics foundation and its remaining boundaries. The
+[request-resilience verification](docs/request-resilience-verification.md)
+records the implemented request-budget, provider-retry, and rate-limit baseline
+and its deployment triggers.
 
 ## Related ResultPattern packages
 

@@ -31,22 +31,18 @@ public sealed class OpenApiContractTests
         AssertSchema(responses, "422", "ValidationErrorResponseBody");
         AssertSchema(responses, "503", "ErrorResponseBody");
 
-        AssertSchema(
+        var resilienceResponses = new[]
+        {
             paths.GetProperty("/Auth/login").GetProperty("post").GetProperty("responses"),
-            "429",
-            "ErrorResponseBody");
-        AssertSchema(
             paths.GetProperty("/RawgApi/{id}").GetProperty("get").GetProperty("responses"),
-            "429",
-            "ErrorResponseBody");
-        AssertSchema(
             paths.GetProperty("/TmdbApi/movie/{id}").GetProperty("get").GetProperty("responses"),
-            "429",
-            "ErrorResponseBody");
-        AssertSchema(
-            paths.GetProperty("/GoogleBooksApi/{volumeId}").GetProperty("get").GetProperty("responses"),
-            "429",
-            "ErrorResponseBody");
+            paths.GetProperty("/GoogleBooksApi/{volumeId}").GetProperty("get").GetProperty("responses")
+        };
+        foreach (var resilienceResponse in resilienceResponses)
+        {
+            AssertSchema(resilienceResponse, "429", "ErrorResponseBody");
+            AssertSchema(resilienceResponse, "504", "ErrorResponseBody");
+        }
     }
 
     private static void AssertSchema(

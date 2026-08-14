@@ -1,6 +1,6 @@
 # MediaVault request resilience and rate-limit policy
 
-**Status:** Approved implementation handoff; no runtime behavior is added by this document.
+**Status:** Approved baseline, implemented and verified on 2026-08-14.
 
 **Decision issue:** [#126](https://github.com/Megaraz/MediaVault.Api/issues/126)
 
@@ -16,7 +16,10 @@ It deliberately separates three states:
 - **Approved target** means the contract later child issues must implement and test.
 - **Deferred** means explicitly out of scope for v1.
 
-No route, authentication, authorization, persistence, dependency, web, Android, or public HTTP behavior changes in #126.
+Issue #126 made no runtime change. Issues #127 through #129 implemented this
+approved baseline without changing existing routes, authentication,
+authorization, persistence, or client success contracts. The integrated
+verification record is [request-resilience-verification.md](request-resilience-verification.md).
 
 ## 1. Evidence and governing principles
 
@@ -99,12 +102,14 @@ The child implementations must classify by cancellation-token ownership and resp
 | Outbound attempt timeout or total timeout, while the caller/server request is still active | Existing safe external-service Result and its existing Result-to-HTTP mapping (currently 503 for cancelled transport failures) | The provider classification boundary ultimately owns event 2100 once; attempt telemetry is metric-only |
 | DNS/connect/reset or other `HttpRequestException` | Existing safe external-service Result/contract | `ApiClientBase` owns final event 2100 once |
 | Upstream provider returns HTTP 429 | Existing provider-safe Result/contract; it remains distinguishable from a local response by its existing external-service message/code and non-429 MediaVault mapping | `ApiClientBase` owns final event 2100 once and records provider/status safely; no raw provider body |
-| MediaVault named limiter rejects a request | `429 application/json` with `{ "message": "Too many requests. Please try again later.", "code": "RateLimit.Exceeded" }` | Rate-limit rejection callback owns one correlated Warning event `InboundRateLimitRejected` (event ID 3002) and a bounded rejection metric |
+| MediaVault named limiter rejects a request | `429 application/json` with `{ "message": "Too many requests. Please try again later.", "code": "Request.RateLimited" }` | Rate-limit rejection callback owns one correlated Warning event `InboundRateLimitRejected` (event ID 3002) and a bounded rejection metric |
 | Validation, authentication/authorization, ordinary 4xx, known database failure, or unexpected exception | Existing contracts unchanged | Existing policy ownership remains unchanged |
 
 `Retry-After` is included only for a local 429 when the limiter lease provides an estimate. It is an integer delta-seconds header, rounded up to at least `1`; no fabricated value is emitted when no estimate is available. The response content type is `application/json; charset=utf-8` through the normal API JSON formatter.
 
-The timeout and local-429 values above are approved **target** contracts. #127/#129 must add OpenAPI response metadata and deterministic contract tests before claiming them implemented.
+The timeout and local-429 values above are implemented contracts with OpenAPI
+metadata and deterministic contract tests. The historical `RateLimit.Exceeded`
+placeholder is corrected here to the delivered `Request.RateLimited` code.
 
 ## 4. Server request budgets and cancellation ownership
 
@@ -215,9 +220,9 @@ These limits are conservative initial admission controls for a personal single-i
 
 ## 7. Configuration, validation, and reload
 
-Later children own implementation configuration; this policy approves the following shape and invariants rather than a final class signature:
+The implemented configuration uses the following shape and invariants:
 
-- `RequestResilience:RequestTimeouts` contains `AuthenticationSeconds` and `ExternalMetadataSeconds`.
+- `RequestTimeouts` contains `AuthenticationMilliseconds` and `ExternalMetadataMilliseconds`.
 - `RequestResilience:Providers:{Rawg|Tmdb|GoogleBooks}` contains attempt timeout, total timeout, retry count, base/max delay, and maximum accepted `Retry-After`.
 - `RateLimiting:{LoginByIp|RegistrationByIp|RawgMetadataByUser|TmdbMetadataByUser|GoogleBooksMetadataByUser}` contains the numeric limiter parameters and must retain queue length zero.
 
@@ -286,7 +291,7 @@ The final child order is unchanged:
 4. #129 — Add targeted inbound rate limiting and a stable 429 contract (after #126; may proceed alongside #127/#128)
 5. #130 — Verify and document the integrated request-resilience foundation (after #127-#129)
 
-## #126 verification is documentary and repository-based
+## Integrated verification
 
 ```powershell
 rg -n "CancellationToken|AddHttpClient|HttpClient|SendAsync|SaveChangesAsync|ToListAsync|FirstOrDefaultAsync|Authorize|AllowAnonymous" -g '*.cs'
@@ -294,4 +299,8 @@ dotnet test media-vault-app.slnx
 git diff --check
 ```
 
-The policy review must confirm every section-2 route, all three providers, each taxonomy outcome, the default timing proof, exact limiter partitions/numbers, provider evidence, one-event ownership, and every scaling trigger. Runtime implementation is deliberately deferred to the named child issues.
+The integrated review confirms every section-2 route, all three providers, each
+taxonomy outcome, the default timing proof, exact limiter partitions/numbers,
+provider evidence, one-event ownership, and every scaling trigger. See the
+dated [integrated verification record](request-resilience-verification.md) for
+the executable evidence and remaining deployment checks.
