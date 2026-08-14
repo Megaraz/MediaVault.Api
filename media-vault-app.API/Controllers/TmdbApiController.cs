@@ -3,6 +3,7 @@ using media_vault_app.Application.DTOs.Tmdb;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace media_vault_app.API.Controllers
@@ -20,6 +21,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("movie/search")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(IReadOnlyList<MediaEntryExternalSearchResultDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchMovies(
             [FromBody] SearchRequestDto request,
@@ -33,6 +36,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("movie/{id:int}")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(TmdbMovieDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<TmdbMovieDetailedDto>> GetMovieById(
             [FromRoute] int id,
@@ -43,6 +48,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("tv/search")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(IReadOnlyList<MediaEntryExternalSearchResultDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchTvSeries(
             [FromBody] SearchRequestDto request,
@@ -56,6 +63,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("tv/{id:int}")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(TmdbTvSeriesDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<TmdbTvSeriesDetailedDto>> GetTvSeriesById(
             [FromRoute] int id,

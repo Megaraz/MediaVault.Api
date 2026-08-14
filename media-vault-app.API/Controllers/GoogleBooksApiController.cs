@@ -2,6 +2,7 @@ using media_vault_app.Application.DTOs.GoogleBooks;
 using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace media_vault_app.API.Controllers
@@ -19,6 +20,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(IReadOnlyList<GoogleBooksDetailedDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<GoogleBooksDetailedDto>>> SearchBooks(
             [FromBody] SearchRequestDto request,
@@ -31,6 +34,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{volumeId}")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(GoogleBooksDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<GoogleBooksDetailedDto>> GetBookById(
             [FromRoute] string volumeId,

@@ -2,6 +2,7 @@
 using media_vault_app.Application.DTOs.Rawg;
 using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace media_vault_app.API.Controllers
@@ -20,6 +21,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(IReadOnlyList<MediaEntryExternalSearchResultDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchGames(
             [FromBody] SearchRequestDto request,
@@ -35,6 +38,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(RawgGameDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<RawgGameDetailedDto>> GetGameById(
             [FromRoute] int id,
