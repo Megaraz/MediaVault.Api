@@ -155,7 +155,31 @@ At defaults, two 5-second attempts plus the largest permitted retry wait is at m
 
 The later implementation must set the typed clients' broad `HttpClient.Timeout` to infinite (or otherwise prove it cannot win) so one explicit policy owns outbound timeout classification. It must not rely on the platform's broad default timeout.
 
-### 5.3 Retry matrix
+### 5.3 Implemented provider resilience configuration
+
+Issue #128 implements this policy with stable
+`Microsoft.Extensions.Http.Resilience` 10.9.0, verified against the current
+NuGet package and .NET HTTP resilience guidance on 2026-08-14. Its current
+dependency floor requires the stable `Microsoft.Extensions.Configuration`
+10.0.11 patch in Infrastructure. Each typed client has exactly one custom
+pipeline ordered as total timeout, retry, then attempt
+timeout; the broader standard handler is not registered. `HttpClient.Timeout`
+is infinite so the explicit pipeline owns outbound timeout behavior.
+
+Configuration binds once at startup from
+`RequestResilience:Providers:{Rawg|Tmdb|GoogleBooks}` using millisecond values
+for deterministic development/test overrides. Validation requires the single
+approved retry, positive values, base delay no greater than maximum delay, the
+two attempts plus the larger delay cap to fit within the provider total, and
+the provider total to remain below the enclosing external-metadata request
+budget. Retry callbacks emit only the low-cardinality
+`mediavault.external_provider.retries` counter and retry-delay histogram; final
+failure event 2100-2102 ownership remains in `ApiClientBase`. The built-in
+`Polly` logging category is disabled because its per-attempt Warning/Error
+events would duplicate that ownership; retry visibility remains in the bounded
+metrics and normal outbound trace.
+
+### 5.4 Retry matrix
 
 | Outcome | Retry? | Reason |
 |---|---|---|

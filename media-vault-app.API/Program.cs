@@ -51,6 +51,13 @@ namespace media_vault_app.API
 
             // Add services to the container.
 
+            var requestBudgetOptions = builder.Configuration
+                .GetSection(RequestBudgetOptions.SectionName)
+                .Get<RequestBudgetOptions>() ?? new RequestBudgetOptions();
+            builder.Services.AddProviderResilienceOptions(
+                builder.Configuration,
+                requestBudgetOptions.ExternalMetadataMilliseconds);
+
             var connectionString = builder.Configuration
                 .GetConnectionString("Default") ??
                 throw new InvalidOperationException("Connection string 'Default' not found.");
@@ -73,7 +80,8 @@ namespace media_vault_app.API
             {
                 var options = sp.GetRequiredService<IOptions<RawgApiOptions>>().Value;
                 client.BaseAddress = new Uri(options.BaseUrl);
-            });
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            }).AddMediaVaultProviderResilience(ProviderResilienceNames.Rawg);
 
             #endregion
 
@@ -91,7 +99,8 @@ namespace media_vault_app.API
                 client.BaseAddress = new Uri(options.BaseUrl);
                 client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", options.ApiAccessToken);
-            });
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            }).AddMediaVaultProviderResilience(ProviderResilienceNames.Tmdb);
 
             #endregion
 
@@ -108,7 +117,8 @@ namespace media_vault_app.API
             {
                 var options = sp.GetRequiredService<IOptions<GoogleBooksApiOptions>>().Value;
                 client.BaseAddress = new Uri(options.BaseUrl);
-            });
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            }).AddMediaVaultProviderResilience(ProviderResilienceNames.GoogleBooks);
 
             #endregion
 
@@ -179,14 +189,11 @@ namespace media_vault_app.API
 
             builder.Services.AddRequestTimeouts(options =>
             {
-                var requestTimeouts = builder.Configuration
-                    .GetSection(RequestBudgetOptions.SectionName)
-                    .Get<RequestBudgetOptions>() ?? new RequestBudgetOptions();
                 options.AddPolicy(
                     MediaVaultRequestTimeoutPolicies.Authentication,
                     new RequestTimeoutPolicy
                     {
-                        Timeout = TimeSpan.FromMilliseconds(requestTimeouts.AuthenticationMilliseconds),
+                        Timeout = TimeSpan.FromMilliseconds(requestBudgetOptions.AuthenticationMilliseconds),
                         TimeoutStatusCode = StatusCodes.Status504GatewayTimeout,
                         WriteTimeoutResponse = MediaVaultRequestTimeoutResponse.WriteAsync
                     });
@@ -194,7 +201,7 @@ namespace media_vault_app.API
                     MediaVaultRequestTimeoutPolicies.ExternalMetadata,
                     new RequestTimeoutPolicy
                     {
-                        Timeout = TimeSpan.FromMilliseconds(requestTimeouts.ExternalMetadataMilliseconds),
+                        Timeout = TimeSpan.FromMilliseconds(requestBudgetOptions.ExternalMetadataMilliseconds),
                         TimeoutStatusCode = StatusCodes.Status504GatewayTimeout,
                         WriteTimeoutResponse = MediaVaultRequestTimeoutResponse.WriteAsync
                     });
