@@ -266,12 +266,12 @@ The policy must be revised before any of these conditions are introduced:
 
 ## 11. Implementation sequence
 
-1. #127 audits and completes token propagation, adds only the two named request budgets, proves caller/server distinction, and implements/tests the approved 504 contract.
-2. #128 adds the minimum provider-specific outbound resilience handler and typed validated options, preserving `ApiClientBase` final classification/contract ownership.
+1. #127 completed token propagation, added only the two named request budgets, proved caller/server distinction, and implemented/tested the approved 504 contract.
+2. #128 added the minimum provider-specific outbound resilience handler and typed validated options, preserving `ApiClientBase` final classification/contract ownership.
 3. #129 implemented the five targeted named ASP.NET Core policies, response callback, local 429 OpenAPI/test coverage, and ordering verification. It proceeded independently after #126 while preserving this document's approved boundaries.
-4. #130 performs the integrated policy/contract/telemetry/configuration audit and documents only verified behavior.
+4. #130 completed the integrated policy/contract/telemetry/configuration audit and documented only verified behavior.
 
-## 12. Required deterministic tests for later children
+## 12. Deterministic test coverage
 
 - Already-cancelled and mid-operation caller cancellation across controller, service, EF Core, and each provider client; no result conversion or operational event.
 - Server request timeout while work is deliberately held; downstream cancellation, safe 504 when writable, no response after disconnect/response start, and exactly one 3001 event.
