@@ -51,7 +51,7 @@ Signal-specific endpoint/protocol/header variables are also supported. Authentic
 ## Volume, filtering, and cardinality
 
 - Base configuration samples 10% of new root traces and respects the parent decision. Development samples all traces for local diagnosis.
-- OTLP logs are limited to categories beginning `media_vault_app.` at Warning or above. Existing console/debug provider behavior remains governed by normal `Logging` configuration.
+- OTLP logs are limited to categories beginning `media_vault_app.` at Warning or above. Console and debug providers remain governed by normal `Logging` configuration. The composition root deliberately replaces host-default providers with this supported set before adding OpenTelemetry; this excludes the Windows Event Log provider, whose host permission failure can otherwise propagate through `ILogger` and fail a request.
 - Request metrics use normalized route templates rather than user/media identifiers. Outbound metrics use bounded standard HTTP attributes.
 - No custom user ID, media ID, review, provider payload, exception-message, or free-form error attribute is added.
 - A future production deployment must choose sampling and cost budgets from measured traffic; this baseline does not claim a production retention or alerting policy.
@@ -69,6 +69,12 @@ Signal-specific endpoint/protocol/header variables are also supported. Authentic
 OTLP exporters use asynchronous batch processors/readers and are not awaited by application requests. Connection refusal, timeout, or receiver outage can drop telemetry but must not change an HTTP outcome. Focused integration coverage sends telemetry to an unreachable loopback endpoint, forces exporter flushes, and verifies the application request still succeeds.
 
 Telemetry failure is operationally relevant but is not a reason to retry application writes or recreate application-owned telemetry storage. OpenTelemetry self-diagnostics or collector monitoring should own exporter health in a future hosting design.
+
+MediaVault does not claim that an arbitrary third-party `ILoggerProvider` is
+failure-isolated. Providers are application composition and must be reviewed
+before registration. The supported console, debug, and OpenTelemetry providers
+are covered by clean integration tests, including a non-Development host where
+the unsupported Windows Event Log provider previously caused request failure.
 
 ## Verification
 

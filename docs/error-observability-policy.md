@@ -1,6 +1,6 @@
 # MediaVault error handling and observability policy
 
-**Status:** Approved on 2026-08-08 for implementation by issues #107-#113
+**Status:** Implemented and integration-verified on 2026-08-14 by issues #107-#113
 
 **Decision issue:** [#106](https://github.com/Megaraz/MediaVault.Api/issues/106)
 
@@ -8,7 +8,7 @@
 
 **Compatibility baseline:** [`resultpattern-migration-plan.md`](resultpattern-migration-plan.md), especially D6, D9, and D10
 
-This document is the durable policy for backend errors, logs, traces, and metrics in MediaVault. It records the system that exists before the observability migration, the approved target behavior, and the implementation contract for the remaining child issues.
+This document is the durable policy for backend errors, logs, traces, and metrics in MediaVault. It records the historical system before the observability migration, the approved policy, and the implemented behavior verified by #113.
 
 It deliberately separates three states:
 
@@ -22,7 +22,7 @@ No runtime behavior changes in #106. API routes, authentication, authorization, 
 
 ### Living-document rule
 
-This version is a decision and migration plan, not a claim that the target system already exists. Each implementation child must update the relevant target section with its actual files, classes, methods, options, event definitions, tests, and observed behavior. #113 performs the final integrated rewrite so this becomes the detailed contributor guide for the implemented system. Planned names are not treated as code until a child lands them.
+Sections explicitly labeled historical preserve the #106 baseline. All target and current-state sections describe checked-in behavior after #113; future production monitoring choices remain clearly deferred. The integrated evidence is recorded in [`error-observability-verification.md`](error-observability-verification.md).
 
 ## 1. Mental model
 
@@ -519,13 +519,16 @@ Before deletion, repository searches must prove no callsite remains. No runtime 
 - #111 is implemented. `docs/open-telemetry-baseline.md` records the operational questions, stable package rationale, resource identity, logs, ASP.NET Core and `HttpClient` traces/metrics, runtime/process metrics, sampling, filtering, redaction, environment separation, and tests.
 - OTLP selection, endpoint, protocol, and authentication remain outside business code through typed configuration and standard exporter environment variables.
 - Deterministic in-memory and unreachable-receiver tests verify correlation, redaction, bounded dimensions, signal shape, and exporter-failure isolation.
-- #112 is implemented. `docs/standalone-aspire-dashboard.md` pins the primary Aspire CLI workflow, configures the opt-in local OTLP launch profile, documents authentication and failure isolation, and provides a deterministic dashboard verification path for the representative signal shapes.
+- #112 is implemented. The `Megaraz/MediaVault` workspace now provides the primary Aspire AppHost workflow. `docs/standalone-aspire-dashboard.md` preserves a pinned backend-only alternative, documents authentication and failure isolation, and provides a deterministic dashboard verification path for representative signal shapes.
 
 ### Gate F — integrated verification (#113)
 
-- Exercise healthy, expected, database, upstream, cancellation, timeout, and unhandled flows.
-- Verify event ownership, IDs/names, levels, trace correlation, redaction, and safe HTTP contracts.
-- Confirm current documentation describes implemented state rather than planned state.
+**Status: Complete (2026-08-14).** Clean build/test, focused failure paths,
+package/dependency checks, legacy-sink searches, and dashboard documentation
+were reviewed together. The verification found and fixed a host-default Windows
+Event Log provider failure that could turn a framework warning into a failed
+request. See [`error-observability-verification.md`](error-observability-verification.md)
+for the evidence and remaining manual dashboard observations.
 
 ## 12. Compatibility with ResultPattern decisions
 
@@ -545,9 +548,15 @@ D10 approved retaining and relocating the file logger for the ResultPattern migr
 
 ### Approved local responsibility
 
-The standalone Aspire Dashboard may receive OTLP logs, traces, and metrics for local development. It is a development/short-term diagnostic tool with in-memory retention. It is not a database, production APM, or alerting service.
+The Aspire AppHost in the `Megaraz/MediaVault` workspace is the primary local
+orchestration and dashboard workflow. The standalone Aspire Dashboard remains
+an optional backend-only receiver. Both are development/short-term diagnostic
+tools with in-memory telemetry; neither is a database, production APM, or
+alerting service.
 
-Local instructions and exact endpoints are implemented in #112. Current Microsoft guidance describes default standalone endpoints at `http://localhost:4317` (OTLP/gRPC), `http://localhost:4318` (OTLP/HTTP), and `http://localhost:18888` (UI). Authentication and local-only exposure must be documented deliberately.
+The AppHost owns its generated local dashboard and OTLP endpoints. The
+standalone alternative uses the endpoints documented in #112. Authentication
+and local-only exposure remain deliberate in both workflows.
 
 ### Deferred production responsibility
 
@@ -558,7 +567,6 @@ The sprint does not select:
 - alert routing/on-call behavior;
 - production sampling and cost budgets;
 - Sentry;
-- an Aspire AppHost;
 - a public dashboard.
 
 Those decisions require hosting context and must not be implied by successful local Aspire export.

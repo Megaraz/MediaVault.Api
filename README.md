@@ -153,10 +153,13 @@ must be coordinated with
 
 ## Observability
 
-For local logs, traces, and metrics, follow the
-[standalone Aspire Dashboard guide](docs/standalone-aspire-dashboard.md). This
-optional workflow does not add an Aspire AppHost and is not a production
-monitoring system.
+The primary local workflow is the Aspire AppHost in the
+[`Megaraz/MediaVault`](https://github.com/Megaraz/MediaVault) workspace. It
+orchestrates the API and selected clients and displays their local logs,
+traces, metrics, and resource state. The
+[standalone Aspire Dashboard guide](docs/standalone-aspire-dashboard.md) remains
+available for backend-only diagnostics without the workspace AppHost. Neither
+workflow is a production monitoring system.
 
 ## Verification
 
@@ -184,7 +187,9 @@ Work is tracked in the
 [MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2). The
 completed [ResultPattern migration record](docs/resultpattern-migration-plan.md)
 and [public repository readiness audit](docs/public-repository-readiness-audit.md)
-record important compatibility and publication decisions.
+record important compatibility and publication decisions. The
+[error/observability verification](docs/error-observability-verification.md)
+records the current diagnostics foundation and its remaining boundaries.
 
 ## Related ResultPattern packages
 
