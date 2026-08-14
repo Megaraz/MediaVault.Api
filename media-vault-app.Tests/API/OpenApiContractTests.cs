@@ -30,6 +30,23 @@ public sealed class OpenApiContractTests
         AssertSchema(responses, "404", "ErrorResponseBody");
         AssertSchema(responses, "422", "ValidationErrorResponseBody");
         AssertSchema(responses, "503", "ErrorResponseBody");
+
+        AssertSchema(
+            paths.GetProperty("/Auth/login").GetProperty("post").GetProperty("responses"),
+            "429",
+            "ErrorResponseBody");
+        AssertSchema(
+            paths.GetProperty("/RawgApi/{id}").GetProperty("get").GetProperty("responses"),
+            "429",
+            "ErrorResponseBody");
+        AssertSchema(
+            paths.GetProperty("/TmdbApi/movie/{id}").GetProperty("get").GetProperty("responses"),
+            "429",
+            "ErrorResponseBody");
+        AssertSchema(
+            paths.GetProperty("/GoogleBooksApi/{volumeId}").GetProperty("get").GetProperty("responses"),
+            "429",
+            "ErrorResponseBody");
     }
 
     private static void AssertSchema(

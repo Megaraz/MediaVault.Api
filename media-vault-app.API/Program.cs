@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using media_vault_app.API.Diagnostics;
 using media_vault_app.API.Observability;
+using media_vault_app.API.RateLimiting;
 using media_vault_app.API.Security;
 using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Mappers;
@@ -270,6 +271,7 @@ namespace media_vault_app.API
             #endregion
 
             builder.Services.AddAuthorization();
+            builder.Services.AddMediaVaultRateLimiting(builder.Configuration);
 
             var app = builder.Build();
 
@@ -295,6 +297,7 @@ namespace media_vault_app.API
 
             app.UseRouting();
             app.UseAuthentication();
+            app.UseRateLimiter();
             app.UseRequestTimeouts();
             app.UseAuthorization();
 

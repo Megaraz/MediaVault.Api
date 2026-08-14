@@ -4,6 +4,8 @@ using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using media_vault_app.API.RateLimiting;
 
 namespace media_vault_app.API.Controllers
 {
@@ -21,7 +23,9 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.RawgMetadataByUser)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(IReadOnlyList<MediaEntryExternalSearchResultDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchGames(
@@ -38,7 +42,9 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.RawgMetadataByUser)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(RawgGameDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<RawgGameDetailedDto>> GetGameById(

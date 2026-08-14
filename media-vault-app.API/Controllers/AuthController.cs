@@ -5,6 +5,8 @@ using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using media_vault_app.API.RateLimiting;
 
 namespace media_vault_app.API.Controllers
 {
@@ -30,7 +32,9 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("register")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.RegistrationByIp)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.Authentication)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(UserDetailedDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> RegisterUser(
@@ -39,7 +43,9 @@ namespace media_vault_app.API.Controllers
                 this.ToActionResult(await _authService.RegisterUserAsync(createDto, ct));
 
         [HttpPost("login")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.LoginByIp)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.Authentication)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> LoginUser(

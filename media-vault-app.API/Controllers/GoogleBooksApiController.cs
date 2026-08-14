@@ -4,6 +4,8 @@ using media_vault_app.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using media_vault_app.API.RateLimiting;
 
 namespace media_vault_app.API.Controllers
 {
@@ -20,7 +22,9 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("search")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.GoogleBooksMetadataByUser)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(IReadOnlyList<GoogleBooksDetailedDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<GoogleBooksDetailedDto>>> SearchBooks(
@@ -34,7 +38,9 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("{volumeId}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.GoogleBooksMetadataByUser)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(GoogleBooksDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<GoogleBooksDetailedDto>> GetBookById(

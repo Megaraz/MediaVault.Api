@@ -5,6 +5,8 @@ using media_vault_app.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using media_vault_app.API.RateLimiting;
 
 namespace media_vault_app.API.Controllers
 {
@@ -21,7 +23,9 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("movie/search")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.TmdbMetadataByUser)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(IReadOnlyList<MediaEntryExternalSearchResultDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchMovies(
@@ -36,7 +40,9 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("movie/{id:int}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.TmdbMetadataByUser)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(TmdbMovieDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<TmdbMovieDetailedDto>> GetMovieById(
@@ -48,7 +54,9 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("tv/search")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.TmdbMetadataByUser)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(IReadOnlyList<MediaEntryExternalSearchResultDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchTvSeries(
@@ -63,7 +71,9 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet("tv/{id:int}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.TmdbMetadataByUser)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.ExternalMetadata)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
         [ProducesResponseType(typeof(TmdbTvSeriesDetailedDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<TmdbTvSeriesDetailedDto>> GetTvSeriesById(
