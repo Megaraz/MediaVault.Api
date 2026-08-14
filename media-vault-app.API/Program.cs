@@ -36,6 +36,16 @@ namespace media_vault_app.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Keep the supported application providers deterministic across hosts.
+            // In particular, the Windows Event Log provider can throw when the
+            // process cannot create or access its source, which must not turn a
+            // diagnostic warning into a failed request.
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConfiguration(
+                builder.Configuration.GetSection("Logging"));
+            builder.Logging.AddConsole();
+            builder.Logging.AddDebug();
+
             builder.AddMediaVaultOpenTelemetry();
 
             // Add services to the container.

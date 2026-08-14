@@ -47,7 +47,7 @@ Revalidate this map before architectural work:
 
 The backend currently targets .NET 10 and EF Core with SQLite. External metadata comes through backend integrations for RAWG, TMDB, and Google Books. Exact versions and behavior must still be verified from code.
 
-The following are directions, not claims about current implementation: explicit timeout/retry/rate-limit policies, React Query, offline mobile synchronization, Sentry or another production telemetry backend, Aspire orchestration, production deployment, and AI recommendations. The global exception boundary, vendor-neutral OpenTelemetry baseline, and optional standalone Aspire Dashboard workflow are implemented.
+The following are directions, not claims about current implementation: explicit timeout/retry/rate-limit policies, React Query, offline mobile synchronization, Sentry or another production telemetry backend, production deployment, and AI recommendations. The global exception boundary, vendor-neutral OpenTelemetry baseline, local Aspire AppHost orchestration in the `Megaraz/MediaVault` workspace, and the optional standalone Aspire Dashboard workflow are implemented.
 
 ## Architecture rules
 
@@ -117,14 +117,15 @@ These capabilities must be designed per boundary, not added as blanket middlewar
 
 ## Logging, diagnostics, and observability
 
-The current NDJSON file logger is a learning implementation, not permission to create parallel logging systems.
+The legacy NDJSON file logger has been removed. Do not recreate it or introduce
+parallel application logging systems.
 
 - Prefer structured events with stable names and useful fields over interpolated prose.
 - Include correlation/trace identifiers and operation context where useful, but exclude secrets and unnecessary personal data.
 - Avoid logging the same error in repository, service, controller, middleware, and external monitoring. Define one ownership point for each failure class.
-- If adopting OpenTelemetry, instrument traces, metrics, and logs through standard .NET abstractions and keep exporter/vendor configuration outside business code.
+- OpenTelemetry instruments traces, metrics, and logs through standard .NET abstractions; keep exporter/vendor configuration outside business code.
 - If adopting Sentry, define what it adds beyond logs/traces, scrub sensitive data, and configure sampling and environments deliberately.
-- Aspire orchestration/dashboard and a hosted error-monitoring service solve different problems. Do not treat them as interchangeable; document development and production responsibilities plus hosting cost before adoption.
+- The local Aspire AppHost/dashboard and a hosted error-monitoring service solve different problems. Do not treat them as interchangeable; document development and production responsibilities plus hosting cost before adopting a production backend.
 - Observability failures must not break normal application behavior.
 
 ## External APIs and future AI features

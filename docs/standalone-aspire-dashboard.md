@@ -1,12 +1,17 @@
-# Standalone Aspire Dashboard
+# Standalone Aspire Dashboard (alternative workflow)
 
 ## Purpose and boundary
 
-MediaVault can export local OpenTelemetry logs, traces, and metrics to the
-standalone Aspire Dashboard. This workflow is optional, has no AppHost, and
-does not orchestrate the API, web client, database, or external providers. The
-API starts and serves requests when the dashboard is stopped or unavailable;
-telemetry may be dropped in that case.
+MediaVault's primary local development entry point is the Aspire AppHost in the
+[`Megaraz/MediaVault`](https://github.com/Megaraz/MediaVault) workspace. Run its
+`run.ps1` and choose the API, web, Android, or all preset to start the selected
+resources and open the dashboard.
+
+This document preserves the optional backend-only workflow: the API exports
+local OpenTelemetry logs, traces, and metrics to a standalone Aspire Dashboard.
+The standalone process does not orchestrate the API, web client, database, or
+external providers. The API starts and serves requests when either dashboard is
+stopped or unavailable; telemetry may be dropped in that case.
 
 The dashboard is a development and short-term diagnostic viewer. It keeps
 telemetry in memory, evicts data when its limits are reached, and loses all data

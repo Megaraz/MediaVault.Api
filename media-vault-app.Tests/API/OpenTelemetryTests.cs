@@ -32,6 +32,10 @@ public sealed class OpenTelemetryTests
         using var response = await client.GetAsync("/_test/telemetry/success");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.DoesNotContain(
+            factory.Services.GetServices<ILoggerProvider>(),
+            provider => provider.GetType().FullName ==
+                "Microsoft.Extensions.Logging.EventLog.EventLogLoggerProvider");
 
         var tracerProvider = factory.Services.GetRequiredService<TracerProvider>();
         var meterProvider = factory.Services.GetRequiredService<MeterProvider>();
