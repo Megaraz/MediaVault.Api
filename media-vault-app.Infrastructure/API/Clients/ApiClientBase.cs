@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using media_vault_app.Infrastructure.Diagnostics;
 using Megaraz.ResultPattern;
 using Megaraz.ResultPattern.AspNetCore;
+using Polly.Timeout;
 using Rasmus.SharedKernel.ExternalServices;
 using PackageHttpExtensions = Megaraz.ResultPattern.AspNetCore.HttpResponseToResultExtensions;
 
@@ -56,12 +57,17 @@ namespace media_vault_app.Infrastructure.API.Clients
                 return result;
             }
             catch (Exception exception) when (
-                exception is HttpRequestException or TimeoutException or TaskCanceledException)
+                exception is HttpRequestException or TimeoutException or TaskCanceledException or TimeoutRejectedException)
             {
-                var mappedResult = PackageHttpExtensions.MapTransportExceptionToResult<TValue>(
-                    exception,
-                    errorContext,
-                    cancellationToken);
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException(cancellationToken);
+
+                var mappedResult = exception is TimeoutRejectedException
+                    ? Result<TValue>.Failure(HttpError.TransportFailure(errorContext, exception))
+                    : PackageHttpExtensions.MapTransportExceptionToResult<TValue>(
+                        exception,
+                        errorContext,
+                        cancellationToken);
                 var result = Result<TValue>.Failure(
                     mappedResult.PrimaryError,
                     ExternalServiceResponsePolicy.TransportFailureMessage);

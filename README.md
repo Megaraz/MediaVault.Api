@@ -124,6 +124,13 @@ All provider configurations are validated when the API starts. Use your own
 development credentials and review each provider's terms, attribution rules,
 and quotas.
 
+RAWG, TMDB, and Google Books also use validated settings under
+`RequestResilience:Providers`. Each current outbound GET has a 5-second attempt
+timeout, a 12-second total budget, and at most one jittered retry for the
+approved transient statuses or transport/attempt-timeout failures. The sample
+configuration documents every delay and `Retry-After` cap. Invalid budgets fail
+startup; changing them requires a process restart.
+
 ### Restore, migrate, and start
 
 ```powershell

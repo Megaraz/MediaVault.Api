@@ -1,3 +1,4 @@
+using media_vault_app.Infrastructure.API.Clients;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -61,7 +62,8 @@ public static class OpenTelemetryConfiguration
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddMeter("MediaVault.Api.RequestTimeouts");
+                    .AddMeter("MediaVault.Api.RequestTimeouts")
+                    .AddMeter(ProviderResilienceTelemetry.MeterName);
 
                 if (options.OtlpExporterEnabled)
                     metrics.AddOtlpExporter();
