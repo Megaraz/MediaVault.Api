@@ -1,8 +1,10 @@
 using System.Reflection;
 using media_vault_app.API.Controllers;
 using media_vault_app.API.Diagnostics;
+using media_vault_app.API.RateLimiting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Http.Timeouts;
 
 namespace media_vault_app.Tests.API.Controllers;
@@ -118,6 +120,67 @@ public sealed class ControllerResponseMetadataTests
         Assert.All(budgetedActions, action => Assert.Contains(
             action.GetCustomAttributes<ProducesResponseTypeAttribute>(),
             attribute => attribute.StatusCode == StatusCodes.Status504GatewayTimeout &&
+                         attribute.Type == typeof(ErrorResponseBody)));
+    }
+
+    [Fact]
+    public void OnlyApprovedEndpointsHaveNamedRateLimitsAndDeclareTheSafeLocal429Contract()
+    {
+        var registration = new[]
+        {
+            typeof(AuthController).GetMethod(nameof(AuthController.RegisterUser))!
+        };
+        var login = new[]
+        {
+            typeof(AuthController).GetMethod(nameof(AuthController.LoginUser))!
+        };
+        var rawg = new[]
+        {
+            typeof(RawgApiController).GetMethod(nameof(RawgApiController.SearchGames))!,
+            typeof(RawgApiController).GetMethod(nameof(RawgApiController.GetGameById))!
+        };
+        var tmdb = new[]
+        {
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.SearchMovies))!,
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.GetMovieById))!,
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.SearchTvSeries))!,
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.GetTvSeriesById))!
+        };
+        var googleBooks = new[]
+        {
+            typeof(GoogleBooksApiController).GetMethod(nameof(GoogleBooksApiController.SearchBooks))!,
+            typeof(GoogleBooksApiController).GetMethod(nameof(GoogleBooksApiController.GetBookById))!
+        };
+
+        Assert.All(registration, action => Assert.Equal(
+            MediaVaultRateLimitPolicies.RegistrationByIp,
+            action.GetCustomAttribute<EnableRateLimitingAttribute>()?.PolicyName));
+        Assert.All(login, action => Assert.Equal(
+            MediaVaultRateLimitPolicies.LoginByIp,
+            action.GetCustomAttribute<EnableRateLimitingAttribute>()?.PolicyName));
+        Assert.All(rawg, action => Assert.Equal(
+            MediaVaultRateLimitPolicies.RawgMetadataByUser,
+            action.GetCustomAttribute<EnableRateLimitingAttribute>()?.PolicyName));
+        Assert.All(tmdb, action => Assert.Equal(
+            MediaVaultRateLimitPolicies.TmdbMetadataByUser,
+            action.GetCustomAttribute<EnableRateLimitingAttribute>()?.PolicyName));
+        Assert.All(googleBooks, action => Assert.Equal(
+            MediaVaultRateLimitPolicies.GoogleBooksMetadataByUser,
+            action.GetCustomAttribute<EnableRateLimitingAttribute>()?.PolicyName));
+
+        var limitedActions = registration
+            .Concat(login)
+            .Concat(rawg)
+            .Concat(tmdb)
+            .Concat(googleBooks)
+            .ToHashSet();
+        var allActions = ControllerTypes.SelectMany(type => type.GetMethods(
+            BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+        Assert.All(allActions.Where(action => !limitedActions.Contains(action)), action =>
+            Assert.Null(action.GetCustomAttribute<EnableRateLimitingAttribute>()));
+        Assert.All(limitedActions, action => Assert.Contains(
+            action.GetCustomAttributes<ProducesResponseTypeAttribute>(),
+            attribute => attribute.StatusCode == StatusCodes.Status429TooManyRequests &&
                          attribute.Type == typeof(ErrorResponseBody)));
     }
 }
