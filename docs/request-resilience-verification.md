@@ -1,10 +1,26 @@
 # Request resilience and rate-limit verification
 
-**Issue:** [#130](https://github.com/Megaraz/MediaVault.Api/issues/130)
+**Roadmap parent:** [#64](https://github.com/Megaraz/MediaVault.Api/issues/64)
+**Final verification issue:** [#130](https://github.com/Megaraz/MediaVault.Api/issues/130)
 **Verified:** 2026-08-14
+**Status:** Complete; all formal children are merged into `main`.
 **Scope:** request cancellation and budgets, provider resilience, targeted
 inbound limits, API contracts, configuration, telemetry, and client
 compatibility
+
+## Roadmap completion
+
+The five formal children were completed in the approved dependency order:
+
+| Child | Outcome | Merged pull request |
+| --- | --- | --- |
+| #126 | Boundary policy | #131 |
+| #127 | Cancellation and request budgets | #132 |
+| #128 | Provider timeout and retry policies | #133 |
+| #129 | Targeted inbound rate limiting | #134 |
+| #130 | Integrated verification | #135 |
+
+This record is the durable completion evidence for roadmap parent #64.
 
 ## Outcome
 
