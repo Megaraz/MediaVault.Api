@@ -23,6 +23,10 @@ namespace media_vault_app.Tests.TestHelpers
 
         public Result<(bool IsUserNameAvailable, bool IsEmailAvailable)> AvailabilityResult { get; set; } = Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success((true, true));
 
+        public Result<(bool IsUserNameAvailable, bool IsEmailAvailable)> ProfileAvailabilityResult { get; set; } = Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success((true, true));
+
+        public Result ProfileUpdateResult { get; set; } = Result.Success();
+
         public Result<User> GetByUsernameOrEmailResult { get; set; } = Result<User>.Success(new User());
 
         public int CreateCallCount { get; private set; }
@@ -40,6 +44,10 @@ namespace media_vault_app.Tests.TestHelpers
         public int RegisterUserCallCount { get; private set; }
 
         public int AvailabilityCallCount { get; private set; }
+
+        public int ProfileAvailabilityCallCount { get; private set; }
+
+        public int ProfileUpdateCallCount { get; private set; }
 
         public int GetByUsernameOrEmailCallCount { get; private set; }
 
@@ -60,6 +68,10 @@ namespace media_vault_app.Tests.TestHelpers
         public string? RequestedUsernameOrEmail { get; private set; }
 
         public (string Username, string Email)? LastAvailabilityRequest { get; private set; }
+
+        public (Guid UserId, string Username, string Email)? LastProfileUpdateAvailabilityRequest { get; private set; }
+
+        public (Guid UserId, string Username, string Email)? LastProfileUpdateRequest { get; private set; }
 
         public Task<Result<User>> CreateAsync(User entity, CancellationToken ct = default)
         {
@@ -115,6 +127,20 @@ namespace media_vault_app.Tests.TestHelpers
             AvailabilityCallCount++;
             LastAvailabilityRequest = (username, email);
             return Task.FromResult(AvailabilityResult);
+        }
+
+        public Task<Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>> CheckProfileUpdateAvailabilityAsync(Guid userId, string username, string email, CancellationToken ct = default)
+        {
+            ProfileAvailabilityCallCount++;
+            LastProfileUpdateAvailabilityRequest = (userId, username, email);
+            return Task.FromResult(ProfileAvailabilityResult);
+        }
+
+        public Task<Result> UpdateProfileAsync(Guid userId, string username, string email, CancellationToken ct = default)
+        {
+            ProfileUpdateCallCount++;
+            LastProfileUpdateRequest = (userId, username, email);
+            return Task.FromResult(ProfileUpdateResult);
         }
 
         public Task<Result<User>> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken ct = default)

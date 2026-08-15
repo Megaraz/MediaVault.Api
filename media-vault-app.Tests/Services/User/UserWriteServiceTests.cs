@@ -102,6 +102,89 @@ namespace media_vault_app.Tests.Services.User
         }
 
         [Fact]
+        public async Task UpdateProfileAsync_Should_UseNormalizedValues_AndDedicatedRepositoryPath()
+        {
+            var userRepo = new FakeUserRepo();
+            var service = CreateService(userRepo);
+            var userId = Guid.NewGuid();
+
+            var result = await service.UpdateProfileAsync(
+                userId,
+                new UserUpdateDto
+                {
+                    UserName = " updated-user ",
+                    Email = " updated@example.com "
+                },
+                CancellationToken.None);
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal(1, userRepo.ProfileAvailabilityCallCount);
+            Assert.Equal(1, userRepo.ProfileUpdateCallCount);
+            Assert.Equal((userId, "updated-user", "updated@example.com"), userRepo.LastProfileUpdateAvailabilityRequest);
+            Assert.Equal((userId, "updated-user", "updated@example.com"), userRepo.LastProfileUpdateRequest);
+            Assert.Equal(0, userRepo.UpdateCallCount);
+        }
+
+        [Theory]
+        [InlineData(false, true, "UserName")]
+        [InlineData(true, false, "Email")]
+        public async Task UpdateProfileAsync_Should_RejectNormalizedDuplicateValues(
+            bool isUsernameAvailable,
+            bool isEmailAvailable,
+            string expectedFieldName)
+        {
+            var userRepo = new FakeUserRepo
+            {
+                ProfileAvailabilityResult = Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success(
+                    (isUsernameAvailable, isEmailAvailable))
+            };
+            var service = CreateService(userRepo);
+
+            var result = await service.UpdateProfileAsync(
+                Guid.NewGuid(),
+                new UserUpdateDto
+                {
+                    UserName = " conflicting-user ",
+                    Email = " conflicting@example.com "
+                },
+                CancellationToken.None);
+
+            Assert.True(result.IsFailure);
+            Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
+            var error = Assert.Single(result.ValidationErrors);
+            Assert.Equal(expectedFieldName, error.FieldName);
+            Assert.Equal(0, userRepo.ProfileUpdateCallCount);
+            Assert.Equal(
+                ("conflicting-user", "conflicting@example.com"),
+                (
+                    userRepo.LastProfileUpdateAvailabilityRequest!.Value.Username,
+                    userRepo.LastProfileUpdateAvailabilityRequest.Value.Email));
+        }
+
+        [Fact]
+        public async Task UpdateProfileAsync_Should_AllowSameNormalizedValues_ForCurrentUser()
+        {
+            var userRepo = new FakeUserRepo
+            {
+                ProfileAvailabilityResult = Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success((true, true))
+            };
+            var service = CreateService(userRepo);
+            var userId = Guid.NewGuid();
+
+            var result = await service.UpdateProfileAsync(
+                userId,
+                new UserUpdateDto
+                {
+                    UserName = " current-user ",
+                    Email = " current@example.com "
+                },
+                CancellationToken.None);
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal((userId, "current-user", "current@example.com"), userRepo.LastProfileUpdateRequest);
+        }
+
+        [Fact]
         public async Task DeleteAsync_Should_ReturnValidationFailure_When_IdIsInvalid()
         {
             var userRepo = new FakeUserRepo();
