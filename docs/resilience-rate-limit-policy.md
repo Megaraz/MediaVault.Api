@@ -60,9 +60,6 @@ Every current controller action is included below. `CT` means its request token 
 | `POST /Auth/login` | Anonymous | Validates credentials and creates a JWT response; no persistent write | CT -> auth service -> repository/EF Core | `Authentication` 15 s; `LoginByIp` |
 | `PUT /Auth` | JWT | Updates current local user; non-idempotent | CT -> user service -> repository/EF Core | No v1 server budget or limiter |
 | `GET /Auth/me` | JWT | Reads current local user | CT -> user service -> repository/EF Core | No v1 server budget or limiter |
-| `GET /Users` | Currently anonymous; separate authorization concern | Lists users | CT -> user service -> repository/EF Core | No v1 server budget or limiter; do not use resilience work to hide the authorization gap |
-| `GET /Users/{id}` | Currently anonymous; separate authorization concern | Reads a user | CT -> user service -> repository/EF Core | No v1 server budget or limiter; do not use resilience work to hide the authorization gap |
-| `DELETE /Users/{id}` | Currently anonymous; separate authorization concern | Deletes a user; non-idempotent | CT -> user service -> repository/EF Core | No v1 server budget or limiter; do not use resilience work to hide the authorization gap |
 | `POST /MediaEntries/movies` | JWT | Creates a movie entry; non-idempotent | CT -> write service -> repository/EF Core | No v1 server budget or limiter |
 | `POST /MediaEntries/tv-series` | JWT | Creates a TV-series entry; non-idempotent | CT -> write service -> repository/EF Core | No v1 server budget or limiter |
 | `POST /MediaEntries/games` | JWT | Creates a game entry; non-idempotent | CT -> write service -> repository/EF Core | No v1 server budget or limiter |
@@ -119,7 +116,7 @@ placeholder is corrected here to the delivered `Request.RateLimited` code.
 |---|---|---:|---|
 | `Authentication` | `POST /Auth/register`, `POST /Auth/login` | 15 seconds | Bounds password/hash/database work while allowing normal local development and a deliberate credential check |
 | `ExternalMetadata` | All eight RAWG, TMDB, and Google Books endpoints in section 2 | 20 seconds | Contains outbound total budget, mapping, serialization, and small local overhead |
-| No v1 timeout policy | All other endpoints | Not applied | Do not impose an unmeasured global timeout on CRUD or the separate Users authorization issue |
+| No v1 timeout policy | All other endpoints | Not applied | Do not impose an unmeasured global timeout on ordinary CRUD |
 
 The framework request-timeout middleware must be endpoint-specific. It must use its timeout token plus `RequestAborted` ownership/state to detect a server budget. When it expires, it cancels downstream work, writes the approved 504 only if a response can still be written, and avoids a second exception-boundary response/event.
 
@@ -247,7 +244,7 @@ The retry callback must not emit Warning/Error for every attempt. It emits bound
 
 - The existing provider-safe Result messages and mapping remain the owner of upstream errors. An upstream 429 is not rewritten to MediaVault's local 429 contract.
 - Local 429 and server-timeout bodies are implemented MediaVault contracts and are included in generated OpenAPI coverage. The local 429 remains distinct from an upstream provider 429.
-- Rate limiting does not authenticate, authorize, prevent all DDoS, correct the `UsersController` authorization concern, or persist a monthly quota. A rejected request is not evidence a caller would otherwise be authorized.
+- Rate limiting does not authenticate, authorize, prevent all DDoS, or persist a monthly quota. User-management authorization is enforced separately by the API's authenticated-by-default policy.
 - No secret, JWT, provider key, raw query, raw upstream body, email, or stable user identifier may enter the new policy's logs/traces/metric labels. RAWG/Google API keys remain backend-only even though current request construction uses query parameters.
 - Process-local limiter state resets on restart and is independent in each API instance. A malicious source can create partitions by using many IPs; this is why the v1 policy is a targeted admission control rather than a DDoS claim.
 

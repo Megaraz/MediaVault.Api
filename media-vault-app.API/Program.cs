@@ -23,6 +23,7 @@ using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.API.Clients;
 using media_vault_app.Infrastructure.Diagnostics;
 using media_vault_app.Infrastructure.Repos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.EntityFrameworkCore;
@@ -270,7 +271,12 @@ namespace media_vault_app.API
                 });
             #endregion
 
-            builder.Services.AddAuthorization();
+            builder.Services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
             builder.Services.AddMediaVaultRateLimiting(builder.Configuration);
 
             var app = builder.Build();
@@ -278,7 +284,7 @@ namespace media_vault_app.API
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.MapOpenApi().AllowAnonymous();
             }
 
             if (!app.Environment.IsDevelopment())

@@ -83,17 +83,18 @@ resource identity remains bounded and stable:
 - `deployment.environment.name`: `Development`
 - root trace sampling: `1.0` in Development
 
-For a quick healthy request and an expected Result failure:
+For a quick healthy request and to confirm that no public user-management
+surface is exposed:
 
 ```powershell
 Invoke-WebRequest http://localhost:5210/openapi/v1.json
-Invoke-WebRequest http://localhost:5210/Users/00000000-0000-0000-0000-000000000001 `
+Invoke-WebRequest http://localhost:5210/Users `
     -SkipHttpErrorCheck
 ```
 
-The first request returns 200. The missing user returns the existing safe 404
-contract. Expected not-found Results are visible as request traces but do not
-create Warning/Error events under the approved policy.
+The first request returns 200. The second request returns 404 because the
+anonymous user-management route was removed. Authenticated user access is
+available through `/Auth/me`.
 
 Use normal authenticated provider search through the web client to see a real
 outbound `HttpClient` child span. Do not intentionally consume provider quota
