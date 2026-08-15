@@ -58,6 +58,28 @@ public sealed class RateLimitingTests
     }
 
     [Fact]
+    public async Task AuthenticatedWritePolicy_PartitionsByValidatedUser()
+    {
+        await using var factory = new RateLimitingFactory();
+        using var client = factory.CreateClient();
+        using var scope = factory.Services.CreateScope();
+        var tokens = scope.ServiceProvider.GetRequiredService<IJwtTokenService>();
+
+        var userOne = tokens.GenerateToken(Guid.NewGuid(), "first", "first@example.test");
+        var userTwo = tokens.GenerateToken(Guid.NewGuid(), "second", "second@example.test");
+
+        Assert.Equal(
+            HttpStatusCode.OK,
+            (await SendAuthorized(client, HttpMethod.Post, "/_test/rate-limit/write", userOne)).StatusCode);
+        Assert.Equal(
+            HttpStatusCode.TooManyRequests,
+            (await SendAuthorized(client, HttpMethod.Post, "/_test/rate-limit/write", userOne)).StatusCode);
+        Assert.Equal(
+            HttpStatusCode.OK,
+            (await SendAuthorized(client, HttpMethod.Post, "/_test/rate-limit/write", userTwo)).StatusCode);
+    }
+
+    [Fact]
     public void Options_RejectQueuesAndInvalidDurations()
     {
         var invalid = new FixedWindowRateLimitOptions { PermitLimit = 0, WindowSeconds = 0, QueueLimit = 1 };
@@ -66,9 +88,19 @@ public sealed class RateLimitingTests
         Assert.Equal(3, results.Length);
     }
 
-    private static async Task<HttpResponseMessage> SendAuthorized(HttpClient client, string path, string token)
+    private static Task<HttpResponseMessage> SendAuthorized(
+        HttpClient client,
+        string path,
+        string token) =>
+        SendAuthorized(client, HttpMethod.Get, path, token);
+
+    private static async Task<HttpResponseMessage> SendAuthorized(
+        HttpClient client,
+        HttpMethod method,
+        string path,
+        string token)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, path)
+        var request = new HttpRequestMessage(method, path)
         {
             Headers = { Authorization = new AuthenticationHeaderValue("Bearer", token) }
         };
@@ -99,6 +131,8 @@ public sealed class RateLimitingTests
             builder.UseSetting("RateLimiting:TmdbMetadataByUser:TokenLimit", "1");
             builder.UseSetting("RateLimiting:TmdbMetadataByUser:TokensPerPeriod", "1");
             builder.UseSetting("RateLimiting:GoogleBooksMetadataByUser:PermitLimit", "1");
+            builder.UseSetting("RateLimiting:AuthenticatedWriteByUser:PermitLimit", "1");
+            builder.UseSetting("RateLimiting:AuthenticatedWriteByUser:WindowSeconds", "60");
             builder.ConfigureLogging(logging =>
             {
                 logging.ClearProviders();
@@ -127,4 +161,9 @@ public sealed class RateLimitingTestController : ControllerBase
     [HttpGet("ordinary")]
     [AllowAnonymous]
     public IActionResult Ordinary() => Ok();
+
+    [Authorize]
+    [HttpPost("write")]
+    [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+    public IActionResult Write() => Ok();
 }

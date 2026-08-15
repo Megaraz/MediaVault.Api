@@ -1,4 +1,7 @@
 ﻿using media_vault_app.Application.DTOs.MediaEntry.Request;
+using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.DTOs.Season;
+using media_vault_app.Application.Validation;
 using media_vault_app.Application.Validators.MediaEntry;
 using media_vault_app.Domain.Enums;
 using Megaraz.ResultPattern;
@@ -41,6 +44,92 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
             // Assert
             Assert.True(result);
             Assert.Empty(errors);
+        }
+
+        [Fact]
+        public void IsValidRegisterDto_Should_RejectInvalidRatingAndStatus()
+        {
+            var validator = new MediaEntryDtoValidator();
+            var dto = new MovieEntryCreateDto
+            {
+                Title = "Test Movie",
+                Status = (Status)99,
+                Rating = 4.25m
+            };
+
+            var result = validator.IsValidCreateDto(dto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            Assert.Equal(2, errors.Count(error => error.ValidationErrorType == ValidationErrorType.OutOfRange));
+        }
+
+        [Fact]
+        public void IsValidRegisterDto_Should_RejectUnsafeUrlAndOversizedCollection()
+        {
+            var validator = new MediaEntryDtoValidator();
+            var dto = new MovieEntryCreateDto
+            {
+                Title = "Test Movie",
+                ImageUrl = "javascript:alert(1)",
+                Genres = Enumerable
+                    .Repeat("genre", MediaVaultWriteValidationPolicy.MaxGenres + 1)
+                    .ToList()
+            };
+
+            var result = validator.IsValidCreateDto(dto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            Assert.Contains(errors, error => error.ValidationErrorType == ValidationErrorType.InvalidFormat);
+            Assert.Contains(errors, error => error.ValidationErrorType == ValidationErrorType.TooLong);
+        }
+
+        [Fact]
+        public void IsValidRegisterDto_Should_RejectInvalidNestedGameRequirements()
+        {
+            var validator = new MediaEntryDtoValidator();
+            var dto = new GameEntryCreateDto
+            {
+                Title = "Test Game",
+                PcRequirements = new GamePcRequirementsDto(
+                    new string('x', MediaVaultWriteValidationPolicy.PcRequirementMaxLength + 1),
+                    null,
+                    null,
+                    null,
+                    null)
+            };
+
+            var result = validator.IsValidCreateDto(dto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            Assert.Contains(
+                errors,
+                error => error.FieldName?.Contains("PcRequirements.Minimum", StringComparison.Ordinal) == true &&
+                          error.ValidationErrorType == ValidationErrorType.TooLong);
+        }
+
+        [Fact]
+        public void IsValidRegisterDto_Should_RejectInvalidNestedSeason()
+        {
+            var validator = new MediaEntryDtoValidator();
+            var dto = new TvSeriesEntryCreateDto
+            {
+                Title = "Test Series",
+                Seasons =
+                [
+                    new SeasonCreateDto
+                    {
+                        Status = (Status)99,
+                        Rating = 4.25m,
+                        ImageUrl = "not-a-url"
+                    }
+                ]
+            };
+
+            var result = validator.IsValidCreateDto(dto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            Assert.True(errors.Count(error =>
+                error.FieldName?.StartsWith("Seasons[0].", StringComparison.Ordinal) == true) >= 3);
         }
 
         [Fact]

@@ -21,13 +21,22 @@ public sealed class RateLimitingOptions : IValidatableObject
     [Required]
     public FixedWindowRateLimitOptions GoogleBooksMetadataByUser { get; init; } = new();
 
+    [Required]
+    public FixedWindowRateLimitOptions AuthenticatedWriteByUser { get; init; } = new()
+    {
+        PermitLimit = 30,
+        WindowSeconds = 60,
+        QueueLimit = 0
+    };
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         foreach (var result in Validate("LoginByIp", LoginByIp)
             .Concat(Validate("RegistrationByIp", RegistrationByIp))
             .Concat(Validate("RawgMetadataByUser", RawgMetadataByUser))
             .Concat(Validate("TmdbMetadataByUser", TmdbMetadataByUser))
-            .Concat(Validate("GoogleBooksMetadataByUser", GoogleBooksMetadataByUser)))
+            .Concat(Validate("GoogleBooksMetadataByUser", GoogleBooksMetadataByUser))
+            .Concat(Validate("AuthenticatedWriteByUser", AuthenticatedWriteByUser)))
         {
             yield return result;
         }

@@ -1,4 +1,5 @@
 ﻿using media_vault_app.Application.DTOs.User.Request;
+using media_vault_app.Application.Validation;
 using media_vault_app.Application.Validators.User;
 using Megaraz.ResultPattern;
 using Xunit.Abstractions;
@@ -88,6 +89,45 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             // Assert
             Assert.True(result);
             Assert.Empty(errors);
+        }
+
+        [Fact]
+        public void IsValidRegisterDto_Should_RejectOversizedUsername()
+        {
+            var userDtoValidator = new UserDtoValidator();
+            var userDto = new UserRegisterDto(
+                new string('u', MediaVaultWriteValidationPolicy.UserNameMaxLength + 1),
+                "testuser@example.com",
+                "testuser@example.com",
+                "Test@1234",
+                "Test@1234");
+
+            var result = userDtoValidator.IsValidCreateDto(userDto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            Assert.Contains(errors, error => error.ValidationErrorType == ValidationErrorType.TooLong);
+        }
+
+        [Theory]
+        [InlineData("not-an-email")]
+        [InlineData("user@")]
+        public void IsValidRegisterDto_Should_RejectInvalidEmailFormat(string email)
+        {
+            var userDtoValidator = new UserDtoValidator();
+            var userDto = new UserRegisterDto(
+                "testuser",
+                email,
+                email,
+                "Test@1234",
+                "Test@1234");
+
+            var result = userDtoValidator.IsValidCreateDto(userDto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            Assert.Contains(
+                errors,
+                error => error.FieldName == nameof(UserRegisterDto.Email) &&
+                          error.ValidationErrorType == ValidationErrorType.InvalidFormat);
         }
 
         [Fact]

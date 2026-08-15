@@ -30,6 +30,26 @@ namespace media_vault_app.Tests.Services.MediaEntry
         }
 
         [Fact]
+        public async Task CreateAsync_Should_RejectOutOfRangeRatingBeforeRepositoryWrites()
+        {
+            var mediaRepo = new FakeMediaEntryRepo();
+            var ownerRepo = new FakeUserRepo();
+            var service = CreateService(mediaRepo, ownerRepo);
+            var dto = new MovieEntryCreateDto
+            {
+                Title = "Test Movie",
+                Rating = 4.25m
+            };
+
+            var result = await service.CreateAsync(Guid.NewGuid(), dto, CancellationToken.None);
+
+            Assert.True(result.IsFailure);
+            Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
+            Assert.Equal(0, ownerRepo.ExistsCallCount);
+            Assert.Equal(0, mediaRepo.CreateCallCount);
+        }
+
+        [Fact]
         public async Task CreateAsync_Should_ReturnOwnerFailure_When_OwnerDoesNotExist()
         {
             var expectedError = MediaVaultErrors.NotFound(DefineErrorContext("CreateAsync", OperationType.Create));

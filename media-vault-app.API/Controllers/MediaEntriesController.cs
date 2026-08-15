@@ -2,8 +2,11 @@ using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Services;
+using media_vault_app.API.RateLimiting;
+using media_vault_app.API.RequestLimits;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace media_vault_app.API.Controllers
 {
@@ -26,6 +29,10 @@ namespace media_vault_app.API.Controllers
         #region Create Operations - Type-Specific Endpoints
 
         [HttpPost("movies")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateMovie(
             [FromBody] MovieEntryCreateDto createDto,
@@ -40,6 +47,10 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("tv-series")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateTvSeries(
             [FromBody] TvSeriesEntryCreateDto createDto,
@@ -54,6 +65,10 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("games")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateGame(
             [FromBody] GameEntryCreateDto createDto,
@@ -68,6 +83,10 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("books")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateBook(
             [FromBody] BookEntryCreateDto createDto,
@@ -82,6 +101,10 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPost("manga")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<MediaEntryDetailedDto>> CreateManga(
             [FromBody] MangaEntryCreateDto createDto,
@@ -100,6 +123,10 @@ namespace media_vault_app.API.Controllers
         #region Update Operations - Type-Specific Endpoints
 
         [HttpPut("movies/{id:Guid}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateMovie(
             [FromRoute] Guid id,
@@ -115,6 +142,10 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPut("tv-series/{id:Guid}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateTvSeries(
             [FromRoute] Guid id,
@@ -130,6 +161,10 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPut("games/{id:Guid}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateGame(
             [FromRoute] Guid id,
@@ -145,6 +180,10 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPut("books/{id:Guid}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateBook(
             [FromRoute] Guid id,
@@ -160,6 +199,10 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpPut("manga/{id:Guid}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateManga(
             [FromRoute] Guid id,
@@ -301,6 +344,8 @@ namespace media_vault_app.API.Controllers
         #region Delete Operations - Shared Endpoint
 
         [HttpDelete("{id:Guid}")]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteMediaEntry(
             [FromRoute] Guid id,

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using media_vault_app.API.RateLimiting;
+using media_vault_app.API.RequestLimits;
 
 namespace media_vault_app.API.Controllers
 {
@@ -35,8 +36,10 @@ namespace media_vault_app.API.Controllers
         [HttpPost("register")]
         [EnableRateLimiting(MediaVaultRateLimitPolicies.RegistrationByIp)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.Authentication)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> RegisterUser(
             [FromBody] UserRegisterDto createDto,
@@ -68,6 +71,10 @@ namespace media_vault_app.API.Controllers
 
         [Authorize]
         [HttpPut]
+        [EnableRateLimiting(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser)]
+        [RequestSizeLimit(MediaVaultWriteLimits.MaxRequestBodyBytes)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateUser(
             [FromBody] UserUpdateDto updateDto,
