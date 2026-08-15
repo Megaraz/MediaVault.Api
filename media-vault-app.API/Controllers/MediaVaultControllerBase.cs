@@ -7,8 +7,14 @@ namespace media_vault_app.API.Controllers;
 /// <see cref="ResultResponseMapper"/>.
 /// </summary>
 [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status400BadRequest)]
-[ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status401Unauthorized)]
-[ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status403Forbidden)]
+[ProducesResponseType(
+    typeof(MediaVaultAuthorizationProblemDetails),
+    StatusCodes.Status401Unauthorized,
+    "application/problem+json")]
+[ProducesResponseType(
+    typeof(MediaVaultAuthorizationProblemDetails),
+    StatusCodes.Status403Forbidden,
+    "application/problem+json")]
 [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status404NotFound)]
 [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status409Conflict)]
 [ProducesResponseType(typeof(ValidationErrorResponseBody), StatusCodes.Status422UnprocessableEntity)]

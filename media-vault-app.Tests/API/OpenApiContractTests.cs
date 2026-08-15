@@ -41,6 +41,16 @@ public sealed class OpenApiContractTests
         var responses = collectionOperation.GetProperty("responses");
 
         Assert.True(responses.TryGetProperty("200", out _));
+        AssertSchema(
+            responses,
+            "401",
+            "MediaVaultAuthorizationProblemDetails",
+            "application/problem+json");
+        AssertSchema(
+            responses,
+            "403",
+            "MediaVaultAuthorizationProblemDetails",
+            "application/problem+json");
         AssertSchema(responses, "404", "ErrorResponseBody");
         AssertSchema(responses, "422", "ValidationErrorResponseBody");
         AssertSchema(responses, "503", "ErrorResponseBody");
@@ -99,17 +109,18 @@ public sealed class OpenApiContractTests
     private static void AssertSchema(
         JsonElement responses,
         string status,
-        string schemaName)
+        string schemaName,
+        string contentType = "application/json")
     {
         var content = responses
             .GetProperty(status)
             .GetProperty("content");
         Assert.Contains(
-            "application/json",
+            contentType,
             content.EnumerateObject().Select(item => item.Name));
 
         var reference = content
-            .GetProperty("application/json")
+            .GetProperty(contentType)
             .GetProperty("schema")
             .GetProperty("$ref")
             .GetString();
