@@ -1,5 +1,6 @@
 ﻿using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
+using media_vault_app.Application.Identity;
 using media_vault_app.Application.Interfaces.Mappers;
 using UserEntity = media_vault_app.Domain.Entities.User;
 
@@ -11,8 +12,8 @@ namespace media_vault_app.Application.Mappers.User
             new()
             {
                 Id = Guid.NewGuid(),
-                Username = createDto.Username,
-                Email = createDto.Email,
+                Username = UserIdentifierCanonicalizer.CanonicalizeUsername(createDto.Username),
+                Email = UserIdentifierCanonicalizer.CanonicalizeEmail(createDto.Email),
                 PasswordHash = createDto.Password,
                 CreatedAtUtc = DateTime.UtcNow
             };
@@ -21,8 +22,8 @@ namespace media_vault_app.Application.Mappers.User
             new()
             {
                 Id = detailedDto.Id,
-                Username = detailedDto.Username,
-                Email = detailedDto.Email,
+                Username = UserIdentifierCanonicalizer.CanonicalizeUsername(detailedDto.Username),
+                Email = UserIdentifierCanonicalizer.CanonicalizeEmail(detailedDto.Email),
                 CreatedAtUtc = detailedDto.CreatedAtUtc
             };
 
@@ -33,8 +34,8 @@ namespace media_vault_app.Application.Mappers.User
             new()
             {
                 Id = id,
-                Username = updateDto.UserName,
-                Email = updateDto.Email
+                Username = UserIdentifierCanonicalizer.CanonicalizeUsername(updateDto.UserName),
+                Email = UserIdentifierCanonicalizer.CanonicalizeEmail(updateDto.Email)
             };
     }
 }

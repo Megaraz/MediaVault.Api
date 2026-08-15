@@ -94,6 +94,28 @@ namespace media_vault_app.Tests.Services.Auth
         }
 
         [Fact]
+        public async Task LoginAsync_Should_CanonicalizeIdentifierBeforeLookup()
+        {
+            var user = CreateUser();
+            user.Username = " TestUser ";
+            user.Email = " TEST@Example.COM ";
+            var userRepo = new FakeUserRepo
+            {
+                GetByUsernameOrEmailResult = Result<UserEntity>.Success(user)
+            };
+
+            var service = CreateService(userRepo, new FakePasswordHasherService());
+
+            var result = await service.LoginAsync(
+                new UserLoginDto(" TEST@EXAMPLE.COM ", "Password123"));
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal("test@example.com", userRepo.RequestedUsernameOrEmail);
+            Assert.Equal("testuser", result.Value.Username);
+            Assert.Equal("test@example.com", result.Value.Email);
+        }
+
+        [Fact]
         public async Task RegisterUserAsync_Should_ReturnValidationFailure_When_RegisterDtoIsInvalid()
         {
             var userRepo = new FakeUserRepo();
@@ -169,6 +191,31 @@ namespace media_vault_app.Tests.Services.Auth
             Assert.NotNull(userRepo.RegisteredEntity);
             Assert.Equal("hashed::Password123", userRepo.RegisteredEntity!.PasswordHash);
             Assert.Equal("testuser", userRepo.RegisteredEntity.Username);
+            Assert.Equal("test@example.com", userRepo.RegisteredEntity.Email);
+        }
+
+        [Fact]
+        public async Task RegisterUserAsync_Should_CanonicalizeIdentifiersBeforeValidationAndStorage()
+        {
+            var userRepo = new FakeUserRepo
+            {
+                AvailabilityResult = Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success((true, true)),
+                RegisterUserResult = Result.Success()
+            };
+
+            var service = CreateService(userRepo, new FakePasswordHasherService());
+            var result = await service.RegisterUserAsync(
+                new UserRegisterDto(
+                    " TestUser ",
+                    " TEST@Example.COM ",
+                    " test@example.com ",
+                    "Password123",
+                    "Password123"));
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal(("testuser", "test@example.com"), userRepo.LastAvailabilityRequest);
+            Assert.NotNull(userRepo.RegisteredEntity);
+            Assert.Equal("testuser", userRepo.RegisteredEntity!.Username);
             Assert.Equal("test@example.com", userRepo.RegisteredEntity.Email);
         }
 

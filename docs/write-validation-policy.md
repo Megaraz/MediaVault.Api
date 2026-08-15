@@ -21,6 +21,10 @@ MediaVault validates user and media write DTOs in the Application layer before a
 
 Optional text values may be omitted. Supplied text cannot contain control characters. Nested season and PC requirement fields use the same policy and report their field path in the validation response.
 
+## User identifiers
+
+Registration, profile updates, and login canonicalize identifiers before validation and persistence. The canonical form trims surrounding whitespace and lowercases both usernames and email addresses. Username casing is therefore explicitly case-insensitive, and clients may continue sending mixed-case or padded values. Responses and JWT claims use the canonical stored values.
+
 ## HTTP limits and contracts
 
 Registration, profile updates, and media create/update actions have a 256 KiB request-body ceiling through `RequestSizeLimit`. A request over that limit is rejected with `413 Payload Too Large`. Invalid DTO values continue to use the existing `422 Unprocessable Entity` response and `ValidationErrorResponseBody` contract.
