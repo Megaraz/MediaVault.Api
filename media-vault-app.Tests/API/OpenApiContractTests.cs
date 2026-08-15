@@ -29,6 +29,12 @@ public sealed class OpenApiContractTests
         Assert.True(paths.TryGetProperty("/Auth/me", out _));
         Assert.False(paths.TryGetProperty("/Users", out _));
 
+        var registerResponses = paths
+            .GetProperty("/Auth/register")
+            .GetProperty("post")
+            .GetProperty("responses");
+        AssertSchema(registerResponses, "413", "ErrorResponseBody");
+
         var collectionOperation = paths
             .GetProperty("/MediaEntries")
             .GetProperty("get");
@@ -38,6 +44,12 @@ public sealed class OpenApiContractTests
         AssertSchema(responses, "404", "ErrorResponseBody");
         AssertSchema(responses, "422", "ValidationErrorResponseBody");
         AssertSchema(responses, "503", "ErrorResponseBody");
+
+        var createMovieResponses = paths
+            .GetProperty("/MediaEntries/movies")
+            .GetProperty("post")
+            .GetProperty("responses");
+        AssertSchema(createMovieResponses, "413", "ErrorResponseBody");
 
         var resilienceResponses = new[]
         {

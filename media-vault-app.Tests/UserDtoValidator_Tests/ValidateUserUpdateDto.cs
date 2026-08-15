@@ -1,4 +1,5 @@
 using media_vault_app.Application.DTOs.User.Request;
+using media_vault_app.Application.Validation;
 using media_vault_app.Application.Validators.User;
 using Megaraz.ResultPattern;
 
@@ -20,6 +21,41 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
 
             Assert.True(result);
             Assert.Empty(errors);
+        }
+
+        [Fact]
+        public void IsValidUpdateDto_Should_RejectOversizedUsername()
+        {
+            var validator = new UserDtoValidator();
+            var dto = new UserUpdateDto
+            {
+                UserName = new string('u', MediaVaultWriteValidationPolicy.UserNameMaxLength + 1),
+                Email = "updated@example.com"
+            };
+
+            var result = validator.IsValidUpdateDto(dto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            Assert.Contains(errors, error => error.ValidationErrorType == ValidationErrorType.TooLong);
+        }
+
+        [Fact]
+        public void IsValidUpdateDto_Should_RejectInvalidEmailFormat()
+        {
+            var validator = new UserDtoValidator();
+            var dto = new UserUpdateDto
+            {
+                UserName = "updated-user",
+                Email = "not-an-email"
+            };
+
+            var result = validator.IsValidUpdateDto(dto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            Assert.Contains(
+                errors,
+                error => error.FieldName == nameof(UserUpdateDto.Email) &&
+                          error.ValidationErrorType == ValidationErrorType.InvalidFormat);
         }
 
         [Fact]

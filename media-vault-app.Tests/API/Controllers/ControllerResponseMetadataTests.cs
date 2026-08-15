@@ -175,6 +175,21 @@ public sealed class ControllerResponseMetadataTests
             typeof(GoogleBooksApiController).GetMethod(nameof(GoogleBooksApiController.SearchBooks))!,
             typeof(GoogleBooksApiController).GetMethod(nameof(GoogleBooksApiController.GetBookById))!
         };
+        var authenticatedWrites = new[]
+        {
+            typeof(AuthController).GetMethod(nameof(AuthController.UpdateUser))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateMovie))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateTvSeries))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateGame))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateBook))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateManga))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateMovie))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateTvSeries))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateGame))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateBook))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateManga))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.DeleteMediaEntry))!
+        };
 
         Assert.All(registration, action => Assert.Equal(
             MediaVaultRateLimitPolicies.RegistrationByIp,
@@ -191,12 +206,16 @@ public sealed class ControllerResponseMetadataTests
         Assert.All(googleBooks, action => Assert.Equal(
             MediaVaultRateLimitPolicies.GoogleBooksMetadataByUser,
             action.GetCustomAttribute<EnableRateLimitingAttribute>()?.PolicyName));
+        Assert.All(authenticatedWrites, action => Assert.Equal(
+            MediaVaultRateLimitPolicies.AuthenticatedWriteByUser,
+            action.GetCustomAttribute<EnableRateLimitingAttribute>()?.PolicyName));
 
         var limitedActions = registration
             .Concat(login)
             .Concat(rawg)
             .Concat(tmdb)
             .Concat(googleBooks)
+            .Concat(authenticatedWrites)
             .ToHashSet();
         var allActions = ControllerTypes.SelectMany(type => type.GetMethods(
             BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly));
@@ -206,5 +225,39 @@ public sealed class ControllerResponseMetadataTests
             action.GetCustomAttributes<ProducesResponseTypeAttribute>(),
             attribute => attribute.StatusCode == StatusCodes.Status429TooManyRequests &&
                          attribute.Type == typeof(ErrorResponseBody)));
+    }
+
+    [Fact]
+    public void BodyBoundWriteActions_DeclareTheSharedRequestSizeAnd413Contract()
+    {
+        var bodyBoundWrites = new[]
+        {
+            typeof(AuthController).GetMethod(nameof(AuthController.RegisterUser))!,
+            typeof(AuthController).GetMethod(nameof(AuthController.UpdateUser))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateMovie))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateTvSeries))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateGame))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateBook))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.CreateManga))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateMovie))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateTvSeries))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateGame))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateBook))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.UpdateManga))!
+        };
+
+        Assert.All(bodyBoundWrites, action =>
+        {
+            Assert.NotNull(action.GetCustomAttribute<RequestSizeLimitAttribute>());
+            Assert.Contains(
+                action.GetCustomAttributes<ProducesResponseTypeAttribute>(),
+                attribute => attribute.StatusCode == StatusCodes.Status413PayloadTooLarge &&
+                             attribute.Type == typeof(ErrorResponseBody));
+        });
+
+        var allActions = ControllerTypes.SelectMany(type => type.GetMethods(
+            BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+        Assert.All(allActions.Where(action => !bodyBoundWrites.Contains(action)), action =>
+            Assert.Null(action.GetCustomAttribute<RequestSizeLimitAttribute>()));
     }
 }

@@ -73,6 +73,23 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
             Assert.Empty(errors);
         }
 
+        [Fact]
+        public void IsValidUpdateDto_Should_RejectInvalidRating()
+        {
+            var validator = new MediaEntryDtoValidator();
+            var dto = new MovieEntryUpdateDto
+            {
+                Title = "Test Movie",
+                Rating = 5.1m,
+                RuntimeMinutes = 120
+            };
+
+            var result = validator.IsValidUpdateDto(dto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            Assert.Contains(errors, error => error.ValidationErrorType == ValidationErrorType.OutOfRange);
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("   ")]

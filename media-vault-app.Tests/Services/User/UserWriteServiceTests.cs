@@ -25,6 +25,25 @@ namespace media_vault_app.Tests.Services.User
         }
 
         [Fact]
+        public async Task CreateAsync_Should_RejectInvalidEmailBeforeRepositoryWrites()
+        {
+            var userRepo = new FakeUserRepo();
+            var service = CreateService(userRepo);
+            var dto = new UserRegisterDto(
+                "valid-user",
+                "not-an-email",
+                "not-an-email",
+                "Password123",
+                "Password123");
+
+            var result = await service.CreateAsync(dto, CancellationToken.None);
+
+            Assert.True(result.IsFailure);
+            Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
+            Assert.Equal(0, userRepo.CreateCallCount);
+        }
+
+        [Fact]
         public async Task CreateAsync_Should_Map_And_Create_User_When_DtoIsValid()
         {
             var createdUser = new UserEntity

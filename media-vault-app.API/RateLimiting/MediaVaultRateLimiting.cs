@@ -14,6 +14,7 @@ public static class MediaVaultRateLimitPolicies
     public const string RawgMetadataByUser = nameof(RawgMetadataByUser);
     public const string TmdbMetadataByUser = nameof(TmdbMetadataByUser);
     public const string GoogleBooksMetadataByUser = nameof(GoogleBooksMetadataByUser);
+    public const string AuthenticatedWriteByUser = nameof(AuthenticatedWriteByUser);
 }
 
 public static class MediaVaultRateLimitingConfiguration
@@ -57,6 +58,10 @@ public static class MediaVaultRateLimitingConfiguration
                 RateLimitPartition.GetFixedWindowLimiter(
                     UserPartition(context),
                     _ => ToFixedWindowOptions(options.GoogleBooksMetadataByUser)));
+            rateLimiter.AddPolicy(MediaVaultRateLimitPolicies.AuthenticatedWriteByUser, context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    UserPartition(context),
+                    _ => ToFixedWindowOptions(options.AuthenticatedWriteByUser)));
         });
 
         return services;
