@@ -63,6 +63,14 @@ namespace media_vault_app.API
             var connectionString = builder.Configuration
                 .GetConnectionString("Default") ??
                 throw new InvalidOperationException("Connection string 'Default' not found.");
+
+            if (builder.Environment.IsProduction() &&
+                string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "Connection string 'Default' must be configured in Production.");
+            }
+
             //var connectionString = "Data Source=mediavault.db";
 
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -76,6 +84,9 @@ namespace media_vault_app.API
                 .AddOptions<RawgApiOptions>()
                 .BindConfiguration(RawgApiOptions.SectionName)
                 .ValidateDataAnnotations()
+                .Validate(
+                    options => IsAbsoluteHttpsUrl(options.BaseUrl),
+                    "BaseUrl must be an absolute HTTPS URL.")
                 .ValidateOnStart();
 
             builder.Services.AddHttpClient<IRawgApiClient, RawgApiClient>((sp, client) =>
@@ -93,6 +104,9 @@ namespace media_vault_app.API
                 .AddOptions<TmdbApiOptions>()
                 .BindConfiguration(TmdbApiOptions.SectionName)
                 .ValidateDataAnnotations()
+                .Validate(
+                    options => IsAbsoluteHttpsUrl(options.BaseUrl),
+                    "BaseUrl must be an absolute HTTPS URL.")
                 .ValidateOnStart();
 
             builder.Services.AddHttpClient<ITmdbApiClient, TmdbApiClient>((sp, client) =>
@@ -113,6 +127,9 @@ namespace media_vault_app.API
                 .AddOptions<GoogleBooksApiOptions>()
                 .BindConfiguration(GoogleBooksApiOptions.SectionName)
                 .ValidateDataAnnotations()
+                .Validate(
+                    options => IsAbsoluteHttpsUrl(options.BaseUrl),
+                    "BaseUrl must be an absolute HTTPS URL.")
                 .ValidateOnStart();
 
             builder.Services.AddHttpClient<IGoogleBooksApiClient, GoogleBooksApiClient>((sp, client) =>
@@ -229,6 +246,8 @@ namespace media_vault_app.API
 
             #region JWT Auth
 
+            builder.Services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
+
             builder.Services
                 .AddOptions<JwtOptions>()
                 .BindConfiguration(JwtOptions.SectionName)
@@ -311,5 +330,12 @@ namespace media_vault_app.API
 
             app.Run();
         }
+
+        private static bool IsAbsoluteHttpsUrl(string? value) =>
+            !string.IsNullOrWhiteSpace(value) &&
+            Uri.TryCreate(value, UriKind.Absolute, out var uri) &&
+            uri is not null &&
+            string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(uri.Host);
     }
 }

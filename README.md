@@ -122,7 +122,11 @@ dotnet user-secrets set "ExternalApis:GoogleBooks:BaseUrl" "https://www.googleap
 dotnet user-secrets set "ExternalApis:GoogleBooks:ApiKey" "<google-books-api-key>" --project media-vault-app.API
 ```
 
-All provider configurations are validated when the API starts. Use your own
+Critical startup configuration is validated before the API serves requests.
+JWT settings require a nonblank issuer and audience, a secret of at least
+32 UTF-8 bytes, and an expiry between 1 minute and the documented 7-day
+maximum. RAWG, TMDB, and Google Books base URLs must be absolute HTTPS URLs.
+Production also requires a nonblank `ConnectionStrings:Default`. Use your own
 development credentials and review each provider's terms, attribution rules,
 and quotas.
 
