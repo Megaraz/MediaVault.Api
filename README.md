@@ -27,6 +27,8 @@ The React web and Expo/React Native mobile applications live in
 - Backend-owned integrations with TMDB, RAWG, and Google Books
 - Development OpenAPI document at `/openapi/v1.json`
 - A global unexpected-failure boundary with safe client responses
+- An anonymous `/health/ready` readiness endpoint that reports SQLite
+  connectivity and EF Core migration state
 - Named request budgets, bounded outbound provider retries, and targeted
   process-local rate limits with stable timeout/429 contracts
 - Vendor-neutral OpenTelemetry instrumentation and an optional standalone
@@ -126,9 +128,9 @@ Critical startup configuration is validated before the API serves requests.
 JWT settings require a nonblank issuer and audience, a secret of at least
 32 UTF-8 bytes, and an expiry between 1 minute and the documented 7-day
 maximum. RAWG, TMDB, and Google Books base URLs must be absolute HTTPS URLs.
-Production also requires a nonblank `ConnectionStrings:Default`. Use your own
-development credentials and review each provider's terms, attribution rules,
-and quotas.
+Production also requires a nonblank `ConnectionStrings:Default` that points to
+an absolute persistent SQLite file. Use your own development credentials and
+review each provider's terms, attribution rules, and quotas.
 
 RAWG, TMDB, and Google Books also use validated settings under
 `RequestResilience:Providers`. Each current outbound GET has a 5-second attempt
@@ -149,11 +151,26 @@ limiter.
 
 ### Restore, migrate, and start
 
+For local development, the relative `Data Source=mediavault.db` sample keeps the
+database beside the working directory. Production is different: set
+`ASPNETCORE_ENVIRONMENT=Production` and use an absolute path on a persistent
+volume, such as `Data Source=/var/lib/mediavault/mediavault.db`. Production
+startup rejects relative paths and in-memory SQLite databases.
+
 ```powershell
 dotnet restore
 dotnet ef database update --project media-vault-app.Infrastructure --startup-project media-vault-app.API
 dotnet run --project media-vault-app.API --launch-profile http
 ```
+
+The production deployment sequence is explicit and must happen before the API
+serves traffic: provision the persistent volume, run the EF Core migration
+command against its absolute database path, query `/health/ready`, and only
+then start exactly one API instance. The readiness endpoint returns `200
+Healthy` only when SQLite is reachable and no migrations are pending; it
+returns `503 Unhealthy` otherwise. See the
+[SQLite deployment runbook](docs/sqlite-deployment.md) and the
+[production configuration example](media-vault-app.API/appsettings.Production.example.json).
 
 The HTTP launch profile serves the API at `http://localhost:5210`. In the
 Development environment, OpenAPI JSON is available at
@@ -161,6 +178,8 @@ Development environment, OpenAPI JSON is available at
 
 The SQLite file is ignored runtime state. EF Core migrations are the schema
 history; never share the backend database file with a client or commit it.
+Production backups and restore drills use SQLite's online backup command rather
+than copying a live database file.
 
 ## Authentication and security
 
