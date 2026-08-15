@@ -74,7 +74,7 @@ namespace media_vault_app.API.Controllers
             CancellationToken ct = default) =>
                 !User.TryGetUserId(out var userId)
                     ? Unauthorized()
-                    : this.ToNoContentResult(await _userWriteService.UpdateAsync(userId, updateDto, ct));
+                    : this.ToNoContentResult(await _userWriteService.UpdateProfileAsync(userId, updateDto, ct));
 
         [Authorize]
         [HttpGet("me")]
