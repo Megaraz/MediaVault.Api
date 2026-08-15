@@ -111,7 +111,14 @@ namespace media_vault_app.Tests.Services.User
             var service = CreateService(userRepo);
             var userId = Guid.NewGuid();
 
-            var result = await service.UpdateAsync(userId, new UserUpdateDto { UserName = "updated-user", Email = "updated@example.com" }, CancellationToken.None);
+            var result = await service.UpdateAsync(
+                userId,
+                new UserUpdateDto
+                {
+                    UserName = " Updated-User ",
+                    Email = " UPDATED@Example.COM "
+                },
+                CancellationToken.None);
 
             Assert.True(result.IsSuccess);
             Assert.NotNull(userRepo.UpdatedEntity);
@@ -131,8 +138,8 @@ namespace media_vault_app.Tests.Services.User
                 userId,
                 new UserUpdateDto
                 {
-                    UserName = " updated-user ",
-                    Email = " updated@example.com "
+                    UserName = " Updated-User ",
+                    Email = " UPDATED@Example.COM "
                 },
                 CancellationToken.None);
 

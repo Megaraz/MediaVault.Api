@@ -1,7 +1,9 @@
 ﻿using System.Data.Common;
+using media_vault_app.Application.Identity;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
 using media_vault_app.Infrastructure.Diagnostics;
@@ -19,6 +21,8 @@ namespace media_vault_app.Infrastructure.Repos
 
         public async Task<Result> RegisterUserAsync(User entity, CancellationToken ct = default)
         {
+            CanonicalizeUser(entity);
+
             try
             {
                 _dbSet.Add(entity);
@@ -29,8 +33,7 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
 
-                if (dbEx.InnerException is DbException dbInnerEx &&
-                    (dbInnerEx.ErrorCode == 2601 || dbInnerEx.ErrorCode == 2627))
+                if (IsUniqueConstraintViolation(dbEx))
                 {
                     return Result.Failure(MediaVaultErrors.Conflict(baseErrorContext));
                 }
@@ -46,8 +49,8 @@ namespace media_vault_app.Infrastructure.Repos
 
             try
             {
-                string lookupUsername = username.Trim();
-                string lookupEmail = email.Trim();
+                string lookupUsername = UserIdentifierCanonicalizer.CanonicalizeUsername(username);
+                string lookupEmail = UserIdentifierCanonicalizer.CanonicalizeEmail(email);
 
                 var matchingUsers = await _dbSet
                     .AsNoTracking()
@@ -55,8 +58,10 @@ namespace media_vault_app.Infrastructure.Repos
                     .Select(currentUser => new { currentUser.Username, currentUser.Email })
                     .ToListAsync(ct).ConfigureAwait(false);
 
-                bool usernameExists = matchingUsers.Any(currentUser => currentUser.Username == lookupUsername);
-                bool emailExists = matchingUsers.Any(currentUser => currentUser.Email == lookupEmail);
+                bool usernameExists = matchingUsers.Any(currentUser =>
+                    UserIdentifierCanonicalizer.CanonicalizeUsername(currentUser.Username) == lookupUsername);
+                bool emailExists = matchingUsers.Any(currentUser =>
+                    UserIdentifierCanonicalizer.CanonicalizeEmail(currentUser.Email) == lookupEmail);
 
                 return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success((!usernameExists, !emailExists));
             }
@@ -79,23 +84,25 @@ namespace media_vault_app.Infrastructure.Repos
 
             try
             {
-                string lookupUsername = username.Trim();
-                string lookupEmail = email.Trim();
+                string lookupUsername = UserIdentifierCanonicalizer.CanonicalizeUsername(username);
+                string lookupEmail = UserIdentifierCanonicalizer.CanonicalizeEmail(email);
 
                 var matchingUsers = await _dbSet
                     .AsNoTracking()
                     .Where(currentUser =>
                         currentUser.Id != userId &&
-                        (currentUser.Username.Trim() == lookupUsername ||
-                         currentUser.Email.Trim() == lookupEmail))
+                        (currentUser.Username == lookupUsername ||
+                         currentUser.Email == lookupEmail))
                     .Select(currentUser => new { currentUser.Username, currentUser.Email })
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 
                 bool usernameExists = matchingUsers.Any(
-                    currentUser => currentUser.Username.Trim() == lookupUsername);
+                    currentUser =>
+                        UserIdentifierCanonicalizer.CanonicalizeUsername(currentUser.Username) == lookupUsername);
                 bool emailExists = matchingUsers.Any(
-                    currentUser => currentUser.Email.Trim() == lookupEmail);
+                    currentUser =>
+                        UserIdentifierCanonicalizer.CanonicalizeEmail(currentUser.Email) == lookupEmail);
 
                 return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success(
                     (!usernameExists, !emailExists));
@@ -128,8 +135,8 @@ namespace media_vault_app.Infrastructure.Repos
                         MediaVaultErrors.NotFound(baseErrorContext));
                 }
 
-                user.Username = username.Trim();
-                user.Email = email.Trim();
+                user.Username = UserIdentifierCanonicalizer.CanonicalizeUsername(username);
+                user.Email = UserIdentifierCanonicalizer.CanonicalizeEmail(email);
                 user.UpdatedAtUtc = DateTime.UtcNow;
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -143,6 +150,9 @@ namespace media_vault_app.Infrastructure.Repos
             }
             catch (DbUpdateException ex)
             {
+                if (IsUniqueConstraintViolation(ex))
+                    return Result.Failure(MediaVaultErrors.Conflict(baseErrorContext));
+
                 return LogAndFail(
                     DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, ex),
                     baseErrorContext);
@@ -161,7 +171,7 @@ namespace media_vault_app.Infrastructure.Repos
 
             try
             {
-                string lookupValue = usernameOrEmail.Trim();
+                string lookupValue = UserIdentifierCanonicalizer.CanonicalizeLoginIdentifier(usernameOrEmail);
 
                 var user = await _dbSet
                     .AsNoTracking()
@@ -185,5 +195,22 @@ namespace media_vault_app.Infrastructure.Repos
                     baseErrorContext);
             }
         }
+
+        private static void CanonicalizeUser(User user)
+        {
+            user.Username = UserIdentifierCanonicalizer.CanonicalizeUsername(user.Username);
+            user.Email = UserIdentifierCanonicalizer.CanonicalizeEmail(user.Email);
+        }
+
+        private static bool IsUniqueConstraintViolation(DbUpdateException exception) =>
+            exception.InnerException switch
+            {
+                SqliteException sqliteException =>
+                    sqliteException.SqliteErrorCode == 19 &&
+                    sqliteException.SqliteExtendedErrorCode == 2067,
+                DbException dbException =>
+                    dbException.ErrorCode is 2601 or 2627,
+                _ => false
+            };
     }
 }

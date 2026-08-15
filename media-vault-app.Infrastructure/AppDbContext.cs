@@ -52,6 +52,14 @@ namespace media_vault_app.Infrastructure
                 .HasForeignKey(me => me.OwnerId);
 
             modelBuilder.Entity<User>()
+                .Property(u => u.Username)
+                .UseCollation("NOCASE");
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Email)
+                .UseCollation("NOCASE");
+
+            modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
 

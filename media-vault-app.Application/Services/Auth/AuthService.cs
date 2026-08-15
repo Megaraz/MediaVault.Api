@@ -1,5 +1,6 @@
 ﻿using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
+using media_vault_app.Application.Identity;
 using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
@@ -40,22 +41,25 @@ namespace media_vault_app.Application.Services.Auth
         public async Task<Result<UserDetailedDto>> LoginAsync(UserLoginDto loginDto, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(LoginAsync), OperationType.Login);
+            var canonicalLoginDto = loginDto is null
+                ? null
+                : UserIdentifierCanonicalizer.Canonicalize(loginDto);
 
-            if (!_dtoValidator.IsValidLoginDto(loginDto, baseErrorContext, out var validationErrors))
+            if (!_dtoValidator.IsValidLoginDto(canonicalLoginDto!, baseErrorContext, out var validationErrors))
             {
                 ServiceValidationLogging.LogValidationFailure(
                     _logger, validationErrors, nameof(AuthService), nameof(LoginAsync), baseErrorContext);
                 return Result<UserDetailedDto>.ValidationFailure(validationErrors, "Invalid username/email or password.");
             }
 
-            var repoResult = await _userRepo.GetByUsernameOrEmailAsync(loginDto.UsernameOrEmail, ct);
+            var repoResult = await _userRepo.GetByUsernameOrEmailAsync(canonicalLoginDto!.UsernameOrEmail, ct);
 
             if (repoResult.IsFailure)
             {
                 return Result<UserDetailedDto>.Failure(repoResult.PrimaryError, repoResult.Message);
             }
 
-            bool passwordIsValid = _passwordHasherService.VerifyPassword(repoResult.Value.PasswordHash, loginDto.Password);
+            bool passwordIsValid = _passwordHasherService.VerifyPassword(repoResult.Value.PasswordHash, canonicalLoginDto.Password);
 
             if (!passwordIsValid)
             {
@@ -71,15 +75,21 @@ namespace media_vault_app.Application.Services.Auth
         public async Task<Result> RegisterUserAsync(UserRegisterDto registerDto, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
+            var canonicalRegisterDto = registerDto is null
+                ? null
+                : UserIdentifierCanonicalizer.Canonicalize(registerDto);
 
-            if (!_dtoValidator.IsValidCreateDto(registerDto, baseErrorContext, out var dtoValidationErrors))
+            if (!_dtoValidator.IsValidCreateDto(canonicalRegisterDto!, baseErrorContext, out var dtoValidationErrors))
             {
                 ServiceValidationLogging.LogValidationFailure(
                     _logger, dtoValidationErrors, nameof(AuthService), nameof(RegisterUserAsync), baseErrorContext);
                 return Result.ValidationFailure(dtoValidationErrors, "User register validation failed.");
             }
 
-            var availabilityResult = await _userRepo.CheckRegistrationAvailabilityAsync(registerDto.Username, registerDto.Email, ct);
+            var availabilityResult = await _userRepo.CheckRegistrationAvailabilityAsync(
+                canonicalRegisterDto!.Username,
+                canonicalRegisterDto.Email,
+                ct);
 
             if (availabilityResult.IsFailure)
             {
@@ -126,9 +136,9 @@ namespace media_vault_app.Application.Services.Auth
                         !availabilityResult.Value.IsEmailAvailable));
             }
 
-            string hashedPassword = _passwordHasherService.HashPassword(registerDto.Password);
+            string hashedPassword = _passwordHasherService.HashPassword(canonicalRegisterDto.Password);
 
-            var hashedCreateDto = registerDto with
+            var hashedCreateDto = canonicalRegisterDto with
             {
                 Password = hashedPassword,
                 ConfirmPassword = hashedPassword

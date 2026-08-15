@@ -1,5 +1,6 @@
 ﻿using media_vault_app.Application.DTOs.User.Request;
 using media_vault_app.Application.DTOs.User.Response;
+using media_vault_app.Application.Identity;
 using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
@@ -31,6 +32,17 @@ namespace media_vault_app.Application.Services.User
             _userRepo = repo;
         }
 
+        public override Task<Result<UserDetailedDto>> CreateAsync(
+            UserRegisterDto createDto,
+            CancellationToken ct)
+        {
+            var canonicalCreateDto = createDto is null
+                ? null
+                : UserIdentifierCanonicalizer.Canonicalize(createDto);
+
+            return base.CreateAsync(canonicalCreateDto!, ct);
+        }
+
         public async Task<Result> UpdateProfileAsync(
             Guid userId,
             UserUpdateDto updateDto,
@@ -38,11 +50,14 @@ namespace media_vault_app.Application.Services.User
         {
             var baseErrorContext = DefineErrorContext(nameof(UpdateProfileAsync), OperationType.Update);
             var validationErrors = new List<ValidationError>();
+            var canonicalUpdateDto = updateDto is null
+                ? null
+                : UserIdentifierCanonicalizer.Canonicalize(updateDto);
 
             if (userId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(userId) }, out var userIdError))
                 validationErrors.Add(userIdError);
 
-            if (!_dtoValidator.IsValidUpdateDto(updateDto, baseErrorContext, out var updateValidationErrors))
+            if (!_dtoValidator.IsValidUpdateDto(canonicalUpdateDto!, baseErrorContext, out var updateValidationErrors))
                 validationErrors.AddRange(updateValidationErrors);
 
             if (validationErrors.Count > 0)
@@ -52,8 +67,8 @@ namespace media_vault_app.Application.Services.User
                 return Result.ValidationFailure(validationErrors, MediaVaultResultMessages.ValidationFailure);
             }
 
-            var username = updateDto.UserName.Trim();
-            var email = updateDto.Email.Trim();
+            var username = canonicalUpdateDto!.UserName;
+            var email = canonicalUpdateDto.Email;
             var availabilityResult = await _userRepo.CheckProfileUpdateAvailabilityAsync(
                 userId, username, email, ct);
 

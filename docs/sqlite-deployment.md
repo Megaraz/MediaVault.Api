@@ -52,6 +52,11 @@ dotnet ef database update `
   --configuration Release
 ```
 
+The user-identifier migration trims and lowercases existing usernames and email
+addresses before restoring case-insensitive unique indexes. If legacy rows collide
+after that canonicalization, the migration aborts without merging or deleting
+accounts; resolve the duplicate data deliberately and rerun the migration.
+
 Do not call `Database.Migrate()` from application startup. The explicit command
 keeps schema changes observable and allows the deployment operator to stop when
 a migration fails. Start one API instance only after the command succeeds, then

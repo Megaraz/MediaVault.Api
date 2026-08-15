@@ -44,8 +44,8 @@ public sealed class UserRepoProfileUpdateTests
             var repo = CreateUserRepo(updateContext, loggerFactory);
             var result = await repo.UpdateProfileAsync(
                 userId,
-                " updated-user ",
-                " updated@example.com ");
+                " Updated-User ",
+                " UPDATED@Example.COM ");
 
             Assert.True(result.IsSuccess);
         }
@@ -112,6 +112,114 @@ public sealed class UserRepoProfileUpdateTests
         Assert.True(conflictingUpdateResult.IsSuccess);
         Assert.False(conflictingUpdateResult.Value.IsUserNameAvailable);
         Assert.True(conflictingUpdateResult.Value.IsEmailAvailable);
+    }
+
+    [Fact]
+    public async Task CheckRegistrationAvailabilityAsync_UsesCanonicalIdentifiers()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+
+        await using (var setupContext = new AppDbContext(options))
+        {
+            await setupContext.Database.EnsureCreatedAsync();
+            setupContext.Users.Add(new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "existing-user",
+                Email = "existing@example.com",
+                PasswordHash = "hash"
+            });
+            await setupContext.SaveChangesAsync();
+        }
+
+        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
+        await using var queryContext = new AppDbContext(options);
+        var repo = CreateUserRepo(queryContext, loggerFactory);
+
+        var result = await repo.CheckRegistrationAvailabilityAsync(
+            " EXISTING-USER ",
+            " EXISTING@EXAMPLE.COM ");
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value.IsUserNameAvailable);
+        Assert.False(result.Value.IsEmailAvailable);
+    }
+
+    [Fact]
+    public async Task GetByUsernameOrEmailAsync_UsesCanonicalIdentifierLookup()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        var userId = Guid.NewGuid();
+
+        await using (var setupContext = new AppDbContext(options))
+        {
+            await setupContext.Database.EnsureCreatedAsync();
+            setupContext.Users.Add(new User
+            {
+                Id = userId,
+                Username = "existing-user",
+                Email = "existing@example.com",
+                PasswordHash = "hash"
+            });
+            await setupContext.SaveChangesAsync();
+        }
+
+        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
+        await using var queryContext = new AppDbContext(options);
+        var repo = CreateUserRepo(queryContext, loggerFactory);
+
+        var result = await repo.GetByUsernameOrEmailAsync(" EXISTING@EXAMPLE.COM ");
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(userId, result.Value.Id);
+    }
+
+    [Fact]
+    public async Task RegisterUserAsync_MapsSqliteUniqueViolationToConflict()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+
+        await using (var setupContext = new AppDbContext(options))
+        {
+            await setupContext.Database.EnsureCreatedAsync();
+            setupContext.Users.Add(new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "existing-user",
+                Email = "existing@example.com",
+                PasswordHash = "hash"
+            });
+            await setupContext.SaveChangesAsync();
+        }
+
+        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
+        await using var insertContext = new AppDbContext(options);
+        var repo = CreateUserRepo(insertContext, loggerFactory);
+
+        var result = await repo.RegisterUserAsync(new User
+        {
+            Id = Guid.NewGuid(),
+            Username = " EXISTING-USER ",
+            Email = "available@example.com",
+            PasswordHash = "hash"
+        });
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(Megaraz.ResultPattern.ErrorType.Conflict, result.PrimaryError.Type);
+        Assert.DoesNotContain("SQLite", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("Unique User constraint violated.", result.Message);
     }
 
     private static UserRepo CreateUserRepo(AppDbContext context, ILoggerFactory loggerFactory) =>
