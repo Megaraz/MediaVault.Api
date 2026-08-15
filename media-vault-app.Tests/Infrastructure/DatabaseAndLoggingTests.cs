@@ -246,6 +246,61 @@ public sealed class DatabaseAndLoggingTests
         Assert.DoesNotContain(provider.Entries, entry => entry.EventId.Id == 2001);
     }
 
+    [Fact]
+    public async Task RepositoryCancellation_PropagatesCallerCancellationWithoutResultOrLogging()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        await using var dbContext = new AppDbContext(options);
+        await dbContext.Database.EnsureCreatedAsync();
+
+        using var provider = new RecordingLoggerProvider();
+        using var factory = LoggerFactory.Create(builder => builder
+            .SetMinimumLevel(LogLevel.Trace)
+            .AddProvider(provider));
+        var userRepository = new UserRepo(
+            dbContext,
+            new ErrorEventLogger<RepoBase<User, Guid>>(
+                factory.CreateLogger<RepoBase<User, Guid>>(),
+                new ErrorEventPolicy(),
+                new ErrorDiagnosticsOptions(false)));
+        var mediaEntryRepository = new MediaEntryRepo(
+            dbContext,
+            new ErrorEventLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(
+                factory.CreateLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(),
+                new ErrorEventPolicy(),
+                new ErrorDiagnosticsOptions(false)));
+        var repository = new RepoBase<User, Guid>(
+            dbContext,
+            new ErrorEventLogger<RepoBase<User, Guid>>(
+                factory.CreateLogger<RepoBase<User, Guid>>(),
+                new ErrorEventPolicy(),
+                new ErrorDiagnosticsOptions(false)));
+
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        var operations = new Func<Task>[]
+        {
+            async () => await repository.GetCollectionAsync(1, 10, cancellation.Token),
+            async () => await mediaEntryRepository.GetCollectionByOwnerIdAsync(Guid.NewGuid(), 1, 10, cancellation.Token),
+            async () => await mediaEntryRepository.SearchMediaEntriesAsync(Guid.NewGuid(), "query", 1, 10, cancellation.Token),
+            async () => await userRepository.GetByUsernameOrEmailAsync("user", cancellation.Token)
+        };
+
+        foreach (var operation in operations)
+        {
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(operation);
+            Assert.Equal(cancellation.Token, exception.CancellationToken);
+        }
+
+        Assert.Empty(provider.Entries);
+    }
+
     private sealed class TestRepository(
         AppDbContext dbContext,
         ErrorEventLogger<RepoBase<User, Guid>> logger)

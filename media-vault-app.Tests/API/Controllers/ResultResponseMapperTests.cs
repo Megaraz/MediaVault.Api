@@ -113,6 +113,7 @@ public class ResultResponseMapperTests
         yield return [Error.Failure(Context), 500];
         yield return [PackageHttpError.InternalServerError(Context), 502];
         yield return [PackageHttpError.TransportFailure(Context, new TimeoutException("private timeout detail")), 503];
+        yield return [Error.Cancelled(Context), 503];
         yield return [PackageDatabaseError.QueryFailure(Context, new Exception("private database detail")), 500];
         yield return [Error.Custom("Get.MediaEntry.External", "External.", ErrorType.External, "External failure."), 500];
     }
