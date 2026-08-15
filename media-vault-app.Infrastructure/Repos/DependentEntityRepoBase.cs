@@ -72,6 +72,8 @@ namespace media_vault_app.Infrastructure.Repos
                 var dependentEntities = await _dbSet
                     .AsNoTracking()
                     .Where(dependentEntity => dependentEntity.OwnerId.Equals(ownerId))
+                    .OrderByDescending(dependentEntity => dependentEntity.CreatedAtUtc)
+                    .ThenBy(dependentEntity => dependentEntity.Id)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync(ct).ConfigureAwait(false);
