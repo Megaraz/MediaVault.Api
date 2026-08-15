@@ -31,9 +31,11 @@ public sealed class ControllerResponseMetadataTests
         Assert.Equal(
             [400, 401, 403, 404, 409, 422, 429, 500, 502, 503],
             responses.Keys.Order());
+        Assert.Equal(typeof(MediaVaultAuthorizationProblemDetails), responses[401].Type);
+        Assert.Equal(typeof(MediaVaultAuthorizationProblemDetails), responses[403].Type);
         Assert.Equal(typeof(ValidationErrorResponseBody), responses[422].Type);
         Assert.All(
-            responses.Where(response => response.Key != 422),
+            responses.Where(response => response.Key is not (401 or 403 or 422)),
             response => Assert.Equal(typeof(ErrorResponseBody), response.Value.Type));
     }
 

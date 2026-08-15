@@ -283,12 +283,8 @@ namespace media_vault_app.API
 
                     bearerOptions.Events = new JwtBearerEvents
                     {
-                        OnChallenge = context =>
-                        {
-                            context.HandleResponse();
-                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            return Task.CompletedTask;
-                        }
+                        OnChallenge = MediaVaultAuthorizationResponse.WriteChallengeAsync,
+                        OnForbidden = MediaVaultAuthorizationResponse.WriteForbiddenAsync
                     };
                 });
             #endregion

@@ -314,6 +314,24 @@ The implementation must make exception attachment an explicit environment decisi
 
 An internal boundary-specific helper or option may implement this selection, but it must not reintroduce a SharedKernel logging abstraction or make Infrastructure depend on API.
 
+### 5.4 Framework authentication and authorization responses (#141)
+
+JWT middleware owns failures that occur before a controller action executes. These
+responses are separate from controller actions that explicitly map an
+application `Result` to the existing `{ "message", "code" }` body:
+
+- a missing or invalid bearer token returns `401 Unauthorized`;
+- an authenticated request that fails authorization returns `403 Forbidden`;
+- both responses use `application/problem+json` with exactly `type`, `title`,
+  `status`, `detail`, and `traceId`;
+- the 401 response includes `WWW-Authenticate: Bearer`; the 403 response does
+  not add an authentication challenge header.
+
+Web and Android clients should branch on the HTTP status and media type rather
+than assume that every 401/403 has the controller Result body. The auth
+ProblemDetails text is safe and stable, and never includes the request path,
+claims, bearer token, exception details, SQL, or environment information.
+
 ## 6. Structured field contract
 
 ### 6.1 Required fields
@@ -364,7 +382,9 @@ ASP.NET Core creates an `Activity` for an incoming request. OpenTelemetry uses t
 2. `Activity.Current.SpanId` identifies the current operation/dependency span.
 3. `HttpContext.TraceIdentifier` is used only when no Activity is available.
 4. `MediaVaultExceptionHandler` returns the canonical/fallback value as `ProblemDetails.Extensions["traceId"]`.
-5. Expected-failure response bodies are not changed merely to add a trace ID.
+5. Application Result failure bodies are not changed merely to add a trace ID;
+   framework authentication and authorization responses use the separate
+   contract in section 5.4.
 6. A custom inbound correlation header is not introduced in this sprint. Standard W3C `traceparent` propagation is sufficient.
 7. Trace and span IDs belong in logs and traces, not metric dimensions.
 
