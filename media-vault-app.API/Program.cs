@@ -1,6 +1,8 @@
 using System.Net.Http.Headers;
 using System.Text;
+using media_vault_app.API.Configuration;
 using media_vault_app.API.Diagnostics;
+using media_vault_app.API.Health;
 using media_vault_app.API.Observability;
 using media_vault_app.API.RateLimiting;
 using media_vault_app.API.Security;
@@ -25,8 +27,10 @@ using media_vault_app.Infrastructure.Diagnostics;
 using media_vault_app.Infrastructure.Repos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
@@ -64,19 +68,18 @@ namespace media_vault_app.API
                 .GetConnectionString("Default") ??
                 throw new InvalidOperationException("Connection string 'Default' not found.");
 
-            if (builder.Environment.IsProduction() &&
-                string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new InvalidOperationException(
-                    "Connection string 'Default' must be configured in Production.");
-            }
-
-            //var connectionString = "Data Source=mediavault.db";
+            if (builder.Environment.IsProduction())
+                SqliteConnectionStringPolicy.ValidateForProduction(connectionString);
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite(connectionString));
-            //options.UseSqlServer(connectionString));
 
+            builder.Services
+                .AddHealthChecks()
+                .AddCheck<DatabaseReadinessHealthCheck>(
+                    "database",
+                    failureStatus: HealthStatus.Unhealthy,
+                    tags: ["ready"]);
 
             #region Rawg API
 
@@ -327,6 +330,14 @@ namespace media_vault_app.API
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHealthChecks(
+                "/health/ready",
+                new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains("ready"),
+                    ResponseWriter = HealthCheckResponseWriter.WriteAsync
+                })
+                .AllowAnonymous();
 
             app.Run();
         }

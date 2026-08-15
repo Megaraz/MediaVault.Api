@@ -64,6 +64,48 @@ public sealed class StartupConfigurationTests
             StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData("Data Source=mediavault.db", "absolute")]
+    [InlineData("Data Source=:memory:", "persistent")]
+    public void UnsafeProductionSqliteConnectionString_FailsDuringHostStartup(
+        string connectionString,
+        string expectedMessage)
+    {
+        using var factory = new StartupConfigurationFactory(
+            "Production",
+            new Dictionary<string, string?> { ["ConnectionStrings:Default"] = connectionString });
+
+        var exception = AssertStartupFailure(factory);
+
+        Assert.Contains(expectedMessage, exception.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void AbsoluteProductionSqliteConnectionString_StartsHost()
+    {
+        var databasePath = Path.Combine(
+            Path.GetTempPath(),
+            $"mediavault-startup-{Guid.NewGuid():N}.db");
+
+        try
+        {
+            using (var factory = new StartupConfigurationFactory(
+                "Production",
+                new Dictionary<string, string?>
+                {
+                    ["ConnectionStrings:Default"] = $"Data Source={databasePath}"
+                }))
+            {
+                _ = factory.Server;
+            }
+        }
+        finally
+        {
+            if (File.Exists(databasePath))
+                File.Delete(databasePath);
+        }
+    }
+
     [Fact]
     public void ValidConfiguration_StartsHostWithTestOverrides()
     {
