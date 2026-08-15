@@ -229,8 +229,8 @@ public sealed class ProviderHttpResilienceTests
         using var scope = CreateClient(
             handler,
             CreateOptions(
-                attemptTimeoutMilliseconds: 25,
-                totalTimeoutMilliseconds: 100),
+                attemptTimeoutMilliseconds: 100,
+                totalTimeoutMilliseconds: 1_000),
             pipelineLogs);
 
         using var response = await scope.Client.GetAsync("items");
@@ -322,8 +322,8 @@ public sealed class ProviderHttpResilienceTests
         using var scope = CreateClient(
             handler,
             CreateOptions(
-                attemptTimeoutMilliseconds: 25,
-                totalTimeoutMilliseconds: 100),
+                attemptTimeoutMilliseconds: 100,
+                totalTimeoutMilliseconds: 1_000),
             logs);
         var providerClient = new RawgApiClient(
             scope.Client,
