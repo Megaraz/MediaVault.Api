@@ -31,11 +31,9 @@ namespace media_vault_app.API.Controllers
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchMovies(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? ordering = null)
+            [FromQuery] int page = 1)
         {
-            var result = await _tmdbApiService.SearchAsync(request.Query, MediaType.Movie, page, pageSize, ordering, ct);
+            var result = await _tmdbApiService.SearchAsync(request.Query, MediaType.Movie, page, ct);
             return this.ToActionResult(result);
         }
 
@@ -62,11 +60,9 @@ namespace media_vault_app.API.Controllers
         public async Task<ActionResult<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchTvSeries(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? ordering = null)
+            [FromQuery] int page = 1)
         {
-            var result = await _tmdbApiService.SearchAsync(request.Query, MediaType.TvSeries, page, pageSize, ordering, ct);
+            var result = await _tmdbApiService.SearchAsync(request.Query, MediaType.TvSeries, page, ct);
             return this.ToActionResult(result);
         }
 

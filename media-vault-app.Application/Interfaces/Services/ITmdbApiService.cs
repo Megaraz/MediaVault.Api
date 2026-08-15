@@ -9,6 +9,6 @@ namespace media_vault_app.Application.Interfaces.Services
     {
         Task<Result<TmdbTvSeriesDetailedDto>> GetTvSeriesByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<Result<TmdbMovieDetailedDto>> GetMovieByIdAsync(int id, CancellationToken cancellationToken = default);
-        Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchAsync(string search, MediaType mediaType, int page = 1, int pageSize = 10, string? ordering = null, CancellationToken cancellationToken = default);
+        Task<Result<IReadOnlyList<MediaEntryExternalSearchResultDto>>> SearchAsync(string search, MediaType mediaType, int page = 1, CancellationToken cancellationToken = default);
     }
 }
