@@ -9,10 +9,49 @@ namespace media_vault_app.API.Security
     public class JwtOptions
     {
         public const string SectionName = "Jwt";
+        public const int MinimumSecretKeyBytes = 32;
+        public const int DefaultExpiryMinutes = 7 * 24 * 60;
+        public const int MaximumExpiryMinutes = DefaultExpiryMinutes;
+
         public string SecretKey { get; set; } = string.Empty;
         public string Issuer { get; set; } = string.Empty;
         public string Audience { get; set; } = string.Empty;
-        public int ExpiryMinutes { get; set; } = 7 * 24 * 60;
+        public int ExpiryMinutes { get; set; } = DefaultExpiryMinutes;
+    }
+
+    public sealed class JwtOptionsValidator : IValidateOptions<JwtOptions>
+    {
+        public ValidateOptionsResult Validate(string? name, JwtOptions options)
+        {
+            var failures = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(options.SecretKey))
+            {
+                failures.Add("JWT secret key must be configured.");
+            }
+            else if (Encoding.UTF8.GetByteCount(options.SecretKey) < JwtOptions.MinimumSecretKeyBytes)
+            {
+                failures.Add(
+                    $"JWT secret key must be at least {JwtOptions.MinimumSecretKeyBytes} bytes.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.Issuer))
+                failures.Add("JWT issuer must be configured.");
+
+            if (string.IsNullOrWhiteSpace(options.Audience))
+                failures.Add("JWT audience must be configured.");
+
+            if (options.ExpiryMinutes <= 0 ||
+                options.ExpiryMinutes > JwtOptions.MaximumExpiryMinutes)
+            {
+                failures.Add(
+                    $"JWT expiry minutes must be between 1 and {JwtOptions.MaximumExpiryMinutes}.");
+            }
+
+            return failures.Count == 0
+                ? ValidateOptionsResult.Success
+                : ValidateOptionsResult.Fail(failures);
+        }
     }
 
     public interface IJwtTokenService
