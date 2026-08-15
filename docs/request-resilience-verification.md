@@ -107,11 +107,12 @@ for every budgeted/limited route; and generated OpenAPI contract tests for
 timeout/429 schemas.
 
 The full clean verification passed on the date above with no new warning. The
-pre-existing warnings are NuGet advisories for `Microsoft.OpenApi` 2.0.0 and
-`SQLitePCLRaw.lib.e_sqlite3` 2.1.11 (high), `NuGet.Packaging` and
-`NuGet.Protocol` 6.12.1 (low), plus the existing test-project EF Core
-10.0.9/10.0.10 assembly-version conflict. Package remediation is deliberately
-separate; this issue adds no package.
+remaining warnings are the documented low-severity NuGet advisories for
+`NuGet.Packaging` and `NuGet.Protocol` 6.12.1 from the design-time scaffolding
+dependency graph. The high-severity `Microsoft.OpenApi` and
+`SQLitePCLRaw.lib.e_sqlite3` advisories, plus the test-project EF Core
+10.0.9/10.0.10 assembly-version conflict, are remediated by the backend
+dependency alignment tracked in `docs/dependency-advisory-baseline.md`.
 
 ## Provider evidence and client compatibility
 

@@ -54,12 +54,13 @@ correlation, bounded metric
 dimensions, query-value redaction, non-Development exception sanitization, and
 receiver-outage isolation.
 
-The clean baseline still reports the repository's pre-existing package
-advisories for `Microsoft.OpenApi`, `SQLitePCLRaw.lib.e_sqlite3`,
-`NuGet.Packaging`, and `NuGet.Protocol`, plus the existing test-project
-EF Core 10.0.9/10.0.10 assembly-version conflict warning. This issue introduces
-no package change or new warning. Dependency remediation remains separately
-scoped rather than being hidden inside integration verification.
+The clean baseline still reports only the documented low-severity package
+advisories for `NuGet.Packaging` and `NuGet.Protocol` 6.12.1 from the
+design-time scaffolding dependency graph. The high-severity
+`Microsoft.OpenApi` and `SQLitePCLRaw.lib.e_sqlite3` advisories, plus the
+test-project EF Core 10.0.9/10.0.10 assembly-version conflict warning, are
+remediated by the backend dependency alignment documented in
+`docs/dependency-advisory-baseline.md`.
 
 ## Contract and privacy review
 
