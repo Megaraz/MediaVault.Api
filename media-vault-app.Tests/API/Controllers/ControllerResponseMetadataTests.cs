@@ -50,6 +50,7 @@ public sealed class ControllerResponseMetadataTests
         };
         var noContentActions = new HashSet<string>
         {
+            nameof(AuthController.RegisterUser),
             nameof(AuthController.UpdateUser),
             nameof(MediaEntriesController.UpdateMovie),
             nameof(MediaEntriesController.UpdateTvSeries),

@@ -36,11 +36,11 @@ namespace media_vault_app.API.Controllers
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.Authentication)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status504GatewayTimeout)]
-        [ProducesResponseType(typeof(UserDetailedDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> RegisterUser(
             [FromBody] UserRegisterDto createDto,
             CancellationToken ct) =>
-                this.ToActionResult(await _authService.RegisterUserAsync(createDto, ct));
+                this.ToNoContentResult(await _authService.RegisterUserAsync(createDto, ct));
 
         [HttpPost("login")]
         [EnableRateLimiting(MediaVaultRateLimitPolicies.LoginByIp)]

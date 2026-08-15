@@ -119,7 +119,11 @@ namespace media_vault_app.Application.Services.Auth
                     nameof(RegisterUserAsync),
                     baseErrorContext);
 
-                return Result.ValidationFailure(registrationValidationErrors, "User register validation failed.");
+                return Result.ValidationFailure(
+                    registrationValidationErrors,
+                    RegistrationAvailabilityMessage(
+                        !availabilityResult.Value.IsUserNameAvailable,
+                        !availabilityResult.Value.IsEmailAvailable));
             }
 
             string hashedPassword = _passwordHasherService.HashPassword(registerDto.Password);
@@ -148,5 +152,14 @@ namespace media_vault_app.Application.Services.Auth
                 entityName: "User",
                 fieldName: fieldName);
         }
+
+        private static string RegistrationAvailabilityMessage(bool usernameUnavailable, bool emailUnavailable) =>
+            (usernameUnavailable, emailUnavailable) switch
+            {
+                (true, true) => "The username and email are already registered.",
+                (true, false) => "The username is already taken.",
+                (false, true) => "The email is already registered.",
+                _ => "User register validation failed."
+            };
     }
 }
