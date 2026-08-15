@@ -141,6 +141,7 @@ namespace media_vault_app.Tests.Services.Auth
             Assert.True(result.IsFailure);
             Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
             Assert.Equal(2, result.ValidationErrors.Count);
+            Assert.Equal("The username and email are already registered.", result.Message);
             Assert.Equal(0, userRepo.RegisterUserCallCount);
         }
 
