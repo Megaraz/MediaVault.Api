@@ -11,6 +11,11 @@ and on pushes to `main`. Client CI lives in `Megaraz/MediaVault.Clients`.
   runtime vulnerabilities of moderate severity or higher. It keeps the
   official action's license inspection enabled without defining a separate
   repository allowlist or denylist.
+- **Backend dependency audit** runs on pull requests, pushes to `main`, a
+  weekly schedule, and manual dispatch. It compares the .NET CLI vulnerable
+  package report with the documented baseline in
+  `docs/dependency-advisory-baseline.md` and fails on newly introduced
+  warnings.
 - **CodeQL** uses GitHub's default setup and default query suite to analyze only
   C# and GitHub Actions code on pull requests, default-branch updates, and
   GitHub's scheduled cadence. JavaScript/TypeScript analysis belongs to

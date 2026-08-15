@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 1,
+  "owner": "Megaraz",
+  "reviewAfter": "2026-11-15",
+  "reviewTrigger": "Recheck when Microsoft.VisualStudio.Web.CodeGeneration.Design or its scaffolding dependencies publish a compatible advisory-free release, or on the reviewAfter date.",
+  "reason": "The current Microsoft.VisualStudio.Web.CodeGeneration.Design 10.0.2 dependency graph still resolves NuGet.Packaging and NuGet.Protocol 6.12.1. Removing this baseline requires a compatible upstream design-time package update.",
+  "advisories": [
+    {
+      "project": "media-vault-app.API/media-vault-app.API.csproj",
+      "framework": "net10.0",
+      "kind": "transitive",
+      "package": "NuGet.Packaging",
+      "version": "6.12.1",
+      "severity": "Low",
+      "advisory": "https://github.com/advisories/GHSA-g4vj-cjjj-v7hg"
+    },
+    {
+      "project": "media-vault-app.API/media-vault-app.API.csproj",
+      "framework": "net10.0",
+      "kind": "transitive",
+      "package": "NuGet.Protocol",
+      "version": "6.12.1",
+      "severity": "Low",
+      "advisory": "https://github.com/advisories/GHSA-g4vj-cjjj-v7hg"
+    },
+    {
+      "project": "media-vault-app.Infrastructure/media-vault-app.Infrastructure.csproj",
+      "framework": "net10.0",
+      "kind": "transitive",
+      "package": "NuGet.Packaging",
+      "version": "6.12.1",
+      "severity": "Low",
+      "advisory": "https://github.com/advisories/GHSA-g4vj-cjjj-v7hg"
+    },
+    {
+      "project": "media-vault-app.Infrastructure/media-vault-app.Infrastructure.csproj",
+      "framework": "net10.0",
+      "kind": "transitive",
+      "package": "NuGet.Protocol",
+      "version": "6.12.1",
+      "severity": "Low",
+      "advisory": "https://github.com/advisories/GHSA-g4vj-cjjj-v7hg"
+    },
+    {
+      "project": "media-vault-app.Tests/media-vault-app.Tests.csproj",
+      "framework": "net10.0",
+      "kind": "transitive",
+      "package": "NuGet.Packaging",
+      "version": "6.12.1",
+      "severity": "Low",
+      "advisory": "https://github.com/advisories/GHSA-g4vj-cjjj-v7hg"
+    },
+    {
+      "project": "media-vault-app.Tests/media-vault-app.Tests.csproj",
+      "framework": "net10.0",
+      "kind": "transitive",
+      "package": "NuGet.Protocol",
+      "version": "6.12.1",
+      "severity": "Low",
+      "advisory": "https://github.com/advisories/GHSA-g4vj-cjjj-v7hg"
+    }
+  ]
+}
