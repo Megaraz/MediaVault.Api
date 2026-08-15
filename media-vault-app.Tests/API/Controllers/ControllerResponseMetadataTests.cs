@@ -2,6 +2,7 @@ using System.Reflection;
 using media_vault_app.API.Controllers;
 using media_vault_app.API.Diagnostics;
 using media_vault_app.API.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -17,8 +18,7 @@ public sealed class ControllerResponseMetadataTests
         typeof(GoogleBooksApiController),
         typeof(MediaEntriesController),
         typeof(RawgApiController),
-        typeof(TmdbApiController),
-        typeof(UsersController)
+        typeof(TmdbApiController)
     ];
 
     [Fact]
@@ -57,8 +57,7 @@ public sealed class ControllerResponseMetadataTests
             nameof(MediaEntriesController.UpdateGame),
             nameof(MediaEntriesController.UpdateBook),
             nameof(MediaEntriesController.UpdateManga),
-            nameof(MediaEntriesController.DeleteMediaEntry),
-            nameof(UsersController.DeleteUser)
+            nameof(MediaEntriesController.DeleteMediaEntry)
         };
 
         foreach (var controllerType in ControllerTypes)
@@ -84,6 +83,30 @@ public sealed class ControllerResponseMetadataTests
                 Assert.Equal(expectedStatus, response.StatusCode);
             }
         }
+    }
+
+    [Fact]
+    public void AuthController_DeclaresTheIntendedAnonymousAndAuthenticatedSplit()
+    {
+        var anonymousActions = new[]
+        {
+            typeof(AuthController).GetMethod(nameof(AuthController.RegisterUser))!,
+            typeof(AuthController).GetMethod(nameof(AuthController.LoginUser))!
+        };
+        var authenticatedActions = new[]
+        {
+            typeof(AuthController).GetMethod(nameof(AuthController.UpdateUser))!,
+            typeof(AuthController).GetMethod(nameof(AuthController.GetCurrentUser))!
+        };
+
+        Assert.All(
+            anonymousActions,
+            action => Assert.NotNull(action.GetCustomAttribute<AllowAnonymousAttribute>()));
+        Assert.All(
+            authenticatedActions,
+            action => Assert.NotNull(action.GetCustomAttribute<AuthorizeAttribute>()));
+        Assert.Null(typeof(AuthController).Assembly.GetType(
+            "media_vault_app.API.Controllers.UsersController"));
     }
 
     [Fact]

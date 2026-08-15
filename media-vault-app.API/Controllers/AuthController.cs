@@ -31,6 +31,7 @@ namespace media_vault_app.API.Controllers
             _jwtTokenService = jwtTokenService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         [EnableRateLimiting(MediaVaultRateLimitPolicies.RegistrationByIp)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.Authentication)]
@@ -42,6 +43,7 @@ namespace media_vault_app.API.Controllers
             CancellationToken ct) =>
                 this.ToNoContentResult(await _authService.RegisterUserAsync(createDto, ct));
 
+        [AllowAnonymous]
         [HttpPost("login")]
         [EnableRateLimiting(MediaVaultRateLimitPolicies.LoginByIp)]
         [RequestTimeout(MediaVaultRequestTimeoutPolicies.Authentication)]

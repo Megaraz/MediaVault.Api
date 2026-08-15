@@ -2,6 +2,9 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace media_vault_app.Tests.API;
 
@@ -21,6 +24,10 @@ public sealed class OpenApiContractTests
         var json = await response.Content.ReadAsStringAsync();
         using var document = JsonDocument.Parse(json);
         var paths = document.RootElement.GetProperty("paths");
+        Assert.True(paths.TryGetProperty("/Auth/register", out _));
+        Assert.True(paths.TryGetProperty("/Auth/me", out _));
+        Assert.False(paths.TryGetProperty("/Users", out _));
+
         var collectionOperation = paths
             .GetProperty("/MediaEntries")
             .GetProperty("get");
@@ -43,6 +50,37 @@ public sealed class OpenApiContractTests
             AssertSchema(resilienceResponse, "429", "ErrorResponseBody");
             AssertSchema(resilienceResponse, "504", "ErrorResponseBody");
         }
+    }
+
+    [Fact]
+    public async Task ProtectedSurface_RequiresAuthenticationAndHasNoUserManagementRoutes()
+    {
+        await using var factory = new OpenApiFactory();
+        using var client = factory.CreateClient();
+
+        var fallbackPolicy = factory.Services
+            .GetRequiredService<IOptions<AuthorizationOptions>>()
+            .Value
+            .FallbackPolicy;
+
+        Assert.NotNull(fallbackPolicy);
+        Assert.Contains(
+            fallbackPolicy.Requirements,
+            requirement => requirement is DenyAnonymousAuthorizationRequirement);
+
+        using var currentUserResponse = await client.GetAsync("/Auth/me");
+        Assert.Equal(HttpStatusCode.Unauthorized, currentUserResponse.StatusCode);
+
+        using var listUsersResponse = await client.GetAsync("/Users");
+        Assert.Equal(HttpStatusCode.NotFound, listUsersResponse.StatusCode);
+
+        using var getUserResponse = await client.GetAsync(
+            $"/Users/{Guid.Empty}");
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+
+        using var deleteUserResponse = await client.DeleteAsync(
+            $"/Users/{Guid.Empty}");
+        Assert.Equal(HttpStatusCode.NotFound, deleteUserResponse.StatusCode);
     }
 
     private static void AssertSchema(

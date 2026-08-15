@@ -222,7 +222,7 @@ Affected files:
 
 ### API
 
-- All six controllers depend indirectly on the local response adapter.
+- All five controllers depend indirectly on the local response adapter.
 - `ResultResponseMapper` owns `CreatedAtAction` behavior not directly provided by the package.
 - `Program` registers the local logger, policy, and cleanup service.
 
@@ -233,7 +233,6 @@ Direct or indirect controller consumers:
 - `MediaEntriesController`
 - `RawgApiController`
 - `TmdbApiController`
-- `UsersController`
 
 ### Domain
 
@@ -802,7 +801,7 @@ The temporary compatibility bridge is required if Phases 4 and 5 are to remain i
 - Three external API clients.
 - `ApiClientBase`.
 - `ResultResponseMapper`.
-- All six controllers indirectly.
+- All five controllers indirectly.
 - Local HTTP error, response conversion, mapper, and response DTO files.
 - Pagination callsites.
 

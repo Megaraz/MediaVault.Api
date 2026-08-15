@@ -145,5 +145,6 @@ breaking/hedging/fallback, or production quota monitoring and alerting.
 
 This baseline is not DDoS protection, a WAF, authorization remediation, a
 durable quota ledger, distributed infrastructure, production hosting, client
-server-state retry, offline sync, or AI resilience. The separate
-`UsersController` authorization concern remains out of scope.
+server-state retry, offline sync, or AI resilience. Issue #145 separately
+removed the anonymous `UsersController` surface; user-management authorization
+is now enforced by the API's authenticated-by-default policy.
