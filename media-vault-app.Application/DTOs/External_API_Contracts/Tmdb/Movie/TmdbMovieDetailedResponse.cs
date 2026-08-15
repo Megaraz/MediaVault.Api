@@ -12,6 +12,9 @@ namespace media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie
         [JsonPropertyName("genres")]
         public IReadOnlyList<TmdbGenre> Genres { get; init; } = new List<TmdbGenre>();
 
+        [JsonPropertyName("backdrop_path")]
+        public string? BackdropPath { get; init; }
+
         [JsonPropertyName("poster_path")]
         public string? PosterPath { get; init; }
 

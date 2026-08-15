@@ -150,6 +150,27 @@ public sealed class ControllerResponseMetadataTests
     }
 
     [Fact]
+    public void TmdbSearchActions_ExposeOnlyTheSupportedPageQueryParameter()
+    {
+        var searchActions = new[]
+        {
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.SearchMovies))!,
+            typeof(TmdbApiController).GetMethod(nameof(TmdbApiController.SearchTvSeries))!
+        };
+
+        Assert.All(searchActions, action =>
+        {
+            var queryParameters = action
+                .GetParameters()
+                .Where(parameter => parameter.GetCustomAttribute<FromQueryAttribute>() is not null)
+                .Select(parameter => parameter.Name ?? string.Empty)
+                .ToArray();
+
+            Assert.Equal(["page"], queryParameters);
+        });
+    }
+
+    [Fact]
     public void OnlyApprovedEndpointsHaveNamedRateLimitsAndDeclareTheSafeLocal429Contract()
     {
         var registration = new[]

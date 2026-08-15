@@ -57,7 +57,7 @@ Accept: application/json
 ###
 
 ### TMDB - Search Movies
-POST {{media_vault_app.API_HostAddress}}/TmdbApi/movie/search?page=1&pageSize=10
+POST {{media_vault_app.API_HostAddress}}/TmdbApi/movie/search?page=1
 Content-Type: application/json
 Accept: application/json
 
@@ -74,7 +74,7 @@ Accept: application/json
 ###
 
 ### TMDB - Search TV Series
-POST {{media_vault_app.API_HostAddress}}/TmdbApi/tv/search?page=1&pageSize=10
+POST {{media_vault_app.API_HostAddress}}/TmdbApi/tv/search?page=1
 Content-Type: application/json
 Accept: application/json
 

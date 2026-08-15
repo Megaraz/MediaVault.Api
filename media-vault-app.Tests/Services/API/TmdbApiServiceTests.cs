@@ -34,6 +34,7 @@ namespace media_vault_app.Tests.Services.API
                 getMovieByIdResult: Result<TmdbMovieDetailedResponse>.Success(new TmdbMovieDetailedResponse
                 {
                     Id = 77,
+                    BackdropPath = "/backdrop.jpg",
                     PosterPath = "/poster.jpg",
                     ReleaseDate = "2025-03-01",
                     Genres = [new TmdbGenre { Id = 1, Name = "Action" }],
@@ -51,10 +52,29 @@ namespace media_vault_app.Tests.Services.API
             Assert.Equal("The Movie", result.Value.TmdbTitle);
             Assert.Equal("Movie overview", result.Value.TmdbOverview);
             Assert.Equal("https://image.tmdb.org/t/p/w500/poster.jpg", result.Value.TmdbPosterPath);
-            Assert.Equal("https://image.tmdb.org/t/p/w500/poster.jpg", result.Value.TmdbBackdropPath);
+            Assert.Equal("https://image.tmdb.org/t/p/w500/backdrop.jpg", result.Value.TmdbBackdropPath);
             var genre = Assert.Single(result.Value.TmdbGenres);
             Assert.Equal(1, genre.TmdbGenreId);
             Assert.Equal("Action", genre.TmdbGenreName);
+        }
+
+        [Fact]
+        public async Task GetMovieByIdAsync_Should_Map_Missing_Backdrop_As_Null()
+        {
+            var client = new FakeTmdbApiClient(
+                getMovieByIdResult: Result<TmdbMovieDetailedResponse>.Success(new TmdbMovieDetailedResponse
+                {
+                    Id = 77,
+                    PosterPath = "/poster.jpg"
+                }));
+
+            var service = new TmdbApiService(client, ServiceTestLogger.Create<TmdbApiService>());
+
+            var result = await service.GetMovieByIdAsync(77);
+
+            Assert.True(result.IsSuccess);
+            Assert.Null(result.Value.TmdbBackdropPath);
+            Assert.Equal("https://image.tmdb.org/t/p/w500/poster.jpg", result.Value.TmdbPosterPath);
         }
 
         [Fact]
@@ -124,7 +144,7 @@ namespace media_vault_app.Tests.Services.API
         }
 
         [Fact]
-        public async Task SearchAsync_Should_Include_Query_And_Page_And_Map_Results()
+        public async Task SearchAsync_Should_Include_Query_And_Normalized_Page_And_Map_Results()
         {
             var client = new FakeTmdbApiClient(
                 searchResult: Result<TmdbSearchResponse>.Success(new TmdbSearchResponse
@@ -138,7 +158,7 @@ namespace media_vault_app.Tests.Services.API
 
             var service = new TmdbApiService(client, ServiceTestLogger.Create<TmdbApiService>());
 
-            var result = await service.SearchAsync("matrix", MediaType.Movie, page: 0, pageSize: 0, ordering: "ignored");
+            var result = await service.SearchAsync("matrix", MediaType.Movie, page: 0);
 
             Assert.True(result.IsSuccess);
             Assert.Equal(MediaType.Movie, client.LastSearchMediaType);

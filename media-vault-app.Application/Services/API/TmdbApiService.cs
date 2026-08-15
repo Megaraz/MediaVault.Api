@@ -7,7 +7,6 @@ using media_vault_app.Application.Interfaces.Clients;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Logging;
-using Rasmus.SharedKernel.Pagination;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Results;
 using Rasmus.SharedKernel.Validation;
@@ -60,8 +59,6 @@ namespace media_vault_app.Application.Services.API
             string search,
             MediaType mediaType,
             int page = 1,
-            int pageSize = 10,
-            string? ordering = null,
             CancellationToken cancellationToken = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(SearchAsync), OperationType.GetCollection);
@@ -73,9 +70,7 @@ namespace media_vault_app.Application.Services.API
                 errors.Add(searchError);
             }
 
-            var pagination = PaginationParameters.Normalize(page, pageSize);
-            page = pagination.PageNumber;
-            pageSize = pagination.PageSize;
+            page = Math.Max(page, 1);
 
             if (errors.Any())
             {
@@ -145,7 +140,7 @@ namespace media_vault_app.Application.Services.API
         {
             return new TmdbMovieDetailedDto
             (
-                TmdbBackdropPath: BuildImageUrl(movieResult.PosterPath),
+                TmdbBackdropPath: BuildImageUrl(movieResult.BackdropPath),
                 TmdbReleaseDate: movieResult.ReleaseDate ?? string.Empty,
                 TmdbGenres: movieResult.Genres.Select(g =>
                     new TmdbGenreDto

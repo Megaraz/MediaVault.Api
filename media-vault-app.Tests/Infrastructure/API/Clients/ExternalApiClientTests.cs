@@ -58,6 +58,25 @@ public class ExternalApiClientTests
     }
 
     [Fact]
+    public async Task TmdbClient_DeserializesMovieBackdropAndPosterSeparately()
+    {
+        using var tmdbHttpClient = CreateHttpClient(
+            JsonResponse(
+                HttpStatusCode.OK,
+                """{"id":550,"backdrop_path":"/backdrop.jpg","poster_path":"/poster.jpg"}"""));
+        var tmdbClient = new TmdbApiClient(
+            tmdbHttpClient,
+            Options.Create(new TmdbApiOptions { BaseUrl = "https://tmdb.test/", ApiAccessToken = "secret" }),
+            CreateErrorEventLogger<TmdbApiClient>());
+
+        var result = await tmdbClient.GetMovieByIdAsync(550);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("/backdrop.jpg", result.Value.BackdropPath);
+        Assert.Equal("/poster.jpg", result.Value.PosterPath);
+    }
+
+    [Fact]
     public async Task SharedMapping_PreservesWebJsonDefaultsAndMissingContentType()
     {
         using var response = new HttpResponseMessage(HttpStatusCode.OK)
