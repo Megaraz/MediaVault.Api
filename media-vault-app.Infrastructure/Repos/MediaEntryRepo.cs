@@ -16,26 +16,27 @@ namespace media_vault_app.Infrastructure.Repos
         {
         }
 
-        // Override to include Seasons (TvSeries) and PcRequirements (Game) via eager loading.
-        // Uses the base overload that accepts an include-shaping delegate.
-        // EF Core supports casting to a derived type inside Include(), so it generates
-        // the correct LEFT JOINs for each subtype without needing separate queries.
-        public Task<Result<MediaEntry>> GetByIdAsync(
+        // Override to include Seasons for TvSeries via eager loading.
+        // PcRequirements is an EF complex property and is materialized with the owning row.
+        public override Task<Result<MediaEntry>> GetByIdAsync(
             Guid ownerId,
             Guid entityId,
+            Func<IQueryable<MediaEntry>, IQueryable<MediaEntry>>? include = null,
             CancellationToken ct = default)
         {
             return base.GetByIdAsync(
                 ownerId,
                 entityId,
-                query => query
-                    .Include(e => (e as TvSeriesEntry)!.Seasons)
-                    .Include(e => (e as GameEntry)!.PcRequirements),
+                query =>
+                {
+                    var shapedQuery = include is null ? query : include(query);
+                    return shapedQuery.Include(e => (e as TvSeriesEntry)!.Seasons);
+                },
                 ct);
         }
 
 
-        // Override to update a GameEntry in-place, including its PcRequirements navigation property.
+        // Override to update a GameEntry in-place, including its PcRequirements value object.
         // The base SetValues() only copies scalars and silently ignores PcRequirements.
         private async Task<Result> UpdateGameAsync(Guid ownerId, GameEntry updatedGame, CancellationToken ct)
         {
@@ -44,7 +45,6 @@ namespace media_vault_app.Infrastructure.Repos
             try
             {
                 var existing = await _appDbContext.GameEntries
-                    //.Include(g => g.PcRequirements)
                     .FirstOrDefaultAsync(g => g.Id == updatedGame.Id && g.OwnerId == ownerId, ct)
                     .ConfigureAwait(false);
 

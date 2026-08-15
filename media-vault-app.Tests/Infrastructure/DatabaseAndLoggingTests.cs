@@ -1,3 +1,7 @@
+using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.Mappers.MediaEntry;
+using media_vault_app.Application.Services.MediaEntry;
+using media_vault_app.Domain.Enums;
 using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.Diagnostics;
 using media_vault_app.Infrastructure.Repos;
@@ -69,6 +73,144 @@ public sealed class DatabaseAndLoggingTests
         Assert.Equal(nameof(TestRepository.ReturnFailureAfterLogging), entry.Properties["Method"]);
         Assert.Null(entry.Exception);
         Assert.DoesNotContain("private diagnostic", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task DetailedReads_LoadAllMediaSubtypesFromSqlite()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        var ownerId = Guid.NewGuid();
+        var movieId = Guid.NewGuid();
+        var tvSeriesId = Guid.NewGuid();
+        var gameId = Guid.NewGuid();
+        var bookId = Guid.NewGuid();
+        var mangaId = Guid.NewGuid();
+        var seasonId = Guid.NewGuid();
+
+        await using (var setupContext = new AppDbContext(options))
+        {
+            await setupContext.Database.EnsureCreatedAsync();
+            setupContext.Users.Add(new User
+            {
+                Id = ownerId,
+                Username = "detail-read-owner",
+                Email = "detail-read-owner@example.test",
+                PasswordHash = "hash"
+            });
+            var tvSeriesEntry = new TvSeriesEntry
+            {
+                Id = tvSeriesId,
+                OwnerId = ownerId,
+                Title = "TV series",
+                Status = Status.Ongoing,
+                Rating = 4.5m
+            };
+            setupContext.MediaEntries.AddRange(
+                new MovieEntry
+                {
+                    Id = movieId,
+                    OwnerId = ownerId,
+                    Title = "Movie",
+                    Status = Status.Completed,
+                    Rating = 4m
+                },
+                tvSeriesEntry,
+                new GameEntry
+                {
+                    Id = gameId,
+                    OwnerId = ownerId,
+                    Title = "Game",
+                    Status = Status.Backlog,
+                    Rating = 3.5m,
+                    Platforms = ["PC"],
+                    PcRequirements = new GamePcRequirements(
+                        Minimum: "minimum",
+                        Recommended: "recommended",
+                        High: "high",
+                        VeryHigh: "very high",
+                        Ultra: "ultra")
+                },
+                new BookEntry
+                {
+                    Id = bookId,
+                    OwnerId = ownerId,
+                    Title = "Book",
+                    Status = Status.Completed,
+                    Rating = 4m,
+                    Author = "Author"
+                },
+                new MangaEntry
+                {
+                    Id = mangaId,
+                    OwnerId = ownerId,
+                    Title = "Manga",
+                    Status = Status.Ongoing,
+                    Rating = 4m,
+                    Author = "Author"
+                });
+            setupContext.Seasons.Add(new Season
+            {
+                Id = seasonId,
+                TvSeriesEntryId = tvSeriesId,
+                Name = "Season 1",
+                SeasonNumber = 1,
+                Status = Status.Completed,
+                Rating = 4m
+            });
+
+            await setupContext.SaveChangesAsync();
+        }
+
+        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
+        await using var queryContext = new AppDbContext(options);
+        var mediaEntryRepo = new MediaEntryRepo(
+            queryContext,
+            new ErrorEventLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(
+                loggerFactory.CreateLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(),
+                new ErrorEventPolicy(),
+                new ErrorDiagnosticsOptions(false)));
+        var userRepo = new UserRepo(
+            queryContext,
+            new ErrorEventLogger<RepoBase<User, Guid>>(
+                loggerFactory.CreateLogger<RepoBase<User, Guid>>(),
+                new ErrorEventPolicy(),
+                new ErrorDiagnosticsOptions(false)));
+        var readService = new MediaEntryReadService(
+            mediaEntryRepo,
+            userRepo,
+            new MediaEntryEntityMapper(),
+            ServiceTestLogger.Create<MediaEntryReadService>());
+
+        var entryIdsAndTypes = new (Guid Id, Type Type)[]
+        {
+            (movieId, typeof(MovieEntryDetailedDto)),
+            (tvSeriesId, typeof(TvSeriesEntryDetailedDto)),
+            (gameId, typeof(GameEntryDetailedDto)),
+            (bookId, typeof(BookEntryDetailedDto)),
+            (mangaId, typeof(MangaEntryDetailedDto))
+        };
+
+        foreach (var (id, expectedType) in entryIdsAndTypes)
+        {
+            var result = await readService.GetDetailedByIdAsync(ownerId, id);
+
+            Assert.True(result.IsSuccess);
+            Assert.IsType(expectedType, result.Value);
+        }
+
+        var gameResult = await readService.GetGameByIdAsync(ownerId, gameId);
+        var game = Assert.IsType<GameEntryDetailedDto>(gameResult.Value);
+        Assert.Equal("minimum", game.PcRequirements?.Minimum);
+        Assert.Equal("ultra", game.PcRequirements?.Ultra);
+
+        var tvSeriesResult = await readService.GetTvSeriesByIdAsync(ownerId, tvSeriesId);
+        var tvSeries = Assert.IsType<TvSeriesEntryDetailedDto>(tvSeriesResult.Value);
+        Assert.Equal("Season 1", Assert.Single(tvSeries.Seasons).Name);
     }
 
     [Fact]
