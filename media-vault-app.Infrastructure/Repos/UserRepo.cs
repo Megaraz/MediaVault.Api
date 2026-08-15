@@ -39,12 +39,6 @@ namespace media_vault_app.Infrastructure.Repos
                     DatabaseFailurePolicy.SaveChangesFailure(baseErrorContext, dbEx),
                     baseErrorContext);
             }
-            catch (OperationCanceledException)
-            {
-                var baseErrorContext = DefineErrorContext(nameof(RegisterUserAsync), OperationType.Create);
-                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
-            }
-
         }
 
         public async Task<Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>> CheckRegistrationAvailabilityAsync(string username, string email, CancellationToken ct = default)
@@ -65,11 +59,6 @@ namespace media_vault_app.Infrastructure.Repos
                 bool emailExists = matchingUsers.Any(currentUser => currentUser.Email == lookupEmail);
 
                 return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success((!usernameExists, !emailExists));
-            }
-            catch (OperationCanceledException)
-            {
-                var baseErrorContext = DefineErrorContext(nameof(CheckRegistrationAvailabilityAsync), OperationType.Get);
-                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbException ex)
             {
@@ -111,11 +100,6 @@ namespace media_vault_app.Infrastructure.Repos
                 return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Success(
                     (!usernameExists, !emailExists));
             }
-            catch (OperationCanceledException)
-            {
-                return Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>.Failure(
-                    MediaVaultErrors.Cancelled(baseErrorContext));
-            }
             catch (DbException ex)
             {
                 return LogAndFail<(bool IsUserNameAvailable, bool IsEmailAvailable)>(
@@ -150,10 +134,6 @@ namespace media_vault_app.Infrastructure.Repos
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
-            }
-            catch (OperationCanceledException)
-            {
-                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -197,10 +177,6 @@ namespace media_vault_app.Infrastructure.Repos
                 }
 
                 return Result<User>.Success(user);
-            }
-            catch (OperationCanceledException)
-            {
-                return Result<User>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbException ex)
             {

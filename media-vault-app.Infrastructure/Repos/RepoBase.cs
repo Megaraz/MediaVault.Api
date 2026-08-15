@@ -42,10 +42,6 @@ namespace media_vault_app.Infrastructure.Repos
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result<TEntity>.Success(entity);
             }
-            catch (OperationCanceledException)
-            {
-                return Result<TEntity>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
-            }
             catch (DbUpdateConcurrencyException ex)
             {
                 return LogAndFail<TEntity>(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), baseErrorContext);
@@ -70,10 +66,6 @@ namespace media_vault_app.Infrastructure.Repos
                 }
                 return Result<TEntity>.Success(entity);
             }
-            catch (OperationCanceledException)
-            {
-                return Result<TEntity>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
-            }
             catch (System.Data.Common.DbException ex)
             {
                 return LogAndFail<TEntity>(DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex), baseErrorContext);
@@ -93,10 +85,6 @@ namespace media_vault_app.Infrastructure.Repos
                     .ToListAsync(ct).ConfigureAwait(false);
 
                 return Result<IReadOnlyList<TEntity>>.Success(entities);
-            }
-            catch (OperationCanceledException)
-            {
-                return Result<IReadOnlyList<TEntity>>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (System.Data.Common.DbException ex)
             {
@@ -121,10 +109,6 @@ namespace media_vault_app.Infrastructure.Repos
                 _dbSet.Remove(entity);
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
-            }
-            catch (OperationCanceledException)
-            {
-                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -163,10 +147,6 @@ namespace media_vault_app.Infrastructure.Repos
 
                 return Result.Success();
             }
-            catch (OperationCanceledException)
-            {
-                return Result.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
-            }
             catch (DbUpdateConcurrencyException ex)
             {
                 return LogAndFail(DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext, ex), baseErrorContext);
@@ -196,10 +176,6 @@ namespace media_vault_app.Infrastructure.Repos
                 }
 
                 return Result<bool>.Success(true);
-            }
-            catch (OperationCanceledException)
-            {
-                return Result<bool>.Failure(MediaVaultErrors.Cancelled(baseErrorContext));
             }
             catch (System.Data.Common.DbException ex)
             {
