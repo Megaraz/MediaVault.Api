@@ -80,6 +80,8 @@ namespace media_vault_app.Infrastructure.Repos
             {
                 var entities = await _dbSet
                     .AsNoTracking()
+                    .OrderByDescending(entity => entity.CreatedAtUtc)
+                    .ThenBy(entity => entity.Id)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync(ct).ConfigureAwait(false);
