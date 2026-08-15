@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -72,15 +73,15 @@ public sealed class OpenApiContractTests
         Assert.Equal(HttpStatusCode.Unauthorized, currentUserResponse.StatusCode);
 
         using var listUsersResponse = await client.GetAsync("/Users");
-        Assert.Equal(HttpStatusCode.NotFound, listUsersResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, listUsersResponse.StatusCode);
 
         using var getUserResponse = await client.GetAsync(
             $"/Users/{Guid.Empty}");
-        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, getUserResponse.StatusCode);
 
         using var deleteUserResponse = await client.DeleteAsync(
             $"/Users/{Guid.Empty}");
-        Assert.Equal(HttpStatusCode.NotFound, deleteUserResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, deleteUserResponse.StatusCode);
     }
 
     private static void AssertSchema(
