@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
+using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
 using media_vault_app.Infrastructure.Diagnostics;
+using media_vault_app.Infrastructure.Timestamps;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -22,14 +24,17 @@ namespace media_vault_app.Infrastructure.Repos
         protected readonly AppDbContext _appDbContext;
         protected readonly DbSet<TEntity> _dbSet;
         protected readonly ErrorEventLogger<RepoBase<TEntity, TKey>> _errorEventLogger;
+        protected readonly ServerTimestampPolicy _timestampPolicy;
 
         public RepoBase(
             AppDbContext appDbContext,
-            ErrorEventLogger<RepoBase<TEntity, TKey>> errorEventLogger)
+            ErrorEventLogger<RepoBase<TEntity, TKey>> errorEventLogger,
+            ServerTimestampPolicy? timestampPolicy = null)
         {
             _appDbContext = appDbContext;
             _dbSet = _appDbContext.Set<TEntity>();
             _errorEventLogger = errorEventLogger;
+            _timestampPolicy = timestampPolicy ?? new ServerTimestampPolicy(TimeProvider.System);
         }
 
         public virtual async Task<Result<TEntity>> CreateAsync(TEntity entity, CancellationToken ct = default)
@@ -37,7 +42,7 @@ namespace media_vault_app.Infrastructure.Repos
             var baseErrorContext = DefineErrorContext(nameof(CreateAsync), OperationType.Create);
             try
             {
-                entity.CreatedAtUtc = DateTime.UtcNow;
+                _timestampPolicy.Initialize(entity);
                 _dbSet.Add(entity);
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result<TEntity>.Success(entity);
@@ -143,8 +148,9 @@ namespace media_vault_app.Infrastructure.Repos
                 }
 
                 var createdAt = oldEntity.CreatedAtUtc;
+                var updatedAt = oldEntity.UpdatedAtUtc;
                 _appDbContext.Entry(oldEntity).CurrentValues.SetValues(updatedEntity);
-                oldEntity.CreatedAtUtc = createdAt;
+                ApplyUpdateTimestamp(oldEntity, createdAt, updatedAt);
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
 
                 return Result.Success();
@@ -216,6 +222,31 @@ namespace media_vault_app.Infrastructure.Repos
                 operation: operation,
                 entityName: typeof(TEntity).Name,
                 fieldName: fieldName);
+        }
+
+        protected bool ApplyUpdateTimestamp(
+            IEntity<TKey> entity,
+            DateTime originalCreatedAtUtc,
+            DateTime originalUpdatedAtUtc,
+            bool relatedEntityChanged = false)
+        {
+            _appDbContext.ChangeTracker.DetectChanges();
+            var entry = _appDbContext.Entry(entity);
+            var hasMeaningfulChanges = relatedEntityChanged || entry.Properties.Any(
+                property => property.IsModified &&
+                    property.Metadata.Name is not nameof(ICreatedAtUtc.CreatedAtUtc) and
+                    not nameof(IUpdatedAtUtc.UpdatedAtUtc));
+
+            _timestampPolicy.ApplyUpdate(
+                entity,
+                originalCreatedAtUtc,
+                originalUpdatedAtUtc,
+                hasMeaningfulChanges);
+
+            entry.Property(nameof(ICreatedAtUtc.CreatedAtUtc)).IsModified = false;
+            entry.Property(nameof(IUpdatedAtUtc.UpdatedAtUtc)).IsModified = hasMeaningfulChanges;
+
+            return hasMeaningfulChanges;
         }
     }
 }

@@ -25,6 +25,7 @@ using media_vault_app.Infrastructure;
 using media_vault_app.Infrastructure.API.Clients;
 using media_vault_app.Infrastructure.Diagnostics;
 using media_vault_app.Infrastructure.Repos;
+using media_vault_app.Infrastructure.Timestamps;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -193,6 +194,7 @@ namespace media_vault_app.API
 
             // Production failure events use standard logging.
             builder.Services.AddSingleton<ErrorEventPolicy>();
+            builder.Services.AddSingleton<ServerTimestampPolicy>();
             builder.Services.AddSingleton(
                 new ErrorDiagnosticsOptions(builder.Environment.IsDevelopment()));
             builder.Services.AddSingleton(typeof(ErrorEventLogger<>), typeof(ErrorEventLogger<>));

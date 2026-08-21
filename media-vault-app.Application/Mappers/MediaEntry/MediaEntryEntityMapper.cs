@@ -42,7 +42,8 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 Genres = entity.Genres,
                 MediaType = entity.MediaType,
                 Status = entity.Status,
-                CreatedAtUtc = entity.CreatedAtUtc
+                CreatedAtUtc = entity.CreatedAtUtc,
+                UpdatedAtUtc = entity.UpdatedAtUtc
             };
         }
 
@@ -64,6 +65,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ReleaseDate = movie.ReleaseDate ?? default,
             ImageUrl = movie.ImageUrl,
             CreatedAtUtc = movie.CreatedAtUtc,
+            UpdatedAtUtc = movie.UpdatedAtUtc,
             RuntimeMinutes = movie.RuntimeMinutes
         };
 
@@ -82,6 +84,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ReleaseDate = tvSeries.ReleaseDate ?? default,
             ImageUrl = tvSeries.ImageUrl,
             CreatedAtUtc = tvSeries.CreatedAtUtc,
+            UpdatedAtUtc = tvSeries.UpdatedAtUtc,
             BackdropImageUrl = tvSeries.BackdropImageUrl,
             LastAirDate = tvSeries.LastAirDate,
             NumberOfSeasons = tvSeries.NumberOfSeasons,
@@ -105,7 +108,8 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Episodes = s.Episodes,
             Status = s.Status,
             Rating = s.Rating,
-            CreatedAtUtc = s.CreatedAtUtc
+            CreatedAtUtc = s.CreatedAtUtc,
+            UpdatedAtUtc = s.UpdatedAtUtc
         };
 
         // Game
@@ -123,6 +127,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ReleaseDate = game.ReleaseDate ?? default,
             ImageUrl = game.ImageUrl,
             CreatedAtUtc = game.CreatedAtUtc,
+            UpdatedAtUtc = game.UpdatedAtUtc,
             HoursPlayed = game.HoursPlayed,
             MetacriticRating = game.MetacriticRating,
             Platforms = game.Platforms,
@@ -152,6 +157,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ReleaseDate = book.ReleaseDate ?? default,
             ImageUrl = book.ImageUrl,
             CreatedAtUtc = book.CreatedAtUtc,
+            UpdatedAtUtc = book.UpdatedAtUtc,
             Author = book.Author
         };
 
@@ -170,6 +176,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ReleaseDate = manga.ReleaseDate ?? default,
             ImageUrl = manga.ImageUrl,
             CreatedAtUtc = manga.CreatedAtUtc,
+            UpdatedAtUtc = manga.UpdatedAtUtc,
             Author = manga.Author
         };
 

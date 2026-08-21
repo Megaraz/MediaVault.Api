@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
+using Rasmus.SharedKernel.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
 using media_vault_app.Infrastructure.Diagnostics;
+using media_vault_app.Infrastructure.Timestamps;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -19,14 +21,17 @@ namespace media_vault_app.Infrastructure.Repos
         protected readonly AppDbContext _appDbContext;
         protected readonly DbSet<TEntityDependent> _dbSet;
         protected readonly ErrorEventLogger<DependentEntityRepoBase<TEntityDependent, TKeyOwner, TKeyDependent>> _errorEventLogger;
+        protected readonly ServerTimestampPolicy _timestampPolicy;
 
         protected DependentEntityRepoBase(
             AppDbContext appDbContext,
-            ErrorEventLogger<DependentEntityRepoBase<TEntityDependent, TKeyOwner, TKeyDependent>> errorEventLogger)
+            ErrorEventLogger<DependentEntityRepoBase<TEntityDependent, TKeyOwner, TKeyDependent>> errorEventLogger,
+            ServerTimestampPolicy? timestampPolicy = null)
         {
             _appDbContext = appDbContext;
             _dbSet = _appDbContext.Set<TEntityDependent>();
             _errorEventLogger = errorEventLogger;
+            _timestampPolicy = timestampPolicy ?? new ServerTimestampPolicy(TimeProvider.System);
         }
 
         public virtual async Task<Result<TEntityDependent>> CreateAsync(TEntityDependent entity, CancellationToken ct = default)
@@ -35,7 +40,7 @@ namespace media_vault_app.Infrastructure.Repos
 
             try
             {
-                entity.CreatedAtUtc = DateTime.UtcNow;
+                _timestampPolicy.Initialize(entity);
 
                 _dbSet.Add(entity);
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -149,6 +154,7 @@ namespace media_vault_app.Infrastructure.Repos
                 var originalId = existingDependentEntity.Id;
                 var originalOwnerId = existingDependentEntity.OwnerId;
                 var createdAt = existingDependentEntity.CreatedAtUtc;
+                var updatedAt = existingDependentEntity.UpdatedAtUtc;
 
                 _appDbContext.Entry(existingDependentEntity)
                     .CurrentValues
@@ -156,8 +162,7 @@ namespace media_vault_app.Infrastructure.Repos
 
                 existingDependentEntity.Id = originalId;
                 existingDependentEntity.OwnerId = originalOwnerId;
-                existingDependentEntity.CreatedAtUtc = createdAt;
-                existingDependentEntity.UpdatedAtUtc = DateTime.UtcNow;
+                ApplyUpdateTimestamp(existingDependentEntity, createdAt, updatedAt);
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
 
@@ -249,6 +254,31 @@ namespace media_vault_app.Infrastructure.Repos
                 operation: operation,
                 entityName: typeof(TEntityDependent).Name,
                 fieldName: fieldName);
+        }
+
+        protected bool ApplyUpdateTimestamp(
+            IEntity<TKeyDependent> entity,
+            DateTime originalCreatedAtUtc,
+            DateTime originalUpdatedAtUtc,
+            bool relatedEntityChanged = false)
+        {
+            _appDbContext.ChangeTracker.DetectChanges();
+            var entry = _appDbContext.Entry(entity);
+            var hasMeaningfulChanges = relatedEntityChanged || entry.Properties.Any(
+                property => property.IsModified &&
+                    property.Metadata.Name is not nameof(ICreatedAtUtc.CreatedAtUtc) and
+                    not nameof(IUpdatedAtUtc.UpdatedAtUtc));
+
+            _timestampPolicy.ApplyUpdate(
+                entity,
+                originalCreatedAtUtc,
+                originalUpdatedAtUtc,
+                hasMeaningfulChanges);
+
+            entry.Property(nameof(ICreatedAtUtc.CreatedAtUtc)).IsModified = false;
+            entry.Property(nameof(IUpdatedAtUtc.UpdatedAtUtc)).IsModified = hasMeaningfulChanges;
+
+            return hasMeaningfulChanges;
         }
 
     }

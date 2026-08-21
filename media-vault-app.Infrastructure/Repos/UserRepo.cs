@@ -7,6 +7,7 @@ using Microsoft.Data.Sqlite;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
 using media_vault_app.Infrastructure.Diagnostics;
+using media_vault_app.Infrastructure.Timestamps;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -14,8 +15,9 @@ namespace media_vault_app.Infrastructure.Repos
     {
         public UserRepo(
             AppDbContext appDbContext,
-            ErrorEventLogger<RepoBase<User, Guid>> errorEventLogger)
-            : base(appDbContext, errorEventLogger)
+            ErrorEventLogger<RepoBase<User, Guid>> errorEventLogger,
+            ServerTimestampPolicy? timestampPolicy = null)
+            : base(appDbContext, errorEventLogger, timestampPolicy)
         {
         }
 
@@ -25,6 +27,7 @@ namespace media_vault_app.Infrastructure.Repos
 
             try
             {
+                _timestampPolicy.Initialize(entity);
                 _dbSet.Add(entity);
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
@@ -137,7 +140,7 @@ namespace media_vault_app.Infrastructure.Repos
 
                 user.Username = UserIdentifierCanonicalizer.CanonicalizeUsername(username);
                 user.Email = UserIdentifierCanonicalizer.CanonicalizeEmail(email);
-                user.UpdatedAtUtc = DateTime.UtcNow;
+                ApplyUpdateTimestamp(user, user.CreatedAtUtc, user.UpdatedAtUtc);
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();

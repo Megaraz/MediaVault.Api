@@ -18,4 +18,5 @@ public abstract record MediaEntryDetailedDto : IDtoIdentifiable<Guid>
     public string? ImageUrl { get; init; }
     public abstract MediaType MediaType { get; }
     public DateTime CreatedAtUtc { get; init; }
+    public DateTime UpdatedAtUtc { get; init; }
 }
