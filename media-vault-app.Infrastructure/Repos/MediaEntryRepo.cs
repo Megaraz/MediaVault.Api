@@ -52,7 +52,11 @@ namespace media_vault_app.Infrastructure.Repos
 
         // Override to update a GameEntry in-place, including its PcRequirements value object.
         // The base SetValues() only copies scalars and silently ignores PcRequirements.
-        private async Task<Result> UpdateGameAsync(Guid ownerId, GameEntry updatedGame, CancellationToken ct)
+        private async Task<Result> UpdateGameAsync(
+            Guid ownerId,
+            GameEntry updatedGame,
+            int expectedVersion,
+            CancellationToken ct)
         {
             var baseErrorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
 
@@ -65,10 +69,17 @@ namespace media_vault_app.Infrastructure.Repos
                 if (existing is null)
                     return Result.Failure(MediaVaultErrors.NotFound(baseErrorContext));
 
+                if (existing.Version != expectedVersion)
+                    return LogAndFail(
+                        DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext),
+                        baseErrorContext,
+                        nameof(UpdateAsync));
+
                 var createdAt = existing.CreatedAtUtc;
                 var updatedAt = existing.UpdatedAtUtc;
                 ApplyGameProperties(existing, updatedGame);
-                ApplyUpdateTimestamp(existing, createdAt, updatedAt);
+                var hasMeaningfulChanges = ApplyUpdateTimestamp(existing, createdAt, updatedAt);
+                ApplyConcurrencyVersion(existing, expectedVersion, hasMeaningfulChanges);
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
@@ -120,10 +131,15 @@ namespace media_vault_app.Infrastructure.Repos
         }
 
         // Override to update a TvSeriesEntry in-place, including merging its Seasons.
-        public override async Task<Result> UpdateAsync(Guid ownerId, MediaEntry updatedEntity, CancellationToken ct = default)
+        public override async Task<Result> UpdateAsync(
+            Guid ownerId,
+            MediaEntry updatedEntity,
+            CancellationToken ct = default)
         {
+            var expectedVersion = updatedEntity.Version;
+
             if (updatedEntity is GameEntry updatedGame)
-                return await UpdateGameAsync(ownerId, updatedGame, ct);
+                return await UpdateGameAsync(ownerId, updatedGame, expectedVersion, ct);
 
             if (updatedEntity is not TvSeriesEntry updatedTvSeries)
                 return await base.UpdateAsync(ownerId, updatedEntity, ct);
@@ -140,11 +156,21 @@ namespace media_vault_app.Infrastructure.Repos
                 if (existing is null)
                     return Result.Failure(MediaVaultErrors.NotFound(baseErrorContext));
 
+                if (existing.Version != expectedVersion)
+                    return LogAndFail(
+                        DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext),
+                        baseErrorContext);
+
                 var createdAt = existing.CreatedAtUtc;
                 var updatedAt = existing.UpdatedAtUtc;
                 ApplyTvSeriesProperties(existing, updatedTvSeries);
                 var seasonsChanged = MergeSeasons(existing, updatedTvSeries.Seasons);
-                ApplyUpdateTimestamp(existing, createdAt, updatedAt, seasonsChanged);
+                var hasMeaningfulChanges = ApplyUpdateTimestamp(
+                    existing,
+                    createdAt,
+                    updatedAt,
+                    seasonsChanged);
+                ApplyConcurrencyVersion(existing, expectedVersion, hasMeaningfulChanges);
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
@@ -318,7 +344,8 @@ namespace media_vault_app.Infrastructure.Repos
                 MediaType = mediaEntry.MediaType,
                 Status = mediaEntry.Status,
                 CreatedAtUtc = mediaEntry.CreatedAtUtc,
-                UpdatedAtUtc = mediaEntry.UpdatedAtUtc
+                UpdatedAtUtc = mediaEntry.UpdatedAtUtc,
+                Version = mediaEntry.Version
             };
     }
 }

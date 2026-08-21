@@ -13,7 +13,8 @@ namespace media_vault_app.Application.Mappers.User
                 UserIdentifierCanonicalizer.CanonicalizeUsername(entity.Username),
                 UserIdentifierCanonicalizer.CanonicalizeEmail(entity.Email),
                 entity.CreatedAtUtc,
-                entity.UpdatedAtUtc);
+                entity.UpdatedAtUtc,
+                entity.Version);
 
         public IReadOnlyList<UserDetailedDto> ToDetailedDtoCollection(IEnumerable<UserEntity> entities) =>
             entities.Select(ToDetailedDto).ToList();

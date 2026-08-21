@@ -34,22 +34,37 @@ namespace media_vault_app.API.Controllers
         /// or the appropriate error response on failure.
         /// </summary>
         public static ActionResult<TValue> ToActionResult<TValue>(this ControllerBase c, Result<TValue> result)
-            where TValue : notnull =>
-            PackageMvcMapper.ToActionResult(c, result, MediaVaultHttpResultMappingPolicy);
+            where TValue : notnull
+        {
+            if (IsConcurrencyConflict(result))
+                return c.StatusCode(StatusCodes.Status409Conflict, CreateFailureBody(result));
+
+            return PackageMvcMapper.ToActionResult(c, result, MediaVaultHttpResultMappingPolicy);
+        }
 
         /// <summary>
         /// Maps a <see cref="Result"/> to a 200 OK <see cref="IActionResult"/> on success,
         /// or the appropriate error response on failure.
         /// </summary>
-        public static IActionResult ToActionResult(this ControllerBase c, Result result) =>
-            PackageMvcMapper.ToActionResult(c, result, MediaVaultHttpResultMappingPolicy);
+        public static IActionResult ToActionResult(this ControllerBase c, Result result)
+        {
+            if (IsConcurrencyConflict(result))
+                return c.StatusCode(StatusCodes.Status409Conflict, CreateFailureBody(result));
+
+            return PackageMvcMapper.ToActionResult(c, result, MediaVaultHttpResultMappingPolicy);
+        }
 
         /// <summary>
         /// Maps a <see cref="Result"/> to a 204 No Content <see cref="IActionResult"/> on success,
         /// or the appropriate error response on failure.
         /// </summary>
-        public static IActionResult ToNoContentResult(this ControllerBase c, Result result) =>
-            PackageMvcMapper.ToNoContentResult(c, result, MediaVaultHttpResultMappingPolicy);
+        public static IActionResult ToNoContentResult(this ControllerBase c, Result result)
+        {
+            if (IsConcurrencyConflict(result))
+                return c.StatusCode(StatusCodes.Status409Conflict, CreateFailureBody(result));
+
+            return PackageMvcMapper.ToNoContentResult(c, result, MediaVaultHttpResultMappingPolicy);
+        }
 
         /// <summary>
         /// Maps a <see cref="Result{TValue}"/> to a 201 Created response on success using ASP.NET's
@@ -61,12 +76,23 @@ namespace media_vault_app.API.Controllers
             string actionName,
             Func<TValue, object> routeValuesFactory)
             where TValue : notnull
-            => PackageMvcMapper.ToCreatedResult(
+        {
+            if (IsConcurrencyConflict(result))
+                return c.StatusCode(StatusCodes.Status409Conflict, CreateFailureBody(result));
+
+            return PackageMvcMapper.ToCreatedResult(
                 c,
                 result,
                 actionName,
                 routeValuesFactory,
                 MediaVaultHttpResultMappingPolicy);
+        }
+
+        private static bool IsConcurrencyConflict(Result result) =>
+            result.IsFailure &&
+            result.PrimaryError.Code.EndsWith(
+                ".DatabaseConcurrencyFailure",
+                StringComparison.Ordinal);
 
         private static object CreateFailureBody(Result result)
         {

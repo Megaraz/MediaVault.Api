@@ -33,7 +33,8 @@ public static class UserIdentifierCanonicalizer
         new()
         {
             UserName = CanonicalizeUsername(dto.UserName),
-            Email = CanonicalizeEmail(dto.Email)
+            Email = CanonicalizeEmail(dto.Email),
+            ExpectedVersion = dto.ExpectedVersion
         };
 
     private static string Canonicalize(string? value) =>

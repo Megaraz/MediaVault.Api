@@ -13,6 +13,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var validator = new UserDtoValidator();
             var dto = new UserUpdateDto
             {
+                ExpectedVersion = 1,
                 UserName = "updated-user",
                 Email = "updated@example.com"
             };
@@ -29,6 +30,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var validator = new UserDtoValidator();
             var dto = new UserUpdateDto
             {
+                ExpectedVersion = 1,
                 UserName = new string('u', MediaVaultWriteValidationPolicy.UserNameMaxLength + 1),
                 Email = "updated@example.com"
             };
@@ -45,6 +47,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var validator = new UserDtoValidator();
             var dto = new UserUpdateDto
             {
+                ExpectedVersion = 1,
                 UserName = "updated-user",
                 Email = "not-an-email"
             };
@@ -71,6 +74,24 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             Assert.Equal(ValidationErrorType.Required, error.ValidationErrorType);
         }
 
+        [Fact]
+        public void IsValidUpdateDto_Should_RejectMissingExpectedVersion()
+        {
+            var validator = new UserDtoValidator();
+            var dto = new UserUpdateDto
+            {
+                UserName = "updated-user",
+                Email = "updated@example.com"
+            };
+
+            var result = validator.IsValidUpdateDto(dto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            var error = Assert.Single(errors);
+            Assert.Equal(nameof(UserUpdateDto.ExpectedVersion), error.FieldName);
+            Assert.Equal(ValidationErrorType.OutOfRange, error.ValidationErrorType);
+        }
+
         [Theory]
         [InlineData("", "updated@example.com")]
         [InlineData("   ", "updated@example.com")]
@@ -83,6 +104,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var validator = new UserDtoValidator();
             var dto = new UserUpdateDto
             {
+                ExpectedVersion = 1,
                 UserName = userName!,
                 Email = email!
             };
@@ -101,6 +123,7 @@ namespace media_vault_app.Tests.UserDtoValidator_Tests
             var validator = new UserDtoValidator();
             var dto = new UserUpdateDto
             {
+                ExpectedVersion = 1,
                 UserName = "",
                 Email = " "
             };

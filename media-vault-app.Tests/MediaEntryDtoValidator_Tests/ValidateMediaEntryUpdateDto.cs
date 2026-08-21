@@ -54,6 +54,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
 
             var mediaEntryDto = new MovieEntryUpdateDto
             {
+                ExpectedVersion = 1,
                 IdExternal = null,
                 Status = Status.Completed,
                 Title = "Test Media Entry",
@@ -79,6 +80,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
             var validator = new MediaEntryDtoValidator();
             var dto = new MovieEntryUpdateDto
             {
+                ExpectedVersion = 1,
                 Title = "Test Movie",
                 Rating = 5.1m,
                 RuntimeMinutes = 120
@@ -88,6 +90,25 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
 
             Assert.False(result);
             Assert.Contains(errors, error => error.ValidationErrorType == ValidationErrorType.OutOfRange);
+        }
+
+        [Fact]
+        public void IsValidUpdateDto_Should_RejectMissingExpectedVersion()
+        {
+            var validator = new MediaEntryDtoValidator();
+            var dto = new MovieEntryUpdateDto
+            {
+                Title = "Test Movie",
+                Rating = 4m,
+                RuntimeMinutes = 120
+            };
+
+            var result = validator.IsValidUpdateDto(dto, DefineErrorContext(), out var errors);
+
+            Assert.False(result);
+            var error = Assert.Single(errors);
+            Assert.Equal(nameof(MediaEntryUpdateDto.ExpectedVersion), error.FieldName);
+            Assert.Equal(ValidationErrorType.OutOfRange, error.ValidationErrorType);
         }
 
         [Theory]
@@ -102,6 +123,7 @@ namespace media_vault_app.Tests.MediaEntryDtoValidator_Tests
 
             var mediaEntryDto = new MovieEntryUpdateDto
             {
+                ExpectedVersion = 1,
                 IdExternal = null,
                 Status = Status.Completed,
                 Title = value!,

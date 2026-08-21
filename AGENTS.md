@@ -47,7 +47,7 @@ Revalidate this map before architectural work:
 
 The backend currently targets .NET 10 and EF Core with SQLite. External metadata comes through backend integrations for RAWG, TMDB, and Google Books. Exact versions and behavior must still be verified from code.
 
-The following are directions, not claims about current implementation: explicit timeout/retry/rate-limit policies, React Query, offline mobile synchronization, Sentry or another production telemetry backend, production deployment, and AI recommendations. The global exception boundary, vendor-neutral OpenTelemetry baseline, local Aspire AppHost orchestration in the `Megaraz/MediaVault` workspace, and the optional standalone Aspire Dashboard workflow are implemented.
+The following are directions, not claims about current implementation: explicit timeout/retry/rate-limit policies, React Query, offline mobile synchronization, Sentry or another production telemetry backend, production deployment, and AI recommendations. The global exception boundary, vendor-neutral OpenTelemetry baseline, local Aspire AppHost orchestration in the `Megaraz/MediaVault` workspace, optional standalone Aspire Dashboard workflow, and SQLite-compatible optimistic concurrency for profile/media writes are implemented.
 
 ## Architecture rules
 
@@ -97,6 +97,7 @@ Any public API change must consider status codes, headers, response body, error 
 ## Data and SQLite
 
 - EF Core migrations are the schema history. Change the model and add a reviewed migration; do not hand-edit the database as a substitute.
+- User profiles and media aggregates use a server-owned integer `Version` concurrency token. Responses expose `version`; protected PUT bodies submit `expectedVersion`; media DELETE submits the required `expectedVersion` query parameter. Preserve the safe 409 contract, increment the media aggregate version for owned-season changes, and never substitute `UpdatedAtUtc`, automatic retry, merge, or last-write-wins behavior.
 - Preserve the `MediaEntry` inheritance model and discriminator deliberately. Changes to TPH mapping, ownership, delete behavior, indexes, or the `Rating` value object require migration and data-compatibility review.
 - Treat checked-in or local `.db`, `.db-wal`, and `.db-shm` files as potentially stateful runtime data. Do not overwrite, delete, regenerate, or stage them unless the task explicitly requires it and their role has been verified.
 - Never solve Android synchronization by copying or sharing the backend SQLite file.

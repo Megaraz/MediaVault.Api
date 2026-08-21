@@ -11,5 +11,6 @@ namespace media_vault_app.Domain.Entities
         public ICollection<MediaEntry> MediaEntries { get; set; } = new List<MediaEntry>();
         public DateTime CreatedAtUtc { get; set; }
         public DateTime UpdatedAtUtc { get; set; }
+        public int Version { get; set; } = 1;
     }
 }

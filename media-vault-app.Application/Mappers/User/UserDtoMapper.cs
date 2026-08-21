@@ -22,7 +22,8 @@ namespace media_vault_app.Application.Mappers.User
             {
                 Id = detailedDto.Id,
                 Username = UserIdentifierCanonicalizer.CanonicalizeUsername(detailedDto.Username),
-                Email = UserIdentifierCanonicalizer.CanonicalizeEmail(detailedDto.Email)
+                Email = UserIdentifierCanonicalizer.CanonicalizeEmail(detailedDto.Email),
+                Version = detailedDto.Version
             };
 
         public IEnumerable<UserEntity> ToEntities(IEnumerable<UserDetailedDto> detailedDtos) =>
@@ -33,7 +34,8 @@ namespace media_vault_app.Application.Mappers.User
             {
                 Id = id,
                 Username = UserIdentifierCanonicalizer.CanonicalizeUsername(updateDto.UserName),
-                Email = UserIdentifierCanonicalizer.CanonicalizeEmail(updateDto.Email)
+                Email = UserIdentifierCanonicalizer.CanonicalizeEmail(updateDto.Email),
+                Version = updateDto.ExpectedVersion
             };
     }
 }

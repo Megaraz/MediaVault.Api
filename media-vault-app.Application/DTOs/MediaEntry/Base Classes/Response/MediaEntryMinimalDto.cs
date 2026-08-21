@@ -15,4 +15,5 @@ public record MediaEntryMinimalDto : IDtoIdentifiable<Guid>
     public string? ImageUrl { get; init; }
     public DateTime CreatedAtUtc { get; init; }
     public DateTime UpdatedAtUtc { get; init; }
+    public int Version { get; init; }
 }

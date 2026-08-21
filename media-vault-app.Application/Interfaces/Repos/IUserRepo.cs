@@ -9,7 +9,12 @@ namespace media_vault_app.Application.Interfaces.Repos
         Task<Result> RegisterUserAsync(User entity, CancellationToken ct = default);
         Task<Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>> CheckRegistrationAvailabilityAsync(string username, string email, CancellationToken ct = default);
         Task<Result<(bool IsUserNameAvailable, bool IsEmailAvailable)>> CheckProfileUpdateAvailabilityAsync(Guid userId, string username, string email, CancellationToken ct = default);
-        Task<Result> UpdateProfileAsync(Guid userId, string username, string email, CancellationToken ct = default);
+        Task<Result> UpdateProfileAsync(
+            Guid userId,
+            string username,
+            string email,
+            int expectedVersion,
+            CancellationToken ct = default);
         Task<Result<User>> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken ct = default);
     }
 }

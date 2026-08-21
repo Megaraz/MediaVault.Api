@@ -4,6 +4,8 @@ namespace media_vault_app.Application.DTOs.MediaEntry.Request;
 
 public abstract record MediaEntryUpdateDto
 {
+    [System.ComponentModel.DataAnnotations.Required]
+    public int ExpectedVersion { get; init; }
     public string? IdExternal { get; init; }
     public Status Status { get; init; }
     public required string Title { get; init; }

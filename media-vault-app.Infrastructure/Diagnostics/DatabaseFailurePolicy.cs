@@ -1,5 +1,6 @@
 using Megaraz.ResultPattern;
 using Megaraz.ResultPattern.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace media_vault_app.Infrastructure.Diagnostics;
 
@@ -22,6 +23,11 @@ internal static class DatabaseFailurePolicy
             context,
             exception,
             $"A concurrency conflict occurred while processing {context.EntityName}. The entity was modified or deleted by another process.");
+
+    public static DatabaseError ConcurrencyFailure(ErrorContext context) =>
+        ConcurrencyFailure(
+            context,
+            new DbUpdateConcurrencyException("The submitted entity version is stale."));
 
     public static DatabaseError UnexpectedFailure(ErrorContext context, Exception exception) =>
         DatabaseError.UnexpectedFailure(

@@ -119,7 +119,12 @@ namespace media_vault_app.Application.Services.User
                         !availabilityResult.Value.IsEmailAvailable));
             }
 
-            return await _userRepo.UpdateProfileAsync(userId, username, email, ct);
+            return await _userRepo.UpdateProfileAsync(
+                userId,
+                username,
+                email,
+                canonicalUpdateDto.ExpectedVersion,
+                ct);
         }
 
         private static string ProfileAvailabilityMessage(bool usernameUnavailable, bool emailUnavailable) =>

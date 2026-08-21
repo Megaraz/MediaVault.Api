@@ -23,6 +23,7 @@ namespace media_vault_app.Domain.Entities
         public MediaType MediaType { get; protected set; }
         public DateTime CreatedAtUtc { get; set; }
         public DateTime UpdatedAtUtc { get; set; }
+        public int Version { get; set; } = 1;
 
         protected MediaEntry()
         {

@@ -35,6 +35,26 @@ public class ResultResponseMapperTests
     }
 
     [Fact]
+    public void ToNoContentResult_MapsDatabaseConcurrencyFailureToSafe409Body()
+    {
+        var error = PackageDatabaseError.ConcurrencyFailure(
+            Context,
+            new InvalidOperationException("private database detail"),
+            "The resource changed after it was read.");
+
+        var action = ResultResponseMapper.ToNoContentResult(
+            new TestController(),
+            Result.Failure(error));
+
+        var result = Assert.IsType<ObjectResult>(action);
+        Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
+        var body = Assert.IsType<ErrorResponseBody>(result.Value);
+        Assert.Equal(error.Code, body.Code);
+        Assert.Equal("The resource changed after it was read.", body.Message);
+        Assert.DoesNotContain("private database detail", body.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ToCreatedResult_PreservesCreatedAtActionRouteValuesBodyAndLocation()
     {
         var action = ResultResponseMapper.ToCreatedResult(

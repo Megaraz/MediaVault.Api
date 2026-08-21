@@ -7,6 +7,7 @@ namespace media_vault_app.Application.DTOs.User.Response
         string Username,
         string Email,
         DateTime CreatedAtUtc,
-        DateTime UpdatedAtUtc) : IDtoIdentifiable<Guid>;
+        DateTime UpdatedAtUtc,
+        int Version) : IDtoIdentifiable<Guid>;
 
 }
