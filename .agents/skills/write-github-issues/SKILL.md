@@ -38,6 +38,11 @@ Use `.github/ISSUE_TEMPLATE/implementation.md` as the canonical structure.
 - Address contract, security/data, documentation, and verification expectations explicitly. If one does not apply, say why rather than inventing work.
 - Put exact commands and meaningful manual flows in **Verification**.
 - Put unresolved decisions in **Risks and open questions**. If a decision materially changes scope, resolve it before marking the issue ready for implementation.
+- Include a **Recommended Codex configuration** section in every implementation issue:
+  - Default to model `gpt-5.6-sol` with reasoning effort `medium` as the balanced starting configuration.
+  - Select the model tier for the issue: `gpt-5.6-sol` for complex professional work and frontier capability, `gpt-5.6-terra` when balancing intelligence and cost, or `gpt-5.6-luna` for tightly scoped, cost-sensitive, or high-volume work.
+  - Select reasoning effort independently. Start at `medium`; use `low` for latency-sensitive routine work, `high` or `xhigh` when the issue's complexity or risk benefits from deeper reasoning, and `max` only for the hardest quality-first work.
+  - Give a one-sentence rationale tied to the issue's actual scope, including why the selected model tier and effort are appropriate. Do not recommend a model outside the GPT-5.6 family.
 
 Do not prescribe an implementation unless an existing decision or boundary requires it. Preserve room for the implementer to choose the smallest correct approach.
 
