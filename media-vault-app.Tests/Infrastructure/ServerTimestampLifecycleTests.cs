@@ -236,8 +236,8 @@ public sealed class ServerTimestampLifecycleTests
     private static UserRepo CreateUserRepo(AppDbContext context, ILoggerFactory loggerFactory, TimeProvider clock) =>
         new(
             context,
-            new ErrorEventLogger<RepoBase<User, Guid>>(
-                loggerFactory.CreateLogger<RepoBase<User, Guid>>(),
+            new ErrorEventLogger<UserRepo>(
+                loggerFactory.CreateLogger<UserRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)),
             new ServerTimestampPolicy(clock));

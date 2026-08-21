@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using media_vault_app.Application.Interfaces.Repos;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapDtoToEntity.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
@@ -29,7 +30,7 @@ namespace media_vault_app.Application.Services.Base_Classes
     {
 
         protected readonly IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent> _dependentEntityRepo;
-        protected readonly IRepo<TEntityOwner, TKeyOwner> _ownerRepo;
+        protected readonly IEntityExistsRepo<TKeyOwner> _ownerRepo;
         protected readonly IMapEntityToDetailedDto<TEntityDependent, TDetailedDto> _entityToDtoMapper;
         protected readonly IMapDtoToEntity<TEntityDependent, TDetailedDto, TCreateDto, TUpdateDto, TKeyDependent> _dtoToEntityMapper;
         protected readonly IDtoValidator<TKeyDependent, TCreateDto, TUpdateDto> _dtoValidator;
@@ -37,7 +38,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
         protected DependentEntityWriteServiceBase(
             IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent> dependentEntityRepo,
-            IRepo<TEntityOwner, TKeyOwner> ownerRepo,
+            IEntityExistsRepo<TKeyOwner> ownerRepo,
             IMapEntityToDetailedDto<TEntityDependent, TDetailedDto> entityToDtoMapper,
             IMapDtoToEntity<TEntityDependent, TDetailedDto, TCreateDto, TUpdateDto, TKeyDependent> dtoToEntityMapper,
             IDtoValidator<TKeyDependent, TCreateDto, TUpdateDto> dtoValidator,

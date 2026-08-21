@@ -176,8 +176,8 @@ public sealed class DatabaseAndLoggingTests
                 new ErrorDiagnosticsOptions(false)));
         var userRepo = new UserRepo(
             queryContext,
-            new ErrorEventLogger<RepoBase<User, Guid>>(
-                loggerFactory.CreateLogger<RepoBase<User, Guid>>(),
+            new ErrorEventLogger<UserRepo>(
+                loggerFactory.CreateLogger<UserRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)));
         var readService = new MediaEntryReadService(
@@ -264,8 +264,8 @@ public sealed class DatabaseAndLoggingTests
             .AddProvider(provider));
         var userRepository = new UserRepo(
             dbContext,
-            new ErrorEventLogger<RepoBase<User, Guid>>(
-                factory.CreateLogger<RepoBase<User, Guid>>(),
+            new ErrorEventLogger<UserRepo>(
+                factory.CreateLogger<UserRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)));
         var mediaEntryRepository = new MediaEntryRepo(

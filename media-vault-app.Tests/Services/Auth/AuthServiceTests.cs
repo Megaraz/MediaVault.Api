@@ -1,5 +1,4 @@
 using media_vault_app.Application.DTOs.User.Request;
-using media_vault_app.Application.Mappers.User;
 using media_vault_app.Application.Services.Auth;
 using media_vault_app.Application.Validators.User;
 using media_vault_app.Tests.TestHelpers;
@@ -242,8 +241,6 @@ namespace media_vault_app.Tests.Services.Auth
             return new AuthService(
                 userRepo,
                 passwordHasher,
-                new UserEntityMapper(),
-                new UserDtoMapper(),
                 new UserDtoValidator(),
                 ServiceTestLogger.Create<AuthService>());
         }
