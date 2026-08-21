@@ -34,14 +34,14 @@ namespace media_vault_app.API.Controllers
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
-        public async Task<ActionResult<MediaEntryDetailedDto>> CreateMovie(
+        public async Task<ActionResult<MovieEntryDetailedDto>> CreateMovie(
             [FromBody] MovieEntryCreateDto createDto,
             CancellationToken ct)
         {
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.CreateAsync(userId, createDto, ct);
+            var result = await _writeService.CreateMovieAsync(userId, createDto, ct);
 
             return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
@@ -52,14 +52,14 @@ namespace media_vault_app.API.Controllers
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
-        public async Task<ActionResult<MediaEntryDetailedDto>> CreateTvSeries(
+        public async Task<ActionResult<TvSeriesEntryDetailedDto>> CreateTvSeries(
             [FromBody] TvSeriesEntryCreateDto createDto,
             CancellationToken ct)
         {
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.CreateAsync(userId, createDto, ct);
+            var result = await _writeService.CreateTvSeriesAsync(userId, createDto, ct);
 
             return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
@@ -70,14 +70,14 @@ namespace media_vault_app.API.Controllers
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
-        public async Task<ActionResult<MediaEntryDetailedDto>> CreateGame(
+        public async Task<ActionResult<GameEntryDetailedDto>> CreateGame(
             [FromBody] GameEntryCreateDto createDto,
             CancellationToken ct)
         {
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.CreateAsync(userId, createDto, ct);
+            var result = await _writeService.CreateGameAsync(userId, createDto, ct);
 
             return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
@@ -88,14 +88,14 @@ namespace media_vault_app.API.Controllers
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
-        public async Task<ActionResult<MediaEntryDetailedDto>> CreateBook(
+        public async Task<ActionResult<BookEntryDetailedDto>> CreateBook(
             [FromBody] BookEntryCreateDto createDto,
             CancellationToken ct)
         {
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.CreateAsync(userId, createDto, ct);
+            var result = await _writeService.CreateBookAsync(userId, createDto, ct);
 
             return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
@@ -106,14 +106,14 @@ namespace media_vault_app.API.Controllers
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ErrorResponseBody), StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(typeof(MediaEntryDetailedDto), StatusCodes.Status201Created)]
-        public async Task<ActionResult<MediaEntryDetailedDto>> CreateManga(
+        public async Task<ActionResult<MangaEntryDetailedDto>> CreateManga(
             [FromBody] MangaEntryCreateDto createDto,
             CancellationToken ct)
         {
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.CreateAsync(userId, createDto, ct);
+            var result = await _writeService.CreateMangaAsync(userId, createDto, ct);
 
             return this.ToCreatedResult(result, nameof(GetMediaEntryById), value => new { id = value.Id });
         }
@@ -136,7 +136,7 @@ namespace media_vault_app.API.Controllers
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+            var result = await _writeService.UpdateMovieAsync(userId, id, updateDto, ct);
 
             return this.ToNoContentResult(result);
         }
@@ -155,7 +155,7 @@ namespace media_vault_app.API.Controllers
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+            var result = await _writeService.UpdateTvSeriesAsync(userId, id, updateDto, ct);
 
             return this.ToNoContentResult(result);
         }
@@ -174,7 +174,7 @@ namespace media_vault_app.API.Controllers
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+            var result = await _writeService.UpdateGameAsync(userId, id, updateDto, ct);
 
             return this.ToNoContentResult(result);
         }
@@ -193,7 +193,7 @@ namespace media_vault_app.API.Controllers
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+            var result = await _writeService.UpdateBookAsync(userId, id, updateDto, ct);
 
             return this.ToNoContentResult(result);
         }
@@ -212,7 +212,7 @@ namespace media_vault_app.API.Controllers
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.UpdateAsync(userId, id, updateDto, ct);
+            var result = await _writeService.UpdateMangaAsync(userId, id, updateDto, ct);
 
             return this.ToNoContentResult(result);
         }

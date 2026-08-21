@@ -20,7 +20,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var ownerRepo = new FakeUserRepo();
             var service = CreateService(mediaRepo, ownerRepo);
 
-            var result = await service.CreateAsync(Guid.Empty, new MovieEntryCreateDto { Title = "", Status = Status.Completed }, CancellationToken.None);
+            var result = await service.CreateMovieAsync(Guid.Empty, new MovieEntryCreateDto { Title = "", Status = Status.Completed }, CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
@@ -41,7 +41,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
                 Rating = 4.25m
             };
 
-            var result = await service.CreateAsync(Guid.NewGuid(), dto, CancellationToken.None);
+            var result = await service.CreateMovieAsync(Guid.NewGuid(), dto, CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
@@ -61,7 +61,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var mediaRepo = new FakeMediaEntryRepo();
             var service = CreateService(mediaRepo, ownerRepo);
 
-            var result = await service.CreateAsync(Guid.NewGuid(), CreateMovieCreateDto(), CancellationToken.None);
+            var result = await service.CreateMovieAsync(Guid.NewGuid(), CreateMovieCreateDto(), CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(expectedError, result.PrimaryError);
@@ -80,7 +80,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
 
             var service = CreateService(mediaRepo, new FakeUserRepo());
 
-            var result = await service.CreateAsync(ownerId, CreateMovieCreateDto(title: "Created Movie"), CancellationToken.None);
+            var result = await service.CreateMovieAsync(ownerId, CreateMovieCreateDto(title: "Created Movie"), CancellationToken.None);
 
             Assert.True(result.IsSuccess);
             Assert.NotNull(mediaRepo.CreatedEntity);
@@ -94,7 +94,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
         {
             var service = CreateService(new FakeMediaEntryRepo(), new FakeUserRepo());
 
-            var result = await service.UpdateAsync(Guid.Empty, Guid.Empty, new MovieEntryUpdateDto { ExpectedVersion = 1, Title = "", Status = Status.Completed }, CancellationToken.None);
+            var result = await service.UpdateMovieAsync(Guid.Empty, Guid.Empty, new MovieEntryUpdateDto { ExpectedVersion = 1, Title = "", Status = Status.Completed }, CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
@@ -113,7 +113,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var mediaRepo = new FakeMediaEntryRepo();
             var service = CreateService(mediaRepo, ownerRepo);
 
-            var result = await service.UpdateAsync(Guid.NewGuid(), Guid.NewGuid(), CreateMovieUpdateDto(), CancellationToken.None);
+            var result = await service.UpdateMovieAsync(Guid.NewGuid(), Guid.NewGuid(), CreateMovieUpdateDto(), CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(expectedError, result.PrimaryError);
@@ -128,7 +128,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var mediaRepo = new FakeMediaEntryRepo();
             var service = CreateService(mediaRepo, new FakeUserRepo());
 
-            var result = await service.UpdateAsync(ownerId, entryId, CreateMovieUpdateDto(title: "Updated Movie"), CancellationToken.None);
+            var result = await service.UpdateMovieAsync(ownerId, entryId, CreateMovieUpdateDto(title: "Updated Movie"), CancellationToken.None);
 
             Assert.True(result.IsSuccess);
             Assert.NotNull(mediaRepo.UpdatedEntity);
@@ -178,8 +178,6 @@ namespace media_vault_app.Tests.Services.MediaEntry
             return new MediaEntryWriteService(
                 mediaRepo,
                 ownerRepo,
-                new MediaEntryEntityMapper(),
-                new MediaEntryDtoMapper(),
                 new MediaEntryDtoValidator(),
                 ServiceTestLogger.Create<MediaEntryWriteService>());
         }

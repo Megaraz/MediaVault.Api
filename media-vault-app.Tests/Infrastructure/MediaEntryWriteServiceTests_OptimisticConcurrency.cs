@@ -38,7 +38,7 @@ public sealed class MediaEntryWriteServiceTests_OptimisticConcurrency
         using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
         await using (var firstWriteContext = new AppDbContext(options))
         {
-            var result = await CreateService(firstWriteContext, loggerFactory).UpdateAsync(
+            var result = await CreateService(firstWriteContext, loggerFactory).UpdateMovieAsync(
                 ownerId,
                 entryId,
                 CreateUpdateDto("First writer", firstReadVersion));
@@ -47,7 +47,7 @@ public sealed class MediaEntryWriteServiceTests_OptimisticConcurrency
 
         await using (var staleWriteContext = new AppDbContext(options))
         {
-            var result = await CreateService(staleWriteContext, loggerFactory).UpdateAsync(
+            var result = await CreateService(staleWriteContext, loggerFactory).UpdateMovieAsync(
                 ownerId,
                 entryId,
                 CreateUpdateDto("Stale writer", secondReadVersion));
@@ -103,7 +103,7 @@ public sealed class MediaEntryWriteServiceTests_OptimisticConcurrency
         cancellation.Cancel();
 
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            CreateService(updateContext, loggerFactory).UpdateAsync(
+            CreateService(updateContext, loggerFactory).UpdateMovieAsync(
                 ownerId,
                 entryId,
                 CreateUpdateDto("Cancelled writer", 1),
@@ -144,7 +144,7 @@ public sealed class MediaEntryWriteServiceTests_OptimisticConcurrency
         using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
         await using (var updateContext = new AppDbContext(options))
         {
-            var result = await CreateService(updateContext, loggerFactory).UpdateAsync(
+            var result = await CreateService(updateContext, loggerFactory).UpdateMovieAsync(
                 otherUserId,
                 entryId,
                 CreateUpdateDto("Cross-user writer", 1));
@@ -205,8 +205,8 @@ public sealed class MediaEntryWriteServiceTests_OptimisticConcurrency
     {
         var mediaRepo = new MediaEntryRepo(
             context,
-            new ErrorEventLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(
-                loggerFactory.CreateLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(),
+            new ErrorEventLogger<MediaEntryRepo>(
+                loggerFactory.CreateLogger<MediaEntryRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)));
         var userRepo = new UserRepo(
@@ -218,8 +218,6 @@ public sealed class MediaEntryWriteServiceTests_OptimisticConcurrency
         return new MediaEntryWriteService(
             mediaRepo,
             userRepo,
-            new MediaEntryEntityMapper(),
-            new MediaEntryDtoMapper(),
             new MediaEntryDtoValidator(),
             ServiceTestLogger.Create<MediaEntryWriteService>());
     }

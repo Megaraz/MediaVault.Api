@@ -124,8 +124,6 @@ namespace media_vault_app.Tests.TestHelpers
 
         public Result<MediaEntry> GetByIdResult { get; set; } = Result<MediaEntry>.Success(new MovieEntry());
 
-        public Result<IReadOnlyList<MediaEntry>> CollectionByOwnerIdResult { get; set; } = Result<IReadOnlyList<MediaEntry>>.Success(Array.Empty<MediaEntry>());
-
         public Result<IReadOnlyList<MediaEntryMinimalDto>> MinimalCollectionByOwnerIdResult { get; set; } = Result<IReadOnlyList<MediaEntryMinimalDto>>.Success(Array.Empty<MediaEntryMinimalDto>());
 
         public Result<IReadOnlyList<MediaEntryMinimalDto>> SearchMediaEntriesResult { get; set; } = Result<IReadOnlyList<MediaEntryMinimalDto>>.Success(Array.Empty<MediaEntryMinimalDto>());
@@ -137,8 +135,6 @@ namespace media_vault_app.Tests.TestHelpers
         public int CreateCallCount { get; private set; }
 
         public int GetByIdCallCount { get; private set; }
-
-        public int GetCollectionByOwnerIdCallCount { get; private set; }
 
         public int GetMinimalCollectionByOwnerIdCallCount { get; private set; }
 
@@ -182,19 +178,12 @@ namespace media_vault_app.Tests.TestHelpers
             return Task.FromResult(DeleteResult);
         }
 
-        public Task<Result<MediaEntry>> GetByIdAsync(Guid ownerId, Guid entityId, Func<IQueryable<MediaEntry>, IQueryable<MediaEntry>>? include = null, CancellationToken ct = default)
+        public Task<Result<MediaEntry>> GetDetailedByIdAsync(Guid ownerId, Guid entityId, CancellationToken ct = default)
         {
             GetByIdCallCount++;
             LastOwnerId = ownerId;
             LastDependentId = entityId;
             return Task.FromResult(GetByIdResult);
-        }
-
-        public Task<Result<IReadOnlyList<MediaEntry>>> GetCollectionByOwnerIdAsync(Guid ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
-        {
-            GetCollectionByOwnerIdCallCount++;
-            LastCollectionRequest = (ownerId, pageNumber, pageSize);
-            return Task.FromResult(CollectionByOwnerIdResult);
         }
 
         public Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(Guid ownerId, int pageNumber, int pageSize, CancellationToken ct = default)
@@ -204,10 +193,22 @@ namespace media_vault_app.Tests.TestHelpers
             return Task.FromResult(MinimalCollectionByOwnerIdResult);
         }
 
-        public Task<Result> UpdateAsync(
-            Guid ownerId,
-            MediaEntry updatedDependentEntity,
-            CancellationToken ct = default)
+        public Task<Result> UpdateMovieAsync(Guid ownerId, MovieEntry entity, CancellationToken ct = default) =>
+            RecordUpdate(ownerId, entity);
+
+        public Task<Result> UpdateTvSeriesAsync(Guid ownerId, TvSeriesEntry entity, CancellationToken ct = default) =>
+            RecordUpdate(ownerId, entity);
+
+        public Task<Result> UpdateGameAsync(Guid ownerId, GameEntry entity, CancellationToken ct = default) =>
+            RecordUpdate(ownerId, entity);
+
+        public Task<Result> UpdateBookAsync(Guid ownerId, BookEntry entity, CancellationToken ct = default) =>
+            RecordUpdate(ownerId, entity);
+
+        public Task<Result> UpdateMangaAsync(Guid ownerId, MangaEntry entity, CancellationToken ct = default) =>
+            RecordUpdate(ownerId, entity);
+
+        private Task<Result> RecordUpdate(Guid ownerId, MediaEntry updatedDependentEntity)
         {
             UpdateCallCount++;
             LastOwnerId = ownerId;

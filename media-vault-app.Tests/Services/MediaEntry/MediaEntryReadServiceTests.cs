@@ -70,9 +70,9 @@ namespace media_vault_app.Tests.Services.MediaEntry
         }
 
         [Fact]
-        public async Task GetDetailedCollectionByOwnerIdAsync_Should_ReturnOwnerFailure_When_OwnerDoesNotExist()
+        public async Task GetDetailedByIdAsync_Should_ReturnOwnerFailure_When_OwnerDoesNotExist()
         {
-            var expectedError = MediaVaultErrors.NotFound(DefineErrorContext("GetDetailedCollectionByOwnerIdAsync", OperationType.GetCollection));
+            var expectedError = MediaVaultErrors.NotFound(DefineErrorContext("GetDetailedByIdAsync", OperationType.Get));
             var ownerRepo = new FakeUserRepo
             {
                 ExistsResult = Result<bool>.Failure(expectedError, "Owner not found.")
@@ -81,11 +81,11 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var mediaRepo = new FakeMediaEntryRepo();
             var service = CreateService(mediaRepo, ownerRepo);
 
-            var result = await service.GetDetailedCollectionByOwnerIdAsync(Guid.NewGuid(), ct: CancellationToken.None);
+            var result = await service.GetDetailedByIdAsync(Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(expectedError, result.PrimaryError);
-            Assert.Equal(0, mediaRepo.GetCollectionByOwnerIdCallCount);
+            Assert.Equal(0, mediaRepo.GetByIdCallCount);
         }
 
         [Fact]
@@ -120,6 +120,21 @@ namespace media_vault_app.Tests.Services.MediaEntry
         }
 
         [Fact]
+        public async Task SearchMediaEntriesAsync_Should_ReturnValidationFailure_When_RequestIsNull()
+        {
+            var service = CreateService(new FakeMediaEntryRepo(), new FakeUserRepo());
+
+            var result = await service.SearchMediaEntriesAsync(
+                Guid.NewGuid(),
+                null!,
+                ct: CancellationToken.None);
+
+            Assert.True(result.IsFailure);
+            Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
+            Assert.Single(result.ValidationErrors);
+        }
+
+        [Fact]
         public async Task SearchMediaEntriesAsync_Should_NormalizePagination_And_Map_Results()
         {
             var ownerId = Guid.NewGuid();
@@ -139,7 +154,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
 
         private static MediaEntryReadService CreateService(FakeMediaEntryRepo mediaRepo, FakeUserRepo ownerRepo)
         {
-            return new MediaEntryReadService(mediaRepo, ownerRepo, new MediaEntryEntityMapper(), ServiceTestLogger.Create<MediaEntryReadService>());
+            return new MediaEntryReadService(mediaRepo, ownerRepo, ServiceTestLogger.Create<MediaEntryReadService>());
         }
 
         private static MovieEntryEntity CreateMovie(Guid? ownerId = null, Guid? id = null, string title = "Test Movie")
