@@ -233,19 +233,28 @@ namespace media_vault_app.API
 
             builder.Services.AddOpenApi();
 
+            builder.Services
+                .AddOptions<CorsOptions>()
+                .BindConfiguration(CorsOptions.SectionName)
+                .ValidateDataAnnotations()
+                .Validate(
+                    options => !builder.Environment.IsProduction() ||
+                        options.AllowedOrigins is { Length: > 0 },
+                    "Cors:AllowedOrigins must contain at least one origin in Production.")
+                .ValidateOnStart();
+
+            var corsOptions = builder.Configuration
+                .GetSection(CorsOptions.SectionName)
+                .Get<CorsOptions>() ?? new CorsOptions();
+
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", policy =>
+                options.AddPolicy(CorsOptions.PolicyName, policy =>
                 {
                     policy
-                        .WithOrigins(
-                            "http://localhost:3000",
-                            "http://localhost:5173",
-                            "http://localhost:8081",
-                            "http://192.168.0.12:8081")
+                        .WithOrigins(corsOptions.AllowedOrigins)
                         .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials();
+                        .AllowAnyHeader();
                 });
             });
 
@@ -319,7 +328,7 @@ namespace media_vault_app.API
                 SuppressDiagnosticsCallback = _ => true
             });
 
-            app.UseCors("AllowAll");
+            app.UseCors(CorsOptions.PolicyName);
 
             app.UseRouting();
             app.UseAuthentication();
