@@ -67,6 +67,16 @@ namespace media_vault_app.Infrastructure
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
+            modelBuilder.Entity<User>()
+                .Property(u => u.Version)
+                .IsConcurrencyToken()
+                .HasDefaultValue(1);
+
+            modelBuilder.Entity<MediaEntry>()
+                .Property(mediaEntry => mediaEntry.Version)
+                .IsConcurrencyToken()
+                .HasDefaultValue(1);
+
             // === GamePcRequirements as a complex value object (no separate table/FK) ===
             modelBuilder.Entity<GameEntry>()
                 .ComplexProperty<GamePcRequirements>(g => g.PcRequirements, b => b.HasDiscriminator());

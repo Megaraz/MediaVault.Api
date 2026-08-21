@@ -72,7 +72,7 @@ namespace media_vault_app.Tests.TestHelpers
 
         public (Guid UserId, string Username, string Email)? LastProfileUpdateAvailabilityRequest { get; private set; }
 
-        public (Guid UserId, string Username, string Email)? LastProfileUpdateRequest { get; private set; }
+        public (Guid UserId, string Username, string Email, int ExpectedVersion)? LastProfileUpdateRequest { get; private set; }
 
         public Task<Result<User>> CreateAsync(User entity, CancellationToken ct = default)
         {
@@ -137,10 +137,15 @@ namespace media_vault_app.Tests.TestHelpers
             return Task.FromResult(ProfileAvailabilityResult);
         }
 
-        public Task<Result> UpdateProfileAsync(Guid userId, string username, string email, CancellationToken ct = default)
+        public Task<Result> UpdateProfileAsync(
+            Guid userId,
+            string username,
+            string email,
+            int expectedVersion,
+            CancellationToken ct = default)
         {
             ProfileUpdateCallCount++;
-            LastProfileUpdateRequest = (userId, username, email);
+            LastProfileUpdateRequest = (userId, username, email, expectedVersion);
             return Task.FromResult(ProfileUpdateResult);
         }
 
@@ -190,6 +195,8 @@ namespace media_vault_app.Tests.TestHelpers
 
         public Guid? LastDependentId { get; private set; }
 
+        public int? LastExpectedVersion { get; private set; }
+
         public (Guid OwnerId, int PageNumber, int PageSize)? LastCollectionRequest { get; private set; }
 
         public (Guid OwnerId, string Query, int PageNumber, int PageSize)? LastSearchRequest { get; private set; }
@@ -201,11 +208,16 @@ namespace media_vault_app.Tests.TestHelpers
             return Task.FromResult(CreateResult);
         }
 
-        public Task<Result> DeleteAsync(Guid ownerId, Guid dependentEntityId, CancellationToken ct = default)
+        public Task<Result> DeleteAsync(
+            Guid ownerId,
+            Guid dependentEntityId,
+            int expectedVersion,
+            CancellationToken ct = default)
         {
             DeleteCallCount++;
             LastOwnerId = ownerId;
             LastDependentId = dependentEntityId;
+            LastExpectedVersion = expectedVersion;
             return Task.FromResult(DeleteResult);
         }
 
@@ -231,11 +243,15 @@ namespace media_vault_app.Tests.TestHelpers
             return Task.FromResult(MinimalCollectionByOwnerIdResult);
         }
 
-        public Task<Result> UpdateAsync(Guid ownerId, MediaEntry updatedDependentEntity, CancellationToken ct = default)
+        public Task<Result> UpdateAsync(
+            Guid ownerId,
+            MediaEntry updatedDependentEntity,
+            CancellationToken ct = default)
         {
             UpdateCallCount++;
             LastOwnerId = ownerId;
             UpdatedEntity = updatedDependentEntity;
+            LastExpectedVersion = updatedDependentEntity.Version;
             return Task.FromResult(UpdateResult);
         }
 

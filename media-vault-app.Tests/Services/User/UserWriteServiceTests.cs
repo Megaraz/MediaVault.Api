@@ -96,7 +96,7 @@ namespace media_vault_app.Tests.Services.User
             var userRepo = new FakeUserRepo();
             var service = CreateService(userRepo);
 
-            var result = await service.UpdateAsync(Guid.Empty, new UserUpdateDto { UserName = "", Email = " " }, CancellationToken.None);
+            var result = await service.UpdateAsync(Guid.Empty, new UserUpdateDto { ExpectedVersion = 1, UserName = "", Email = " " }, CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
@@ -115,6 +115,7 @@ namespace media_vault_app.Tests.Services.User
                 userId,
                 new UserUpdateDto
                 {
+                    ExpectedVersion = 1,
                     UserName = " Updated-User ",
                     Email = " UPDATED@Example.COM "
                 },
@@ -138,6 +139,7 @@ namespace media_vault_app.Tests.Services.User
                 userId,
                 new UserUpdateDto
                 {
+                    ExpectedVersion = 7,
                     UserName = " Updated-User ",
                     Email = " UPDATED@Example.COM "
                 },
@@ -147,7 +149,7 @@ namespace media_vault_app.Tests.Services.User
             Assert.Equal(1, userRepo.ProfileAvailabilityCallCount);
             Assert.Equal(1, userRepo.ProfileUpdateCallCount);
             Assert.Equal((userId, "updated-user", "updated@example.com"), userRepo.LastProfileUpdateAvailabilityRequest);
-            Assert.Equal((userId, "updated-user", "updated@example.com"), userRepo.LastProfileUpdateRequest);
+            Assert.Equal((userId, "updated-user", "updated@example.com", 7), userRepo.LastProfileUpdateRequest);
             Assert.Equal(0, userRepo.UpdateCallCount);
         }
 
@@ -170,6 +172,7 @@ namespace media_vault_app.Tests.Services.User
                 Guid.NewGuid(),
                 new UserUpdateDto
                 {
+                    ExpectedVersion = 1,
                     UserName = " conflicting-user ",
                     Email = " conflicting@example.com "
                 },
@@ -201,13 +204,14 @@ namespace media_vault_app.Tests.Services.User
                 userId,
                 new UserUpdateDto
                 {
+                    ExpectedVersion = 3,
                     UserName = " current-user ",
                     Email = " current@example.com "
                 },
                 CancellationToken.None);
 
             Assert.True(result.IsSuccess);
-            Assert.Equal((userId, "current-user", "current@example.com"), userRepo.LastProfileUpdateRequest);
+            Assert.Equal((userId, "current-user", "current@example.com", 3), userRepo.LastProfileUpdateRequest);
         }
 
         [Fact]

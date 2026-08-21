@@ -46,6 +46,7 @@ public sealed class AuthControllerTests
         var result = await controller.UpdateUser(
             new UserUpdateDto
             {
+                ExpectedVersion = 1,
                 UserName = "updated-user",
                 Email = "updated@example.com"
             });
@@ -54,5 +55,6 @@ public sealed class AuthControllerTests
         Assert.Equal(1, userRepo.ProfileUpdateCallCount);
         Assert.Equal(0, userRepo.UpdateCallCount);
         Assert.Equal(userId, userRepo.LastProfileUpdateRequest!.Value.UserId);
+        Assert.Equal(1, userRepo.LastProfileUpdateRequest.Value.ExpectedVersion);
     }
 }

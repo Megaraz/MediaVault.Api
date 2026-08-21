@@ -94,7 +94,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
         {
             var service = CreateService(new FakeMediaEntryRepo(), new FakeUserRepo());
 
-            var result = await service.UpdateAsync(Guid.Empty, Guid.Empty, new MovieEntryUpdateDto { Title = "", Status = Status.Completed }, CancellationToken.None);
+            var result = await service.UpdateAsync(Guid.Empty, Guid.Empty, new MovieEntryUpdateDto { ExpectedVersion = 1, Title = "", Status = Status.Completed }, CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
@@ -143,7 +143,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var mediaRepo = new FakeMediaEntryRepo();
             var service = CreateService(mediaRepo, new FakeUserRepo());
 
-            var result = await service.DeleteAsync(Guid.Empty, Guid.Empty, CancellationToken.None);
+            var result = await service.DeleteAsync(Guid.Empty, Guid.Empty, 1, CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(ErrorType.Validation, result.PrimaryError.Type);
@@ -164,12 +164,13 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var ownerId = Guid.NewGuid();
             var entryId = Guid.NewGuid();
 
-            var result = await service.DeleteAsync(ownerId, entryId, CancellationToken.None);
+            var result = await service.DeleteAsync(ownerId, entryId, 4, CancellationToken.None);
 
             Assert.True(result.IsFailure);
             Assert.Equal(expectedError, result.PrimaryError);
             Assert.Equal(ownerId, mediaRepo.LastOwnerId);
             Assert.Equal(entryId, mediaRepo.LastDependentId);
+            Assert.Equal(4, mediaRepo.LastExpectedVersion);
         }
 
         private static MediaEntryWriteService CreateService(FakeMediaEntryRepo mediaRepo, FakeUserRepo ownerRepo)
@@ -214,6 +215,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
         {
             return new MovieEntryUpdateDto
             {
+                ExpectedVersion = 3,
                 Title = title,
                 Status = Status.Completed,
                 Rating = 4m,

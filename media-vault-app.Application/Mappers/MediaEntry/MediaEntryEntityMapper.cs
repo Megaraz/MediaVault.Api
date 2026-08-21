@@ -43,7 +43,8 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 MediaType = entity.MediaType,
                 Status = entity.Status,
                 CreatedAtUtc = entity.CreatedAtUtc,
-                UpdatedAtUtc = entity.UpdatedAtUtc
+                UpdatedAtUtc = entity.UpdatedAtUtc,
+                Version = entity.Version
             };
         }
 
@@ -66,6 +67,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ImageUrl = movie.ImageUrl,
             CreatedAtUtc = movie.CreatedAtUtc,
             UpdatedAtUtc = movie.UpdatedAtUtc,
+            Version = movie.Version,
             RuntimeMinutes = movie.RuntimeMinutes
         };
 
@@ -85,6 +87,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ImageUrl = tvSeries.ImageUrl,
             CreatedAtUtc = tvSeries.CreatedAtUtc,
             UpdatedAtUtc = tvSeries.UpdatedAtUtc,
+            Version = tvSeries.Version,
             BackdropImageUrl = tvSeries.BackdropImageUrl,
             LastAirDate = tvSeries.LastAirDate,
             NumberOfSeasons = tvSeries.NumberOfSeasons,
@@ -128,6 +131,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ImageUrl = game.ImageUrl,
             CreatedAtUtc = game.CreatedAtUtc,
             UpdatedAtUtc = game.UpdatedAtUtc,
+            Version = game.Version,
             HoursPlayed = game.HoursPlayed,
             MetacriticRating = game.MetacriticRating,
             Platforms = game.Platforms,
@@ -158,6 +162,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ImageUrl = book.ImageUrl,
             CreatedAtUtc = book.CreatedAtUtc,
             UpdatedAtUtc = book.UpdatedAtUtc,
+            Version = book.Version,
             Author = book.Author
         };
 
@@ -177,6 +182,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             ImageUrl = manga.ImageUrl,
             CreatedAtUtc = manga.CreatedAtUtc,
             UpdatedAtUtc = manga.UpdatedAtUtc,
+            Version = manga.Version,
             Author = manga.Author
         };
 

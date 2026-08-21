@@ -61,6 +61,29 @@ public sealed class OpenApiContractTests
             .GetProperty("responses");
         AssertSchema(createMovieResponses, "413", "ErrorResponseBody");
 
+        var updateMovieOperation = paths
+            .GetProperty("/MediaEntries/movies/{id}")
+            .GetProperty("put");
+        AssertSchema(updateMovieOperation.GetProperty("responses"), "409", "ErrorResponseBody");
+
+        var deleteOperation = paths
+            .GetProperty("/MediaEntries/{id}")
+            .GetProperty("delete");
+        var expectedVersionParameter = Assert.Single(
+            deleteOperation.GetProperty("parameters").EnumerateArray(),
+            parameter => parameter.GetProperty("name").GetString() == "expectedVersion");
+        Assert.Equal("query", expectedVersionParameter.GetProperty("in").GetString());
+        Assert.True(expectedVersionParameter.GetProperty("required").GetBoolean());
+
+        var schemas = document.RootElement
+            .GetProperty("components")
+            .GetProperty("schemas");
+        AssertVersionProperty(schemas, "UserDetailedDto", "version", required: false);
+        AssertVersionProperty(schemas, "UserUpdateDto", "expectedVersion", required: true);
+        AssertVersionProperty(schemas, "MediaEntryDetailedDto", "version", required: false);
+        AssertVersionProperty(schemas, "MediaEntryMinimalDto", "version", required: false);
+        AssertVersionProperty(schemas, "MovieEntryUpdateDto", "expectedVersion", required: true);
+
         var resilienceResponses = new[]
         {
             paths.GetProperty("/Auth/login").GetProperty("post").GetProperty("responses"),
@@ -125,6 +148,31 @@ public sealed class OpenApiContractTests
             .GetProperty("$ref")
             .GetString();
         Assert.EndsWith($"/{schemaName}", reference, StringComparison.Ordinal);
+    }
+
+    private static void AssertVersionProperty(
+        JsonElement schemas,
+        string schemaName,
+        string propertyName,
+        bool required)
+    {
+        var schema = schemas.GetProperty(schemaName);
+        Assert.True(schema.GetProperty("properties").TryGetProperty(propertyName, out var property));
+        var type = property.GetProperty("type");
+        if (type.ValueKind == JsonValueKind.Array)
+        {
+            Assert.Contains("integer", type.EnumerateArray().Select(item => item.GetString()));
+        }
+        else
+        {
+            Assert.Equal("integer", type.GetString());
+        }
+        if (required)
+        {
+            Assert.Contains(
+                propertyName,
+                schema.GetProperty("required").EnumerateArray().Select(item => item.GetString()));
+        }
     }
 
     private sealed class OpenApiFactory

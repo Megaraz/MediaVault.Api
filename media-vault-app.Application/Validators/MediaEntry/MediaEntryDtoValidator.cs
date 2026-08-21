@@ -100,6 +100,13 @@ public class MediaEntryDtoValidator : IMediaEntryDtoValidator
             updateDto.Genres,
             updateDto.Overview,
             updateDto.ImageUrl);
+        MediaVaultWriteValidation.AddIntegerRange(
+            internalErrors,
+            updateDto.ExpectedVersion,
+            errorContext,
+            nameof(updateDto.ExpectedVersion),
+            1,
+            int.MaxValue - 1);
 
         switch (updateDto)
         {

@@ -349,12 +349,13 @@ namespace media_vault_app.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteMediaEntry(
             [FromRoute] Guid id,
+            [FromQuery, Microsoft.AspNetCore.Mvc.ModelBinding.BindRequired] int expectedVersion,
             CancellationToken ct)
         {
             if (!User.TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await _writeService.DeleteAsync(userId, id, ct);
+            var result = await _writeService.DeleteAsync(userId, id, expectedVersion, ct);
 
             return this.ToNoContentResult(result);
         }

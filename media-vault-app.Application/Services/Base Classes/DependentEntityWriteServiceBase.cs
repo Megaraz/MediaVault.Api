@@ -122,12 +122,19 @@ namespace media_vault_app.Application.Services.Base_Classes
             var updatedEntity = _dtoToEntityMapper.ToEntity(id, updateDto);
             updatedEntity.OwnerId = ownerId;
 
-            var mappedRepoResult = await _dependentEntityRepo.UpdateAsync(ownerId, updatedEntity, ct);
+            var mappedRepoResult = await _dependentEntityRepo.UpdateAsync(
+                ownerId,
+                updatedEntity,
+                ct);
 
             return mappedRepoResult;
         }
 
-        public async Task<Result> DeleteAsync(TKeyOwner ownerId, TKeyDependent dependentId, CancellationToken ct = default)
+        public async Task<Result> DeleteAsync(
+            TKeyOwner ownerId,
+            TKeyDependent dependentId,
+            int expectedVersion,
+            CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
@@ -138,6 +145,13 @@ namespace media_vault_app.Application.Services.Base_Classes
 
             if (dependentId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(dependentId) }, out var dependentIdNotValidError))
                 errors.Add(dependentIdNotValidError);
+
+            if (expectedVersion < 1)
+            {
+                errors.Add(MediaVaultValidationError.OutOfRange(
+                    baseErrorContext with { FieldName = nameof(expectedVersion) },
+                    $"1 to {int.MaxValue}"));
+            }
 
             if (errors.Count > 0)
             {
@@ -153,7 +167,11 @@ namespace media_vault_app.Application.Services.Base_Classes
                 return ownerExistsResult;
             }
 
-            var mappedRepoResult = await _dependentEntityRepo.DeleteAsync(ownerId, dependentId, ct);
+            var mappedRepoResult = await _dependentEntityRepo.DeleteAsync(
+                ownerId,
+                dependentId,
+                expectedVersion,
+                ct);
             return mappedRepoResult;
         }
 

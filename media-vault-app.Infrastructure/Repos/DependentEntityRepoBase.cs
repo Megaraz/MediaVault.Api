@@ -134,9 +134,13 @@ namespace media_vault_app.Infrastructure.Repos
         }
 
 
-        public virtual async Task<Result> UpdateAsync(TKeyOwner ownerId, TEntityDependent updatedDependentEntity, CancellationToken ct = default)
+        public virtual async Task<Result> UpdateAsync(
+            TKeyOwner ownerId,
+            TEntityDependent updatedDependentEntity,
+            CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(UpdateAsync), OperationType.Update);
+            var expectedVersion = updatedDependentEntity.Version;
 
             try
             {
@@ -151,6 +155,13 @@ namespace media_vault_app.Infrastructure.Repos
                     return Result.Failure(
                         MediaVaultErrors.NotFound(baseErrorContext));
                 }
+
+                if (existingDependentEntity.Version != expectedVersion)
+                {
+                    return LogAndFail(
+                        DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext),
+                        baseErrorContext);
+                }
                 var originalId = existingDependentEntity.Id;
                 var originalOwnerId = existingDependentEntity.OwnerId;
                 var createdAt = existingDependentEntity.CreatedAtUtc;
@@ -162,7 +173,14 @@ namespace media_vault_app.Infrastructure.Repos
 
                 existingDependentEntity.Id = originalId;
                 existingDependentEntity.OwnerId = originalOwnerId;
-                ApplyUpdateTimestamp(existingDependentEntity, createdAt, updatedAt);
+                var hasMeaningfulChanges = ApplyUpdateTimestamp(
+                    existingDependentEntity,
+                    createdAt,
+                    updatedAt);
+                ApplyConcurrencyVersion(
+                    existingDependentEntity,
+                    expectedVersion,
+                    hasMeaningfulChanges);
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
 
@@ -185,7 +203,11 @@ namespace media_vault_app.Infrastructure.Repos
             }
         }
 
-        public virtual async Task<Result> DeleteAsync(TKeyOwner ownerId, TKeyDependent dependentEntityId, CancellationToken ct = default)
+        public virtual async Task<Result> DeleteAsync(
+            TKeyOwner ownerId,
+            TKeyDependent dependentEntityId,
+            int expectedVersion,
+            CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(DeleteAsync), OperationType.Delete);
 
@@ -202,6 +224,17 @@ namespace media_vault_app.Infrastructure.Repos
                     return Result.Failure(
                         MediaVaultErrors.NotFound(baseErrorContext));
                 }
+
+                if (dependentEntity.Version != expectedVersion)
+                {
+                    return LogAndFail(
+                        DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext),
+                        baseErrorContext);
+                }
+
+                _appDbContext.Entry(dependentEntity)
+                    .Property(nameof(IConcurrencyVersion.Version))
+                    .OriginalValue = expectedVersion;
 
                 _dbSet.Remove(dependentEntity);
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -279,6 +312,20 @@ namespace media_vault_app.Infrastructure.Repos
             entry.Property(nameof(IUpdatedAtUtc.UpdatedAtUtc)).IsModified = hasMeaningfulChanges;
 
             return hasMeaningfulChanges;
+        }
+
+        protected void ApplyConcurrencyVersion(
+            TEntityDependent entity,
+            int expectedVersion,
+            bool hasMeaningfulChanges)
+        {
+            var versionProperty = _appDbContext.Entry(entity)
+                .Property(nameof(IConcurrencyVersion.Version));
+            versionProperty.OriginalValue = expectedVersion;
+            versionProperty.CurrentValue = hasMeaningfulChanges
+                ? checked(expectedVersion + 1)
+                : expectedVersion;
+            versionProperty.IsModified = hasMeaningfulChanges;
         }
 
     }

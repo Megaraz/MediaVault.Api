@@ -80,6 +80,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
         private static MovieEntry MapMovieFromUpdate(Guid id, MovieEntryUpdateDto dto) => new()
         {
             Id = id,
+            Version = dto.ExpectedVersion,
             IdExternal = dto.IdExternal,
             Status = dto.Status,
             Title = dto.Title,
@@ -168,6 +169,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
         private TvSeriesEntry MapTvSeriesFromUpdate(Guid id, TvSeriesEntryUpdateDto dto) => new()
         {
             Id = id,
+            Version = dto.ExpectedVersion,
             IdExternal = dto.IdExternal,
             Status = dto.Status,
             Title = dto.Title,
@@ -259,6 +261,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
         private static GameEntry MapGameFromUpdate(Guid id, GameEntryUpdateDto dto) => new()
         {
             Id = id,
+            Version = dto.ExpectedVersion,
             IdExternal = dto.IdExternal,
             Status = dto.Status,
             Title = dto.Title,
@@ -318,6 +321,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
         private static BookEntry MapBookFromUpdate(Guid id, BookEntryUpdateDto dto) => new()
         {
             Id = id,
+            Version = dto.ExpectedVersion,
             IdExternal = dto.IdExternal,
             Status = dto.Status,
             Title = dto.Title,
@@ -366,6 +370,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
         private static MangaEntry MapMangaFromUpdate(Guid id, MangaEntryUpdateDto dto) => new()
         {
             Id = id,
+            Version = dto.ExpectedVersion,
             IdExternal = dto.IdExternal,
             Status = dto.Status,
             Title = dto.Title,

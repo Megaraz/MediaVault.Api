@@ -46,7 +46,7 @@ public sealed class ServerTimestampLifecycleTests
         await using (var context = new AppDbContext(options))
         {
             var repo = CreateUserRepo(context, loggerFactory, clock);
-            var result = await repo.UpdateProfileAsync(userId, "updated-user", "updated@example.com");
+            var result = await repo.UpdateProfileAsync(userId, "updated-user", "updated@example.com", 1);
 
             Assert.True(result.IsSuccess);
         }
@@ -59,13 +59,14 @@ public sealed class ServerTimestampLifecycleTests
         await using (var context = new AppDbContext(options))
         {
             var repo = CreateUserRepo(context, loggerFactory, clock);
-            var result = await repo.UpdateProfileAsync(userId, "updated-user", "updated@example.com");
+            var result = await repo.UpdateProfileAsync(userId, "updated-user", "updated@example.com", 2);
 
             Assert.True(result.IsSuccess);
         }
 
         var afterNoOp = await ReadUserAsync(options);
         Assert.Equal(updatedAt.UpdatedAtUtc, afterNoOp.UpdatedAtUtc);
+        Assert.Equal(2, afterNoOp.Version);
 
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
@@ -74,7 +75,7 @@ public sealed class ServerTimestampLifecycleTests
             var repo = CreateUserRepo(context, loggerFactory, clock);
 
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-                repo.UpdateProfileAsync(userId, "cancelled-user", "cancelled@example.com", cancellation.Token));
+                repo.UpdateProfileAsync(userId, "cancelled-user", "cancelled@example.com", 2, cancellation.Token));
         }
 
         var afterCancellation = await ReadUserAsync(options);
@@ -115,6 +116,7 @@ public sealed class ServerTimestampLifecycleTests
             {
                 Id = seriesId,
                 OwnerId = ownerId,
+                Version = 1,
                 Title = "Timestamp Series",
                 Status = media_vault_app.Domain.Enums.Status.Ongoing,
                 Rating = 4m,
@@ -173,6 +175,7 @@ public sealed class ServerTimestampLifecycleTests
 
         var updated = await ReadSeriesAsync(options, seriesId);
         var updatedSeason = Assert.Single(updated.Seasons);
+        Assert.Equal(2, updated.Version);
         Assert.Equal(created.CreatedAtUtc, updated.CreatedAtUtc);
         Assert.Equal(initial.AddMinutes(5).UtcDateTime, updated.UpdatedAtUtc);
         Assert.Equal(initial.UtcDateTime, updatedSeason.CreatedAtUtc);
@@ -219,7 +222,7 @@ public sealed class ServerTimestampLifecycleTests
         await using (var context = new AppDbContext(options))
         {
             var repo = CreateUserRepo(context, loggerFactory, clock);
-            var result = await repo.UpdateProfileAsync(firstUserId, "first-user", "second@example.com");
+            var result = await repo.UpdateProfileAsync(firstUserId, "first-user", "second@example.com", 1);
 
             Assert.True(result.IsFailure);
         }

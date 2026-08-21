@@ -122,6 +122,7 @@ namespace media_vault_app.Infrastructure.Repos
             Guid userId,
             string username,
             string email,
+            int expectedVersion,
             CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(UpdateProfileAsync), OperationType.Update);
@@ -138,9 +139,25 @@ namespace media_vault_app.Infrastructure.Repos
                         MediaVaultErrors.NotFound(baseErrorContext));
                 }
 
+                if (user.Version != expectedVersion)
+                {
+                    return LogAndFail(
+                        DatabaseFailurePolicy.ConcurrencyFailure(baseErrorContext),
+                        baseErrorContext);
+                }
+
                 user.Username = UserIdentifierCanonicalizer.CanonicalizeUsername(username);
                 user.Email = UserIdentifierCanonicalizer.CanonicalizeEmail(email);
-                ApplyUpdateTimestamp(user, user.CreatedAtUtc, user.UpdatedAtUtc);
+                var hasMeaningfulChanges = ApplyUpdateTimestamp(
+                    user,
+                    user.CreatedAtUtc,
+                    user.UpdatedAtUtc);
+                var versionProperty = _appDbContext.Entry(user).Property(entry => entry.Version);
+                versionProperty.OriginalValue = expectedVersion;
+                versionProperty.CurrentValue = hasMeaningfulChanges
+                    ? checked(expectedVersion + 1)
+                    : expectedVersion;
+                versionProperty.IsModified = hasMeaningfulChanges;
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();

@@ -45,7 +45,8 @@ public sealed class UserRepoProfileUpdateTests
             var result = await repo.UpdateProfileAsync(
                 userId,
                 " Updated-User ",
-                " UPDATED@Example.COM ");
+                " UPDATED@Example.COM ",
+                1);
 
             Assert.True(result.IsSuccess);
         }
@@ -59,6 +60,77 @@ public sealed class UserRepoProfileUpdateTests
         Assert.Equal(createdAt, updatedUser.CreatedAtUtc);
         Assert.True(updatedUser.UpdatedAtUtc > originalUpdatedAt);
         Assert.True(updatedUser.UpdatedAtUtc <= DateTime.UtcNow);
+        Assert.Equal(2, updatedUser.Version);
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_RejectsStaleWriterWithoutOverwritingNewerValues()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        var userId = Guid.NewGuid();
+
+        await using (var setupContext = new AppDbContext(options))
+        {
+            await setupContext.Database.EnsureCreatedAsync();
+            setupContext.Users.Add(new User
+            {
+                Id = userId,
+                Username = "original-user",
+                Email = "original@example.com",
+                PasswordHash = "hash"
+            });
+            await setupContext.SaveChangesAsync();
+        }
+
+        int firstReadVersion;
+        int secondReadVersion;
+        await using (var firstReadContext = new AppDbContext(options))
+            firstReadVersion = await firstReadContext.Users
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => user.Version)
+                .SingleAsync();
+        await using (var secondReadContext = new AppDbContext(options))
+            secondReadVersion = await secondReadContext.Users
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => user.Version)
+                .SingleAsync();
+
+        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
+        await using (var firstWriteContext = new AppDbContext(options))
+        {
+            var result = await CreateUserRepo(firstWriteContext, loggerFactory)
+                .UpdateProfileAsync(
+                    userId,
+                    "first-writer",
+                    "first@example.com",
+                    firstReadVersion);
+            Assert.True(result.IsSuccess);
+        }
+
+        await using (var staleWriteContext = new AppDbContext(options))
+        {
+            var result = await CreateUserRepo(staleWriteContext, loggerFactory)
+                .UpdateProfileAsync(
+                    userId,
+                    "stale-writer",
+                    "stale@example.com",
+                    secondReadVersion);
+            Assert.True(result.IsFailure);
+            Assert.EndsWith(".DatabaseConcurrencyFailure", result.PrimaryError.Code, StringComparison.Ordinal);
+            Assert.DoesNotContain("SQLite", result.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        await using var verificationContext = new AppDbContext(options);
+        var persisted = await verificationContext.Users.AsNoTracking().SingleAsync(user => user.Id == userId);
+        Assert.Equal("first-writer", persisted.Username);
+        Assert.Equal("first@example.com", persisted.Email);
+        Assert.Equal(2, persisted.Version);
     }
 
     [Fact]

@@ -122,6 +122,13 @@ namespace media_vault_app.Application.Validators.User
                 errorContext,
                 nameof(updateDto.Email),
                 required: true);
+            MediaVaultWriteValidation.AddIntegerRange(
+                internalErrors,
+                updateDto.ExpectedVersion,
+                errorContext,
+                nameof(updateDto.ExpectedVersion),
+                1,
+                int.MaxValue - 1);
 
             validationErrors = internalErrors;
             return !validationErrors.Any();
