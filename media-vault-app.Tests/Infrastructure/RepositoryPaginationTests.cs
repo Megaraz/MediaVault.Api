@@ -6,7 +6,9 @@ using media_vault_app.Infrastructure.Repos;
 using media_vault_app.Tests.TestHelpers;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
+using System.Data.Common;
 
 namespace media_vault_app.Tests.Infrastructure;
 
@@ -83,6 +85,57 @@ public sealed class RepositoryPaginationTests
         Assert.Equal(firstPage.Value.Select(entry => entry.Id), repeatedFirstPage.Value.Select(entry => entry.Id));
         Assert.Equal(new[] { ids[2], ids[3] }, secondPage.Value.Select(entry => entry.Id));
         Assert.Empty(firstPage.Value.Select(entry => entry.Id).Intersect(secondPage.Value.Select(entry => entry.Id)));
+    }
+
+    [Fact]
+    public async Task MediaEntryRepo_GetMinimalCollectionByOwnerIdAsync_ProjectsMinimalShape_AndIsolatesOwner()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var commands = new List<string>();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        var ownerId = Guid.NewGuid();
+        var otherOwnerId = Guid.NewGuid();
+        var ids = CreateOrderedIds();
+
+        await SeedMediaEntriesAsync(options, ownerId, ids, includeExcludedEntry: false);
+        await using (var setupContext = new AppDbContext(options))
+        {
+            setupContext.Users.Add(CreateUser(otherOwnerId, new DateTime(2025, 1, 2), "other-owner"));
+            setupContext.MediaEntries.Add(CreateMovie(
+                Guid.Parse("00000000-0000-0000-0000-000000000006"),
+                otherOwnerId,
+                new DateTime(2026, 1, 4),
+                "Other owner"));
+            await setupContext.SaveChangesAsync();
+        }
+
+        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
+        var queryOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .AddInterceptors(new CapturingCommandInterceptor(commands))
+            .Options;
+        await using var queryContext = new AppDbContext(queryOptions);
+        var repository = new MediaEntryRepo(
+            queryContext,
+            CreateErrorLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(loggerFactory));
+
+        var result = await repository.GetMinimalCollectionByOwnerIdAsync(ownerId, 1, 10);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ids, result.Value.Select(entry => entry.Id));
+        var first = result.Value[0];
+        Assert.Equal("Match newest", first.Title);
+        Assert.Equal("https://example.test/image.jpg", first.ImageUrl);
+        Assert.Equal(4m, first.Rating);
+        Assert.Equal(new DateOnly(2025, 1, 1), first.ReleaseDate);
+        Assert.Equal(["Drama"], first.Genres);
+        Assert.Equal(MediaType.Movie, first.MediaType);
+        Assert.DoesNotContain(result.Value, entry => entry.Title == "Other owner");
+        Assert.DoesNotContain(commands, command => command.Contains("Seasons", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(commands, command => command.Contains("RuntimeMinutes", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -175,6 +228,9 @@ public sealed class RepositoryPaginationTests
             Title = title,
             Status = Status.Completed,
             Rating = 4m,
+            Genres = ["Drama"],
+            ReleaseDate = new DateOnly(2025, 1, 1),
+            ImageUrl = "https://example.test/image.jpg",
             CreatedAtUtc = createdAtUtc,
             UpdatedAtUtc = createdAtUtc
         };
@@ -184,4 +240,17 @@ public sealed class RepositoryPaginationTests
             loggerFactory.CreateLogger<TCategory>(),
             new ErrorEventPolicy(),
             new ErrorDiagnosticsOptions(false));
+
+    private sealed class CapturingCommandInterceptor(ICollection<string> commands) : DbCommandInterceptor
+    {
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
+            DbCommand command,
+            CommandEventData eventData,
+            InterceptionResult<DbDataReader> result,
+            CancellationToken cancellationToken = default)
+        {
+            commands.Add(command.CommandText);
+            return ValueTask.FromResult(result);
+        }
+    }
 }

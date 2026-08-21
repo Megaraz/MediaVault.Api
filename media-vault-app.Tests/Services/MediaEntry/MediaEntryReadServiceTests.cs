@@ -11,6 +11,8 @@ using MovieEntryEntity = media_vault_app.Domain.Entities.MovieEntry;
 
 namespace media_vault_app.Tests.Services.MediaEntry
 {
+    using media_vault_app.Application.DTOs.MediaEntry.Response;
+
     public class MediaEntryReadServiceTests
     {
         [Fact]
@@ -92,7 +94,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var ownerId = Guid.NewGuid();
             var mediaRepo = new FakeMediaEntryRepo
             {
-                CollectionByOwnerIdResult = Result<IReadOnlyList<MediaEntryEntity>>.Success([CreateMovie(ownerId: ownerId, title: "Movie One")])
+                MinimalCollectionByOwnerIdResult = Result<IReadOnlyList<MediaEntryMinimalDto>>.Success([CreateMinimalDto(title: "Movie One")])
             };
 
             var service = CreateService(mediaRepo, new FakeUserRepo());
@@ -100,6 +102,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var result = await service.GetMinimalCollectionByOwnerIdAsync(ownerId, pageNumber: 0, pageSize: 0, ct: CancellationToken.None);
 
             Assert.True(result.IsSuccess);
+            Assert.Equal(1, mediaRepo.GetMinimalCollectionByOwnerIdCallCount);
             Assert.Equal((ownerId, 1, 1), mediaRepo.LastCollectionRequest);
             Assert.Equal("Movie One", Assert.Single(result.Value).Title);
         }
@@ -122,7 +125,7 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var ownerId = Guid.NewGuid();
             var mediaRepo = new FakeMediaEntryRepo
             {
-                SearchMediaEntriesResult = Result<IReadOnlyList<MediaEntryEntity>>.Success([CreateMovie(ownerId: ownerId, title: "The Matrix")])
+                SearchMediaEntriesResult = Result<IReadOnlyList<MediaEntryMinimalDto>>.Success([CreateMinimalDto(title: "The Matrix")])
             };
 
             var service = CreateService(mediaRepo, new FakeUserRepo());
@@ -168,6 +171,18 @@ namespace media_vault_app.Tests.Services.MediaEntry
                 CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             };
         }
+
+        private static MediaEntryMinimalDto CreateMinimalDto(string title) =>
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Title = title,
+                Status = Status.Completed,
+                Rating = 4.5m,
+                ReleaseDate = new DateOnly(2025, 1, 1),
+                MediaType = MediaType.Movie,
+                CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            };
 
         private static ErrorContext DefineErrorContext(string methodName, OperationType operation)
         {
