@@ -59,6 +59,43 @@ namespace media_vault_app.Application.Services.MediaEntry
             CancellationToken ct = default) =>
             await GetTypedByIdAsync<MangaEntryDetailedDto>(ownerId, id, nameof(GetMangaByIdAsync), ct);
 
+        public override async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
+            Guid ownerId,
+            int pageNumber = 1,
+            int pageSize = 10,
+            CancellationToken ct = default)
+        {
+            var baseErrorContext = DefineErrorContext(nameof(GetMinimalCollectionByOwnerIdAsync), OperationType.GetCollection);
+
+            if (ownerId.IsNotValidMediaVaultId(baseErrorContext with { FieldName = nameof(ownerId) }, out var ownerIdError))
+            {
+                ServiceValidationLogging.LogValidationFailure(
+                    _logger,
+                    [ownerIdError],
+                    GetType().Name,
+                    nameof(GetMinimalCollectionByOwnerIdAsync),
+                    baseErrorContext);
+                return Result<IReadOnlyList<MediaEntryMinimalDto>>.ValidationFailure(
+                    [ownerIdError],
+                    "Validation errors occurred, see validationErrors for details.");
+            }
+
+            var ownerExistsResult = await EnsureOwnerExistsAsync(ownerId, ct);
+
+            if (ownerExistsResult.IsFailure)
+            {
+                return ownerExistsResult.ToResult<IReadOnlyList<MediaEntryMinimalDto>>();
+            }
+
+            var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
+
+            return await MediaEntryRepo.GetMinimalCollectionByOwnerIdAsync(
+                ownerId,
+                pagination.PageNumber,
+                pagination.PageSize,
+                ct);
+        }
+
         public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
             Guid ownerId,
             SearchRequestDto request,
@@ -106,10 +143,7 @@ namespace media_vault_app.Application.Services.MediaEntry
             pageNumber = pagination.PageNumber;
             pageSize = pagination.PageSize;
 
-            var repoResult = await MediaEntryRepo.SearchMediaEntriesAsync(ownerId, request.Query, pageNumber, pageSize, ct);
-
-            // Maps the result internally  
-            return repoResult.Map(_entityToDtoMapper.ToMinimalDtoCollection);
+            return await MediaEntryRepo.SearchMediaEntriesAsync(ownerId, request.Query, pageNumber, pageSize, ct);
 
         }
 

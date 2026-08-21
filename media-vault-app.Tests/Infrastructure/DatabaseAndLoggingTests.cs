@@ -288,6 +288,7 @@ public sealed class DatabaseAndLoggingTests
         {
             async () => await repository.GetCollectionAsync(1, 10, cancellation.Token),
             async () => await mediaEntryRepository.GetCollectionByOwnerIdAsync(Guid.NewGuid(), 1, 10, cancellation.Token),
+            async () => await mediaEntryRepository.GetMinimalCollectionByOwnerIdAsync(Guid.NewGuid(), 1, 10, cancellation.Token),
             async () => await mediaEntryRepository.SearchMediaEntriesAsync(Guid.NewGuid(), "query", 1, 10, cancellation.Token),
             async () => await userRepository.GetByUsernameOrEmailAsync("user", cancellation.Token)
         };

@@ -147,7 +147,7 @@ namespace media_vault_app.Application.Services.Base_Classes
 
         }
 
-        public async Task<Result<IReadOnlyList<TMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+        public virtual async Task<Result<IReadOnlyList<TMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(TKeyOwner ownerId, int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
         {
             var baseErrorContext = DefineErrorContext(nameof(GetMinimalCollectionByOwnerIdAsync), OperationType.GetCollection);
 

@@ -5,6 +5,7 @@ using Megaraz.ResultPattern;
 
 namespace media_vault_app.Tests.TestHelpers
 {
+    using media_vault_app.Application.DTOs.MediaEntry.Response;
     internal sealed class FakeUserRepo : IUserRepo
     {
         public Result<User> CreateResult { get; set; } = Result<User>.Success(new User());
@@ -159,7 +160,9 @@ namespace media_vault_app.Tests.TestHelpers
 
         public Result<IReadOnlyList<MediaEntry>> CollectionByOwnerIdResult { get; set; } = Result<IReadOnlyList<MediaEntry>>.Success(Array.Empty<MediaEntry>());
 
-        public Result<IReadOnlyList<MediaEntry>> SearchMediaEntriesResult { get; set; } = Result<IReadOnlyList<MediaEntry>>.Success(Array.Empty<MediaEntry>());
+        public Result<IReadOnlyList<MediaEntryMinimalDto>> MinimalCollectionByOwnerIdResult { get; set; } = Result<IReadOnlyList<MediaEntryMinimalDto>>.Success(Array.Empty<MediaEntryMinimalDto>());
+
+        public Result<IReadOnlyList<MediaEntryMinimalDto>> SearchMediaEntriesResult { get; set; } = Result<IReadOnlyList<MediaEntryMinimalDto>>.Success(Array.Empty<MediaEntryMinimalDto>());
 
         public Result UpdateResult { get; set; } = Result.Success();
 
@@ -170,6 +173,8 @@ namespace media_vault_app.Tests.TestHelpers
         public int GetByIdCallCount { get; private set; }
 
         public int GetCollectionByOwnerIdCallCount { get; private set; }
+
+        public int GetMinimalCollectionByOwnerIdCallCount { get; private set; }
 
         public int SearchCallCount { get; private set; }
 
@@ -219,6 +224,13 @@ namespace media_vault_app.Tests.TestHelpers
             return Task.FromResult(CollectionByOwnerIdResult);
         }
 
+        public Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(Guid ownerId, int pageNumber, int pageSize, CancellationToken ct = default)
+        {
+            GetMinimalCollectionByOwnerIdCallCount++;
+            LastCollectionRequest = (ownerId, pageNumber, pageSize);
+            return Task.FromResult(MinimalCollectionByOwnerIdResult);
+        }
+
         public Task<Result> UpdateAsync(Guid ownerId, MediaEntry updatedDependentEntity, CancellationToken ct = default)
         {
             UpdateCallCount++;
@@ -227,7 +239,7 @@ namespace media_vault_app.Tests.TestHelpers
             return Task.FromResult(UpdateResult);
         }
 
-        public Task<Result<IReadOnlyList<MediaEntry>>> SearchMediaEntriesAsync(Guid userId, string query, int pageNumber, int pageSize, CancellationToken ct = default)
+        public Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(Guid userId, string query, int pageNumber, int pageSize, CancellationToken ct = default)
         {
             SearchCallCount++;
             LastSearchRequest = (userId, query, pageNumber, pageSize);

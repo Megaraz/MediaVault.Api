@@ -7,6 +7,7 @@ using media_vault_app.Infrastructure.Diagnostics;
 
 namespace media_vault_app.Infrastructure.Repos
 {
+    using media_vault_app.Application.DTOs.MediaEntry.Response;
     public class MediaEntryRepo : DependentEntityRepoBase<MediaEntry, Guid, Guid>, IMediaEntryRepo
     {
         public MediaEntryRepo(
@@ -226,28 +227,73 @@ namespace media_vault_app.Infrastructure.Repos
             existing.UpdatedAtUtc = DateTime.UtcNow;
         }
 
-        public async Task<Result<IReadOnlyList<MediaEntry>>> SearchMediaEntriesAsync(Guid ownerId, string query, int pageNumber, int pageSize, CancellationToken ct = default)
+        public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
+            Guid ownerId,
+            int pageNumber,
+            int pageSize,
+            CancellationToken ct = default)
         {
             try
             {
-                var mediaEntries = await _dbSet
+                var minimalEntries = await _dbSet
+                    .AsNoTracking()
+                    .Where(mediaEntry => mediaEntry.OwnerId == ownerId)
+                    .OrderByDescending(mediaEntry => mediaEntry.CreatedAtUtc)
+                    .ThenBy(mediaEntry => mediaEntry.Id)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(ToMinimalDtoProjection)
+                    .ToListAsync(ct)
+                    .ConfigureAwait(false);
+
+                return Result<IReadOnlyList<MediaEntryMinimalDto>>.Success(minimalEntries);
+            }
+            catch (System.Data.Common.DbException ex)
+            {
+                var baseErrorContext = DefineErrorContext(nameof(GetMinimalCollectionByOwnerIdAsync), OperationType.GetCollection);
+                return LogAndFail<IReadOnlyList<MediaEntryMinimalDto>>(
+                    DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex),
+                    baseErrorContext);
+            }
+        }
+
+        public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(Guid ownerId, string query, int pageNumber, int pageSize, CancellationToken ct = default)
+        {
+            try
+            {
+                var minimalEntries = await _dbSet
                     .AsNoTracking()
                     .Where(mediaEntry => mediaEntry.OwnerId == ownerId && mediaEntry.Title.Contains(query))
                     .OrderByDescending(mediaEntry => mediaEntry.CreatedAtUtc)
                     .ThenBy(mediaEntry => mediaEntry.Id)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
+                    .Select(ToMinimalDtoProjection)
                     .ToListAsync(ct).ConfigureAwait(false);
 
-                return Result<IReadOnlyList<MediaEntry>>.Success(mediaEntries);
+                return Result<IReadOnlyList<MediaEntryMinimalDto>>.Success(minimalEntries);
             }
             catch (System.Data.Common.DbException ex)
             {
                 var baseErrorContext = DefineErrorContext(nameof(SearchMediaEntriesAsync), OperationType.GetCollection);
-                return LogAndFail<IReadOnlyList<MediaEntry>>(
+                return LogAndFail<IReadOnlyList<MediaEntryMinimalDto>>(
                     DatabaseFailurePolicy.QueryFailure(baseErrorContext, ex),
                     baseErrorContext);
             }
         }
+
+        private static readonly System.Linq.Expressions.Expression<Func<MediaEntry, MediaEntryMinimalDto>> ToMinimalDtoProjection =
+            mediaEntry => new MediaEntryMinimalDto
+            {
+                Id = mediaEntry.Id,
+                Title = mediaEntry.Title,
+                ImageUrl = mediaEntry.ImageUrl,
+                Rating = mediaEntry.Rating,
+                ReleaseDate = mediaEntry.ReleaseDate ?? DateOnly.MinValue,
+                Genres = mediaEntry.Genres,
+                MediaType = mediaEntry.MediaType,
+                Status = mediaEntry.Status,
+                CreatedAtUtc = mediaEntry.CreatedAtUtc
+            };
     }
 }
