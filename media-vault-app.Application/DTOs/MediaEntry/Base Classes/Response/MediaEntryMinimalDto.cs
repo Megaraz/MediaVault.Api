@@ -14,4 +14,5 @@ public record MediaEntryMinimalDto : IDtoIdentifiable<Guid>
     public decimal Rating { get; init; }
     public string? ImageUrl { get; init; }
     public DateTime CreatedAtUtc { get; init; }
+    public DateTime UpdatedAtUtc { get; init; }
 }

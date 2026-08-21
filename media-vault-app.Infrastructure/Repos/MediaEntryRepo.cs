@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
 using media_vault_app.Infrastructure.Diagnostics;
+using media_vault_app.Infrastructure.Timestamps;
 
 namespace media_vault_app.Infrastructure.Repos
 {
@@ -12,9 +13,21 @@ namespace media_vault_app.Infrastructure.Repos
     {
         public MediaEntryRepo(
             AppDbContext appDbContext,
-            ErrorEventLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>> errorEventLogger)
-            : base(appDbContext, errorEventLogger)
+            ErrorEventLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>> errorEventLogger,
+            ServerTimestampPolicy? timestampPolicy = null)
+            : base(appDbContext, errorEventLogger, timestampPolicy)
         {
+        }
+
+        public override Task<Result<MediaEntry>> CreateAsync(MediaEntry entity, CancellationToken ct = default)
+        {
+            if (entity is TvSeriesEntry tvSeries)
+            {
+                foreach (var season in tvSeries.Seasons)
+                    _timestampPolicy.Initialize(season);
+            }
+
+            return base.CreateAsync(entity, ct);
         }
 
         // Override to include Seasons for TvSeries via eager loading.
@@ -52,7 +65,10 @@ namespace media_vault_app.Infrastructure.Repos
                 if (existing is null)
                     return Result.Failure(MediaVaultErrors.NotFound(baseErrorContext));
 
+                var createdAt = existing.CreatedAtUtc;
+                var updatedAt = existing.UpdatedAtUtc;
                 ApplyGameProperties(existing, updatedGame);
+                ApplyUpdateTimestamp(existing, createdAt, updatedAt);
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
@@ -93,8 +109,6 @@ namespace media_vault_app.Infrastructure.Repos
             existing.Genres = updated.Genres;
             existing.ReleaseDate = updated.ReleaseDate;
             existing.ImageUrl = updated.ImageUrl;
-            existing.UpdatedAtUtc = DateTime.UtcNow;
-
             // Game-specific scalar properties
             existing.MetacriticRating = updated.MetacriticRating;
             existing.Website = updated.Website;
@@ -126,8 +140,11 @@ namespace media_vault_app.Infrastructure.Repos
                 if (existing is null)
                     return Result.Failure(MediaVaultErrors.NotFound(baseErrorContext));
 
+                var createdAt = existing.CreatedAtUtc;
+                var updatedAt = existing.UpdatedAtUtc;
                 ApplyTvSeriesProperties(existing, updatedTvSeries);
-                MergeSeasons(existing, updatedTvSeries.Seasons);
+                var seasonsChanged = MergeSeasons(existing, updatedTvSeries.Seasons);
+                ApplyUpdateTimestamp(existing, createdAt, updatedAt, seasonsChanged);
 
                 await _appDbContext.SaveChangesAsync(ct).ConfigureAwait(false);
                 return Result.Success();
@@ -166,8 +183,6 @@ namespace media_vault_app.Infrastructure.Repos
             existing.Genres = updated.Genres;
             existing.ReleaseDate = updated.ReleaseDate;
             existing.ImageUrl = updated.ImageUrl;
-            existing.UpdatedAtUtc = DateTime.UtcNow;
-
             // TvSeries-specific properties
             existing.BackdropImageUrl = updated.BackdropImageUrl;
             existing.LastAirDate = updated.LastAirDate;
@@ -181,15 +196,20 @@ namespace media_vault_app.Infrastructure.Repos
         //   - Seasons matched by SeasonNumber have their properties updated.
         //   - Seasons present in the update but not in existing are added.
         //   - Seasons in existing but absent from the update are removed.
-        private static void MergeSeasons(TvSeriesEntry existing, ICollection<Season> updatedSeasons)
+        private bool MergeSeasons(TvSeriesEntry existing, ICollection<Season> updatedSeasons)
         {
+            var changes = false;
+
             // Remove seasons that are no longer in the updated list.
             var toRemove = existing.Seasons
                 .Where(e => !updatedSeasons.Any(u => u.SeasonNumber == e.SeasonNumber))
                 .ToList();
 
             foreach (var season in toRemove)
+            {
                 existing.Seasons.Remove(season);
+                changes = true;
+            }
 
             foreach (var updated in updatedSeasons)
             {
@@ -198,23 +218,27 @@ namespace media_vault_app.Infrastructure.Repos
                 if (match is not null)
                 {
                     // Update the existing tracked season in-place.
-                    ApplySeasonProperties(match, updated);
+                    changes |= ApplySeasonProperties(match, updated);
                 }
                 else
                 {
                     // New season — assign the correct owner and add it.
                     updated.TvSeriesEntryId = existing.Id;
                     updated.Id = Guid.NewGuid();
-                    updated.CreatedAtUtc = DateTime.UtcNow;
-                    updated.UpdatedAtUtc = DateTime.UtcNow;
+                    _timestampPolicy.Initialize(updated);
                     existing.Seasons.Add(updated);
+                    changes = true;
                 }
             }
+
+            return changes;
         }
 
         // Applies all scalar properties from the incoming Season onto the tracked one.
-        private static void ApplySeasonProperties(Season existing, Season updated)
+        private bool ApplySeasonProperties(Season existing, Season updated)
         {
+            var createdAt = existing.CreatedAtUtc;
+            var updatedAt = existing.UpdatedAtUtc;
             existing.IdExternal = updated.IdExternal;
             existing.Name = updated.Name;
             existing.Overview = updated.Overview;
@@ -224,7 +248,7 @@ namespace media_vault_app.Infrastructure.Repos
             existing.WatchedEpisodes = updated.WatchedEpisodes;
             existing.Status = updated.Status;
             existing.Rating = updated.Rating;
-            existing.UpdatedAtUtc = DateTime.UtcNow;
+            return ApplyUpdateTimestamp(existing, createdAt, updatedAt);
         }
 
         public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
@@ -293,7 +317,8 @@ namespace media_vault_app.Infrastructure.Repos
                 Genres = mediaEntry.Genres,
                 MediaType = mediaEntry.MediaType,
                 Status = mediaEntry.Status,
-                CreatedAtUtc = mediaEntry.CreatedAtUtc
+                CreatedAtUtc = mediaEntry.CreatedAtUtc,
+                UpdatedAtUtc = mediaEntry.UpdatedAtUtc
             };
     }
 }

@@ -58,7 +58,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = DateTime.UtcNow,
             RuntimeMinutes = dto.RuntimeMinutes
         };
 
@@ -75,7 +74,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = dto.CreatedAtUtc,
             RuntimeMinutes = dto.RuntimeMinutes
         };
 
@@ -108,7 +106,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = DateTime.UtcNow,
             BackdropImageUrl = dto.BackdropImageUrl,
             LastAirDate = dto.LastAirDate,
             NumberOfSeasons = dto.NumberOfSeasons,
@@ -128,9 +125,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 WatchedEpisodes = s.WatchedEpisodes,
                 Episodes = s.Episodes,
                 Status = s.Status,
-                Rating = s.Rating,
-                CreatedAtUtc = DateTime.UtcNow,
-                UpdatedAtUtc = DateTime.UtcNow
+                Rating = s.Rating
             }).ToList()
         };
 
@@ -147,7 +142,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = dto.CreatedAtUtc,
             BackdropImageUrl = dto.BackdropImageUrl,
             LastAirDate = dto.LastAirDate,
             NumberOfSeasons = dto.NumberOfSeasons,
@@ -167,9 +161,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 WatchedEpisodes = s.WatchedEpisodes,
                 Episodes = s.Episodes,
                 Status = s.Status,
-                Rating = s.Rating,
-                CreatedAtUtc = DateTime.UtcNow,
-                UpdatedAtUtc = DateTime.UtcNow
+                Rating = s.Rating
             }).ToList()
         };
 
@@ -204,9 +196,7 @@ namespace media_vault_app.Application.Mappers.MediaEntry
                 WatchedEpisodes = s.WatchedEpisodes,
                 Episodes = s.Episodes,
                 Status = s.Status,
-                Rating = s.Rating,
-                CreatedAtUtc = s.CreatedAtUtc,
-                UpdatedAtUtc = DateTime.UtcNow
+                Rating = s.Rating
             }).ToList()
 
         };
@@ -225,7 +215,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = DateTime.UtcNow,
             HoursPlayed = dto.HoursPlayed,
             MetacriticRating = dto.MetacriticRating,
             Platforms = dto.Platforms,
@@ -253,7 +242,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = dto.CreatedAtUtc,
             HoursPlayed = dto.HoursPlayed,
             MetacriticRating = dto.MetacriticRating,
             Platforms = dto.Platforms,
@@ -308,7 +296,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = DateTime.UtcNow,
             Author = dto.Author
         };
 
@@ -325,7 +312,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = dto.CreatedAtUtc,
             Author = dto.Author
         };
 
@@ -358,7 +344,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = DateTime.UtcNow,
             Author = dto.Author
         };
 
@@ -375,7 +360,6 @@ namespace media_vault_app.Application.Mappers.MediaEntry
             Overview = dto.Overview,
             ReleaseDate = dto.ReleaseDate,
             ImageUrl = dto.ImageUrl,
-            CreatedAtUtc = dto.CreatedAtUtc,
             Author = dto.Author
         };
 

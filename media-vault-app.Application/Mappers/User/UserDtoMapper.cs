@@ -14,8 +14,7 @@ namespace media_vault_app.Application.Mappers.User
                 Id = Guid.NewGuid(),
                 Username = UserIdentifierCanonicalizer.CanonicalizeUsername(createDto.Username),
                 Email = UserIdentifierCanonicalizer.CanonicalizeEmail(createDto.Email),
-                PasswordHash = createDto.Password,
-                CreatedAtUtc = DateTime.UtcNow
+                PasswordHash = createDto.Password
             };
 
         public UserEntity ToEntity(UserDetailedDto detailedDto) =>
@@ -23,8 +22,7 @@ namespace media_vault_app.Application.Mappers.User
             {
                 Id = detailedDto.Id,
                 Username = UserIdentifierCanonicalizer.CanonicalizeUsername(detailedDto.Username),
-                Email = UserIdentifierCanonicalizer.CanonicalizeEmail(detailedDto.Email),
-                CreatedAtUtc = detailedDto.CreatedAtUtc
+                Email = UserIdentifierCanonicalizer.CanonicalizeEmail(detailedDto.Email)
             };
 
         public IEnumerable<UserEntity> ToEntities(IEnumerable<UserDetailedDto> detailedDtos) =>
