@@ -49,6 +49,52 @@ public sealed class StartupConfigurationTests
         Assert.Contains("BaseUrl", exception.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("not-an-origin")]
+    [InlineData("ftp://localhost:3000")]
+    [InlineData("https://*.example.test")]
+    [InlineData("https://example.test/")]
+    [InlineData("https://example.test/path")]
+    public void InvalidCorsOrigin_FailsDuringHostStartup(string origin)
+    {
+        using var factory = new StartupConfigurationFactory(
+            "Staging",
+            new Dictionary<string, string?> { ["Cors:AllowedOrigins:0"] = origin });
+
+        var exception = AssertStartupFailure(factory);
+
+        Assert.Contains("Cors:AllowedOrigins", exception.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void MissingCorsOrigin_FailsDuringProductionHostStartup()
+    {
+        var databasePath = Path.Combine(
+            Path.GetTempPath(),
+            $"mediavault-cors-startup-{Guid.NewGuid():N}.db");
+
+        try
+        {
+            using var factory = new StartupConfigurationFactory(
+                "Production",
+                new Dictionary<string, string?>
+                {
+                    ["ConnectionStrings:Default"] = $"Data Source={databasePath}"
+                },
+                includeCorsOrigin: false);
+
+            var exception = AssertStartupFailure(factory);
+
+            Assert.Contains("Cors:AllowedOrigins", exception.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (File.Exists(databasePath))
+                File.Delete(databasePath);
+        }
+    }
+
     [Fact]
     public void BlankProductionConnectionString_FailsDuringHostStartup()
     {
@@ -125,7 +171,8 @@ public sealed class StartupConfigurationTests
 
     private sealed class StartupConfigurationFactory(
         string environment,
-        IReadOnlyDictionary<string, string?>? overrides = null)
+        IReadOnlyDictionary<string, string?>? overrides = null,
+        bool includeCorsOrigin = true)
         : WebApplicationFactory<media_vault_app.API.Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -141,6 +188,8 @@ public sealed class StartupConfigurationTests
             builder.UseSetting("Jwt:SecretKey", "integration-test-signing-key-at-least-32-bytes");
             builder.UseSetting("Jwt:Issuer", "MediaVault.Tests");
             builder.UseSetting("Jwt:Audience", "MediaVault.Tests");
+            if (includeCorsOrigin)
+                builder.UseSetting("Cors:AllowedOrigins:0", "https://localhost:61366");
 
             if (overrides is null)
                 return;

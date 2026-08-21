@@ -132,6 +132,13 @@ Production also requires a nonblank `ConnectionStrings:Default` that points to
 an absolute persistent SQLite file. Use your own development credentials and
 review each provider's terms, attribution rules, and quotas.
 
+CORS origins are also validated at startup. Development browser origins are
+listed in `media-vault-app.API/appsettings.Development.json`; production must
+set `Cors__AllowedOrigins__0` (and any additional indexed values) to the exact
+web origin. The API uses JWT bearer headers, so the `ConfiguredOrigins` policy
+does not enable browser credentials. See the [CORS configuration guide](docs/cors-configuration.md)
+for browser versus native-client setup and deployment examples.
+
 RAWG, TMDB, and Google Books also use validated settings under
 `RequestResilience:Providers`. Each current outbound GET has a 5-second attempt
 timeout, a 12-second total budget, and at most one jittered retry for the

@@ -141,6 +141,7 @@ public sealed class AuthenticationContractTests
                 "integration-test-signing-key-at-least-32-bytes");
             builder.UseSetting("Jwt:Issuer", "MediaVault.Tests");
             builder.UseSetting("Jwt:Audience", "MediaVault.Tests");
+            builder.UseSetting("Cors:AllowedOrigins:0", "https://localhost:61366");
             builder.ConfigureServices(services =>
                 services.AddControllers()
                     .AddApplicationPart(typeof(AuthenticationContractTestController).Assembly));
