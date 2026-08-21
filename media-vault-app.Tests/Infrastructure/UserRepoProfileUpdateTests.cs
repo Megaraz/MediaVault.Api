@@ -255,6 +255,52 @@ public sealed class UserRepoProfileUpdateTests
     }
 
     [Fact]
+    public async Task DeleteAccountAsync_RemovesOnlyTheRequestedUser()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        var deletedUserId = Guid.NewGuid();
+        var retainedUserId = Guid.NewGuid();
+
+        await using (var setupContext = new AppDbContext(options))
+        {
+            await setupContext.Database.EnsureCreatedAsync();
+            setupContext.Users.AddRange(
+                new User
+                {
+                    Id = deletedUserId,
+                    Username = "deleted-user",
+                    Email = "deleted@example.com",
+                    PasswordHash = "deleted-hash"
+                },
+                new User
+                {
+                    Id = retainedUserId,
+                    Username = "retained-user",
+                    Email = "retained@example.com",
+                    PasswordHash = "retained-hash"
+                });
+            await setupContext.SaveChangesAsync();
+        }
+
+        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
+        await using (var deleteContext = new AppDbContext(options))
+        {
+            var result = await CreateUserRepo(deleteContext, loggerFactory)
+                .DeleteAccountAsync(deletedUserId);
+
+            Assert.True(result.IsSuccess);
+        }
+
+        await using var verificationContext = new AppDbContext(options);
+        Assert.Null(await verificationContext.Users.FindAsync(deletedUserId));
+        Assert.NotNull(await verificationContext.Users.FindAsync(retainedUserId));
+    }
+
+    [Fact]
     public async Task RegisterUserAsync_MapsSqliteUniqueViolationToConflict()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
@@ -297,8 +343,8 @@ public sealed class UserRepoProfileUpdateTests
     private static UserRepo CreateUserRepo(AppDbContext context, ILoggerFactory loggerFactory) =>
         new(
             context,
-            new ErrorEventLogger<RepoBase<User, Guid>>(
-                loggerFactory.CreateLogger<RepoBase<User, Guid>>(),
+            new ErrorEventLogger<UserRepo>(
+                loggerFactory.CreateLogger<UserRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)));
 }

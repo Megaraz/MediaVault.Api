@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using media_vault_app.API.Controllers;
 using media_vault_app.Application.DTOs.User.Request;
-using media_vault_app.Application.Mappers.User;
 using media_vault_app.Application.Services.User;
 using media_vault_app.Application.Validators.User;
 using media_vault_app.Tests.TestHelpers;
@@ -19,8 +18,6 @@ public sealed class AuthControllerTests
         var userRepo = new FakeUserRepo();
         var userWriteService = new UserWriteService(
             userRepo,
-            new UserEntityMapper(),
-            new UserDtoMapper(),
             new UserDtoValidator(),
             ServiceTestLogger.Create<UserWriteService>());
         var controller = new AuthController(
@@ -53,7 +50,6 @@ public sealed class AuthControllerTests
 
         Assert.IsType<NoContentResult>(result);
         Assert.Equal(1, userRepo.ProfileUpdateCallCount);
-        Assert.Equal(0, userRepo.UpdateCallCount);
         Assert.Equal(userId, userRepo.LastProfileUpdateRequest!.Value.UserId);
         Assert.Equal(1, userRepo.LastProfileUpdateRequest.Value.ExpectedVersion);
     }

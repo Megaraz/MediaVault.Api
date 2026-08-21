@@ -211,8 +211,8 @@ public sealed class MediaEntryWriteServiceTests_OptimisticConcurrency
                 new ErrorDiagnosticsOptions(false)));
         var userRepo = new UserRepo(
             context,
-            new ErrorEventLogger<RepoBase<User, Guid>>(
-                loggerFactory.CreateLogger<RepoBase<User, Guid>>(),
+            new ErrorEventLogger<UserRepo>(
+                loggerFactory.CreateLogger<UserRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)));
         return new MediaEntryWriteService(

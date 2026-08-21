@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using media_vault_app.Application.Interfaces.Repos;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
 using Rasmus.SharedKernel.Interfaces.Mappers.MapEntityToDto.Interfaces;
 using Rasmus.SharedKernel.Interfaces.Services;
@@ -27,14 +28,14 @@ namespace media_vault_app.Application.Services.Base_Classes
     {
 
         protected readonly IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent> _dependentEntityRepo;
-        protected readonly IRepo<TEntityOwner, TKeyOwner> _ownerRepo;
+        protected readonly IEntityExistsRepo<TKeyOwner> _ownerRepo;
         protected readonly IMapEntityToDto<TEntityDependent, TKeyDependent, TDetailedDto, TMinimalDto> _entityToDtoMapper;
         protected readonly ILogger _logger;
 
         protected DependentEntityReadServiceBase(
             IDependentEntityRepo<TEntityDependent, TKeyOwner, TKeyDependent> dependentEntityRepo,
             IMapEntityToDto<TEntityDependent, TKeyDependent, TDetailedDto, TMinimalDto> entityToDtoMapper,
-            IRepo<TEntityOwner, TKeyOwner> ownerRepo,
+            IEntityExistsRepo<TKeyOwner> ownerRepo,
             ILogger logger)
         {
             _dependentEntityRepo = dependentEntityRepo;

@@ -8,15 +8,9 @@ namespace media_vault_app.Tests.TestHelpers
     using media_vault_app.Application.DTOs.MediaEntry.Response;
     internal sealed class FakeUserRepo : IUserRepo
     {
-        public Result<User> CreateResult { get; set; } = Result<User>.Success(new User());
-
-        public Result<IReadOnlyList<User>> GetCollectionResult { get; set; } = Result<IReadOnlyList<User>>.Success(Array.Empty<User>());
-
         public Result<User> GetByIdResult { get; set; } = Result<User>.Success(new User());
 
-        public Result UpdateResult { get; set; } = Result.Success();
-
-        public Result DeleteResult { get; set; } = Result.Success();
+        public Result DeleteAccountResult { get; set; } = Result.Success();
 
         public Result<bool> ExistsResult { get; set; } = Result<bool>.Success(true);
 
@@ -30,15 +24,9 @@ namespace media_vault_app.Tests.TestHelpers
 
         public Result<User> GetByUsernameOrEmailResult { get; set; } = Result<User>.Success(new User());
 
-        public int CreateCallCount { get; private set; }
-
-        public int GetCollectionCallCount { get; private set; }
-
         public int GetByIdCallCount { get; private set; }
 
-        public int UpdateCallCount { get; private set; }
-
-        public int DeleteCallCount { get; private set; }
+        public int DeleteAccountCallCount { get; private set; }
 
         public int ExistsCallCount { get; private set; }
 
@@ -52,10 +40,6 @@ namespace media_vault_app.Tests.TestHelpers
 
         public int GetByUsernameOrEmailCallCount { get; private set; }
 
-        public User? CreatedEntity { get; private set; }
-
-        public User? UpdatedEntity { get; private set; }
-
         public User? RegisteredEntity { get; private set; }
 
         public Guid? DeletedId { get; private set; }
@@ -63,8 +47,6 @@ namespace media_vault_app.Tests.TestHelpers
         public Guid? RequestedExistsId { get; private set; }
 
         public Guid? RequestedGetByIdId { get; private set; }
-
-        public (int PageNumber, int PageSize)? LastCollectionRequest { get; private set; }
 
         public string? RequestedUsernameOrEmail { get; private set; }
 
@@ -74,20 +56,6 @@ namespace media_vault_app.Tests.TestHelpers
 
         public (Guid UserId, string Username, string Email, int ExpectedVersion)? LastProfileUpdateRequest { get; private set; }
 
-        public Task<Result<User>> CreateAsync(User entity, CancellationToken ct = default)
-        {
-            CreateCallCount++;
-            CreatedEntity = entity;
-            return Task.FromResult(CreateResult);
-        }
-
-        public Task<Result<IReadOnlyList<User>>> GetCollectionAsync(int pageNumber, int pageSize, CancellationToken ct = default)
-        {
-            GetCollectionCallCount++;
-            LastCollectionRequest = (pageNumber, pageSize);
-            return Task.FromResult(GetCollectionResult);
-        }
-
         public Task<Result<User>> GetByIdAsync(Guid id, CancellationToken ct = default)
         {
             GetByIdCallCount++;
@@ -95,18 +63,11 @@ namespace media_vault_app.Tests.TestHelpers
             return Task.FromResult(GetByIdResult);
         }
 
-        public Task<Result> UpdateAsync(User updatedEntity, CancellationToken ct = default)
+        public Task<Result> DeleteAccountAsync(Guid id, CancellationToken ct = default)
         {
-            UpdateCallCount++;
-            UpdatedEntity = updatedEntity;
-            return Task.FromResult(UpdateResult);
-        }
-
-        public Task<Result> DeleteAsync(Guid id, CancellationToken ct = default)
-        {
-            DeleteCallCount++;
+            DeleteAccountCallCount++;
             DeletedId = id;
-            return Task.FromResult(DeleteResult);
+            return Task.FromResult(DeleteAccountResult);
         }
 
         public Task<Result<bool>> ExistsAsync(Guid id, CancellationToken ct = default)

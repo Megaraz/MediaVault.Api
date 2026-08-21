@@ -152,9 +152,6 @@ namespace media_vault_app.API
             builder.Services.AddScoped<IMediaEntryEntityMapper, MediaEntryEntityMapper>();
             builder.Services.AddScoped<IMediaEntryDtoMapper, MediaEntryDtoMapper>();
 
-            builder.Services.AddScoped<IUserEntityMapper, UserEntityMapper>();
-            builder.Services.AddScoped<IUserDtoMapper, UserDtoMapper>();
-
             #endregion
 
             #region Validators
