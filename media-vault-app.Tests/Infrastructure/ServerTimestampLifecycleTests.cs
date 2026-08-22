@@ -150,7 +150,7 @@ public sealed class ServerTimestampLifecycleTests
         await using (var context = new AppDbContext(options))
         {
             var repo = CreateMediaRepo(context, loggerFactory, clock);
-            var result = await repo.UpdateAsync(ownerId, new TvSeriesEntry
+            var result = await repo.UpdateTvSeriesAsync(ownerId, new TvSeriesEntry
             {
                 Id = seriesId,
                 OwnerId = ownerId,
@@ -245,8 +245,8 @@ public sealed class ServerTimestampLifecycleTests
     private static MediaEntryRepo CreateMediaRepo(AppDbContext context, ILoggerFactory loggerFactory, TimeProvider clock) =>
         new(
             context,
-            new ErrorEventLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(
-                loggerFactory.CreateLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(),
+            new ErrorEventLogger<MediaEntryRepo>(
+                loggerFactory.CreateLogger<MediaEntryRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)),
             new ServerTimestampPolicy(clock));

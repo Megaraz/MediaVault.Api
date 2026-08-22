@@ -56,38 +56,6 @@ public sealed class RepositoryPaginationTests
     }
 
     [Fact]
-    public async Task DependentEntityRepoBase_GetCollectionByOwnerIdAsync_OrdersByCreationDateThenId_AndKeepsPagesDisjoint()
-    {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite(connection)
-            .Options;
-        var ownerId = Guid.NewGuid();
-        var ids = CreateOrderedIds();
-
-        await SeedMediaEntriesAsync(options, ownerId, ids, includeExcludedEntry: false);
-
-        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
-        await using var queryContext = new AppDbContext(options);
-        var repository = new MediaEntryRepo(
-            queryContext,
-            CreateErrorLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(loggerFactory));
-
-        var firstPage = await repository.GetCollectionByOwnerIdAsync(ownerId, 1, 2);
-        var repeatedFirstPage = await repository.GetCollectionByOwnerIdAsync(ownerId, 1, 2);
-        var secondPage = await repository.GetCollectionByOwnerIdAsync(ownerId, 2, 2);
-
-        Assert.True(firstPage.IsSuccess);
-        Assert.True(repeatedFirstPage.IsSuccess);
-        Assert.True(secondPage.IsSuccess);
-        Assert.Equal(new[] { ids[0], ids[1] }, firstPage.Value.Select(entry => entry.Id));
-        Assert.Equal(firstPage.Value.Select(entry => entry.Id), repeatedFirstPage.Value.Select(entry => entry.Id));
-        Assert.Equal(new[] { ids[2], ids[3] }, secondPage.Value.Select(entry => entry.Id));
-        Assert.Empty(firstPage.Value.Select(entry => entry.Id).Intersect(secondPage.Value.Select(entry => entry.Id)));
-    }
-
-    [Fact]
     public async Task MediaEntryRepo_GetMinimalCollectionByOwnerIdAsync_ProjectsMinimalShape_AndIsolatesOwner()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
@@ -120,7 +88,7 @@ public sealed class RepositoryPaginationTests
         await using var queryContext = new AppDbContext(queryOptions);
         var repository = new MediaEntryRepo(
             queryContext,
-            CreateErrorLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(loggerFactory));
+            CreateErrorLogger<MediaEntryRepo>(loggerFactory));
 
         var result = await repository.GetMinimalCollectionByOwnerIdAsync(ownerId, 1, 10);
 
@@ -155,7 +123,7 @@ public sealed class RepositoryPaginationTests
         await using var queryContext = new AppDbContext(options);
         var repository = new MediaEntryRepo(
             queryContext,
-            CreateErrorLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(loggerFactory));
+            CreateErrorLogger<MediaEntryRepo>(loggerFactory));
 
         var firstPage = await repository.SearchMediaEntriesAsync(ownerId, "Match", 1, 2);
         var repeatedFirstPage = await repository.SearchMediaEntriesAsync(ownerId, "Match", 1, 2);

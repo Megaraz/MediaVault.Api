@@ -7,12 +7,9 @@ using media_vault_app.API.Observability;
 using media_vault_app.API.RateLimiting;
 using media_vault_app.API.Security;
 using media_vault_app.Application.Interfaces.Clients;
-using media_vault_app.Application.Interfaces.Mappers;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Interfaces.Validators;
-using media_vault_app.Application.Mappers.MediaEntry;
-using media_vault_app.Application.Mappers.User;
 using media_vault_app.Application.Services;
 using media_vault_app.Application.Services.API;
 using media_vault_app.Application.Services.Auth;
@@ -34,7 +31,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Rasmus.SharedKernel.Interfaces.Services.Repositories;
 
 namespace media_vault_app.API
 {
@@ -147,13 +143,6 @@ namespace media_vault_app.API
 
 
 
-            #region Mappers
-
-            builder.Services.AddScoped<IMediaEntryEntityMapper, MediaEntryEntityMapper>();
-            builder.Services.AddScoped<IMediaEntryDtoMapper, MediaEntryDtoMapper>();
-
-            #endregion
-
             #region Validators
 
             builder.Services.AddScoped<IMediaEntryDtoValidator, MediaEntryDtoValidator>();
@@ -167,7 +156,6 @@ namespace media_vault_app.API
 
             builder.Services.AddScoped<IMediaEntryRepo, MediaEntryRepo>();
 
-            builder.Services.AddScoped<IRepo<TvSeriesEntry, Guid>, RepoBase<TvSeriesEntry, Guid>>();
             #endregion
 
             #region Services

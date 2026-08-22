@@ -170,8 +170,8 @@ public sealed class DatabaseAndLoggingTests
         await using var queryContext = new AppDbContext(options);
         var mediaEntryRepo = new MediaEntryRepo(
             queryContext,
-            new ErrorEventLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(
-                loggerFactory.CreateLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(),
+            new ErrorEventLogger<MediaEntryRepo>(
+                loggerFactory.CreateLogger<MediaEntryRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)));
         var userRepo = new UserRepo(
@@ -183,7 +183,6 @@ public sealed class DatabaseAndLoggingTests
         var readService = new MediaEntryReadService(
             mediaEntryRepo,
             userRepo,
-            new MediaEntryEntityMapper(),
             ServiceTestLogger.Create<MediaEntryReadService>());
 
         var entryIdsAndTypes = new (Guid Id, Type Type)[]
@@ -270,8 +269,8 @@ public sealed class DatabaseAndLoggingTests
                 new ErrorDiagnosticsOptions(false)));
         var mediaEntryRepository = new MediaEntryRepo(
             dbContext,
-            new ErrorEventLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(
-                factory.CreateLogger<DependentEntityRepoBase<MediaEntry, Guid, Guid>>(),
+            new ErrorEventLogger<MediaEntryRepo>(
+                factory.CreateLogger<MediaEntryRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)));
         var repository = new RepoBase<User, Guid>(
@@ -287,7 +286,6 @@ public sealed class DatabaseAndLoggingTests
         var operations = new Func<Task>[]
         {
             async () => await repository.GetCollectionAsync(1, 10, cancellation.Token),
-            async () => await mediaEntryRepository.GetCollectionByOwnerIdAsync(Guid.NewGuid(), 1, 10, cancellation.Token),
             async () => await mediaEntryRepository.GetMinimalCollectionByOwnerIdAsync(Guid.NewGuid(), 1, 10, cancellation.Token),
             async () => await mediaEntryRepository.SearchMediaEntriesAsync(Guid.NewGuid(), "query", 1, 10, cancellation.Token),
             async () => await userRepository.GetByUsernameOrEmailAsync("user", cancellation.Token)
