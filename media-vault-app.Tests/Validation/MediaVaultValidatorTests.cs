@@ -1,6 +1,6 @@
-using Rasmus.SharedKernel.Validation;
+using media_vault_app.Application.Validation;
 
-namespace Rasmus.SharedKernel.Tests;
+namespace media_vault_app.Tests.Validation;
 
 public class MediaVaultValidatorIsValidIdTests
 {

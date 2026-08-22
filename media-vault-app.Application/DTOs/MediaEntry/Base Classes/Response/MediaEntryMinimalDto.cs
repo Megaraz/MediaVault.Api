@@ -1,9 +1,8 @@
 ﻿using media_vault_app.Domain.Enums;
-using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Application.DTOs.MediaEntry.Response;
 
-public record MediaEntryMinimalDto : IDtoIdentifiable<Guid>
+public record MediaEntryMinimalDto
 {
     public Guid Id { get; init; }
     public string? Title { get; init; }

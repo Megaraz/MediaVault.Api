@@ -3,11 +3,11 @@ using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Movie;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.Shared;
 using media_vault_app.Application.DTOs.External_API_Contracts.Tmdb.TvSeries;
 using media_vault_app.Application.Interfaces.Clients;
+using media_vault_app.Application.Validation;
 using media_vault_app.Domain.Enums;
 using media_vault_app.Infrastructure.Diagnostics;
 using Microsoft.Extensions.Options;
 using Megaraz.ResultPattern;
-using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Infrastructure.API.Clients
 {

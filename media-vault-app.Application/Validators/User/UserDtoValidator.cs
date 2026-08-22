@@ -2,7 +2,6 @@
 using media_vault_app.Application.Interfaces.Validators;
 using media_vault_app.Application.Validation;
 using Megaraz.ResultPattern;
-using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Validators.User
 {

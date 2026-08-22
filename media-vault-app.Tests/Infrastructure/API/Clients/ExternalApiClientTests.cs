@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Rasmus.SharedKernel.ExternalServices;
 using ApiErrorResponseBody = media_vault_app.API.Controllers.ErrorResponseBody;
 
 namespace media_vault_app.Tests.Infrastructure.API.Clients;

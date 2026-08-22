@@ -1,9 +1,8 @@
 ﻿using media_vault_app.Domain.Enums;
-using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Application.DTOs.MediaEntry.Response;
 
-public abstract record MediaEntryDetailedDto : IDtoIdentifiable<Guid>
+public abstract record MediaEntryDetailedDto
 {
     public Guid Id { get; init; }
     public string? IdExternal { get; init; }

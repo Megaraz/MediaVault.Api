@@ -19,4 +19,4 @@ Subtype persistence behavior remains explicit:
 - game updates replace the `PcRequirements` value object;
 - all writes preserve owner isolation, server-owned timestamps, cancellation, and optimistic-concurrency failures.
 
-The API routes, JSON DTOs, Result/ProblemDetails mapping, and authenticated ownership behavior remain unchanged. The generic dependent-entity service/repository bases and media mapper contracts have no active media callers; the remaining broader SharedKernel generic cleanup belongs to issue #171.
+The API routes, JSON DTOs, Result/ProblemDetails mapping, and authenticated ownership behavior remain unchanged. The generic dependent-entity service/repository bases and media mapper contracts were removed after their callers migrated; the remaining SharedKernel boundary is documented in [`shared-kernel-boundaries.md`](shared-kernel-boundaries.md).
