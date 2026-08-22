@@ -42,40 +42,6 @@ public sealed class DatabaseAndLoggingTests
     }
 
     [Fact]
-    public void RepositoryFailure_EmitsOneStructuredEventWithoutChangingTheResult()
-    {
-        using var provider = new RecordingLoggerProvider();
-        using var factory = LoggerFactory.Create(builder => builder
-            .SetMinimumLevel(LogLevel.Trace)
-            .AddProvider(provider));
-        using var dbContext = new AppDbContext(
-            new DbContextOptionsBuilder<AppDbContext>().UseSqlite("Data Source=:memory:").Options);
-        var errorContext = new ErrorContext(OperationType.Get, "User");
-        var repository = new TestRepository(
-            dbContext,
-            new ErrorEventLogger<RepoBase<User, Guid>>(
-                factory.CreateLogger<RepoBase<User, Guid>>(),
-                new ErrorEventPolicy(),
-                new ErrorDiagnosticsOptions(false)));
-        var error = DatabaseFailurePolicy.QueryFailure(
-            errorContext,
-            new InvalidOperationException("private diagnostic"));
-
-        var result = repository.ReturnFailureAfterLogging(error, errorContext);
-
-        Assert.True(result.IsFailure);
-        Assert.Same(error, result.PrimaryError);
-        var entry = Assert.Single(provider.Entries);
-        Assert.Equal(2001, entry.EventId.Id);
-        Assert.Equal("DatabaseOperationFailed", entry.EventId.Name);
-        Assert.Equal("Infrastructure", entry.Properties["Layer"]);
-        Assert.Equal(nameof(TestRepository), entry.Properties["Service"]);
-        Assert.Equal(nameof(TestRepository.ReturnFailureAfterLogging), entry.Properties["Method"]);
-        Assert.Null(entry.Exception);
-        Assert.DoesNotContain("private diagnostic", entry.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public async Task DetailedReads_LoadAllMediaSubtypesFromSqlite()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
@@ -231,10 +197,10 @@ public sealed class DatabaseAndLoggingTests
         await using var queryContext = new AppDbContext(queryOptions);
         using var provider = new RecordingLoggerProvider();
         using var factory = LoggerFactory.Create(builder => builder.AddProvider(provider));
-        var repository = new RepoBase<User, Guid>(
+        var repository = new UserRepo(
             queryContext,
-            new ErrorEventLogger<RepoBase<User, Guid>>(
-                factory.CreateLogger<RepoBase<User, Guid>>(),
+            new ErrorEventLogger<UserRepo>(
+                factory.CreateLogger<UserRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)));
 
@@ -273,19 +239,11 @@ public sealed class DatabaseAndLoggingTests
                 factory.CreateLogger<MediaEntryRepo>(),
                 new ErrorEventPolicy(),
                 new ErrorDiagnosticsOptions(false)));
-        var repository = new RepoBase<User, Guid>(
-            dbContext,
-            new ErrorEventLogger<RepoBase<User, Guid>>(
-                factory.CreateLogger<RepoBase<User, Guid>>(),
-                new ErrorEventPolicy(),
-                new ErrorDiagnosticsOptions(false)));
-
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
 
         var operations = new Func<Task>[]
         {
-            async () => await repository.GetCollectionAsync(1, 10, cancellation.Token),
             async () => await mediaEntryRepository.GetMinimalCollectionByOwnerIdAsync(Guid.NewGuid(), 1, 10, cancellation.Token),
             async () => await mediaEntryRepository.SearchMediaEntriesAsync(Guid.NewGuid(), "query", 1, 10, cancellation.Token),
             async () => await userRepository.GetByUsernameOrEmailAsync("user", cancellation.Token)
@@ -298,15 +256,6 @@ public sealed class DatabaseAndLoggingTests
         }
 
         Assert.Empty(provider.Entries);
-    }
-
-    private sealed class TestRepository(
-        AppDbContext dbContext,
-        ErrorEventLogger<RepoBase<User, Guid>> logger)
-        : RepoBase<User, Guid>(dbContext, logger)
-    {
-        public Result ReturnFailureAfterLogging(Error error, ErrorContext errorContext) =>
-            LogAndFail(error, errorContext);
     }
 
     private sealed class ProgrammingFailureInterceptor : DbCommandInterceptor

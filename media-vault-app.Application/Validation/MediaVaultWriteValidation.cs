@@ -1,6 +1,5 @@
 using System.Net.Mail;
 using Megaraz.ResultPattern;
-using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Validation;
 

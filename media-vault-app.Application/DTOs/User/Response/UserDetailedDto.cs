@@ -1,5 +1,3 @@
-﻿using Rasmus.SharedKernel.Interfaces.Identifiers;
-
 namespace media_vault_app.Application.DTOs.User.Response
 {
     public record UserDetailedDto(
@@ -8,6 +6,6 @@ namespace media_vault_app.Application.DTOs.User.Response
         string Email,
         DateTime CreatedAtUtc,
         DateTime UpdatedAtUtc,
-        int Version) : IDtoIdentifiable<Guid>;
+        int Version);
 
 }

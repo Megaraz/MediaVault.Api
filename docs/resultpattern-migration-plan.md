@@ -28,9 +28,9 @@ The completed backend uses the packages and MediaVault-owned policy at these bou
 
 | Project or boundary | Final ownership |
 |---|---|
-| `Rasmus.SharedKernel` | Core `Megaraz.ResultPattern` contracts plus MediaVault validation, pagination, result-message, logging-contract, and outbound-response policies |
-| Application | Core `Megaraz.ResultPattern` values only; no ASP.NET Core or database ResultPattern dependency |
-| Infrastructure | Core, ASP.NET Core HTTP conversion, and Infrastructure database errors; concrete NDJSON logging |
+| `Rasmus.SharedKernel` | Core `Megaraz.ResultPattern` error policy plus shared entity identity, timestamp, ownership, and concurrency contracts |
+| Application | Core `Megaraz.ResultPattern` values plus MediaVault validation, pagination, and result-message policies; no ASP.NET Core or database ResultPattern dependency |
+| Infrastructure | Core, ASP.NET Core HTTP conversion, Infrastructure database errors, and external-provider response policy; concrete NDJSON logging |
 | API | Core and ASP.NET Core result mapping; MediaVault failure-body policy, response metadata, and route-aware `CreatedAtAction` adapter |
 | Domain | No direct ResultPattern package reference; the core package is transitive through SharedKernel |
 
@@ -41,8 +41,8 @@ The final observable and operational policy is:
 - Concrete package HTTP errors retain their status-specific mappings. Every other current `External` error, including database errors, maps to HTTP 500.
 - Outbound responses are inspected up to exactly 2 MiB (`2,097,152` bytes). Raw provider text remains private; clients receive fixed MediaVault messages.
 - Caller cancellation propagates without failure logging. Non-caller task cancellation, timeout, and transport failures become one logged HTTP 503 `TransportFailure`. Repository cancellation remains unchanged, and broader controller-to-database/outbound cancellation still needs a future review.
-- `Rasmus.SharedKernel.Validation`, `Rasmus.SharedKernel.Pagination`, `Rasmus.SharedKernel.Results`, `Rasmus.SharedKernel.Diagnostics`, and `Rasmus.SharedKernel.ExternalServices` retain application-specific policy that the packages do not own.
-- Concrete seven-day NDJSON persistence and extension-aware log classification live in Infrastructure; SharedKernel exposes only the neutral logging records and interfaces needed by Application.
+- Application-specific validation, pagination, and result-message policies live under `media_vault_app.Application`; external-provider response policy lives under `media_vault_app.Infrastructure`. The old SharedKernel policy namespaces were removed under issue #171. SharedKernel retains only the neutral entity contracts and the cross-layer safe error factory described in [`shared-kernel-boundaries.md`](shared-kernel-boundaries.md).
+- Structured logging production and classification live in Infrastructure/API boundaries; the current SharedKernel surface is limited to the entity contracts and safe error factory recorded in [`shared-kernel-boundaries.md`](shared-kernel-boundaries.md).
 - Development OpenAPI now declares the central ordinary/validation error schemas and the actual 200, 201, and 204 success statuses used by controller actions.
 
 ## Executive summary
@@ -574,7 +574,7 @@ This table records the owner-approved Phase 2 baseline. Do not silently reinterp
 | D5 | Maximum upstream response body | Configure explicitly after checking realistic RAWG/TMDB/Books sizes | Approved | Use exactly 2 MiB (`2,097,152` bytes), accepting the exact boundary and rejecting boundary + 1 on success and error paths. |
 | D6 | Layer/service/method diagnostics | Preserve as structured logging metadata if needed; do not force it into package types | Approved | Add MediaVault-owned `ErrorLogContext(Layer, Service, Method)` and combine it with the package description. Discard the legacy multiline format and old-record compatibility. |
 | D7 | Non-HTTP `External` HTTP status | Map to 500 | Approved | Pattern-match concrete `HttpError` first; map every other current `External` to 500. Future external types require an explicit mapping decision. |
-| D8 | Pagination placement | Keep a neutral SharedKernel helper with max 100 | Approved | Keep MediaVault-owned normalization in `Rasmus.SharedKernel.Pagination`, preserving min 1, default max 100, and optional custom max without an Application ASP.NET dependency. |
+| D8 | Pagination placement | Keep a neutral SharedKernel helper with max 100 | Superseded by #171 on 2026-08-22 | Keep the same normalization behavior under `media_vault_app.Application.Pagination`; pagination is an Application policy and does not require an ASP.NET dependency. |
 | D9 | Cancellation and timeout semantics | Preserve current behavior during migration | Approved with change | Propagate caller cancellation without logging; map non-caller task cancellation, timeout, and transport failure to logged `TransportFailure`, safe fixed text, and HTTP 503. Keep repository cancellation unchanged and review full-stack cancellation separately. |
 | D10 | File logger | Retain and relocate implementation to Infrastructure | Superseded by #110 on 2026-08-13 | Retain NDJSON behavior and neutral contracts for the ResultPattern migration. That compatibility choice remained in force through the migration, then [`error-observability-policy.md`](error-observability-policy.md) Gates A-C were satisfied and #110 removed the file sink and cleanup service. |
 | D11 | External consumers of old namespace | Confirm none before removal | Approved | Owner confirmed no supported external .NET consumer. Web and Android consume HTTP only; Android's similarly named TypeScript code is independent. Remove the old namespace only after repository callsites migrate. |
@@ -1044,3 +1044,4 @@ The migration is complete because:
 | 2026-08-01 | Completed Phase 6 under issue #95: removed the legacy ResultPattern implementation, migration bridge, and package-duplicate tests while retaining MediaVault-owned validation, pagination, logging, external-response, and API response policies. |
 | 2026-08-01 | Completed Phase 7 under issue #96: verified published package resolution, dependency direction, focused and full tests, OpenAPI, logs, clients, and legacy-removal searches; finalized durable ownership and compatibility documentation. |
 | 2026-08-13 | Recorded D10's approved successor under issue #110 after standard logging producers and the safe exception boundary replaced the retained NDJSON sink; removed file persistence, readback/retention, cleanup, and their neutral contracts. |
+| 2026-08-22 | Issue #171 reduced SharedKernel to justified cross-layer contracts and the safe error factory; moved validation, pagination, and result-message policies to Application and external-provider response policy to Infrastructure, without changing public API behavior. |

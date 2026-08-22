@@ -1,9 +1,9 @@
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
-using Rasmus.SharedKernel.Results;
-using Rasmus.SharedKernel.Validation;
+using media_vault_app.Application.Results;
+using media_vault_app.Application.Validation;
 
-namespace Rasmus.SharedKernel.Tests;
+namespace media_vault_app.Tests.Validation;
 
 public class MediaVaultResultPolicyTests
 {

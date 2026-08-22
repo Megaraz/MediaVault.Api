@@ -1,6 +1,6 @@
 using Megaraz.ResultPattern;
 
-namespace Rasmus.SharedKernel.Validation;
+namespace media_vault_app.Application.Validation;
 
 /// <summary>MediaVault-owned validation factories that preserve stable client messages.</summary>
 public static class MediaVaultValidationError

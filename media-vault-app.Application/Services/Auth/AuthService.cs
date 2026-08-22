@@ -8,7 +8,7 @@ using media_vault_app.Application.Mappers.User;
 using Microsoft.Extensions.Logging;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
-using Rasmus.SharedKernel.Validation;
+using media_vault_app.Application.Validation;
 
 namespace media_vault_app.Application.Services.Auth;
 

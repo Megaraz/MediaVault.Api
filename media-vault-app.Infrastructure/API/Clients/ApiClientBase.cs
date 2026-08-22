@@ -3,7 +3,6 @@ using media_vault_app.Infrastructure.Diagnostics;
 using Megaraz.ResultPattern;
 using Megaraz.ResultPattern.AspNetCore;
 using Polly.Timeout;
-using Rasmus.SharedKernel.ExternalServices;
 using PackageHttpExtensions = Megaraz.ResultPattern.AspNetCore.HttpResponseToResultExtensions;
 
 namespace media_vault_app.Infrastructure.API.Clients
