@@ -1,6 +1,7 @@
 using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Request;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.DTOs;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.API.RateLimiting;
 using media_vault_app.API.RequestLimits;
@@ -296,8 +297,8 @@ namespace media_vault_app.API.Controllers
         #region Read Operations - Shared Endpoints
 
         [HttpPost("search")]
-        [ProducesResponseType(typeof(IReadOnlyList<MediaEntryMinimalDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntries(
+        [ProducesResponseType(typeof(PagedResponseDto<MediaEntryMinimalDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResponseDto<MediaEntryMinimalDto>>> SearchMediaEntries(
             [FromBody] SearchRequestDto request,
             CancellationToken ct,
             [FromQuery] int page = 1,
@@ -325,8 +326,8 @@ namespace media_vault_app.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IReadOnlyList<MediaEntryMinimalDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IReadOnlyList<MediaEntryMinimalDto>>> GetMediaEntries(
+        [ProducesResponseType(typeof(PagedResponseDto<MediaEntryMinimalDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResponseDto<MediaEntryMinimalDto>>> GetMediaEntries(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 25,
             CancellationToken ct = default)

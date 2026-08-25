@@ -52,15 +52,16 @@ public sealed class RepositoryPaginationTests
         var result = await repository.GetMinimalCollectionByOwnerIdAsync(ownerId, 1, 10);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(ids, result.Value.Select(entry => entry.Id));
-        var first = result.Value[0];
+        Assert.Equal(5, result.Value.TotalCount);
+        Assert.Equal(ids, result.Value.Items.Select(entry => entry.Id));
+        var first = result.Value.Items[0];
         Assert.Equal("Match newest", first.Title);
         Assert.Equal("https://example.test/image.jpg", first.ImageUrl);
         Assert.Equal(4m, first.Rating);
         Assert.Equal(new DateOnly(2025, 1, 1), first.ReleaseDate);
         Assert.Equal(["Drama"], first.Genres);
         Assert.Equal(MediaType.Movie, first.MediaType);
-        Assert.DoesNotContain(result.Value, entry => entry.Title == "Other owner");
+        Assert.DoesNotContain(result.Value.Items, entry => entry.Title == "Other owner");
         Assert.DoesNotContain(commands, command => command.Contains("Seasons", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(commands, command => command.Contains("RuntimeMinutes", StringComparison.OrdinalIgnoreCase));
     }
@@ -74,9 +75,20 @@ public sealed class RepositoryPaginationTests
             .UseSqlite(connection)
             .Options;
         var ownerId = Guid.NewGuid();
+        var otherOwnerId = Guid.NewGuid();
         var ids = CreateOrderedIds();
 
         await SeedMediaEntriesAsync(options, ownerId, ids, includeExcludedEntry: true);
+        await using (var setupContext = new AppDbContext(options))
+        {
+            setupContext.Users.Add(CreateUser(otherOwnerId, new DateTime(2025, 1, 2), "search-other-owner"));
+            setupContext.MediaEntries.Add(CreateMovie(
+                Guid.Parse("00000000-0000-0000-0000-000000000007"),
+                otherOwnerId,
+                new DateTime(2026, 1, 5),
+                "Match other owner"));
+            await setupContext.SaveChangesAsync();
+        }
 
         using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
         await using var queryContext = new AppDbContext(options);
@@ -91,10 +103,30 @@ public sealed class RepositoryPaginationTests
         Assert.True(firstPage.IsSuccess);
         Assert.True(repeatedFirstPage.IsSuccess);
         Assert.True(secondPage.IsSuccess);
-        Assert.Equal(new[] { ids[0], ids[1] }, firstPage.Value.Select(entry => entry.Id));
-        Assert.Equal(firstPage.Value.Select(entry => entry.Id), repeatedFirstPage.Value.Select(entry => entry.Id));
-        Assert.Equal(new[] { ids[2], ids[3] }, secondPage.Value.Select(entry => entry.Id));
-        Assert.Empty(firstPage.Value.Select(entry => entry.Id).Intersect(secondPage.Value.Select(entry => entry.Id)));
+        Assert.Equal(5, firstPage.Value.TotalCount);
+        Assert.Equal(5, secondPage.Value.TotalCount);
+        Assert.Equal(new[] { ids[0], ids[1] }, firstPage.Value.Items.Select(entry => entry.Id));
+        Assert.Equal(firstPage.Value.Items.Select(entry => entry.Id), repeatedFirstPage.Value.Items.Select(entry => entry.Id));
+        Assert.Equal(new[] { ids[2], ids[3] }, secondPage.Value.Items.Select(entry => entry.Id));
+        Assert.Empty(firstPage.Value.Items.Select(entry => entry.Id).Intersect(secondPage.Value.Items.Select(entry => entry.Id)));
+    }
+
+    [Fact]
+    public async Task MediaEntryRepo_GetMinimalCollectionByOwnerIdAsync_PropagatesCancellation()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite("Data Source=:memory:")
+            .Options;
+        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
+        await using var context = new AppDbContext(options);
+        var repository = new MediaEntryRepo(
+            context,
+            CreateErrorLogger<MediaEntryRepo>(loggerFactory));
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            repository.GetMinimalCollectionByOwnerIdAsync(Guid.NewGuid(), 1, 10, cancellation.Token));
     }
 
     private static Guid[] CreateOrderedIds() =>
