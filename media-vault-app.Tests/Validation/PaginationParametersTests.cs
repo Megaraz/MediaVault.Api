@@ -1,6 +1,6 @@
-using Rasmus.SharedKernel.Pagination;
+using media_vault_app.Application.Pagination;
 
-namespace Rasmus.SharedKernel.Tests
+namespace media_vault_app.Tests.Validation
 {
     public class Validator_PaginationParameters_Tests
     {

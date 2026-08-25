@@ -1,4 +1,4 @@
-namespace Rasmus.SharedKernel.Pagination
+namespace media_vault_app.Application.Pagination
 {
     /// <summary>
     /// Represents normalised pagination parameters. Construct via <see cref="Normalize"/>.

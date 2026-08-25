@@ -41,8 +41,8 @@ Revalidate this map before architectural work:
 - `media-vault-app.Application`: use cases, service contracts and implementations, DTOs, validation, and mapping.
 - `media-vault-app.Infrastructure`: EF Core, SQLite persistence, repositories, migrations, and third-party HTTP clients.
 - `media-vault-app.API`: composition root, JWT bearer authentication, controllers, and HTTP response mapping.
-- `Rasmus.SharedKernel`: shared entity/service contracts plus MediaVault-owned validation, pagination, result-message, diagnostic, and logging abstractions. It depends only on the published core ResultPattern package.
-- `media-vault-app.Tests` and `Rasmus.SharedKernel.Tests`: xUnit tests.
+- `Rasmus.SharedKernel`: shared entity identity, timestamp, ownership, and concurrency contracts plus the cross-layer safe error factory. Application owns validation, pagination, and result-message policies; Infrastructure owns external-provider response policy. SharedKernel depends only on the published core ResultPattern package.
+- `media-vault-app.Tests`: xUnit tests for application, infrastructure, API, and retained SharedKernel policies.
 - `docs/`: durable plans and architecture documentation.
 
 The backend currently targets .NET 10 and EF Core with SQLite. External metadata comes through backend integrations for RAWG, TMDB, and Google Books. Exact versions and behavior must still be verified from code.

@@ -1,5 +1,5 @@
 ﻿using media_vault_app.Application.DTOs.User.Request;
-using Rasmus.SharedKernel.Validation;
+using media_vault_app.Application.Validation;
 using Megaraz.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Validators

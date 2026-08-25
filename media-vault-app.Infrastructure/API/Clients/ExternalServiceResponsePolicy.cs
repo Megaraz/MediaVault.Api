@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Rasmus.SharedKernel.ExternalServices;
+namespace media_vault_app.Infrastructure.API.Clients;
 
 /// <summary>
 /// MediaVault-owned limits and safe client messages for responses from external services.

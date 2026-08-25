@@ -1,9 +1,8 @@
 ﻿using media_vault_app.Domain.Enums;
-using Rasmus.SharedKernel.Interfaces.Identifiers;
 
 namespace media_vault_app.Application.DTOs.Season
 {
-    public sealed record SeasonDetailedDto : IDtoIdentifiable<Guid>
+    public sealed record SeasonDetailedDto
     {
         public Guid Id { get; init; }
         public Guid TvSeriesId { get; init; }

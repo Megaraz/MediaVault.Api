@@ -8,8 +8,8 @@ using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Megaraz.ResultPattern;
-using Rasmus.SharedKernel.Results;
-using Rasmus.SharedKernel.Validation;
+using media_vault_app.Application.Results;
+using media_vault_app.Application.Validation;
 
 namespace media_vault_app.Application.Services.API
 {

@@ -5,7 +5,6 @@ using media_vault_app.Application.Interfaces.Validators;
 using media_vault_app.Application.Validation;
 using media_vault_app.Domain.Enums;
 using Megaraz.ResultPattern;
-using Rasmus.SharedKernel.Validation;
 
 namespace media_vault_app.Application.Validators.MediaEntry;
 

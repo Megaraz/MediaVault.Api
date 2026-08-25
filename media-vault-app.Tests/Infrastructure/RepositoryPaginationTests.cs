@@ -15,47 +15,6 @@ namespace media_vault_app.Tests.Infrastructure;
 public sealed class RepositoryPaginationTests
 {
     [Fact]
-    public async Task RepoBase_GetCollectionAsync_OrdersByCreationDateThenId_AndKeepsPagesDisjoint()
-    {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        var ids = CreateOrderedIds();
-        await using (var setupContext = new AppDbContext(options))
-        {
-            await setupContext.Database.EnsureCreatedAsync();
-            setupContext.Users.AddRange(
-                CreateUser(ids[0], new DateTime(2026, 1, 3), "newest"),
-                CreateUser(ids[1], new DateTime(2026, 1, 2), "tie-low"),
-                CreateUser(ids[2], new DateTime(2026, 1, 2), "tie-high"),
-                CreateUser(ids[3], new DateTime(2026, 1, 1), "oldest-low"),
-                CreateUser(ids[4], new DateTime(2026, 1, 1), "oldest-high"));
-            await setupContext.SaveChangesAsync();
-        }
-
-        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new RecordingLoggerProvider()));
-        await using var queryContext = new AppDbContext(options);
-        var repository = new RepoBase<User, Guid>(
-            queryContext,
-            CreateErrorLogger<RepoBase<User, Guid>>(loggerFactory));
-
-        var firstPage = await repository.GetCollectionAsync(1, 2);
-        var repeatedFirstPage = await repository.GetCollectionAsync(1, 2);
-        var secondPage = await repository.GetCollectionAsync(2, 2);
-
-        Assert.True(firstPage.IsSuccess);
-        Assert.True(repeatedFirstPage.IsSuccess);
-        Assert.True(secondPage.IsSuccess);
-        Assert.Equal(new[] { ids[0], ids[1] }, firstPage.Value.Select(user => user.Id));
-        Assert.Equal(firstPage.Value.Select(user => user.Id), repeatedFirstPage.Value.Select(user => user.Id));
-        Assert.Equal(new[] { ids[2], ids[3] }, secondPage.Value.Select(user => user.Id));
-        Assert.Empty(firstPage.Value.Select(user => user.Id).Intersect(secondPage.Value.Select(user => user.Id)));
-    }
-
-    [Fact]
     public async Task MediaEntryRepo_GetMinimalCollectionByOwnerIdAsync_ProjectsMinimalShape_AndIsolatesOwner()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");

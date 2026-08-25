@@ -9,8 +9,8 @@ using Microsoft.Extensions.Logging;
 using Megaraz.ResultPattern;
 using Rasmus.SharedKernel.Errors;
 using Rasmus.SharedKernel.Interfaces.Identifiers;
-using Rasmus.SharedKernel.Results;
-using Rasmus.SharedKernel.Validation;
+using media_vault_app.Application.Results;
+using media_vault_app.Application.Validation;
 using MediaEntryEntity = media_vault_app.Domain.Entities.MediaEntry;
 
 namespace media_vault_app.Application.Services.MediaEntry;

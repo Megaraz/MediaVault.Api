@@ -14,8 +14,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Rasmus.SharedKernel.ExternalServices;
-
 namespace media_vault_app.Tests.Infrastructure.API.Clients;
 
 public sealed class ProviderHttpResilienceTests
