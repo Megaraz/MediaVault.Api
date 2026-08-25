@@ -1,5 +1,6 @@
 using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.DTOs;
 using media_vault_app.Application.Interfaces.Repos;
 using media_vault_app.Application.Interfaces.Services;
 using media_vault_app.Application.Mappers.MediaEntry;
@@ -129,7 +130,7 @@ public sealed class MediaEntryReadService : IMediaEntryReadService
             MediaVaultErrors.NotFound(DefineErrorContext(nameof(GetMangaByIdAsync), OperationType.Get)));
     }
 
-    public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
+    public async Task<Result<PagedResponseDto<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
         Guid ownerId,
         int pageNumber = 1,
         int pageSize = 10,
@@ -139,24 +140,30 @@ public sealed class MediaEntryReadService : IMediaEntryReadService
         var validationErrors = ValidateOwnerId(ownerId, errorContext);
 
         if (validationErrors.Count > 0)
-            return LogValidationFailure<IReadOnlyList<MediaEntryMinimalDto>>(
+            return LogValidationFailure<PagedResponseDto<MediaEntryMinimalDto>>(
                 validationErrors,
                 nameof(GetMinimalCollectionByOwnerIdAsync),
                 errorContext);
 
         var ownerResult = await EnsureOwnerExistsAsync(ownerId, ct);
         if (ownerResult.IsFailure)
-            return ownerResult.ToResult<IReadOnlyList<MediaEntryMinimalDto>>();
+            return ownerResult.ToResult<PagedResponseDto<MediaEntryMinimalDto>>();
 
         var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
-        return await _mediaEntryRepo.GetMinimalCollectionByOwnerIdAsync(
+        var repoResult = await _mediaEntryRepo.GetMinimalCollectionByOwnerIdAsync(
             ownerId,
             pagination.PageNumber,
             pagination.PageSize,
             ct);
+
+        return repoResult.Map(page => PagedResponseDto<MediaEntryMinimalDto>.Create(
+            page.Items,
+            pagination.PageNumber,
+            pagination.PageSize,
+            page.TotalCount));
     }
 
-    public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
+    public async Task<Result<PagedResponseDto<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
         Guid ownerId,
         SearchRequestDto request,
         int pageNumber = 1,
@@ -175,22 +182,28 @@ public sealed class MediaEntryReadService : IMediaEntryReadService
         }
 
         if (validationErrors.Count > 0)
-            return LogValidationFailure<IReadOnlyList<MediaEntryMinimalDto>>(
+            return LogValidationFailure<PagedResponseDto<MediaEntryMinimalDto>>(
                 validationErrors,
                 nameof(SearchMediaEntriesAsync),
                 errorContext);
 
         var ownerResult = await EnsureOwnerExistsAsync(ownerId, ct);
         if (ownerResult.IsFailure)
-            return ownerResult.ToResult<IReadOnlyList<MediaEntryMinimalDto>>();
+            return ownerResult.ToResult<PagedResponseDto<MediaEntryMinimalDto>>();
 
         var pagination = PaginationParameters.Normalize(pageNumber, pageSize);
-        return await _mediaEntryRepo.SearchMediaEntriesAsync(
+        var repoResult = await _mediaEntryRepo.SearchMediaEntriesAsync(
             ownerId,
             request!.Query,
             pagination.PageNumber,
             pagination.PageSize,
             ct);
+
+        return repoResult.Map(page => PagedResponseDto<MediaEntryMinimalDto>.Create(
+            page.Items,
+            pagination.PageNumber,
+            pagination.PageSize,
+            page.TotalCount));
     }
 
     private async Task<Result<bool>> EnsureOwnerExistsAsync(Guid ownerId, CancellationToken ct) =>

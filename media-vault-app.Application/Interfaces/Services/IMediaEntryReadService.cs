@@ -1,5 +1,6 @@
 using media_vault_app.Application.DTOs.MediaEntry.Base_Classes.Search;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.DTOs;
 using Megaraz.ResultPattern;
 
 namespace media_vault_app.Application.Interfaces.Services
@@ -36,13 +37,13 @@ namespace media_vault_app.Application.Interfaces.Services
             Guid id,
             CancellationToken ct = default);
 
-        Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
+        Task<Result<PagedResponseDto<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
             Guid ownerId,
             int pageNumber = 1,
             int pageSize = 10,
             CancellationToken ct = default);
 
-        Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
+        Task<Result<PagedResponseDto<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
             Guid ownerId,
             SearchRequestDto request,
             int pageNumber = 1,

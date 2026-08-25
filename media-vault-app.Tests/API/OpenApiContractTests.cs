@@ -41,6 +41,7 @@ public sealed class OpenApiContractTests
         var responses = collectionOperation.GetProperty("responses");
 
         Assert.True(responses.TryGetProperty("200", out _));
+        var collectionSchemaName = GetSchemaName(responses, "200");
         AssertSchema(
             responses,
             "401",
@@ -78,6 +79,12 @@ public sealed class OpenApiContractTests
         var schemas = document.RootElement
             .GetProperty("components")
             .GetProperty("schemas");
+        AssertPagedMediaEntrySchema(schemas, collectionSchemaName);
+        var searchResponses = paths
+            .GetProperty("/MediaEntries/search")
+            .GetProperty("post")
+            .GetProperty("responses");
+        Assert.Equal(collectionSchemaName, GetSchemaName(searchResponses, "200"));
         AssertVersionProperty(schemas, "UserDetailedDto", "version", required: false);
         AssertVersionProperty(schemas, "UserUpdateDto", "expectedVersion", required: true);
         AssertVersionProperty(schemas, "MediaEntryDetailedDto", "version", required: false);
@@ -148,6 +155,35 @@ public sealed class OpenApiContractTests
             .GetProperty("$ref")
             .GetString();
         Assert.EndsWith($"/{schemaName}", reference, StringComparison.Ordinal);
+    }
+
+    private static string GetSchemaName(JsonElement responses, string status)
+    {
+        var reference = responses
+            .GetProperty(status)
+            .GetProperty("content")
+            .GetProperty("application/json")
+            .GetProperty("schema")
+            .GetProperty("$ref")
+            .GetString();
+
+        Assert.NotNull(reference);
+        return reference[(reference.LastIndexOf('/') + 1)..];
+    }
+
+    private static void AssertPagedMediaEntrySchema(JsonElement schemas, string schemaName)
+    {
+        var properties = schemas.GetProperty(schemaName).GetProperty("properties");
+        Assert.Equal(
+            ["hasNextPage", "hasPreviousPage", "items", "pageNumber", "pageSize", "totalCount", "totalPages"],
+            properties.EnumerateObject().Select(property => property.Name).Order());
+
+        var itemReference = properties
+            .GetProperty("items")
+            .GetProperty("items")
+            .GetProperty("$ref")
+            .GetString();
+        Assert.EndsWith("/MediaEntryMinimalDto", itemReference, StringComparison.Ordinal);
     }
 
     private static void AssertVersionProperty(

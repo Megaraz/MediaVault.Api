@@ -11,7 +11,8 @@ using MovieEntryEntity = media_vault_app.Domain.Entities.MovieEntry;
 
 namespace media_vault_app.Tests.Services.MediaEntry
 {
-    using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.DTOs.MediaEntry.Response;
+using media_vault_app.Application.Pagination;
 
     public class MediaEntryReadServiceTests
     {
@@ -94,7 +95,8 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var ownerId = Guid.NewGuid();
             var mediaRepo = new FakeMediaEntryRepo
             {
-                MinimalCollectionByOwnerIdResult = Result<IReadOnlyList<MediaEntryMinimalDto>>.Success([CreateMinimalDto(title: "Movie One")])
+                MinimalCollectionByOwnerIdResult = Result<PageSlice<MediaEntryMinimalDto>>.Success(
+                    new([CreateMinimalDto(title: "Movie One")], 3))
             };
 
             var service = CreateService(mediaRepo, new FakeUserRepo());
@@ -104,7 +106,13 @@ namespace media_vault_app.Tests.Services.MediaEntry
             Assert.True(result.IsSuccess);
             Assert.Equal(1, mediaRepo.GetMinimalCollectionByOwnerIdCallCount);
             Assert.Equal((ownerId, 1, 1), mediaRepo.LastCollectionRequest);
-            Assert.Equal("Movie One", Assert.Single(result.Value).Title);
+            Assert.Equal("Movie One", Assert.Single(result.Value.Items).Title);
+            Assert.Equal(1, result.Value.PageNumber);
+            Assert.Equal(1, result.Value.PageSize);
+            Assert.Equal(3, result.Value.TotalCount);
+            Assert.Equal(3, result.Value.TotalPages);
+            Assert.True(result.Value.HasNextPage);
+            Assert.False(result.Value.HasPreviousPage);
         }
 
         [Fact]
@@ -140,7 +148,8 @@ namespace media_vault_app.Tests.Services.MediaEntry
             var ownerId = Guid.NewGuid();
             var mediaRepo = new FakeMediaEntryRepo
             {
-                SearchMediaEntriesResult = Result<IReadOnlyList<MediaEntryMinimalDto>>.Success([CreateMinimalDto(title: "The Matrix")])
+                SearchMediaEntriesResult = Result<PageSlice<MediaEntryMinimalDto>>.Success(
+                    new([CreateMinimalDto(title: "The Matrix")], 1))
             };
 
             var service = CreateService(mediaRepo, new FakeUserRepo());
@@ -149,7 +158,10 @@ namespace media_vault_app.Tests.Services.MediaEntry
 
             Assert.True(result.IsSuccess);
             Assert.Equal((ownerId, "matrix", 1, 1), mediaRepo.LastSearchRequest);
-            Assert.Equal("The Matrix", Assert.Single(result.Value).Title);
+            Assert.Equal("The Matrix", Assert.Single(result.Value.Items).Title);
+            Assert.Equal(1, result.Value.TotalCount);
+            Assert.Equal(1, result.Value.TotalPages);
+            Assert.False(result.Value.HasNextPage);
         }
 
         private static MediaEntryReadService CreateService(FakeMediaEntryRepo mediaRepo, FakeUserRepo ownerRepo)

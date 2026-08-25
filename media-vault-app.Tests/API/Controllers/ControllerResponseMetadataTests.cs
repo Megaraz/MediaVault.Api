@@ -1,5 +1,7 @@
 using System.Reflection;
 using media_vault_app.API.Controllers;
+using media_vault_app.Application.DTOs;
+using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.API.Diagnostics;
 using media_vault_app.API.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
@@ -85,6 +87,21 @@ public sealed class ControllerResponseMetadataTests
                 Assert.Equal(expectedStatus, response.StatusCode);
             }
         }
+    }
+
+    [Fact]
+    public void MediaCollectionActions_DeclareThePagedSuccessContract()
+    {
+        var actions = new[]
+        {
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.GetMediaEntries))!,
+            typeof(MediaEntriesController).GetMethod(nameof(MediaEntriesController.SearchMediaEntries))!
+        };
+
+        Assert.All(actions, action => Assert.Contains(
+            action.GetCustomAttributes<ProducesResponseTypeAttribute>(),
+            response => response.StatusCode == StatusCodes.Status200OK &&
+                        response.Type == typeof(PagedResponseDto<MediaEntryMinimalDto>)));
     }
 
     [Fact]

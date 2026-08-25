@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Data.Common;
 using media_vault_app.Application.DTOs.MediaEntry.Response;
 using media_vault_app.Application.Interfaces.Repos;
+using media_vault_app.Application.Pagination;
 using media_vault_app.Domain.Entities;
 using media_vault_app.Infrastructure.Diagnostics;
 using media_vault_app.Infrastructure.Timestamps;
@@ -77,7 +78,7 @@ public sealed class MediaEntryRepo : IMediaEntryRepo
         }
     }
 
-    public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
+    public async Task<Result<PageSlice<MediaEntryMinimalDto>>> GetMinimalCollectionByOwnerIdAsync(
         Guid ownerId,
         int pageNumber,
         int pageSize,
@@ -89,9 +90,14 @@ public sealed class MediaEntryRepo : IMediaEntryRepo
 
         try
         {
-            var entries = await _mediaEntries
+            await using var transaction = await _appDbContext.Database
+                .BeginTransactionAsync(ct)
+                .ConfigureAwait(false);
+            var filteredEntries = _mediaEntries
                 .AsNoTracking()
-                .Where(mediaEntry => mediaEntry.OwnerId == ownerId)
+                .Where(mediaEntry => mediaEntry.OwnerId == ownerId);
+            var totalCount = await filteredEntries.CountAsync(ct).ConfigureAwait(false);
+            var entries = await filteredEntries
                 .OrderByDescending(mediaEntry => mediaEntry.CreatedAtUtc)
                 .ThenBy(mediaEntry => mediaEntry.Id)
                 .Skip((pageNumber - 1) * pageSize)
@@ -99,18 +105,19 @@ public sealed class MediaEntryRepo : IMediaEntryRepo
                 .Select(MinimalProjection)
                 .ToListAsync(ct)
                 .ConfigureAwait(false);
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
 
-            return Result<IReadOnlyList<MediaEntryMinimalDto>>.Success(entries);
+            return Result<PageSlice<MediaEntryMinimalDto>>.Success(new(entries, totalCount));
         }
         catch (DbException ex)
         {
-            return LogAndFail<IReadOnlyList<MediaEntryMinimalDto>>(
+            return LogAndFail<PageSlice<MediaEntryMinimalDto>>(
                 DatabaseFailurePolicy.QueryFailure(errorContext, ex),
                 errorContext);
         }
     }
 
-    public async Task<Result<IReadOnlyList<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
+    public async Task<Result<PageSlice<MediaEntryMinimalDto>>> SearchMediaEntriesAsync(
         Guid ownerId,
         string query,
         int pageNumber,
@@ -121,9 +128,14 @@ public sealed class MediaEntryRepo : IMediaEntryRepo
 
         try
         {
-            var entries = await _mediaEntries
+            await using var transaction = await _appDbContext.Database
+                .BeginTransactionAsync(ct)
+                .ConfigureAwait(false);
+            var filteredEntries = _mediaEntries
                 .AsNoTracking()
-                .Where(mediaEntry => mediaEntry.OwnerId == ownerId && mediaEntry.Title.Contains(query))
+                .Where(mediaEntry => mediaEntry.OwnerId == ownerId && mediaEntry.Title.Contains(query));
+            var totalCount = await filteredEntries.CountAsync(ct).ConfigureAwait(false);
+            var entries = await filteredEntries
                 .OrderByDescending(mediaEntry => mediaEntry.CreatedAtUtc)
                 .ThenBy(mediaEntry => mediaEntry.Id)
                 .Skip((pageNumber - 1) * pageSize)
@@ -131,12 +143,13 @@ public sealed class MediaEntryRepo : IMediaEntryRepo
                 .Select(MinimalProjection)
                 .ToListAsync(ct)
                 .ConfigureAwait(false);
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
 
-            return Result<IReadOnlyList<MediaEntryMinimalDto>>.Success(entries);
+            return Result<PageSlice<MediaEntryMinimalDto>>.Success(new(entries, totalCount));
         }
         catch (DbException ex)
         {
-            return LogAndFail<IReadOnlyList<MediaEntryMinimalDto>>(
+            return LogAndFail<PageSlice<MediaEntryMinimalDto>>(
                 DatabaseFailurePolicy.QueryFailure(errorContext, ex),
                 errorContext);
         }
